@@ -1,5 +1,2 @@
 #Ignore all files from data folder
 src/app/src/main/java/com/hsousa_apps/Autocarros/data/
-
-#Ignore all keystore files
-*.keystore
