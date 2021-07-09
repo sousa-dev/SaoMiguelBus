@@ -1,0 +1,16 @@
+Kotlin Classes:
+
+-Route: ID  
+	Destination (Stop)
+	 Arrival (Stop)
+	 Time
+	 	 
+-Stop:
+	name
+	location
+
+-Location: 
+	name
+	coordenades
+	 
+-Time: type of day (weekday weekend)
