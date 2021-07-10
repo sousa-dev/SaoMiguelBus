@@ -2,6 +2,7 @@ Kotlin Classes:
 
 -Route: ID  
 	Destination (Stop)
+	Intermediate Bus Stops (Stop)
 	 Arrival (Stop)
 	 Time
 	 	 
