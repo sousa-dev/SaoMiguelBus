@@ -1,2 +1,2 @@
-#Ignore all files from data folder
-src/app/src/main/java/com/hsousa_apps/Autocarros/data/
+#Ignore Datasource file from data folder
+src/app/src/main/java/com/hsousa_apps/Autocarros/data/Datasource.kt
