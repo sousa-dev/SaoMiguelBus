@@ -9,9 +9,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
-        setContentView(R.layout.home)
+        setContentView(R.layout.main)
 
-        /*nav
         val bn = findViewById<BottomNavigationView>(R.id.bottom_navigation)!!
         var target : Fragment
 
@@ -19,18 +18,18 @@ class MainActivity : AppCompatActivity() {
             target = HomeFragment()
             when (item.itemId) {
 
-                //TODO: Adicionar outros items a navbar
                 R.id.home_nb -> {
                     target = HomeFragment()
                 }
 
-                R.id.wl_nb -> {
-                    target = WishlistFragment()
+                R.id.map_nb -> {
+                    target = HomeFragment()
                 }
 
-                R.id.set_nb -> {
-                    target = SettingsFragment()
+                R.id.settings_nb -> {
+                    target = HomeFragment()
                 }
+
                 else -> print("")
             }
 
@@ -55,6 +54,6 @@ class MainActivity : AppCompatActivity() {
         }
         else {
             finish()
-        }*/
+        }
     }
 }

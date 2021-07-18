@@ -6,13 +6,13 @@
         android:icon="@drawable/ic_launcher_foreground"
         android:title="HOME" />
     <item
-        android:id="@+id/wl_nb"
+        android:id="@+id/map_nb"
         android:enabled="true"
         android:icon="@drawable/ic_launcher_foreground"
-        android:title="MAP" />
+        android:title="MAPA" />
     <item
-        android:id="@+id/set_nb"
+        android:id="@+id/settings_nb"
         android:enabled="true"
         android:icon="@drawable/ic_launcher_foreground"
-        android:title="SETTINGS" />
+        android:title="DEFINIÇÕES" />
 </menu>
