@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import java.util.*
 
 
 class SearchFragment : Fragment(), View.OnClickListener {
@@ -14,7 +14,7 @@ class SearchFragment : Fragment(), View.OnClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.home, container, false);
+        return inflater.inflate(R.layout.search_layout, container, false);
     }
 
 

@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.map_nb -> {
-                    target = HomeFragment()
+                    target = SearchFragment()
                 }
 
                 R.id.settings_nb -> {
