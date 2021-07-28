@@ -5,6 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.*
 
 
@@ -19,27 +24,18 @@ class SearchFragment : Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        /*
-        val bttnStores = view.findViewById<Button>(com.example.ezshop.R.id.bttnStores)
-        bttnStores.setOnClickListener(this)
+        super.onViewCreated(view, savedInstanceState)
 
-        val bttnCat = view.findViewById<Button>(R.id.bttnProds)
-        bttnCat.setOnClickListener(this)
+        val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
 
-
-        var sv = view.findViewById<SearchView>(R.id.from_search)
-        sv.setOnClickListener(this)
-
-        sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                //swapFrags(ProductListFragment(query=query))
-                return true
+        GridLayoutManager(view?.context, 3 ,RecyclerView.VERTICAL, false).apply {
+            if (rv != null) {
+                rv.layoutManager = this
             }
+        }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-        })*/
+        rv?.adapter = RouteCardAdapter(view?.context, Datasource().getAvmRoutes())
+
     }
 
     private fun swapFrags(f : Fragment) {
