@@ -28,12 +28,7 @@ class SearchFragment : Fragment(), View.OnClickListener {
 
         val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
 
-        GridLayoutManager(view?.context, 3 ,RecyclerView.VERTICAL, false).apply {
-            if (rv != null) {
-                rv.layoutManager = this
-            }
-        }
-
+        rv.layoutManager = LinearLayoutManager(view?.context)
         rv?.adapter = RouteCardAdapter(view?.context, Datasource().getAvmRoutes())
 
     }

@@ -12,8 +12,7 @@ import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Route
 import java.util.ArrayList
 
-class RouteCardAdapter(private val context: Context, RoutesArrayList: ArrayList<Route>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
-    private val RoutesArrayList: ArrayList<Route> = RoutesArrayList
+class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<Route>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
         // to inflate the layout for each item of recycler view.
         val view: View =
