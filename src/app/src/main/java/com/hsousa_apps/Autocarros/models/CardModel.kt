@@ -1,12 +1,12 @@
 package com.hsousa_apps.Autocarros.models
 
 class CardModel {
-    private var id: String? = null
-    private var from: String? = null
-    private var to: String? = null
-    private var time: String? = null
-    private var img : Int? = null
-    private var fav = false
+    var id: String? = null
+    var from: String? = null
+    var to: String? = null
+    var time: String? = null
+    var img : Int? = null
+    var fav = false
 
 
     // Constructor

@@ -9,8 +9,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class SearchFragment : Fragment(), View.OnClickListener {
@@ -28,8 +30,22 @@ class SearchFragment : Fragment(), View.OnClickListener {
 
         val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
 
+        val cards: ArrayList<CardModel> = arrayListOf()
+
+        for(route in Datasource().getAvmRoutes()){
+            for (i in 0 until route.getNStops(route.getOrigin())!!-1)
+            route.getStopTime(route.getOrigin(), i)?.let {
+                route.getDestination()?.let { it1 ->
+                    CardModel(route.id, route.getOrigin()!!.name, it1.name,
+                        it, false, R.drawable.ic_launcher_background)
+                }
+            }?.let { cards.add(it) }
+        }
+
         rv.layoutManager = LinearLayoutManager(view?.context)
-        rv?.adapter = RouteCardAdapter(view?.context, Datasource().getAvmRoutes())
+        rv?.adapter = RouteCardAdapter(view?.context, cards)
+
+        print(Datasource().getStops())
 
     }
 

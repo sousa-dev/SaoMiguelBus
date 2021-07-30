@@ -12,7 +12,7 @@ import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Route
 import java.util.ArrayList
 
-class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<Route>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
+class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
         // to inflate the layout for each item of recycler view.
         val view: View =
@@ -23,11 +23,11 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
 
     override fun onBindViewHolder(holder: Viewholder, position: Int) {
         // to set data to textview and imageview of each card layout
-        val route: Route = RoutesArrayList[position]
+        val route: CardModel = RoutesArrayList[position]
         holder.id.text = route.id
-        holder.from.text = route.getOrigin()?.name
-        holder.to.text = route.getDestination()?.name
-        holder.time.text = route.getStopTime(route.getOrigin(), position)
+        holder.from.text = route.from
+        holder.to.text = route.to
+        holder.time.text = route.time
     }
 
     override fun getItemCount(): Int {

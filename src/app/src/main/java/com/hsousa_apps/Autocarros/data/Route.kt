@@ -16,4 +16,8 @@ class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val 
     fun getDestination(): Stop? {
         return destination
     }
+
+    fun getNStops(stop: Stop?): Int? {
+        return stops[stop]?.size
+    }
 }
