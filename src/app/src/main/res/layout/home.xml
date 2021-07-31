@@ -5,38 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <SearchView
-        android:id="@+id/from_home"
-        android:layout_width="216dp"
-        android:layout_height="31dp"
-        android:layout_marginTop="212dp"
-        android:layout_marginBottom="24dp"
-        android:background="@color/white"
-        android:clickable="true"
-        android:orientation="vertical"
-        android:queryHint="Ponta Delgada - Avenida"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.492"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.967" />
-
-    <SearchView
-        android:id="@+id/to_home"
-        android:layout_width="213dp"
-        android:layout_height="33dp"
-        android:layout_marginTop="280dp"
-        android:layout_marginBottom="24dp"
-        android:background="@color/white"
-        android:clickable="true"
-        android:orientation="vertical"
-        android:queryHint="Ponta Delgada - Avenida"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.967" />
-
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
@@ -98,9 +66,56 @@
         android:id="@+id/imageButton"
         android:layout_width="46dp"
         android:layout_height="36dp"
-        app:layout_constraintBottom_toTopOf="@+id/to_home"
+        android:background="#00FFFFFF"
+        android:src="@mipmap/baseline_swap_vert_black_36"
+        app:layout_constraintBottom_toBottomOf="@+id/to_home"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.726"
+        app:layout_constraintHorizontal_bias="0.819"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_revert" />
+        app:layout_constraintTop_toBottomOf="@+id/from_home"
+        app:layout_constraintVertical_bias="0.239" />
+
+    <AutoCompleteTextView
+        android:id="@+id/from_home"
+        android:layout_width="213dp"
+        android:layout_height="43dp"
+        android:layout_marginTop="200dp"
+        android:hint="Origem"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/actv1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="204dp"
+        android:padding="5dp"
+        android:src="@mipmap/baseline_arrow_drop_down_black_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.643"
+        app:layout_constraintStart_toStartOf="@+id/from_home"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/actv2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:padding="5dp"
+        android:src="@mipmap/baseline_arrow_drop_down_black_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.734"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/actv1" />
+
+    <AutoCompleteTextView
+        android:id="@+id/to_home"
+        android:layout_width="213dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="36dp"
+        android:hint="Destino"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/from_home" />
 </androidx.constraintlayout.widget.ConstraintLayout>
