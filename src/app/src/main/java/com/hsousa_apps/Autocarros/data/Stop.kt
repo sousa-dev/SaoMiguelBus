@@ -5,4 +5,7 @@ class Stop constructor(val name: String, val coordinates: Location) {
     init {
         if (!Datasource().getStops().contains(this)) Datasource().addStop(this)
     }
+    override fun toString(): String{
+        return name
+    }
 }
