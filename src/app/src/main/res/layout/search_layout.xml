@@ -5,47 +5,44 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <SearchView
+    <TextView
         android:id="@+id/from_search"
-        android:layout_width="216dp"
-        android:layout_height="31dp"
+        android:layout_width="278dp"
+        android:layout_height="30dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp"
         android:background="@color/white"
-        android:clickable="true"
+        android:clickable="false"
         android:orientation="vertical"
-        android:queryHint="Ponta Delgada - Avenida"
+        android:text="Origem"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.702"
+        app:layout_constraintHorizontal_bias="0.536"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.967" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <SearchView
+    <TextView
         android:id="@+id/to_search"
-        android:layout_width="213dp"
-        android:layout_height="33dp"
+        android:layout_width="280dp"
+        android:layout_height="26dp"
         android:layout_marginTop="84dp"
-        android:layout_marginBottom="24dp"
         android:background="@color/white"
-        android:clickable="true"
+        android:clickable="false"
         android:orientation="vertical"
-        android:queryHint="Ponta Delgada - Avenida"
+        android:text="Destino"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.702"
+        app:layout_constraintHorizontal_bias="0.561"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.967" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/imageButton2"
+        android:id="@+id/swapStopsSearch"
         android:layout_width="46dp"
         android:layout_height="36dp"
+        android:background="#00FFFFFF"
+        android:src="@mipmap/baseline_swap_vert_black_36"
         app:layout_constraintBottom_toTopOf="@+id/to_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.838"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_revert" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/routes_recycleView "
@@ -57,31 +54,9 @@
         app:layout_constraintTop_toTopOf="@+id/divider"
         app:layout_constraintVertical_bias="0.146" />
 
-    <CheckBox
-        android:id="@+id/holiday_check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Domingos/Feriados"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.917"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchPage_toLabel" />
-
-    <CheckBox
-        android:id="@+id/weekend_check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Sábados"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.453"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchPage_toLabel" />
-
     <View
         android:id="@+id/divider"
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="1dp"
         android:layout_marginTop="168dp"
         android:background="?android:attr/listDivider"
@@ -90,42 +65,48 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <CheckBox
-        android:id="@+id/weekday_check"
+    <RadioGroup
+        android:id="@+id/weekdays"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:checked="true"
-        android:text="Dias Úteis"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.174"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchPage_toLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/to_search">
 
-    <TextView
-        android:id="@+id/searchPage_fromLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Origem"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/from_search"
-        app:layout_constraintHorizontal_bias="0.845"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <RadioButton
+            android:id="@+id/weekday_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="true"
+            android:text="Dias Úteis"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.183"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/to_search" />
 
-    <TextView
-        android:id="@+id/searchPage_toLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
-        android:text="Destino"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/from_search"
-        app:layout_constraintHorizontal_bias="0.88"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <RadioButton
+            android:id="@+id/saturday_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Sábados"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.484"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/to_search" />
+
+        <RadioButton
+            android:id="@+id/holiday_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Domingos/Feriados"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.956"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/to_search" />
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

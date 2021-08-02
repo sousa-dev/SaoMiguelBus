@@ -1,6 +1,8 @@
 package com.hsousa_apps.Autocarros
 
 import android.os.Bundle
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -26,7 +28,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.map_nb -> {
-                    target = SearchFragment()
+                    target = SearchFragment("null", "null", arrayListOf())
                 }
 
                 R.id.settings_nb -> {

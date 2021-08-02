@@ -63,17 +63,17 @@
         app:layout_constraintTop_toTopOf="@+id/divider" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/swapStops"
         android:layout_width="46dp"
         android:layout_height="36dp"
         android:background="#00FFFFFF"
         android:src="@mipmap/baseline_swap_vert_black_36"
         app:layout_constraintBottom_toBottomOf="@+id/to_home"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.819"
+        app:layout_constraintHorizontal_bias="0.821"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/from_home"
-        app:layout_constraintVertical_bias="0.239" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <AutoCompleteTextView
         android:id="@+id/from_home"
@@ -97,6 +97,16 @@
         app:layout_constraintStart_toStartOf="@+id/from_home"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <AutoCompleteTextView
+        android:id="@+id/to_home"
+        android:layout_width="213dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="36dp"
+        android:hint="Destino"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/from_home" />
+
     <ImageView
         android:id="@+id/actv2"
         android:layout_width="wrap_content"
@@ -108,14 +118,4 @@
         app:layout_constraintHorizontal_bias="0.734"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/actv1" />
-
-    <AutoCompleteTextView
-        android:id="@+id/to_home"
-        android:layout_width="213dp"
-        android:layout_height="46dp"
-        android:layout_marginTop="36dp"
-        android:hint="Destino"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/from_home" />
 </androidx.constraintlayout.widget.ConstraintLayout>

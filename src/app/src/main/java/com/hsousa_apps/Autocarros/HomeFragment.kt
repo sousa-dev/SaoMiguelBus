@@ -4,12 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.ImageView
-import android.widget.SearchView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Stop
 
 
@@ -29,6 +27,9 @@ class HomeFragment : Fragment(), View.OnClickListener {
         val actv_from: ImageView = view.findViewById(R.id.actv1)
         val actv_to: ImageView = view.findViewById(R.id.actv2)
 
+        val search: Button = view.findViewById(R.id.homeSearch)
+        val swapStops: ImageButton = view.findViewById(R.id.swapStops)
+
         from.threshold = 2
         to.threshold = 2
 
@@ -38,32 +39,36 @@ class HomeFragment : Fragment(), View.OnClickListener {
         to.setAdapter(adapter2)
 
         actv_from.setOnClickListener {
-                from.showDropDown()
+            /*
+            if (to.text.equals(""))
+                from.setAdapter(adapter1)
+            else
+                from.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
+            */
+            from.showDropDown()
         }
+
         actv_to.setOnClickListener {
+            /*
+            if (from.text.equals(""))
+                to.setAdapter(adapter2)
+            else
+                to.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
+            */
             to.showDropDown()
         }
-        /*
-            val bttnStores = view.findViewById<Button>(com.example.ezshop.R.id.bttnStores)
-            bttnStores.setOnClickListener(this)
 
-            val bttnCat = view.findViewById<Button>(R.id.bttnProds)
-            bttnCat.setOnClickListener(this)
+        swapStops.setOnClickListener {
+            val temp = from.text
+            from.text = to.text
+            to.text = temp
+        }
+
+        search.setOnClickListener{
 
 
-            var sv = view.findViewById<SearchView>(R.id.from_search)
-            sv.setOnClickListener(this)
-
-            sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    //swapFrags(ProductListFragment(query=query))
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    return false
-                }
-            })*/
+            swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
+        }
     }
 
     private fun swapFrags(f : Fragment) {
