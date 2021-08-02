@@ -38,41 +38,35 @@ class SearchFragment(private val origin: String, private val destination: String
 
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsSearch)
 
-        val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
-
-        val cards: ArrayList<CardModel> = arrayListOf()
-
-        for(route in times){
-            for (i in 0 until route.getNStops(route.getOrigin())!!-1)
-            route.getStopTime(Datasource().getStop(origin), i)?.let {
-                    CardModel(route.id, origin, destination,
-                        it, false, R.drawable.ic_launcher_background)
-            }?.let { cards.add(it) }
-        }
-
-        rv.layoutManager = LinearLayoutManager(view?.context)
-        rv?.adapter = RouteCardAdapter(view?.context, cards)
+        createCards(this.view, origin, destination)
 
         swapStops.setOnClickListener {
             val temp = from.text
             from.text = to.text
             to.text = temp
 
-            //TODO: code below to function
+            createCards(this.view, from.text as String, to.text as String)
+       }
 
-            val cards: ArrayList<CardModel> = arrayListOf()
+    }
 
-            for(route in times){
-                for (i in 0 until route.getNStops(route.getOrigin())!!-1)
-                    route.getStopTime(Datasource().getStop(from.text as String), i)?.let {
-                        CardModel(route.id, from.text as String, to.text as String,
-                            it, false, R.drawable.ic_launcher_background)
-                    }?.let { cards.add(it) }
-            }
+    private fun createCards(view: View?, origin: String, destination: String){
+        val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
+        val cards: ArrayList<CardModel> = arrayListOf()
 
-            rv.layoutManager = LinearLayoutManager(view?.context)
-            rv?.adapter = RouteCardAdapter(view?.context, cards)
+        for(route in times){
+            for (i in 0 until route.getNStops(route.getOrigin())!!-1)
+                route.getStopTime(Datasource().getStop(origin), i)?.let {
+                    CardModel(route.id, origin, destination,
+                        it, false, R.drawable.ic_launcher_background)
+                }?.let { cards.add(it) }
         }
+
+        if (rv != null) {
+            rv.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = RouteCardAdapter(view.context, cards)
+        }
+
 
     }
 
