@@ -39,22 +39,12 @@ class HomeFragment : Fragment(), View.OnClickListener {
         to.setAdapter(adapter2)
 
         actv_from.setOnClickListener {
-            /*
-            if (to.text.equals(""))
-                from.setAdapter(adapter1)
-            else
-                from.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
-            */
+            //from.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
             from.showDropDown()
         }
 
         actv_to.setOnClickListener {
-            /*
-            if (from.text.equals(""))
-                to.setAdapter(adapter2)
-            else
-                to.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
-            */
+            //to.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
             to.showDropDown()
         }
 
@@ -65,8 +55,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
         }
 
         search.setOnClickListener{
-
-
             swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
         }
     }
