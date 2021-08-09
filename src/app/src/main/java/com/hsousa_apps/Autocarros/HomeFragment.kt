@@ -55,7 +55,8 @@ class HomeFragment : Fragment(), View.OnClickListener {
         }
 
         search.setOnClickListener{
-            swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
+            if (from.editableText.toString() != "" && to.editableText.toString() != "")
+                swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
         }
     }
 
