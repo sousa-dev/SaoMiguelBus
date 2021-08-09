@@ -52,22 +52,26 @@ class SearchFragment(private val origin: String, private val destination: String
 
     private fun createCards(view: View?, origin: String, destination: String){
         val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
+        val emptymsg = view?.findViewById<TextView>(R.id.emptymsg)
+        emptymsg?.visibility = View.INVISIBLE
         val cards: ArrayList<CardModel> = arrayListOf()
 
-        for(route in times){
+        for(route in times)
             for (i in 0 until route.getNStops(route.getOrigin())!!-1)
-                route.getStopTime(Datasource().getStop(origin), i)?.let {
-                    CardModel(route.id, origin, destination,
-                        it, false, R.drawable.ic_launcher_background)
-                }?.let { cards.add(it) }
-        }
+                if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
+                    route.getStopTime(Datasource().getStop(origin), i)?.let {
+                        CardModel(route.id, origin, destination,
+                            it, false, R.drawable.ic_launcher_background)
+                    }?.let { cards.add(it) }
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
             rv?.adapter = RouteCardAdapter(view.context, cards)
         }
-
-
+        if (cards.size == 0){
+            emptymsg?.text = "Não há rotas diretas de " + origin + " para " + destination + " :("
+            emptymsg?.visibility = View.VISIBLE
+        }
     }
 
     private fun swapFrags(f : Fragment) {
