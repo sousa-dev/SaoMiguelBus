@@ -1,8 +1,6 @@
 package com.hsousa_apps.Autocarros
 
 import android.os.Bundle
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView

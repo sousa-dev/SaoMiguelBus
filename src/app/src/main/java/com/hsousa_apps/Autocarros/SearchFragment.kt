@@ -1,15 +1,16 @@
 package com.hsousa_apps.Autocarros
 
-import android.media.Image
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Route
 import com.hsousa_apps.Autocarros.models.CardModel
@@ -53,6 +54,7 @@ class SearchFragment(private val origin: String, private val destination: String
     private fun createCards(view: View?, origin: String, destination: String){
         val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
         val emptymsg = view?.findViewById<TextView>(R.id.emptymsg)
+        val click = view?.findViewById<Button>(R.id.go_to_route_page)
         emptymsg?.visibility = View.INVISIBLE
         val cards: ArrayList<CardModel> = arrayListOf()
 
@@ -61,7 +63,8 @@ class SearchFragment(private val origin: String, private val destination: String
                 if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                     route.getStopTime(Datasource().getStop(origin), i)?.let {
                         CardModel(route.id, origin, destination,
-                            it, false, R.drawable.ic_launcher_background)
+                            it, false, R.drawable.ic_launcher_background
+                        )
                     }?.let { cards.add(it) }
 
         if (rv != null) {
@@ -72,6 +75,11 @@ class SearchFragment(private val origin: String, private val destination: String
             emptymsg?.text = "Não há rotas diretas de " + origin + " para " + destination + " :("
             emptymsg?.visibility = View.VISIBLE
         }
+
+        click?.setOnClickListener {
+           // swapFrags()
+        }
+
     }
 
     private fun swapFrags(f : Fragment) {
