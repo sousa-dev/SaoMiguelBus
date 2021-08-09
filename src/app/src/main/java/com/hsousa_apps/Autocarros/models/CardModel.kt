@@ -1,5 +1,7 @@
 package com.hsousa_apps.Autocarros.models
 
+import com.hsousa_apps.Autocarros.fragments.RoutePageFragment
+
 class CardModel {
     var id: String? = null
     var from: String? = null

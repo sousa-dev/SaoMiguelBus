@@ -89,7 +89,7 @@
         android:id="@+id/go_to_route_page"
         android:layout_width="339dp"
         android:layout_height="114dp"
-        android:text="Button"
+        android:clickable="true"
         app:backgroundTint="#00FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

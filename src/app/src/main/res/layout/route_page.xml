@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/go_to_route_page"
+        android:id="@+id/button1"
         android:layout_width="339dp"
         android:layout_height="114dp"
         android:layout_marginStart="16dp"

@@ -1,4 +1,4 @@
-package com.hsousa_apps.Autocarros
+package com.hsousa_apps.Autocarros.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Stop

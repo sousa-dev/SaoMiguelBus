@@ -4,12 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.data.Route
+import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import java.util.ArrayList
 
 class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
@@ -28,6 +29,9 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.from.text = route.from
         holder.to.text = route.to
         holder.time.text = route.time
+        holder.click.setOnClickListener {
+            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), "---", holder.itemView)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -45,6 +49,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         val time: TextView
         val company: ImageView
         val fav: ImageButton
+        val click: Button
 
         init {
             id = itemView.findViewById(R.id.route_id)
@@ -53,6 +58,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
             time = itemView.findViewById(R.id.route_time)
             company = itemView.findViewById(R.id.route_company)
             fav = itemView.findViewById(R.id.favorite)
+            click = itemView.findViewById(R.id.go_to_route_page)
         }
     }
 
