@@ -61,7 +61,7 @@ class SearchFragment(private val origin: String? = null, private val destination
 
         if (times != null) {
             for(route in times)
-                for (i in 0 until route.getNStops(route.getOrigin())!!-1)
+                for (i in 0 until route.getNStops(route.getOrigin())!!)
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             CardModel(route.id, origin, destination,
