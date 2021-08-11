@@ -7,6 +7,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
+import com.hsousa_apps.Autocarros.fragments.SettingsFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.settings_nb -> {
-                    target = HomeFragment()
+                    target = SettingsFragment()
                 }
 
                 else -> print("")
