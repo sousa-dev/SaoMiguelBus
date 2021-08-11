@@ -6,8 +6,14 @@
         android:icon="@drawable/ic_launcher_foreground"
         android:title="HOME" />
     <item
+        android:id="@+id/search_nb"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground"
+        android:title="PROCURAR" />
+    <item
         android:id="@+id/map_nb"
         android:enabled="true"
+        android:visible="true"
         android:icon="@drawable/ic_launcher_foreground"
         android:title="MAPA" />
     <item

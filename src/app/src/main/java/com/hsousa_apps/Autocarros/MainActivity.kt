@@ -28,6 +28,10 @@ class MainActivity : AppCompatActivity() {
                     target = HomeFragment()
                 }
 
+                R.id.search_nb -> {
+                    target = SearchFragment("null", "null", arrayListOf())
+                }
+
                 R.id.map_nb -> {
                     target = SearchFragment("null", "null", arrayListOf())
                 }
