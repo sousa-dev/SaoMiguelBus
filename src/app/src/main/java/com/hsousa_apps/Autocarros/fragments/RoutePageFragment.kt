@@ -31,7 +31,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         route_id.text = id
 
         val idx: Int = Datasource().getTimeIdx(id, time, origin, destination)
-        route_id.text = idx.toString()
+
     }
 
     private fun swapFrags(f : Fragment) {
