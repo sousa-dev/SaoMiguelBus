@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.hsousa_apps.Autocarros.R
+import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Route
 import org.w3c.dom.Text
 
@@ -29,6 +30,8 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         dest.text = destination
         route_id.text = id
 
+        val idx: Int = Datasource().getTimeIdx(id, time, origin, destination)
+        route_id.text = idx.toString()
     }
 
     private fun swapFrags(f : Fragment) {

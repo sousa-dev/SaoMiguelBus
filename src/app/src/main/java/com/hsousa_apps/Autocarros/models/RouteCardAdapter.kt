@@ -30,7 +30,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.to.text = route.to
         holder.time.text = route.time
         holder.click.setOnClickListener {
-            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), "---", holder.itemView)
+            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView)
         }
     }
 

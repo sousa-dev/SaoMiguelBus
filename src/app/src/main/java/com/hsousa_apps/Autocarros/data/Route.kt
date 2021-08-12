@@ -9,6 +9,12 @@ class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val 
         return stops[stop]?.get(position)
     }
 
+    fun getTimeIdx(times: List<String>, time: String?): Int {
+        for (i in times.indices)
+            if (times[i] == time) return i
+        return -1
+    }
+
     fun getOrigin(): Stop? {
         return origin
     }
