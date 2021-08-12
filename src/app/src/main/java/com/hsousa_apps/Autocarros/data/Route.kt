@@ -15,6 +15,14 @@ class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val 
         return -1
     }
 
+    fun getStopIdx(stop: Stop?): Int {
+        var i : Int = 0
+        for (st in stops.keys)
+            if (st == stop) return i
+            else i++
+        return -1
+    }
+
     fun getOrigin(): Stop? {
         return origin
     }
