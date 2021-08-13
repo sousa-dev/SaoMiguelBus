@@ -56,7 +56,7 @@ class SearchFragment(private val origin: String? = null, private val destination
     }
 
     private fun createCards(view: View?, origin: String, destination: String){
-        val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
+        val rv = view?.findViewById<RecyclerView>(R.id.routes_recyclerView)
         val emptymsg = view?.findViewById<TextView>(R.id.emptymsg)
         emptymsg?.visibility = View.INVISIBLE
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
