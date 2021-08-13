@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Route
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import kotlin.collections.ArrayList
 
 
-class SearchFragment(private val origin: String? = null, private val destination: String? = null, private val times: ArrayList<Route>? = null) : Fragment(), View.OnClickListener {
+class SearchFragment(private val origin: String? = null, private val destination: String? = null, private var times: ArrayList<Route>? = null) : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -48,6 +49,7 @@ class SearchFragment(private val origin: String? = null, private val destination
             from.text = to.text
             to.text = temp
 
+            times = Functions().getOptions(from.text as String, to.text as String)
             createCards(this.view, from.text as String, to.text as String)
        }
 
@@ -60,7 +62,7 @@ class SearchFragment(private val origin: String? = null, private val destination
         val cards: ArrayList<CardModel> = arrayListOf()
 
         if (times != null) {
-            for(route in times)
+            for(route in times!!)
                 for (i in 0 until route.getNStops(route.getOrigin())!!)
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
