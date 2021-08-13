@@ -59,7 +59,7 @@ class SearchFragment(private val origin: String? = null, private val destination
         val rv = view?.findViewById<RecyclerView>(R.id.routes_recycleView)
         val emptymsg = view?.findViewById<TextView>(R.id.emptymsg)
         emptymsg?.visibility = View.INVISIBLE
-        val cards: ArrayList<CardModel> = arrayListOf()
+        var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
         if (times != null) {
             for(route in times!!)
@@ -72,9 +72,15 @@ class SearchFragment(private val origin: String? = null, private val destination
                         }?.let { cards.add(it) }
         }
 
+        print(cards.toString())
+
+        cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
+
+        print(cards.toString())
+
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
-            rv?.adapter = RouteCardAdapter(view.context, cards)
+            rv?.adapter = RouteCardAdapter(view.context, cards as java.util.ArrayList<CardModel>)
         }
         if (cards.size == 0){
             emptymsg?.text = "Não há rotas diretas de " + origin + " para " + destination + " :("
