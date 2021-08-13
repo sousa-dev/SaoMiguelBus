@@ -67,16 +67,12 @@ class SearchFragment(private val origin: String? = null, private val destination
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             CardModel(route.id, origin, destination,
-                                it, false, R.drawable.ic_launcher_background
+                                it, R.drawable.ic_launcher_background
                             )
                         }?.let { cards.add(it) }
         }
 
-        print(cards.toString())
-
-        cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
-
-        print(cards.toString())
+        if(cards.isNotEmpty()) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)

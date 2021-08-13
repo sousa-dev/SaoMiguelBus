@@ -12,12 +12,11 @@ class CardModel {
 
 
     // Constructor
-    constructor(id: String, from: String, to: String, time: String, fav: Boolean, img: Int) {
+    constructor(id: String, from: String, to: String, time: String, img: Int) {
         this.id = id
         this.from = from
         this.to = to
         this.time = time
-        this.fav = fav
         this.img = img
     }
 

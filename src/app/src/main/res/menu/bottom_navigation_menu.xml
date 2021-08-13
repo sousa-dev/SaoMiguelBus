@@ -12,8 +12,8 @@
         android:title="PROCURAR" />
     <item
         android:id="@+id/map_nb"
-        android:enabled="true"
-        android:visible="true"
+        android:enabled="false"
+        android:visible="false"
         android:icon="@drawable/ic_launcher_foreground"
         android:title="MAPA" />
     <item

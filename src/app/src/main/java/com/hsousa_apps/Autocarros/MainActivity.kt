@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.fragments.FindFragment
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import com.hsousa_apps.Autocarros.fragments.SettingsFragment
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.search_nb -> {
-                    target = SearchFragment("null", "null", arrayListOf())
+                    target = FindFragment(Datasource().getAllRoutes())
                 }
 
                 R.id.map_nb -> {
