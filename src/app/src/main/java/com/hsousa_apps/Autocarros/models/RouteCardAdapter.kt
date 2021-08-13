@@ -48,7 +48,6 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         val to: TextView
         val time: TextView
         val company: ImageView
-        val fav: ImageButton
         val click: Button
 
         init {
@@ -57,7 +56,6 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
             to = itemView.findViewById(R.id.route_destination)
             time = itemView.findViewById(R.id.route_time)
             company = itemView.findViewById(R.id.route_company)
-            fav = itemView.findViewById(R.id.favorite)
             click = itemView.findViewById(R.id.go_to_route_page)
         }
     }
