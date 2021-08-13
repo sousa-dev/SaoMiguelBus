@@ -24,14 +24,17 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val orig = view?.findViewById<TextView>(R.id.route_page_origin)
         val dest = view?.findViewById<TextView>(R.id.route_page_destination)
-        val route_id = view?.findViewById<TextView>(R.id.route_page_id)
+        val routeId = view?.findViewById<TextView>(R.id.route_page_id)
+        val stops = view?.findViewById<TextView>(R.id.allStops)
 
         orig.text = origin
         dest.text = destination
-        route_id.text = id
+        routeId.text = id
 
-        val idx: Int = Datasource().getTimeIdx(id, time, origin, destination)
+        val allStops: Map<String, String> = Datasource().getAllStopTimes(id, time, origin, destination)
 
+        for(stop in allStops)
+           if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
     }
 
     private fun swapFrags(f : Fragment) {
