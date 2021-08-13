@@ -63,7 +63,7 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
-            rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>)
+            rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 1)
         }
     }
 

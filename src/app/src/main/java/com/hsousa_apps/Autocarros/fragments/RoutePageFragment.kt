@@ -11,7 +11,7 @@ import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Route
 import org.w3c.dom.Text
 
-class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null) : Fragment(), View.OnClickListener {
+class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0) : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -31,10 +31,18 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         dest.text = destination
         routeId.text = id
 
-        val allStops: Map<String, String> = Datasource().getAllStopTimes(id, time, origin, destination)
 
-        for(stop in allStops)
-           if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
+        if (op == 0){
+            val allStops = Datasource().getAllStopTimes(id, time, origin, destination)
+            for(stop in allStops)
+                if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
+        }
+        else {
+            val allTimes = Datasource().getAllTimes(id, origin, destination)
+            for(stop in allTimes)
+                stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value.toString()
+        }
+
     }
 
     private fun swapFrags(f : Fragment) {

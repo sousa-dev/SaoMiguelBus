@@ -13,7 +13,7 @@ import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import java.util.ArrayList
 
-class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
+class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>, private val op: Int = 0) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
         // to inflate the layout for each item of recycler view.
         val view: View =
@@ -30,7 +30,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.to.text = route.to
         holder.time.text = route.time
         holder.click.setOnClickListener {
-            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView)
+            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op)
         }
     }
 

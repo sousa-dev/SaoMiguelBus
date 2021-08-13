@@ -85,9 +85,9 @@ class SearchFragment(private val origin: String? = null, private val destination
 
     }
 
-    fun openRoutePage(id: String, origin: String, destination: String, time: String, view: View){
+    fun openRoutePage(id: String, origin: String, destination: String, time: String, view: View, op: Int = 0){
         val ctx: AppCompatActivity = view?.context as AppCompatActivity
-        val f : Fragment = RoutePageFragment(id, origin, destination, time)
+        val f : Fragment = RoutePageFragment(id, origin, destination, time, op)
         val t = ctx.supportFragmentManager.beginTransaction()
 
         if (t != null) {
