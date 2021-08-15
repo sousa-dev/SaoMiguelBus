@@ -9,10 +9,10 @@
         android:id="@+id/divider3"
         android:layout_width="350dp"
         android:layout_height="1dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="120dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintHorizontal_bias="0.426"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -30,7 +30,7 @@
         android:id="@+id/actv_find"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="48dp"
+        android:layout_marginBottom="60dp"
         android:padding="5dp"
         android:src="@mipmap/baseline_arrow_drop_down_black_24"
         app:layout_constraintBottom_toTopOf="@+id/divider3"
@@ -40,11 +40,11 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/find_recycler"
-        android:layout_width="344dp"
-        android:layout_height="553dp"
-        android:layout_marginTop="20dp"
+        android:layout_width="354dp"
+        android:layout_height="555dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintHorizontal_bias="0.448"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider3">
 
@@ -54,11 +54,21 @@
         android:id="@+id/find_button"
         android:layout_width="136dp"
         android:layout_height="40dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="32dp"
         android:text="Encontrar"
         app:backgroundTint="#12A52A"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/actv_find" />
+
+    <TextView
+        android:id="@+id/find_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Descubra que rotas passam em determinada paragem"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/find_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>

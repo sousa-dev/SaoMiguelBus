@@ -39,8 +39,10 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         }
         else {
             val allTimes = Datasource().getAllTimes(id, origin, destination)
-            for(stop in allTimes)
-                stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value.toString()
+            for(stop in allTimes){
+                stops.text = String.format("%s \n %-20s | %4s", stops.text.toString(), stop.key, stop.value.toString())
+            }
+
         }
 
     }
