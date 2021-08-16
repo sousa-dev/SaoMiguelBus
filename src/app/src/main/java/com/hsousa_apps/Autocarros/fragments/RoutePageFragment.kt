@@ -48,8 +48,10 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         }
 
         val fav = view?.findViewById<ImageButton>(R.id.favorite)
+        if (op == 1) fav.visibility = View.INVISIBLE
         fav.setOnClickListener {
             //TODO: change behaviour when already in fav
+            //fav.setImageResource(R.drawable.baseline_swap_vert_36)
             Datasource().addFavorite(origin, destination)
         }
 

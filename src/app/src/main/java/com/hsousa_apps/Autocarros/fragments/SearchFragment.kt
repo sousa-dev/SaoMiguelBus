@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -14,8 +16,10 @@ import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Route
+import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
+import java.lang.reflect.Type
 import kotlin.collections.ArrayList
 
 
@@ -34,6 +38,7 @@ class SearchFragment(private val origin: String? = null, private val destination
 
         val from: TextView = view.findViewById(R.id.from_search)
         val to: TextView = view.findViewById(R.id.to_search)
+        var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
 
         from.text = origin
         to.text = destination
@@ -49,10 +54,29 @@ class SearchFragment(private val origin: String? = null, private val destination
             from.text = to.text
             to.text = temp
 
-            times = Functions().getOptions(from.text as String, to.text as String)
+            times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
             createCards(this.view, from.text as String, to.text as String)
        }
 
+        val SelectedTypeOfDay: RadioGroup = view.findViewById(R.id.weekdays)
+        SelectedTypeOfDay.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.weekday_check){
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY
+                times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
+                createCards(this.view, from.text as String, to.text as String)
+            }
+            else if (checkedId == R.id.saturday_check){
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SATURDAY
+                times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
+                createCards(this.view, from.text as String, to.text as String)
+            }
+
+            else {
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SUNDAY
+                times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
+                createCards(this.view, from.text as String, to.text as String)
+            }
+        }
     }
 
     private fun createCards(view: View?, origin: String, destination: String){
