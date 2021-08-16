@@ -5,6 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/home_emptymsg"
+        android:layout_width="239dp"
+        android:layout_height="119dp"
+        android:layout_marginBottom="156dp"
+        android:background="#07000000"
+        android:gravity="center_vertical"
+        android:text="Não Foram Encontradas Rotas\n :("
+        android:textAlignment="center"
+        android:textSize="19sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
@@ -32,7 +47,7 @@
 
     <View
         android:id="@+id/divider"
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="1dp"
         android:layout_marginTop="40dp"
         android:background="?android:attr/listDivider"
@@ -55,12 +70,14 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="299dp"
-        android:layout_height="265dp"
+        android:id="@+id/home_recyclerview"
+        android:layout_width="352dp"
+        android:layout_height="249dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/divider" />
+        app:layout_constraintTop_toTopOf="@+id/divider"
+        app:layout_constraintVertical_bias="0.141" />
 
     <ImageButton
         android:id="@+id/swapStops"

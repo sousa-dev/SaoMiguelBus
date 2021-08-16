@@ -5,11 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Stop
+import com.hsousa_apps.Autocarros.models.CardModel
+import com.hsousa_apps.Autocarros.models.RouteCardAdapter
+import java.util.ArrayList
 
 
 class HomeFragment : Fragment(), View.OnClickListener {
@@ -39,6 +45,8 @@ class HomeFragment : Fragment(), View.OnClickListener {
         val adapter2: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops())
         to.setAdapter(adapter2)
 
+        createCards(this.view)
+
         actv_from.setOnClickListener {
             //from.setAdapter(ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getCorrespondence(to.text.toString()) as MutableList<Stop>))
             from.showDropDown()
@@ -59,6 +67,38 @@ class HomeFragment : Fragment(), View.OnClickListener {
             if (from.editableText.toString() != "" && to.editableText.toString() != "")
                 swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
         }
+    }
+
+    private fun createCards(view: View?){
+        val rv = view?.findViewById<RecyclerView>(R.id.home_recyclerview)
+        val emptymsg = view?.findViewById<TextView>(R.id.home_emptymsg)
+        emptymsg?.visibility = View.INVISIBLE
+        var cards: MutableList<CardModel> = mutableListOf<CardModel>()
+
+        for (fav in Datasource().getFavorite())
+            cards.add(CardModel("", fav[0], fav[1], "", 0))
+
+        if (rv != null) {
+            rv.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
+        }
+        if (cards.size == 0){
+            emptymsg?.text = "Não há rotas nos favoritos\n :("
+            emptymsg?.visibility = View.VISIBLE
+        }
+
+    }
+
+    fun openFavRoute(origin: String, destination: String, view: View){
+            val ctx: AppCompatActivity = view?.context as AppCompatActivity
+            val f : Fragment = SearchFragment(origin, destination, Functions().getOptions(origin, destination))
+            val t = ctx.supportFragmentManager.beginTransaction()
+
+            if (t != null) {
+                t.replace(R.id.frag_container, f)
+                t.addToBackStack(null)
+                t.commit()
+            }
     }
 
     private fun swapFrags(f : Fragment) {

@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
+import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import java.util.ArrayList
 
@@ -30,7 +31,11 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.to.text = route.to
         holder.time.text = route.time
         holder.click.setOnClickListener {
-            SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op)
+            if (op == 2){
+                HomeFragment().openFavRoute(holder.from.text.toString(), holder.to.text.toString(), holder.itemView)
+            }
+            else
+                SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op)
         }
     }
 

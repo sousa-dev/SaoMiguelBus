@@ -1,9 +1,11 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.hsousa_apps.Autocarros.R
@@ -40,9 +42,15 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         else {
             val allTimes = Datasource().getAllTimes(id, origin, destination)
             for(stop in allTimes){
-                stops.text = String.format("%s \n %-20s | %4s", stops.text.toString(), stop.key, stop.value.toString())
+                stops.text = String.format("%s \n %-50s\n           %4s", stops.text.toString(), stop.key, stop.value.toString())
             }
 
+        }
+
+        val fav = view?.findViewById<ImageButton>(R.id.favorite)
+        fav.setOnClickListener {
+            //TODO: change behaviour when already in fav
+            Datasource().addFavorite(origin, destination)
         }
 
     }
