@@ -8,7 +8,7 @@
     <item
         android:id="@+id/search_nb"
         android:enabled="true"
-        android:icon="@drawable/ic_launcher_foreground"
+        android:icon="@android:drawable/ic_menu_search"
         android:title="PROCURAR" />
     <item
         android:id="@+id/map_nb"
@@ -19,6 +19,6 @@
     <item
         android:id="@+id/settings_nb"
         android:enabled="true"
-        android:icon="@drawable/ic_launcher_foreground"
+        android:icon="@android:drawable/ic_menu_preferences"
         android:title="DEFINIÇÕES" />
 </menu>

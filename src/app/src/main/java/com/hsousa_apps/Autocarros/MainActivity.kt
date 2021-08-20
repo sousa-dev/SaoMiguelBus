@@ -2,6 +2,7 @@ package com.hsousa_apps.Autocarros
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hsousa_apps.Autocarros.data.Datasource
@@ -12,6 +13,7 @@ import com.hsousa_apps.Autocarros.fragments.SettingsFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
