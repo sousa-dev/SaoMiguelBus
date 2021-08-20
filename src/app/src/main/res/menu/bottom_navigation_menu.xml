@@ -3,7 +3,7 @@
     <item
         android:id="@+id/home_nb"
         android:enabled="true"
-        android:icon="@drawable/ic_launcher_foreground"
+        android:icon="@drawable/outline_home_black_24"
         android:title="HOME" />
     <item
         android:id="@+id/search_nb"
@@ -19,6 +19,6 @@
     <item
         android:id="@+id/settings_nb"
         android:enabled="true"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/outline_settings_black_24"
         android:title="DEFINIÇÕES" />
 </menu>
