@@ -26,6 +26,7 @@ class SettingsFragment: Fragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val language: AutoCompleteTextView = view.findViewById(R.id.language)
         val actv_language: ImageView = view.findViewById(R.id.actv_language)
+        val flag: ImageView = view.findViewById(R.id.flag)
 
         //TODO: set language text to current selected language
 
@@ -36,6 +37,14 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
         actv_language.setOnClickListener {
             language.showDropDown()
+        }
+        language.setOnItemClickListener { _, _, position, _ ->
+            if (position == 0)
+                flag.setImageResource(R.drawable.portugal)
+            else if (position == 1)
+                flag.setImageResource(R.drawable.english)
+            else
+                flag.setImageResource(R.drawable.germany)
         }
     }
 

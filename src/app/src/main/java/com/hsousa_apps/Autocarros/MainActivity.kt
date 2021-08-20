@@ -1,15 +1,18 @@
 package com.hsousa_apps.Autocarros
 
+import android.content.SharedPreferences.Editor
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Language
 import com.hsousa_apps.Autocarros.fragments.FindFragment
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import com.hsousa_apps.Autocarros.fragments.SettingsFragment
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,6 +20,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
+
+        val sharedPreferences = getSharedPreferences("userData", MODE_PRIVATE)
+        val editor: Editor = sharedPreferences.edit()
+        editor.putString("language", "Português")
+        editor.commit()
 
         Datasource().load()
 
