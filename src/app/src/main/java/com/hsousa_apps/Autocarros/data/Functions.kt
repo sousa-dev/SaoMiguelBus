@@ -22,7 +22,11 @@ class Functions {
         return ret as ArrayList<Route>
     }
 
-    fun getFavMessage(): String{
+    fun getFavAddMessage(): String{
         return "Rota adicionada aos favoritos"
+    }
+
+    fun getFavRmMessage(): String{
+        return "Rota removida dos favoritos"
     }
 }

@@ -50,12 +50,26 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         }
 
         val fav = view?.findViewById<ImageButton>(R.id.favorite)
+
+        if (listOf(origin, destination) in Datasource().getFavorite()){
+            fav.setImageResource(R.mipmap.hearton)
+            fav.tag = R.mipmap.hearton
+        }
+
         if (op == 1) fav.visibility = View.INVISIBLE
         fav.setOnClickListener {
-            //TODO: change behaviour when already in fav
-            //fav.setImageResource(R.drawable.baseline_swap_vert_36)
-            Datasource().addFavorite(origin, destination)
-            Toast.makeText(context, Functions().getFavMessage(), Toast.LENGTH_SHORT).show()
+            if (fav.tag == R.mipmap.hearton){
+                fav.setImageResource(R.mipmap.heartoff)
+                fav.tag = R.mipmap.heartoff
+                Datasource().removeFavorite(listOf(origin, destination) as List<String>)
+                Toast.makeText(context, Functions().getFavRmMessage(), Toast.LENGTH_SHORT).show()
+            }
+            else{
+                fav.setImageResource(R.mipmap.hearton)
+                fav.tag = R.mipmap.hearton
+                Datasource().addFavorite(origin, destination)
+                Toast.makeText(context, Functions().getFavAddMessage(), Toast.LENGTH_SHORT).show()
+            }
         }
 
     }
