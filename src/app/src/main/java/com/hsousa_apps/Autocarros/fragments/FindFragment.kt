@@ -58,7 +58,7 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
 
         if (times != null)
             for(route in times!!)
-                CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", R.drawable.ic_launcher_background)?.let { cards.add(it) }
+                CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company)?.let { cards.add(it) }
 
 
         if (rv != null) {

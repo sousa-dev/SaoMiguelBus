@@ -91,7 +91,7 @@ class SearchFragment(private val origin: String? = null, private val destination
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             CardModel(route.id, origin, destination,
-                                it, R.drawable.ic_launcher_background
+                                it, route.company
                             )
                         }?.let { cards.add(it) }
         }

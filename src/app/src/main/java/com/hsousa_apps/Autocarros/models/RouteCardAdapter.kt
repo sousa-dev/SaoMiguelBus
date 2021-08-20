@@ -30,6 +30,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.from.text = route.from
         holder.to.text = route.to
         holder.time.text = route.time
+        route.img?.let { holder.company.setImageResource(it) }
         holder.click.setOnClickListener {
             if (op == 2){
                 HomeFragment().openFavRoute(holder.from.text.toString(), holder.to.text.toString(), holder.itemView)
