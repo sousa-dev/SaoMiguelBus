@@ -7,9 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Route
 import org.w3c.dom.Text
 
@@ -53,6 +55,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             //TODO: change behaviour when already in fav
             //fav.setImageResource(R.drawable.baseline_swap_vert_36)
             Datasource().addFavorite(origin, destination)
+            Toast.makeText(context, Functions().getFavMessage(), Toast.LENGTH_SHORT).show()
         }
 
     }

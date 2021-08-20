@@ -21,4 +21,8 @@ class Functions {
            if (route.stops.containsKey(getStop)) ret.add(route)
         return ret as ArrayList<Route>
     }
+
+    fun getFavMessage(): String{
+        return "Rota adicionada aos favoritos"
+    }
 }
