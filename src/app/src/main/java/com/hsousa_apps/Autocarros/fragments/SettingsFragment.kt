@@ -50,6 +50,10 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         actv_language.setOnClickListener {
             language.showDropDown()
         }
+        language.setOnClickListener {
+            language.showDropDown()
+        }
+
         language.setOnItemClickListener { _, _, position, _ ->
             val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
             val editor = pref.edit()
