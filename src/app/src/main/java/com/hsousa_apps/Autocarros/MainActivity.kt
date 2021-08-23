@@ -88,6 +88,12 @@ class MainActivity : AppCompatActivity() {
 
         if (json != null) Datasource().loadFavorite(gson.fromJson(json, type))
 
+        val lang: String? = sp.getString("lang", "Português")
+
+        if (lang != null) {
+            Datasource().changeCurrentLang(lang)
+        }
+
     }
 
     private fun swapFrags(f : Fragment) {

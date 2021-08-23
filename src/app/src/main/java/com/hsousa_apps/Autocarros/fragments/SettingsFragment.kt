@@ -1,6 +1,8 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.Context
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +11,7 @@ import android.widget.AutoCompleteTextView
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Stop
@@ -28,6 +31,15 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val actv_language: ImageView = view.findViewById(R.id.actv_language)
         val flag: ImageView = view.findViewById(R.id.flag)
 
+        language.setText(Datasource().getCurrentLang())
+
+        when (Datasource().getCurrentLang()){
+            "Português" -> flag.setImageResource(R.drawable.portugal)
+            "English" -> flag.setImageResource(R.drawable.english)
+            "Deutsch" -> flag.setImageResource(R.drawable.germany)
+
+        }
+
         //TODO: set language text to current selected language
 
         language.threshold = 2
@@ -39,12 +51,26 @@ class SettingsFragment: Fragment(), View.OnClickListener {
             language.showDropDown()
         }
         language.setOnItemClickListener { _, _, position, _ ->
-            if (position == 0)
+            val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
+            val editor = pref.edit()
+            var str = ""
+
+            if (position == 0){
                 flag.setImageResource(R.drawable.portugal)
-            else if (position == 1)
+                str = "Português"
+            }
+            else if (position == 1){
                 flag.setImageResource(R.drawable.english)
-            else
+                str = "English"
+            }
+
+            else{
                 flag.setImageResource(R.drawable.germany)
+                str = "Deutsch"
+            }
+
+            editor.putString("lang", str)
+            editor.commit()
         }
     }
 
