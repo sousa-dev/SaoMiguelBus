@@ -1,7 +1,7 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,11 +9,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
-import com.hsousa_apps.Autocarros.data.Route
-import org.w3c.dom.Text
 
 class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0) : Fragment(), View.OnClickListener {
     override fun onCreateView(
@@ -73,6 +72,15 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                 Datasource().addFavorite(origin, destination)
                 Toast.makeText(context, Functions().getFavAddMessage(), Toast.LENGTH_SHORT).show()
             }
+            val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
+            val editor = pref.edit()
+            val gson = Gson()
+
+            val json: String = gson.toJson(Datasource().getFavorite())
+
+            editor.putString("favorites", json)
+            editor.commit()
+
         }
 
     }

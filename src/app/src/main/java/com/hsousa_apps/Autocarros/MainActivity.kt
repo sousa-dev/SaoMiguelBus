@@ -1,30 +1,31 @@
 package com.hsousa_apps.Autocarros
 
+import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Language
+import com.hsousa_apps.Autocarros.data.Route
 import com.hsousa_apps.Autocarros.fragments.FindFragment
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import com.hsousa_apps.Autocarros.fragments.SettingsFragment
+import java.lang.reflect.Type
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
-
-        val sharedPreferences = getSharedPreferences("userData", MODE_PRIVATE)
-        val editor: Editor = sharedPreferences.edit()
-        editor.putString("language", "Português")
-        editor.commit()
 
         Datasource().load()
 
@@ -60,6 +61,33 @@ class MainActivity : AppCompatActivity() {
         }
 
         swapFrags(HomeFragment())
+    }
+
+    fun saveData(op: String){
+        val sp = getSharedPreferences("userData", MODE_PRIVATE)
+        val editor = sp.edit()
+        val gson = Gson()
+
+        if (op == "fav"){
+            val json: String = gson.toJson(Datasource().getFavorite())
+
+            editor.putString("favorites", json)
+            editor.commit()
+        }
+        else if (op == "lang"){
+
+        }
+
+    }
+
+    private fun loadData(){
+        val sp: SharedPreferences = getPreferences(MODE_PRIVATE)
+        val gson = Gson()
+        val json: String? = sp.getString("favorites", null)
+        val type = object : TypeToken<MutableList<List<String>>>() {}.type
+
+        if (json != null) Datasource().loadFavorite(gson.fromJson(json, type))
+
     }
 
     private fun swapFrags(f : Fragment) {
