@@ -5,64 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/from_search"
-        android:layout_width="280dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/white"
-        android:clickable="false"
-        android:orientation="vertical"
-        android:text="Origem"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.536"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/to_search"
-        android:layout_width="280dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="84dp"
-        android:background="@color/white"
-        android:clickable="false"
-        android:orientation="vertical"
-        android:text="Destino"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.561"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/swapStopsSearch"
-        android:layout_width="46dp"
-        android:layout_height="36dp"
-        android:background="#00FFFFFF"
-        android:src="@mipmap/baseline_swap_vert_black_36"
-        app:layout_constraintBottom_toTopOf="@+id/to_search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.838"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/routes_recyclerView"
-        android:layout_width="342dp"
-        android:layout_height="493dp"
+        android:layout_width="334dp"
+        android:layout_height="466dp"
+        android:layout_marginBottom="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/divider"
-        app:layout_constraintVertical_bias="0.146" />
+        app:layout_constraintHorizontal_bias="0.441"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/emptymsg"
         android:layout_width="239dp"
         android:layout_height="119dp"
-        android:layout_marginBottom="408dp"
+        android:layout_marginBottom="364dp"
         android:background="#07000000"
         android:gravity="center_vertical"
         android:text="Não Foram Encontradas Rotas\n :("
@@ -71,16 +28,17 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent" />
 
     <View
         android:id="@+id/divider"
         android:layout_width="350dp"
         android:layout_height="1dp"
-        android:layout_marginTop="168dp"
+        android:layout_marginTop="210dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.522"
+        app:layout_constraintHorizontal_bias="0.442"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -88,8 +46,10 @@
         android:id="@+id/weekdays"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.465"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/to_search">
 
@@ -97,11 +57,11 @@
             android:id="@+id/weekday_check"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:checked="true"
             android:text="Dias Úteis"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.183"
+            app:layout_constraintHorizontal_bias="0.123"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/to_search" />
 
@@ -109,10 +69,10 @@
             android:id="@+id/saturday_check"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="Sábados"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.484"
+            app:layout_constraintHorizontal_bias="0.413"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/to_search" />
 
@@ -120,12 +80,56 @@
             android:id="@+id/holiday_check"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="Domingos/Feriados"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.956"
+            app:layout_constraintHorizontal_bias="0.866"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/to_search" />
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/to_search"
+        android:layout_width="280dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="124dp"
+        android:background="@color/white"
+        android:clickable="false"
+        android:orientation="vertical"
+        android:text="Destino"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/from_search"
+        android:layout_width="280dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="60dp"
+        android:background="@color/white"
+        android:clickable="false"
+        android:orientation="vertical"
+        android:text="Origem"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/swapStopsSearch"
+        android:layout_width="46dp"
+        android:layout_height="36dp"
+        android:layout_marginBottom="8dp"
+        android:background="#00FFFFFF"
+        android:src="@mipmap/baseline_swap_vert_black_36"
+        app:layout_constraintBottom_toTopOf="@+id/to_search"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.824"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
