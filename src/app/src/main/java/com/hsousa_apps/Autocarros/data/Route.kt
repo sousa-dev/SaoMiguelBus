@@ -1,5 +1,7 @@
 package com.hsousa_apps.Autocarros.data
 
+import android.util.Log
+
 class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val day: TypeOfDay, val company: Int) {
     private var allStops: List<Stop> = stops.keys.toList()
     private var origin: Stop? = allStops[0]
@@ -12,6 +14,7 @@ class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val 
     fun getTimeIdx(times: List<String>, time: String?): Int {
         for (i in times.indices)
             if (times[i] == time) return i
+        Log.d("dl", times.toString() + time)
         return -1
     }
 
