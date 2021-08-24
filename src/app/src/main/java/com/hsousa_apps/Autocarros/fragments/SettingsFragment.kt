@@ -40,8 +40,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
         }
 
-        //TODO: set language text to current selected language
-
         language.threshold = 2
 
         val adapter: ArrayAdapter<String> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, arrayListOf("Português", "English", "Deutsch"))

@@ -7,13 +7,15 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/routes_recyclerView"
-        android:layout_width="334dp"
-        android:layout_height="466dp"
+        android:layout_width="339dp"
+        android:layout_height="469dp"
         android:layout_marginBottom="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.441"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.458"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weekdays"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/emptymsg"

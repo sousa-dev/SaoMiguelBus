@@ -10,6 +10,8 @@
         android:layout_width="344dp"
         android:layout_height="464dp"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="72dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +40,9 @@
         app:layout_constraintBottom_toTopOf="@+id/divider3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.608"
-        app:layout_constraintStart_toStartOf="@+id/find_routes" />
+        app:layout_constraintStart_toStartOf="@+id/find_routes"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes"
+        app:layout_constraintVertical_bias="0.894" />
 
     <Button
         android:id="@+id/find_button"
@@ -57,8 +61,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:layout_marginBottom="1dp"
         android:text="Descubra que rotas passam em determinada paragem"
         android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/divider3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,10 +75,13 @@
         android:layout_width="197dp"
         android:layout_height="42dp"
         android:layout_marginTop="52dp"
+        android:layout_marginBottom="10dp"
         android:hint="Paragem"
+        app:layout_constraintBottom_toTopOf="@+id/find_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
