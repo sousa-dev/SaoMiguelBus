@@ -73,6 +73,7 @@ class SettingsFragment: Fragment(), View.OnClickListener {
                 str = "Deutsch"
             }
 
+            Datasource().changeCurrentLang(str)
             editor.putString("lang", str)
             editor.commit()
         }
