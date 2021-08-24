@@ -42,11 +42,11 @@
 
     <Button
         android:id="@+id/find_button"
-        android:layout_width="136dp"
-        android:layout_height="40dp"
+        android:layout_width="130dp"
+        android:layout_height="50dp"
         android:layout_marginTop="44dp"
         android:text="Encontrar"
-        app:backgroundTint="#12A52A"
+        app:backgroundTint="#218732"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
