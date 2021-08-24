@@ -30,7 +30,9 @@ class MainActivity : AppCompatActivity() {
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
 
-        Datasource().load()
+        if (!Datasource().getLoaded()) Datasource().load()
+
+        Datasource().loaded()
 
         MobileAds.initialize(this) {}
 
