@@ -1,20 +1,19 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
+import androidx.browser.customtabs.CustomTabsClient.getPackageName
 import androidx.fragment.app.Fragment
-import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
-import com.hsousa_apps.Autocarros.data.Stop
+
 
 class SettingsFragment: Fragment(), View.OnClickListener {
     override fun onCreateView(
@@ -30,6 +29,67 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val language: AutoCompleteTextView = view.findViewById(R.id.language)
         val actv_language: ImageView = view.findViewById(R.id.actv_language)
         val flag: ImageView = view.findViewById(R.id.flag)
+
+        val rate: Button = view.findViewById(R.id.rate)
+        val patreon: Button = view.findViewById(R.id.patreon)
+        val paypal: Button = view.findViewById(R.id.paypal)
+
+        rate.setOnClickListener {
+            val appPackageName: String? = activity?.packageName
+
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("market://details?id=$appPackageName")
+                    )
+                )
+            } catch (anfe: ActivityNotFoundException) {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                    )
+                )
+            }
+        }
+
+        patreon.setOnClickListener {
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.patreon.com/sousadev")
+                    )
+                )
+            } catch (anfe: ActivityNotFoundException) {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.patreon.com/sousadev")
+                    )
+                )
+            }
+        }
+
+        paypal.setOnClickListener {
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://paypal.me/Wiky")
+                    )
+                )
+            } catch (anfe: ActivityNotFoundException) {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://paypal.me/Wiky")
+                    )
+                )
+            }
+        }
+
 
         language.setText(Datasource().getCurrentLang())
 
