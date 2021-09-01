@@ -9,10 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.data.Datasource
-import com.hsousa_apps.Autocarros.data.Functions
-import com.hsousa_apps.Autocarros.data.Route
-import com.hsousa_apps.Autocarros.data.Stop
+import com.hsousa_apps.Autocarros.data.*
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.ArrayList
@@ -31,6 +28,7 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val stop: AutoCompleteTextView = view.findViewById(R.id.find_routes)
         val actv: ImageView = view.findViewById(R.id.actv_find)
+        var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
 
         val find: Button = view.findViewById(R.id.find_button)
 
@@ -43,22 +41,38 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
             stop.showDropDown()
         }
 
-        createCards(this.view)
+        createCards(this.view, TypeOfDay)
 
         find.setOnClickListener {
             times = Functions().getStopRoutes(stop.editableText.toString())
-            createCards(this.view)
+            createCards(this.view, TypeOfDay)
+        }
+        val SelectedTypeOfDay: RadioGroup = view.findViewById(R.id.weekdays1)
+        SelectedTypeOfDay.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.weekday_check1){
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY
+                createCards(this.view, TypeOfDay)
+            }
+            else if (checkedId == R.id.saturday_check1){
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SATURDAY
+                createCards(this.view, TypeOfDay)
+            }
+
+            else {
+                TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SUNDAY
+                createCards(this.view, TypeOfDay)
+            }
         }
     }
 
-    private fun createCards(view: View?){
+    private fun createCards(view: View?, typeOfDay: TypeOfDay){
         val rv = view?.findViewById<RecyclerView>(R.id.find_recycler)
 
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
         if (times != null)
             for(route in times!!)
-                CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company)?.let { cards.add(it) }
+                if (route.day == typeOfDay) CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company)?.let { cards.add(it) }
 
 
         if (rv != null) {
