@@ -13,6 +13,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Language
 import com.hsousa_apps.Autocarros.data.Route
 import com.hsousa_apps.Autocarros.fragments.FindFragment
@@ -20,6 +21,7 @@ import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import com.hsousa_apps.Autocarros.fragments.SettingsFragment
 import java.lang.reflect.Type
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +33,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main)
 
         if (!Datasource().getLoaded()) Datasource().load()
+
+        if (Locale.getDefault().language == "en"){
+            Functions().translateStops("en")
+        }
 
         Datasource().loaded()
 

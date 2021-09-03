@@ -22,11 +22,20 @@ class Functions {
         return ret as ArrayList<Route>
     }
 
-    fun getFavAddMessage(): String{
-        return "Rota adicionada aos favoritos"
-    }
+    fun translateStops(lang: String){
+        if (lang == "en"){
+            Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Church"
+            Datasource().getStop("Remédios - Igreja").name = "Remédios - Church"
+            Datasource().getStop("Santo António - Igreja").name = "Santo António - Church"
+            Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Church"
+            Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Bridge"
+            Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Church"
+            Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Church"
+            Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Church"
+            Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Church"
+            Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Church"
+            Datasource().getStop("Relva - Igreja").name = "Relva - Church"
 
-    fun getFavRmMessage(): String{
-        return "Rota removida dos favoritos"
+        }
     }
 }
