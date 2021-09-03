@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">São Miguel Bus</string>
+    <string name="find_button">Encontrar</string>
+    <string name="find_hint_message">Descubra que rotas passam numa paragem</string>
+    <string name="stop">Paragem</string>
+    <string name="no_fav_message">Não Foram Encontradas Rotas\n :(</string>
+    <string name="search_home_button">Pesquisar</string>
+    <string name="fav_routes_text">Rotas Favoritas</string>
+    <string name="origin_home_hint">Origem</string>
+    <string name="destination_home_hint">Destino</string>
+    <string name="no_routes_search">Não Foram Encontradas Rotas\n :(</string>
+    <string name="weekdays">Dias Úteis</string>
+    <string name="saturday">Sábados</string>
+    <string name="sunday">Domingos/Feriados</string>
+    <string name="lang_hint">Idioma</string>
+    <string name="support_creator">Apoie o Criador</string>
+    <string name="rate_app">Avalie a App</string>
+    <string name="warning_message">A informação disponibilizada nesta aplicação foi fornecida pelas companhias de autocarros e é da sua responsabilidade.</string>
+    <string name="find_nb">PROCURAR</string>
+    <string name="map_nb">MAPA</string>
+    <string name="settings_nb">DEFINIÇÕES</string>
+</resources>

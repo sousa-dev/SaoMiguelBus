@@ -13,6 +13,7 @@
         android:autoText="false"
         android:editable="false"
         android:hint="@string/lang_hint"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.659"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,6 +26,7 @@
         android:layout_marginStart="36dp"
         android:layout_marginLeft="36dp"
         android:layout_marginTop="80dp"
+        android:visibility="invisible"
         app:layout_constraintEnd_toStartOf="@+id/language"
         app:layout_constraintHorizontal_bias="0.888"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,8 +42,8 @@
         android:layout_marginRight="92dp"
         android:padding="5dp"
         android:src="@mipmap/baseline_arrow_drop_down_black_24"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.643"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
