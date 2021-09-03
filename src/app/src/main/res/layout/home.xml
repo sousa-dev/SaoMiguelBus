@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,8 +11,7 @@
         android:layout_marginBottom="156dp"
         android:background="#07000000"
         android:gravity="center_vertical"
-        android:text="Não Foram Encontradas Rotas\n :("
-        android:textAlignment="center"
+        android:text="@string/no_fav_message"
         android:textSize="19sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -39,7 +37,7 @@
         android:layout_marginBottom="348dp"
         android:bottomLeftRadius="20dp"
         android:bottomRightRadius="20dp"
-        android:text="Pesquisar"
+        android:text="@string/search_home_button"
         android:topLeftRadius="20dp"
         android:topRightRadius="20dp"
         app:backgroundTint="#218732"
@@ -65,7 +63,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Rotas Favoritas"
+        android:text="@string/fav_routes_text"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/divider"
@@ -102,7 +100,7 @@
         android:layout_width="213dp"
         android:layout_height="43dp"
         android:layout_marginTop="200dp"
-        android:hint="Origem"
+        android:hint="@string/origin_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -124,7 +122,7 @@
         android:layout_width="213dp"
         android:layout_height="46dp"
         android:layout_marginTop="36dp"
-        android:hint="Destino"
+        android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/from_home" />

@@ -4,21 +4,21 @@
         android:id="@+id/home_nb"
         android:enabled="true"
         android:icon="@drawable/outline_home_black_24"
-        android:title="HOME" />
+        android:title="@string/home_nb" />
     <item
         android:id="@+id/search_nb"
         android:enabled="true"
         android:icon="@android:drawable/ic_menu_search"
-        android:title="PROCURAR" />
+        android:title="@string/find_nb" />
     <item
         android:id="@+id/map_nb"
         android:enabled="false"
         android:visible="false"
         android:icon="@drawable/ic_launcher_foreground"
-        android:title="MAPA" />
+        android:title="@string/map_nb" />
     <item
         android:id="@+id/settings_nb"
         android:enabled="true"
         android:icon="@drawable/outline_settings_black_24"
-        android:title="DEFINIÇÕES" />
+        android:title="@string/settings_nb" />
 </menu>
