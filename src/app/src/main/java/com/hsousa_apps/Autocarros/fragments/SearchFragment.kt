@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +18,6 @@ import com.hsousa_apps.Autocarros.data.Route
 import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
-import java.lang.reflect.Type
 import kotlin.collections.ArrayList
 
 
@@ -109,9 +107,17 @@ class SearchFragment(private val origin: String? = null, private val destination
 
     }
 
-    fun openRoutePage(id: String, origin: String, destination: String, time: String, view: View, op: Int = 0){
+    fun openRoutePage(
+        id: String,
+        origin: String,
+        destination: String,
+        time: String,
+        view: View,
+        op: Int = 0,
+        TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY
+    ){
         val ctx: AppCompatActivity = view?.context as AppCompatActivity
-        val f : Fragment = RoutePageFragment(id, origin, destination, time, op)
+        val f : Fragment = RoutePageFragment(id, origin, destination, time, op, TypeOfDay)
         val t = ctx.supportFragmentManager.beginTransaction()
 
         if (t != null) {

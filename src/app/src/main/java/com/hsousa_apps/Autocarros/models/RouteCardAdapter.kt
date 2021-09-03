@@ -5,16 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.hsousa_apps.Autocarros.R
+import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import java.util.ArrayList
 
-class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>, private val op: Int = 0) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
+class RouteCardAdapter(private val context: Context, private val RoutesArrayList: ArrayList<CardModel>, private val op: Int = 0, private val day: TypeOfDay = TypeOfDay.WEEKDAY) : RecyclerView.Adapter<RouteCardAdapter.Viewholder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Viewholder {
         // to inflate the layout for each item of recycler view.
         val view: View =
@@ -36,7 +36,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
                 HomeFragment().openFavRoute(holder.from.text.toString(), holder.to.text.toString(), holder.itemView)
             }
             else
-                SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op)
+                SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op, day)
         }
     }
 

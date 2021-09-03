@@ -42,7 +42,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                 if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
         }
         else {
-            val allTimes = Datasource().getAllTimes(id, origin, destination)
+            val allTimes = Datasource().getAllTimes(id, origin, destination, TypeOfDay)
             for(stop in allTimes){
                 stops.text = String.format("%s \n %-50s", stops.text.toString(), stop.key)
                 stops.text = String.format("%s \n           ", stops.text.toString())
