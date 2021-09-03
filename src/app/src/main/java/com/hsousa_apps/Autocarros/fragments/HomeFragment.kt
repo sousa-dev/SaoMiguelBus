@@ -40,9 +40,9 @@ class HomeFragment : Fragment(), View.OnClickListener {
         from.threshold = 2
         to.threshold = 2
 
-        val adapter1: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops())
+        val adapter1: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops().sortedWith(compareBy { it.name }))
         from.setAdapter(adapter1)
-        val adapter2: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops())
+        val adapter2: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops().sortedWith(compareBy { it.name }))
         to.setAdapter(adapter2)
 
         createCards(this.view)

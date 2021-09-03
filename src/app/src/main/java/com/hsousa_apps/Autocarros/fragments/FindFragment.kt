@@ -34,7 +34,7 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
 
         stop.threshold = 2
 
-        val adapter: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, Datasource().getStops())
+        val adapter: ArrayAdapter<Stop> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line,  Datasource().getStops().sortedWith(compareBy { it.name }))
         stop.setAdapter(adapter)
 
         actv.setOnClickListener {
