@@ -65,13 +65,13 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                 fav.setImageResource(R.mipmap.heartoff)
                 fav.tag = R.mipmap.heartoff
                 Datasource().removeFavorite(listOf(origin, destination) as List<String>)
-                Toast.makeText(context, Functions().getFavRmMessage(), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.remove_fav_toast_message), Toast.LENGTH_SHORT).show()
             }
             else{
                 fav.setImageResource(R.mipmap.hearton)
                 fav.tag = R.mipmap.hearton
                 Datasource().addFavorite(origin, destination)
-                Toast.makeText(context, Functions().getFavAddMessage(), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.add_fav_toast_message), Toast.LENGTH_SHORT).show()
             }
             val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
             val editor = pref.edit()

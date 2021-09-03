@@ -101,7 +101,7 @@ class SearchFragment(private val origin: String? = null, private val destination
             rv?.adapter = RouteCardAdapter(view.context, cards as java.util.ArrayList<CardModel>)
         }
         if (cards.size == 0){
-            emptymsg?.text = "Não há rotas diretas de " + origin + " para " + destination + " :("
+            emptymsg?.text = resources.getString(R.string.no_routes_found)
             emptymsg?.visibility = View.VISIBLE
         }
 

@@ -83,7 +83,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
             rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
         }
         if (cards.size == 0){
-            emptymsg?.text = "Não há rotas nos favoritos\n :("
+            emptymsg?.text = resources.getString(R.string.no_fav_message)
             emptymsg?.visibility = View.VISIBLE
         }
 

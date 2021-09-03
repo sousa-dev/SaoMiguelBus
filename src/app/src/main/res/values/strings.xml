@@ -4,8 +4,10 @@
     <string name="find_button">Find</string>
     <string name="find_hint_message">Find which routes pass at a bus stop</string>
     <string name="stop">Bus Stop</string>
-    <string name="no_fav_message">There were no Routes found :(</string>
-    <string name="no_routes_search">There were no Routes found :(</string>
+    <string name="no_fav_message">There are no favorite routes\n:(</string>
+    <string name="no_routes_search">There were no Routes found\n:(</string>
+    <string name="add_fav_toast_message">Route Added to Favorites!</string>
+    <string name="remove_fav_toast_message">Route Removed from Favorites!</string>
     <string name="search_home_button">Search</string>
     <string name="fav_routes_text">Favorite Routes</string>
     <string name="origin_home_hint">Origin</string>
@@ -17,6 +19,7 @@
     <string name="support_creator">Support The Creator</string>
     <string name="rate_app">Rate the App</string>
     <string name="warning_message">The information provided in this application was provided by the bus companies and is theirs responsibility.</string>
+    <string name="no_routes_found">There are no direct routes between this two bus stops\n:(</string>
     <string name="home_nb" translatable="false">HOME</string>
     <string name="find_nb">FIND</string>
     <string name="map_nb">MAP</string>
