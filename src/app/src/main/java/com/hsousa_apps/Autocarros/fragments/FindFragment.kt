@@ -73,8 +73,7 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
         if (times != null)
             for(route in times!!)
                 if (route.day == typeOfDay) CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company)?.let { cards.add(it) }
-//TODO: Find the correct schedule for the TypeOfDay
-
+        if(cards.isNotEmpty()) cards = cards.sortedWith(compareBy { it.id }).toList() as MutableList<CardModel>
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
             rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 1, typeOfDay)
