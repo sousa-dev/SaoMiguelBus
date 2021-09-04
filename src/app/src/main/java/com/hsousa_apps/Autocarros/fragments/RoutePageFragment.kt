@@ -15,7 +15,7 @@ import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
 
-class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY) : Fragment(), View.OnClickListener {
+class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY) : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,7 +42,17 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                 if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
         }
         else {
-            val allTimes = Datasource().getAllTimes(id, origin, destination, TypeOfDay)
+            val day = view?.findViewById<TextView>(R.id.route_day)
+
+            var type = when (typeOfDay) {
+                TypeOfDay.WEEKDAY -> resources.getString(R.string.weekdays)
+                TypeOfDay.SATURDAY -> resources.getString(R.string.saturday)
+                TypeOfDay.SUNDAY -> resources.getString(R.string.sunday_only)
+            }
+
+            day.text = type
+
+            val allTimes = Datasource().getAllTimes(id, origin, destination, typeOfDay)
             for(stop in allTimes){
                 stops.text = String.format("%s \n %-50s", stops.text.toString(), stop.key)
                 stops.text = String.format("%s \n           ", stops.text.toString())

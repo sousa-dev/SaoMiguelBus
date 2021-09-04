@@ -13,6 +13,7 @@
     <string name="origin_home_hint">Origin</string>
     <string name="destination_home_hint">Destination</string>
     <string name="sunday">Sundays/Holidays</string>
+    <string name="sunday_only">Sundays</string>
     <string name="weekdays">Weekdays</string>
     <string name="saturday">Saturdays</string>
     <string name="lang_hint">Language</string>

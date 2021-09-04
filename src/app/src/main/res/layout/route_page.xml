@@ -57,18 +57,20 @@
         app:layout_constraintVertical_bias="0.12"
         app:srcCompat="@drawable/ic_baseline_arrow_downward_24" />
 
-    <ImageView
-        android:id="@+id/route_company"
-        android:layout_width="93dp"
-        android:layout_height="43dp"
-        android:layout_marginStart="220dp"
-        android:layout_marginLeft="220dp"
-        android:visibility="invisible"
+    <TextView
+        android:id="@+id/route_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="208dp"
+        android:layout_marginLeft="208dp"
+        android:textAllCaps="true"
+        android:textSize="18sp"
+        android:textStyle="bold|italic"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.167"
-        app:srcCompat="@drawable/ic_launcher_background" />
+        app:layout_constraintVertical_bias="0.186" />
 
     <ImageButton
         android:id="@+id/favorite"
