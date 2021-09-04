@@ -19,6 +19,6 @@
     <item
         android:id="@+id/settings_nb"
         android:enabled="true"
-        android:icon="@drawable/outline_settings_black_24"
+        android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/settings_nb" />
 </menu>

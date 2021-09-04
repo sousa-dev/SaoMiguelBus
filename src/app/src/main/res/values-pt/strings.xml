@@ -19,7 +19,6 @@
     <string name="warning_message">A informação disponibilizada nesta aplicação foi fornecida pelas companhias de autocarros e é da sua responsabilidade.</string>
     <string name="find_nb">PROCURAR</string>
     <string name="map_nb">MAPA</string>
-    <string name="settings_nb">DEFINIÇÕES</string>
     <string name="no_routes_found">Não há rotas diretas entre as duas paragens\n:(</string>
     <string name="add_fav_toast_message">Rota Adicionada aos Favoritos!</string>
     <string name="remove_fav_toast_message">Rota Removida dos Favoritos!</string>

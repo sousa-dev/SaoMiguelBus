@@ -24,5 +24,5 @@
     <string name="home_nb" translatable="false">HOME</string>
     <string name="find_nb">FIND</string>
     <string name="map_nb">MAP</string>
-    <string name="settings_nb">SETTINGS</string>
+    <string name="settings_nb" translatable="false">INFO</string>
 </resources>
