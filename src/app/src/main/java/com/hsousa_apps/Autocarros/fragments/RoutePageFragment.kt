@@ -65,6 +65,12 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             fav.setImageResource(R.mipmap.hearton)
             fav.tag = R.mipmap.hearton
         }
+        var ret: String? = Datasource().hasInfo(id, origin, destination, typeOfDay)
+        if (ret != null){
+            val info = view?.findViewById<TextView>(R.id.obs)
+            info.text = ret.toString()
+            info.visibility= View.VISIBLE
+        }
 
         if (op == 1) fav.visibility = View.INVISIBLE
         fav.setOnClickListener {
