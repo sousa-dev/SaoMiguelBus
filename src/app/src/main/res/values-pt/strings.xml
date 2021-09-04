@@ -23,4 +23,6 @@
     <string name="add_fav_toast_message">Rota Adicionada aos Favoritos!</string>
     <string name="remove_fav_toast_message">Rota Removida dos Favoritos!</string>
     <string name="sunday_only">Domingos</string>
+    <string name="toast_search_message">Preencha todos os campos.</string>
+    <string name="toast_link_message">A abrir link externo...</string>
 </resources>

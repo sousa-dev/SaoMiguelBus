@@ -25,4 +25,6 @@
     <string name="find_nb">FIND</string>
     <string name="map_nb">MAP</string>
     <string name="settings_nb" translatable="false">INFO</string>
+    <string name="toast_search_message">Please fill all fields.</string>
+    <string name="toast_link_message">Opening external link...</string>
 </resources>

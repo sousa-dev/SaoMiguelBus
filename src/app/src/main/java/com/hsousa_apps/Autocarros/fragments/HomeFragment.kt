@@ -67,7 +67,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
             if (from.editableText.toString() != "" && to.editableText.toString() != "")
                 swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
             else
-                Toast.makeText(context, resources.getString(R.string.add_fav_toast_message), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.toast_search_message), Toast.LENGTH_SHORT).show()
         }
     }
 

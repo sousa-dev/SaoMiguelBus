@@ -35,6 +35,8 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val paypal: Button = view.findViewById(R.id.paypal)
 
         rate.setOnClickListener {
+            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+
             val appPackageName: String? = activity?.packageName
 
             try {
@@ -55,6 +57,8 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         }
 
         patreon.setOnClickListener {
+            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+
             try {
                 startActivity(
                     Intent(
@@ -73,6 +77,8 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         }
 
         paypal.setOnClickListener {
+            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+
             try {
                 startActivity(
                     Intent(

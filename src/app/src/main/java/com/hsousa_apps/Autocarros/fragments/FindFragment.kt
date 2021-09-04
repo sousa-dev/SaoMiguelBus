@@ -44,8 +44,12 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
         createCards(this.view, TypeOfDay)
 
         find.setOnClickListener {
-            times = Functions().getStopRoutes(stop.editableText.toString())
-            createCards(this.view, TypeOfDay)
+            if(stop.editableText.toString() != ""){
+                times = Functions().getStopRoutes(stop.editableText.toString())
+                createCards(this.view, TypeOfDay)
+            }
+            else
+                Toast.makeText(context, resources.getString(R.string.toast_search_message), Toast.LENGTH_SHORT).show()
         }
         val SelectedTypeOfDay: RadioGroup = view.findViewById(R.id.weekdays1)
         SelectedTypeOfDay.setOnCheckedChangeListener { _, checkedId ->
