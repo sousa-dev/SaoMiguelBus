@@ -9,11 +9,18 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
+import com.hsousa_apps.Autocarros.models.CardModel
+import com.hsousa_apps.Autocarros.models.RouteCardAdapter
+import com.hsousa_apps.Autocarros.models.StopModel
+import com.hsousa_apps.Autocarros.models.StopTimesAdapter
+import java.util.ArrayList
 
 class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY) : Fragment(), View.OnClickListener {
     override fun onCreateView(
@@ -29,7 +36,6 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         val orig = view?.findViewById<TextView>(R.id.route_page_origin)
         val dest = view?.findViewById<TextView>(R.id.route_page_destination)
         val routeId = view?.findViewById<TextView>(R.id.route_page_id)
-        val stops = view?.findViewById<TextView>(R.id.allStops)
 
         orig.text = origin
         dest.text = destination
@@ -37,9 +43,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
 
 
         if (op == 0){
-            val allStops = Datasource().getAllStopTimes(id, time, origin, destination)
-            for(stop in allStops)
-                if(stop.value != "---") stops.text = stops.text.toString() + "\n" + stop.key + " - " + stop.value
+            createStops(this.view)
         }
         else {
             val day = view?.findViewById<TextView>(R.id.route_day)
@@ -52,14 +56,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
 
             day.text = type
 
-            val allTimes = Datasource().getAllTimes(id, origin, destination, typeOfDay)
-            for(stop in allTimes){
-                stops.text = String.format("%s \n %-50s", stops.text.toString(), stop.key)
-                stops.text = String.format("%s \n           ", stops.text.toString())
-                for (value in stop.value)
-                    if (value != "---") stops.text = String.format("%s%5s   ",stops.text.toString(), value)
-            }
-
+            createStops(this.view, 2)
         }
 
         val fav = view?.findViewById<ImageButton>(R.id.favorite)
@@ -92,6 +89,33 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             editor.putString("favorites", json)
             editor.commit()
 
+        }
+
+    }
+
+    private fun createStops(view: View?, op: Int? = 1){
+        val rv = view?.findViewById<RecyclerView>(R.id.routepage_rv)
+        var times: MutableList<StopModel> = mutableListOf()
+
+        if (op == 2){
+            val allTimes = Datasource().getAllTimes(id, origin, destination, typeOfDay)
+
+            for(stop in allTimes){
+                var str = ""
+                for (value in stop.value)
+                    if (value != "---") str = String.format("%s%5s   ", str, value)
+                times.add(StopModel(stop.key.toString(), str))
+            }
+        }
+        else{
+            val allStops = Datasource().getAllStopTimes(id, time, origin, destination)
+            for(stop in allStops)
+                if(stop.value != "---") times.add(StopModel(stop.key, stop.value))
+        }
+
+        if (rv != null) {
+            rv.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = StopTimesAdapter(view.context, times as ArrayList<StopModel>)
         }
 
     }

@@ -20,6 +20,4 @@ class CardModel {
         this.img = img
     }
 
-    // Getter and Setter
-
 }
