@@ -23,39 +23,48 @@ class Functions {
         return ret as ArrayList<Route>
     }
 
-    fun r328(lang: String): String {
-        if (lang == "pt")
-            return ""
-        else if (lang == "de")
-            return ""
-        return ""
-    }
     fun r318(lang: String): String {
         if (lang == "pt")
             return "a) De Segunda a Quinta // b) Só à Sexta"
         else if (lang == "de")
-            return ""
+            return "a) Von Montag bis Donnerstag // b) Nur am Freitag"
+        else if (lang == "fr")
+            return "a) Du lundi au jeudi // b) Uniquement le vendredi"
+        else if (lang == "es")
+            return "a) De lunes a jueves // b) Solo viernes"
         return "a) From Monday to Thursday // b) Just Friday"
     }
     fun avDHenrique(lang: String): String {
         if (lang == "pt")
             return "Saída no lado Sul da Av. Infante D.Henrique"
         else if (lang == "de")
-            return ""
+            return "Dieser Service beginnt in der Südseite der Av. Infante D. Henrique."
+        else if (lang == "fr")
+            return "Ce service commence dans le côté sud de l'Av. Infante D. Henrique."
+        else if (lang == "es")
+            return "Este servicio se inicia en el lado sur de la Av. Infante D. Henrique."
         return "This service starts in the South Side of Av. Infante D.Henrique."
     }
     fun tourismOffice(lang: String): String {
         if (lang == "pt")
             return "Saída junto ao Posto de Turismo"
         else if (lang == "de")
-            return ""
+            return "Dieser Service beginnt neben dem Tourismusbüro."
+        else if (lang == "fr")
+            return "Ce service démarre à côté de l'Office de Tourisme."
+        else if (lang == "es")
+            return "Este servicio comienza junto a la Oficina de Turismo."
         return "This service starts next to the Tourism Office."
     }
     fun fsaobras(lang: String): String {
         if (lang == "pt")
             return "Saída no Forte de São Brás"
         else if (lang == "de")
-            return ""
+            return "Dieser Service beginnt bei Forte de São Brás"
+        else if (lang == "fr")
+            return "Ce service commence à Forte de São Brás"
+        else if (lang == "es")
+            return "Este servicio comienza en Forte de São Brás"
         return "This service starts at Forte de São Brás"
     }
 
@@ -63,7 +72,11 @@ class Functions {
         if (lang == "pt")
             return "Só à Sexta-Feira"
         else if (lang == "de")
-            return ""
+            return "Nur Freitag"
+        else if (lang == "fr")
+            return "Juste vendredi"
+        else if (lang == "es")
+            return "Solo viernes"
         return "Just Friday"
     }
 
@@ -71,7 +84,11 @@ class Functions {
         if (lang == "pt")
             return "Período Escolar"
         else if (lang == "de")
-            return ""
+            return "Schulzeit"
+        else if (lang == "fr")
+            return "Période Scolaire"
+        else if (lang == "es")
+            return "Periodo Escolar"
         return "School Period"
     }
 
@@ -79,7 +96,11 @@ class Functions {
         if (lang == "pt")
             return "Só em período escolar"
         else if (lang == "de")
-            return ""
+            return "Nur Schulzeit"
+        else if (lang == "fr")
+            return "Période scolaire uniquement"
+        else if (lang == "es")
+            return "Solo período escolar"
         return "Only School Period"
     }
 
@@ -87,7 +108,11 @@ class Functions {
         if (lang == "pt")
             return "Período Normal"
         else if (lang == "de")
-            return ""
+            return "Normale Periode"
+        else if (lang == "fr")
+            return "Période normale"
+        else if (lang == "es")
+            return "Periodo normal"
         return "Normal Period"
     }
 
@@ -95,36 +120,68 @@ class Functions {
         if (lang == "pt")
             return "De 15 de julho até 15 de setembro"
         else if (lang == "de")
-            return ""
+            return "Vom 15. Juli bis 15. September"
+        else if (lang == "fr")
+            return "Du 15 juillet au 15 septembre"
+        else if (lang == "es")
+            return "Del 15 de julio al 15 de septiembre"
         return "From July 15th to September 15th"
     }
 
-    fun translateStops(lang: String){
-        if (lang == "en"){
-            Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Church"
-            Datasource().getStop("Remédios - Igreja").name = "Remédios - Church"
-            Datasource().getStop("Santo António - Igreja").name = "Santo António - Church"
-            Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Church"
-            Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Bridge"
-            Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Church"
-            Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Church"
-            Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Church"
-            Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Church"
-            Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Church"
-            Datasource().getStop("Relva - Igreja").name = "Relva - Church"
-        }
-        else if (lang == "de"){
-            Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Kirche"
-            Datasource().getStop("Remédios - Igreja").name = "Remédios - Kirche"
-            Datasource().getStop("Santo António - Igreja").name = "Santo António - Kirche"
-            Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Kirche"
-            Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Brücke"
-            Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Kirche"
-            Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Kirche"
-            Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Kirche"
-            Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Kirche"
-            Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Kirche"
-            Datasource().getStop("Relva - Igreja").name = "Relva - Kirche"
+    fun translateStops(lang: String) {
+        when (lang) {
+            "en" -> {
+                Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Church"
+                Datasource().getStop("Remédios - Igreja").name = "Remédios - Church"
+                Datasource().getStop("Santo António - Igreja").name = "Santo António - Church"
+                Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Church"
+                Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Bridge"
+                Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Church"
+                Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Church"
+                Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Church"
+                Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Church"
+                Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Church"
+                Datasource().getStop("Relva - Igreja").name = "Relva - Church"
+            }
+            "de" -> {
+                Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Kirche"
+                Datasource().getStop("Remédios - Igreja").name = "Remédios - Kirche"
+                Datasource().getStop("Santo António - Igreja").name = "Santo António - Kirche"
+                Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Kirche"
+                Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Brücke"
+                Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Kirche"
+                Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Kirche"
+                Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Kirche"
+                Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Kirche"
+                Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Kirche"
+                Datasource().getStop("Relva - Igreja").name = "Relva - Kirche"
+            }
+            "fr" -> {
+                Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Église"
+                Datasource().getStop("Remédios - Igreja").name = "Remédios - Église"
+                Datasource().getStop("Santo António - Igreja").name = "Santo António - Église"
+                Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Église"
+                Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Pont"
+                Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Église"
+                Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Église"
+                Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Église"
+                Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Église"
+                Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Église"
+                Datasource().getStop("Relva - Igreja").name = "Relva - Église"
+            }
+            "es" -> {
+                Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Iglesia"
+                Datasource().getStop("Remédios - Igreja").name = "Remédios - Iglesia"
+                Datasource().getStop("Santo António - Igreja").name = "Santo António - Iglesia"
+                Datasource().getStop("São Vicente - Igreja").name = "São Vicente - Iglesia"
+                Datasource().getStop("Sete Cidades - Ponte").name = "Sete Cidades - Puente"
+                Datasource().getStop("Sete Cidades - Igreja").name = "Sete Cidades - Iglesia"
+                Datasource().getStop("Fenais da Luz - Igreja").name = "Fenais da Luz - Iglesia"
+                Datasource().getStop("Mosteiros - Igreja").name = "Mosteiros - Iglesia"
+                Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Iglesia"
+                Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Iglesia"
+                Datasource().getStop("Relva - Igreja").name = "Relva - Iglesia"
+            }
         }
     }
 }

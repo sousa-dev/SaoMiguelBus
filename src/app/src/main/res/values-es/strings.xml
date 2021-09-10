@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">São Miguel Bus</string>
+    <string name="find_button">Encontrar</string>
+    <string name="find_hint_message">Descubra qué rutas pasan en una parada de autobús</string>
+    <string name="stop">Parada de autobús</string>
+    <string name="no_fav_message">No hay rutas favoritas :(</string>
+    <string name="no_routes_search">No se encontraron rutas :(</string>
+    <string name="add_fav_toast_message">¡Ruta agregada a favoritos!</string>
+    <string name="remove_fav_toast_message">¡Ruta eliminada de favoritos!</string>
+    <string name="search_home_button">Buscar</string>
+    <string name="fav_routes_text">Rutas favoritas</string>
+    <string name="origin_home_hint">Origen</string>
+    <string name="destination_home_hint">Destino</string>
+    <string name="sunday">Domingos/Festivos</string>
+    <string name="sunday_only">Domingos</string>
+    <string name="weekdays">Días Laborables</string>
+    <string name="saturday">Sábados</string>
+    <string name="lang_hint">Idioma</string>
+    <string name="support_creator">Apoya al creador</string>
+    <string name="rate_app">Califica la aplicación</string>
+    <string name="warning_message">La información proporcionada en esta app fue proporcionada por las empresas de autobuses y es de su responsabilidad.</string>
+    <string name="no_routes_found">No hay rutas directas entre estas dos paradas de autobús :(</string>
+    <string name="find_nb">BUSCAR</string>
+    <string name="map_nb">MAPA</string>
+    <string name="toast_search_message">Por favor llena todos los espacios.</string>
+    <string name="toast_link_message">Abriendo enlace externo...</string>
+</resources>

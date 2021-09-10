@@ -4,8 +4,8 @@
     <string name="find_button">Find</string>
     <string name="find_hint_message">Find out which routes pass at a bus stop</string>
     <string name="stop">Bus Stop</string>
-    <string name="no_fav_message">There are no favorite routes\n:(</string>
-    <string name="no_routes_search">There were no Routes found\n:(</string>
+    <string name="no_fav_message">There are no favorite routes :(</string>
+    <string name="no_routes_search">There were no Routes found :(</string>
     <string name="add_fav_toast_message">Route Added to Favorites!</string>
     <string name="remove_fav_toast_message">Route Removed from Favorites!</string>
     <string name="search_home_button">Search</string>
@@ -27,7 +27,4 @@
     <string name="settings_nb" translatable="false">INFO</string>
     <string name="toast_search_message">Please fill all fields.</string>
     <string name="toast_link_message">Opening external link...</string>
-    <string name="r328">This service starts in the South Side of Av. Infante D.Henrique.</string>
-    <string name="r329">This service starts next to the Tourism Office.</string>
-
 </resources>

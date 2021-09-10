@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">São Miguel Bus</string>
+    <string name="find_button">Trouve</string>
+    <string name="find_hint_message">Découvrez quels itinéraires passent à un arrêt de bus</string>
+    <string name="stop">Arrêt de Bus</string>
+    <string name="no_fav_message">Il n\'y a pas d\'itinéraires favoris :(</string>
+    <string name="no_routes_search">Aucun itinéraire n\'a été trouvé :(</string>
+    <string name="add_fav_toast_message">Itinéraire ajouté aux favoris !</string>
+    <string name="remove_fav_toast_message">Itinéraire supprimé des favoris !</string>
+    <string name="search_home_button">Chercher</string>
+    <string name="fav_routes_text">Itinéraires favoris</string>
+    <string name="origin_home_hint">Origine</string>
+    <string name="destination_home_hint">Destin</string>
+    <string name="sunday">Dimanches/Jours Fériés</string>
+    <string name="sunday_only">Les Dimanches</string>
+    <string name="weekdays">Jours de semaine</string>
+    <string name="saturday">Les Samedis</string>
+    <string name="lang_hint">Langue</string>
+    <string name="support_creator">Soutenez le créateur</string>
+    <string name="rate_app">Évaluer l\'application</string>
+    <string name="warning_message">Les informations fournies dans cette application ont été fournies par les compagnies de bus et relèvent de leur responsabilité.</string>
+    <string name="no_routes_found">Il n\'y a pas de lignes directes entre ces deux arrêts de bus :(</string>
+    <string name="find_nb">TROUVE</string>
+    <string name="map_nb">CARTE</string>
+    <string name="toast_search_message">Merci de compléter tous les champs.</string>
+    <string name="toast_link_message">Ouverture du lien externe...</string>
+</resources>

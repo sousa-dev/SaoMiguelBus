@@ -24,7 +24,5 @@
     <string name="map_nb">KARTE</string>
     <string name="toast_search_message">Fülle bitte alle Felder aus.</string>
     <string name="toast_link_message">Externen Link öffnen...</string>
-    <string name="r328">Dieser Service beginnt in der Südseite der Av. Infante D. Henrique.</string>
-    <string name="r329">Dieser Service beginnt neben dem Tourismusbüro.</string>
     <string name="find_hint_message">Finden Sie heraus, welche Routen an einer Bushaltestelle vorbeiführen</string>
 </resources>
