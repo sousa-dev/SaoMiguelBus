@@ -30,13 +30,41 @@ class Functions {
             return ""
         return ""
     }
-
+    fun r318(lang: String): String {
+        if (lang == "pt")
+            return "a) De Segunda a Quinta // b) Só à Sexta"
+        else if (lang == "de")
+            return ""
+        return "a) From Monday to Thursday // b) Just Friday"
+    }
+    fun avDHenrique(lang: String): String {
+        if (lang == "pt")
+            return "Saída no lado Sul da Av. Infante D.Henrique"
+        else if (lang == "de")
+            return ""
+        return "This service starts in the South Side of Av. Infante D.Henrique."
+    }
+    fun tourismOffice(lang: String): String {
+        if (lang == "pt")
+            return "Saída junto ao Posto de Turismo"
+        else if (lang == "de")
+            return ""
+        return "This service starts next to the Tourism Office."
+    }
     fun fsaobras(lang: String): String {
         if (lang == "pt")
             return "Saída no Forte de São Brás"
         else if (lang == "de")
             return ""
         return "This service starts at Forte de São Brás"
+    }
+
+    fun justFriday(lang: String): String {
+        if (lang == "pt")
+            return "Só à Sexta-Feira"
+        else if (lang == "de")
+            return ""
+        return "Just Friday"
     }
 
     fun school(lang: String): String {
