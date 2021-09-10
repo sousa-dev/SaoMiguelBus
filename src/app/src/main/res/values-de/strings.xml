@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">São Miguel Bus</string>
+    <string name="find_button">Finden</string>
+    <string name="stop">Bushaltestelle</string>
+    <string name="no_fav_message">Es gibt keine Lieblingsrouten :(</string>
+    <string name="no_routes_search">Es wurden keine Routen gefunden :(</string>
+    <string name="add_fav_toast_message">Route zu Favoriten hinzugefügt!</string>
+    <string name="remove_fav_toast_message">Route aus Favoriten entfernt!</string>
+    <string name="search_home_button">Suche</string>
+    <string name="fav_routes_text">Lieblingsrouten</string>
+    <string name="origin_home_hint">Quelle</string>
+    <string name="destination_home_hint">Bestimmung</string>
+    <string name="sunday">Sonntags/Feiertage</string>
+    <string name="sunday_only">Sonntags</string>
+    <string name="weekdays">Werktag</string>
+    <string name="saturday">Samstags</string>
+    <string name="lang_hint">Sprache</string>
+    <string name="support_creator">Unterstütze den Schöpfer</string>
+    <string name="rate_app">Bewerte die App</string>
+    <string name="warning_message">Die Informationen in diesem Antrag wurden von den Busunternehmen bereitgestellt und liegen in Ihrer Verantwortung.</string>
+    <string name="no_routes_found">Es gibt keine direkten Verbindungen zwischen diesen beiden Bushaltestellen :(</string>
+    <string name="find_nb">FINDEN</string>
+    <string name="map_nb">KARTE</string>
+    <string name="toast_search_message">Fülle bitte alle Felder aus.</string>
+    <string name="toast_link_message">Externen Link öffnen...</string>
+    <string name="r328">Dieser Service beginnt in der Südseite der Av. Infante D. Henrique.</string>
+    <string name="r329">Dieser Service beginnt neben dem Tourismusbüro.</string>
+    <string name="find_hint_message">Finden Sie heraus, welche Routen an einer Bushaltestelle vorbeiführen</string>
+</resources>

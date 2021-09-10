@@ -2,7 +2,7 @@
     <string name="app_name">São Miguel Bus</string>
     <string name="ad_unit" translatable="false">ca-app-pub-8246676797736648/2987068957</string>
     <string name="find_button">Find</string>
-    <string name="find_hint_message">Find which routes pass at a bus stop</string>
+    <string name="find_hint_message">Find out which routes pass at a bus stop</string>
     <string name="stop">Bus Stop</string>
     <string name="no_fav_message">There are no favorite routes\n:(</string>
     <string name="no_routes_search">There were no Routes found\n:(</string>
@@ -19,12 +19,15 @@
     <string name="lang_hint">Language</string>
     <string name="support_creator">Support The Creator</string>
     <string name="rate_app">Rate the App</string>
-    <string name="warning_message">The information provided in this application was provided by the bus companies and is theirs responsibility.</string>
-    <string name="no_routes_found">There are no direct routes between this two bus stops\n:(</string>
+    <string name="warning_message">The information provided in this application was gi by the bus companies and is theirs responsibility.</string>
+    <string name="no_routes_found">There are no direct routes between this two bus stops :(</string>
     <string name="home_nb" translatable="false">HOME</string>
     <string name="find_nb">FIND</string>
     <string name="map_nb">MAP</string>
     <string name="settings_nb" translatable="false">INFO</string>
     <string name="toast_search_message">Please fill all fields.</string>
     <string name="toast_link_message">Opening external link...</string>
+    <string name="r328">This service starts in the South Side of Av. Infante D.Henrique.</string>
+    <string name="r329">This service starts next to the Tourism Office.</string>
+
 </resources>
