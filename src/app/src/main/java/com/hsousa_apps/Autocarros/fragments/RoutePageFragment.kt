@@ -22,7 +22,7 @@ import com.hsousa_apps.Autocarros.models.StopModel
 import com.hsousa_apps.Autocarros.models.StopTimesAdapter
 import java.util.ArrayList
 
-class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY) : Fragment(), View.OnClickListener {
+class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY, private val info: String = "") : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -65,11 +65,11 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             fav.setImageResource(R.mipmap.hearton)
             fav.tag = R.mipmap.hearton
         }
-        var ret: String? = Datasource().hasInfo(id, origin, destination, typeOfDay)
-        if (ret != null){
+        var ret: String? = info
+        if (ret != ""){
             val info = view?.findViewById<TextView>(R.id.obs)
             info.text = ret.toString()
-            info.visibility= View.VISIBLE
+            info.visibility = View.VISIBLE
         }
 
         if (op == 1) fav.visibility = View.INVISIBLE

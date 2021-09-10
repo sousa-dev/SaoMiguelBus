@@ -36,7 +36,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
                 HomeFragment().openFavRoute(holder.from.text.toString(), holder.to.text.toString(), holder.itemView)
             }
             else
-                SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op, day)
+                route.info?.let { it1 -> SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op, day, info = it1) }
         }
     }
 

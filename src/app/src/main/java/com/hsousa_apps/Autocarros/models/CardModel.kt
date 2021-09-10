@@ -8,16 +8,17 @@ class CardModel {
     var to: String? = null
     var time: String? = null
     var img : Int? = null
-    var fav = false
+    var info : String? = null
 
 
     // Constructor
-    constructor(id: String, from: String, to: String, time: String, img: Int) {
+    constructor(id: String, from: String, to: String, time: String, img: Int, info: String = "") {
         this.id = id
         this.from = from
         this.to = to
         this.time = time
         this.img = img
+        this.info = info
     }
 
 }

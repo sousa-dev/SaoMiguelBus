@@ -88,9 +88,11 @@ class SearchFragment(private val origin: String? = null, private val destination
                 for (i in 0 until route.getNStops(route.getOrigin())!!)
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
-                            CardModel(route.id, origin, destination,
-                                it, route.company
-                            )
+                            route.info?.let { it1 ->
+                                CardModel(route.id, origin, destination,
+                                    it, route.company, info = it1
+                                )
+                            }
                         }?.let { cards.add(it) }
         }
 
@@ -114,10 +116,11 @@ class SearchFragment(private val origin: String? = null, private val destination
         time: String,
         view: View,
         op: Int = 0,
-        TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY
+        TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY,
+        info : String = ""
     ){
         val ctx: AppCompatActivity = view?.context as AppCompatActivity
-        val f : Fragment = RoutePageFragment(id, origin, destination, time, op, TypeOfDay)
+        val f : Fragment = RoutePageFragment(id, origin, destination, time, op, TypeOfDay, info)
         val t = ctx.supportFragmentManager.beginTransaction()
 
         if (t != null) {
