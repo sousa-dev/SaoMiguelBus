@@ -3,6 +3,7 @@ package com.hsousa_apps.Autocarros
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import com.hsousa_apps.Autocarros.fragments.FindFragment
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
 import com.hsousa_apps.Autocarros.fragments.SettingsFragment
+import java.io.Console
 import java.lang.reflect.Type
 import java.util.*
 
@@ -32,10 +34,11 @@ class MainActivity : AppCompatActivity() {
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
 
+        Datasource().changeCurrentLang(Locale.getDefault().language)
         if (!Datasource().getLoaded()) Datasource().load()
 
-        if (Locale.getDefault().language == "en"){
-            Functions().translateStops("en")
+        if (Locale.getDefault().language != "pt"){
+            Functions().translateStops(Locale.getDefault().language)
         }
 
         Datasource().loaded()
@@ -105,11 +108,11 @@ class MainActivity : AppCompatActivity() {
 
         if (json != null) Datasource().loadFavorite(gson.fromJson(json, type))
 
-        val lang: String? = sp.getString("lang", "Português")
+        //val lang: String? = sp.getString("lang", "pt")
 
-        if (lang != null) {
+        /*if (lang != null) {
             Datasource().changeCurrentLang(lang)
-        }
+        }*/
 
     }
 
