@@ -10,7 +10,7 @@
         android:layout_height="119dp"
         android:layout_marginBottom="156dp"
         android:background="#07000000"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:text="@string/no_fav_message"
         android:textSize="19sp"
         android:visibility="invisible"
