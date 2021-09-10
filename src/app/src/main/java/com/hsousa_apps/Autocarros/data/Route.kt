@@ -2,7 +2,7 @@ package com.hsousa_apps.Autocarros.data
 
 import android.util.Log
 
-class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val day: TypeOfDay, val company: Int, val info: String? = null) {
+class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val day: TypeOfDay, val company: Int, val info: String? = "") {
     private var allStops: List<Stop> = stops.keys.toList()
     private var origin: Stop? = allStops[0]
     private var destination: Stop? = allStops[allStops.size - 1]
