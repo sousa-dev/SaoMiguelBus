@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.browser.customtabs.CustomTabsClient.getPackageName
 import androidx.fragment.app.Fragment
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
@@ -33,6 +32,7 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val rate: Button = view.findViewById(R.id.rate)
         val patreon: Button = view.findViewById(R.id.patreon)
         val paypal: Button = view.findViewById(R.id.paypal)
+        val mail: Button = view.findViewById(R.id.mail)
 
         rate.setOnClickListener {
             Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
@@ -94,6 +94,16 @@ class SettingsFragment: Fragment(), View.OnClickListener {
                     )
                 )
             }
+        }
+
+        mail.setOnClickListener {
+            val intent = Intent(
+                Intent.ACTION_SENDTO, Uri.fromParts(
+                    "mailto", "hsousa.apps@gmail.com", null
+                )
+            )
+            intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
+            startActivity(Intent.createChooser(intent, "Choose an Email client:"))
         }
 
 

@@ -25,4 +25,6 @@
     <string name="map_nb">CARTE</string>
     <string name="toast_search_message">Merci de compléter tous les champs.</string>
     <string name="toast_link_message">Ouverture du lien externe...</string>
+    <string name="report_a_problem">Signaler un Problème</string>
+    <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Si vous rencontrez un problème ou des heures incorrectes sur l\'application, veuillez le signaler</string>
 </resources>

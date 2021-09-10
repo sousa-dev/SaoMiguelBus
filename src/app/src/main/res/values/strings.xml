@@ -19,7 +19,7 @@
     <string name="lang_hint">Language</string>
     <string name="support_creator">Support The Creator</string>
     <string name="rate_app">Rate the App</string>
-    <string name="warning_message">The information provided in this application was gi by the bus companies and is theirs responsibility.</string>
+    <string name="warning_message">The information provided in this application was given by the bus companies and is theirs responsibility.</string>
     <string name="no_routes_found">There are no direct routes between this two bus stops :(</string>
     <string name="home_nb" translatable="false">HOME</string>
     <string name="find_nb">FIND</string>
@@ -27,4 +27,6 @@
     <string name="settings_nb" translatable="false">INFO</string>
     <string name="toast_search_message">Please fill all fields.</string>
     <string name="toast_link_message">Opening external link...</string>
+    <string name="report_a_problem">Report a Problem</string>
+    <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">If you find any problem or wrong times on the app please report it</string>
 </resources>

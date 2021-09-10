@@ -25,4 +25,6 @@
     <string name="map_nb">MAPA</string>
     <string name="toast_search_message">Por favor llena todos los espacios.</string>
     <string name="toast_link_message">Abriendo enlace externo...</string>
+    <string name="report_a_problem">Informar de un Problema</string>
+    <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Si encuentra algún problema o tiempos incorrectos en la aplicación, háganoslo saber.</string>
 </resources>

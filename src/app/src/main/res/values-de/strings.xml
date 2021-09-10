@@ -25,4 +25,6 @@
     <string name="toast_search_message">Fülle bitte alle Felder aus.</string>
     <string name="toast_link_message">Externen Link öffnen...</string>
     <string name="find_hint_message">Finden Sie heraus, welche Routen an einer Bushaltestelle vorbeiführen</string>
+    <string name="report_a_problem">Ein Problem melden</string>
+    <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Wenn Sie ein Problem oder falsche Zeiten in der App finden, melden Sie es bitte</string>
 </resources>
