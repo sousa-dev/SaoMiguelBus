@@ -10,6 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 
@@ -25,6 +28,12 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        MobileAds.initialize(this.context) {}
+
+        val mAdView = view.findViewById<AdView>(R.id.settingsAd)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+
         val language: AutoCompleteTextView = view.findViewById(R.id.language)
         val actv_language: ImageView = view.findViewById(R.id.actv_language)
         val flag: ImageView = view.findViewById(R.id.flag)

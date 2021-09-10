@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">São Miguel Bus</string>
-    <string name="ad_unit" translatable="false">ca-app-pub-8246676797736648/2987068957</string>
+    <string name="ad_unit_home" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="ad_unit_settings" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+    <!--<string name="ad_unit_settings" translatable="false">ca-app-pub-8246676797736648/8430967326</string>-->
+    <!--<string name="ad_unit_home" translatable="false">ca-app-pub-8246676797736648/2987068957</string>-->
     <string name="find_button">Find</string>
     <string name="find_hint_message">Find out which routes pass at a bus stop</string>
     <string name="stop">Bus Stop</string>
