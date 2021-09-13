@@ -8,15 +8,15 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/find_recycler"
         android:layout_width="344dp"
-        android:layout_height="464dp"
+        android:layout_height="460dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="52dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.492"
+        app:layout_constraintHorizontal_bias="0.522"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider3"
-        app:layout_constraintVertical_bias="0.187">
+        app:layout_constraintVertical_bias="0.109">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -24,12 +24,12 @@
         android:id="@+id/divider3"
         android:layout_width="350dp"
         android:layout_height="1dp"
-        android:layout_marginBottom="528dp"
+        android:layout_marginTop="2dp"
         android:background="?android:attr/listDivider"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/find_hint" />
 
     <Button
         android:id="@+id/find_button"
@@ -47,16 +47,13 @@
         android:id="@+id/find_hint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="1dp"
+        android:layout_marginTop="46dp"
         android:text="@string/find_hint_message"
         android:textStyle="italic"
-        app:layout_constraintBottom_toTopOf="@+id/divider3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/find_button"
-        app:layout_constraintVertical_bias="0.851" />
+        app:layout_constraintTop_toBottomOf="@+id/find_button" />
 
     <AutoCompleteTextView
         android:id="@+id/find_routes"
@@ -89,13 +86,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="33dp"
         android:layout_marginLeft="33dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/find_hint"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/find_button">
+        app:layout_constraintTop_toTopOf="@+id/find_button">
 
         <RadioButton
             android:id="@+id/weekday_check1"

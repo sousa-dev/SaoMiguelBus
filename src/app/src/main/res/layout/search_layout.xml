@@ -9,6 +9,7 @@
         android:id="@+id/routes_recyclerView"
         android:layout_width="339dp"
         android:layout_height="469dp"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,27 +22,26 @@
         android:id="@+id/emptymsg"
         android:layout_width="239dp"
         android:layout_height="119dp"
-        android:layout_marginBottom="364dp"
+        android:layout_marginTop="68dp"
         android:background="#07000000"
         android:gravity="center"
         android:text="@string/no_routes_search"
         android:textSize="19sp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.47"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/routes_recyclerView" />
 
     <View
         android:id="@+id/divider"
         android:layout_width="350dp"
         android:layout_height="1dp"
-        android:layout_marginTop="210dp"
+        android:layout_marginTop="1dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.442"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/weekdays" />
 
     <RadioGroup
         android:id="@+id/weekdays"
@@ -93,7 +93,7 @@
         android:id="@+id/to_search"
         android:layout_width="280dp"
         android:layout_height="30dp"
-        android:layout_marginTop="124dp"
+        android:layout_marginTop="32dp"
         android:background="@color/white"
         android:clickable="false"
         android:orientation="vertical"
@@ -103,7 +103,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/from_search" />
 
     <TextView
         android:id="@+id/from_search"
@@ -131,6 +131,7 @@
         app:layout_constraintBottom_toTopOf="@+id/to_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.824"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/from_search" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
