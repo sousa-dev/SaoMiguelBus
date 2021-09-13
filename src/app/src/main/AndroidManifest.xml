@@ -10,6 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SMiguelBus">
         <activity android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
