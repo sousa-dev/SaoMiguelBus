@@ -155,6 +155,8 @@ class Functions {
                 Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Church"
                 Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Church"
                 Datasource().getStop("Relva - Igreja").name = "Relva - Church"
+                Datasource().getStop("Maia - Escola").name = "Maia - School"
+                Datasource().getStop("Furnas - Águas Quentes").name = "Furnas - Hot Springs"
             }
             "de" -> {
                 Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Kirche"
@@ -168,6 +170,8 @@ class Functions {
                 Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Kirche"
                 Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Kirche"
                 Datasource().getStop("Relva - Igreja").name = "Relva - Kirche"
+                Datasource().getStop("Maia - Escola").name = "Maia - Schule"
+                Datasource().getStop("Furnas - Águas Quentes").name = "Furnas - Heiße Quellen"
             }
             "fr" -> {
                 Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Église"
@@ -181,6 +185,8 @@ class Functions {
                 Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Église"
                 Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Église"
                 Datasource().getStop("Relva - Igreja").name = "Relva - Église"
+                Datasource().getStop("Maia - Escola").name = "Maia - L'école"
+                Datasource().getStop("Furnas - Águas Quentes").name = "Furnas - Sources Chaudes"
             }
             "es" -> {
                 Datasource().getStop("Ajuda - Igreja").name = "Ajuda - Iglesia"
@@ -194,6 +200,8 @@ class Functions {
                 Datasource().getStop("Ginetes - Igreja").name = "Ginetes - Iglesia"
                 Datasource().getStop("Feteiras - Igreja").name = "Feteiras - Iglesia"
                 Datasource().getStop("Relva - Igreja").name = "Relva - Iglesia"
+                Datasource().getStop("Maia - Escola").name = "Maia - Colegio"
+                Datasource().getStop("Furnas - Águas Quentes").name = "Furnas - Aguas Termales"
             }
         }
     }

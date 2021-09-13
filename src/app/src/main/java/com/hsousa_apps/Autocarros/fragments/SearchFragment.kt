@@ -101,7 +101,7 @@ class SearchFragment(private val origin: String? = null, private val destination
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
-            Log.d("ERROR", cards.toString())
+            //Log.d("ERROR", cards.toString())
             rv?.adapter = RouteCardAdapter(view.context, cards as java.util.ArrayList<CardModel>)
         }
         if (cards.size == 0){

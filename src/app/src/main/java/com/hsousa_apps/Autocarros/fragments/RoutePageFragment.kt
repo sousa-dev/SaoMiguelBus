@@ -114,7 +114,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             }
         }
         else{
-            val allStops = Datasource().getAllStopTimes(id, time, origin, destination)
+            val allStops = Datasource().getAllStopTimes(id, time, origin, destination, typeOfDay)
             for(stop in allStops)
                 if(stop.value != "---") times.add(StopModel(stop.key, stop.value))
         }
