@@ -16,7 +16,7 @@
     <string name="lang_hint">Idioma</string>
     <string name="support_creator">Apoie o Criador</string>
     <string name="rate_app">Avalie a App</string>
-    <string name="warning_message">A informação disponibilizada nesta aplicação foi fornecida pelas companhias de autocarros e é da sua responsabilidade.</string>
+    <string name="warning_message">A informação disponibilizada nesta aplicação foi fornecida ao público pelas companhias de autocarros.</string>
     <string name="find_nb">PROCURAR</string>
     <string name="map_nb">MAPA</string>
     <string name="no_routes_found">Não há rotas diretas entre as duas paragens\n:(</string>
