@@ -14,7 +14,7 @@
         android:id="@+id/map_nb"
         android:enabled="false"
         android:visible="false"
-        android:icon="@drawable/ic_launcher_foreground"
+        android:icon="@android:drawable/ic_menu_search"
         android:title="@string/map_nb" />
     <item
         android:id="@+id/settings_nb"

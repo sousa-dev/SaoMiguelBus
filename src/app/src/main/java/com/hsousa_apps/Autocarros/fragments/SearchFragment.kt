@@ -1,6 +1,7 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -96,10 +97,11 @@ class SearchFragment(private val origin: String? = null, private val destination
                         }?.let { cards.add(it) }
         }
 
-        if(cards.isNotEmpty()) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
+        if(cards.size > 1) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
+            Log.d("ERROR", cards.toString())
             rv?.adapter = RouteCardAdapter(view.context, cards as java.util.ArrayList<CardModel>)
         }
         if (cards.size == 0){

@@ -34,6 +34,19 @@ class Functions {
             return "a) De lunes a jueves // b) Solo viernes"
         return "a) From Monday to Thursday // b) Just Friday"
     }
+
+    fun onlyTT(lang: String): String {
+        if (lang == "pt")
+            return "*Só Terças e Quintas"
+        else if (lang == "de")
+            return "*Nur Dienstag und Donnerstag"
+        else if (lang == "fr")
+            return "*Uniquement le mardi et le jeudi"
+        else if (lang == "es")
+            return "*Solo martes y jueves"
+        return "*Only Tuesday and Thursday"
+    }
+
     fun avDHenrique(lang: String): String {
         if (lang == "pt")
             return "Saída no lado Sul da Av. Infante D.Henrique"

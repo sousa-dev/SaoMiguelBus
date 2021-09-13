@@ -108,7 +108,7 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         mail.setOnClickListener {
             val intent = Intent(
                 Intent.ACTION_SENDTO, Uri.fromParts(
-                    "mailto", "hsousa.apps@gmail.com", null
+                    "mailto", "sousadev@yahoo.com", null
                 )
             )
             intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
