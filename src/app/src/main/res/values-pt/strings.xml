@@ -27,4 +27,11 @@
     <string name="toast_link_message">A abrir link externo...</string>
     <string name="report_a_problem">Reportar um Problema</string>
     <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Se encontrar algum problema ou horários incorretos na app, por favor, informe</string>
+    <string name="route_dialog_title">"ERRO na Rota "</string>
+    <string name="route_dialog_message">Oops... Houve um problema a carregar as informações desta rota. Por favor, reporte para que eu possa corrigir!</string>
+    <string name="route_dialog_positive">Reportar</string>
+    <string name="route_dialog_negative">Não</string>
+    <string name="something_wrong"><u>Algo errado?</u></string>
+    <string name="page_dialog_title">"Algo errado na Rota "</string>
+    <string name="page_dialog_message">Por favor, reporte!</string>
 </resources>

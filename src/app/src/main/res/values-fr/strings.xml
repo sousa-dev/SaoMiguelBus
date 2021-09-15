@@ -27,4 +27,11 @@
     <string name="toast_link_message">Ouverture du lien externe...</string>
     <string name="report_a_problem">Signaler un Problème</string>
     <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Si vous rencontrez un problème ou des heures incorrectes sur l\'application, veuillez le signaler</string>
+    <string name="route_dialog_title">"ERREUR sur l'itinéraire "</string>
+    <string name="route_dialog_message">Oops... Il semble y avoir un problème lors du chargement de ces informations sur les routes. Merci de le signaler pour que je puisse le réparer !</string>
+    <string name="route_dialog_positive">Signalez-le</string>
+    <string name="route_dialog_negative">Non</string>
+    <string name="something_wrong"><u>Y a-t-il un problème?</u></string>
+    <string name="page_dialog_title">"Problèmes avec l'itinéraire "</string>
+    <string name="page_dialog_message">S\'il vous plaît, signalez-le!</string>
 </resources>
