@@ -1,6 +1,9 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
-import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
-import com.hsousa_apps.Autocarros.models.CardModel
-import com.hsousa_apps.Autocarros.models.RouteCardAdapter
-import com.hsousa_apps.Autocarros.models.StopModel
-import com.hsousa_apps.Autocarros.models.StopTimesAdapter
+import com.hsousa_apps.Autocarros.models.*
 import java.util.ArrayList
 
 class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY, private val info: String = "") : Fragment(), View.OnClickListener {
@@ -99,24 +98,32 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
 
     }
 
-    private fun createStops(view: View?, op: Int? = 1){
+    private fun createStops(view: View?, op: Int? = 1) {
         val rv = view?.findViewById<RecyclerView>(R.id.routepage_rv)
         var times: MutableList<StopModel> = mutableListOf()
 
-        if (op == 2){
+        if (op == 2) {
             val allTimes = Datasource().getAllTimes(id, origin, destination, typeOfDay)
 
-            for(stop in allTimes){
-                var str = ""
-                for (value in stop.value)
-                    if (value != "---") str = String.format("%s%5s   ", str, value)
-                times.add(StopModel(stop.key.toString(), str))
+            if (allTimes.isEmpty())
+                handleError(id.toString())
+            else {
+                for (stop in allTimes) {
+                    var str = ""
+                    for (value in stop.value)
+                        if (value != "---") str = String.format("%s%5s   ", str, value)
+                    times.add(StopModel(stop.key.toString(), str))
+                }
             }
-        }
-        else{
+
+        } else {
             val allStops = Datasource().getAllStopTimes(id, time, origin, destination, typeOfDay)
-            for(stop in allStops)
-                if(stop.value != "---") times.add(StopModel(stop.key, stop.value))
+            if ("ERROR" in allStops) {
+                handleError(id.toString())
+            } else {
+                for (stop in allStops)
+                    if (stop.value != "---") times.add(StopModel(stop.key, stop.value))
+            }
         }
 
         if (rv != null) {
@@ -124,6 +131,33 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             rv?.adapter = StopTimesAdapter(view.context, times as ArrayList<StopModel>)
         }
 
+        view?.findViewById<TextView>(R.id.wrong)?.setOnClickListener {
+            var dialog = Dialog(getString(R.string.page_dialog_title) + "$id?", getString(R.string.page_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
+                val intent = Intent(
+                    Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto", "sousadev@yahoo.com", null
+                    )
+                )
+                intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
+                startActivity(Intent.createChooser(intent, "Choose an Email client:"))
+            }, getString(R.string.route_dialog_negative));
+            dialog.isCancelable = false
+            dialog.show(parentFragmentManager, "Route error")
+        }
+    }
+
+    private fun handleError(info: String = "") {
+        var dialog = Dialog(getString(R.string.route_dialog_title) + info, getString(R.string.route_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
+            val intent = Intent(
+                Intent.ACTION_SENDTO, Uri.fromParts(
+                    "mailto", "sousadev@yahoo.com", null
+                )
+            )
+            intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
+            startActivity(Intent.createChooser(intent, "Choose an Email client:"))
+        }, getString(R.string.route_dialog_negative));
+        dialog.isCancelable = false
+        dialog.show(parentFragmentManager, "Route error")
     }
 
     private fun swapFrags(f : Fragment) {
