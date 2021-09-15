@@ -22,7 +22,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_template_route_page"
+        android:layout_marginBottom="3dp"
+        app:layout_constraintBottom_toTopOf="@+id/wrong"
         app:layout_constraintEnd_toEndOf="@+id/divider2"
         app:layout_constraintStart_toStartOf="@+id/divider2"
         app:layout_constraintTop_toBottomOf="@+id/divider2" />
@@ -152,15 +153,28 @@
         android:id="@+id/bottom_template_route_page"
         style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
         android:layout_width="match_parent"
-        android:visibility="invisible"
         android:layout_height="wrap_content"
         android:background="#218732"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/wrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:text="@string/something_wrong"
+        android:textColor="#2196F3"
+        android:textStyle="italic"
+        android:clickable="true"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_template_route_page"
+        app:layout_constraintEnd_toEndOf="@+id/routepage_rv"
+        app:layout_constraintStart_toStartOf="@+id/routepage_rv" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
