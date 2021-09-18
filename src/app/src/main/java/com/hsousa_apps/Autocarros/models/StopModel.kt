@@ -1,4 +1,4 @@
 package com.hsousa_apps.Autocarros.models
 
-class StopModel(var name: String, var times: String) {
+class StopModel(var name: String, var times: String, var op: Boolean = false) {
 }

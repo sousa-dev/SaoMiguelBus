@@ -122,7 +122,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                 handleError(id.toString())
             } else {
                 for (stop in allStops)
-                    if (stop.value != "---") times.add(StopModel(stop.key, stop.value))
+                    if (stop.value != "---") times.add(StopModel(stop.key, stop.value, (stop.key == origin) || (stop.key == destination)))
             }
         }
 
