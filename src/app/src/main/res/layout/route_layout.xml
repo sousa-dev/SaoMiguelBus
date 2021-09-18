@@ -91,5 +91,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/remove_fav_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:background="#00FFFFFF"
+        android:src="@android:drawable/ic_menu_delete"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/go_to_route_page"
+        app:layout_constraintTop_toTopOf="@+id/go_to_route_page" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

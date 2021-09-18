@@ -1,6 +1,8 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
@@ -16,7 +19,9 @@ import com.hsousa_apps.Autocarros.data.Stop
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.ArrayList
+import kotlin.math.log
 
+private var vieww: View? = null
 
 class HomeFragment : Fragment(), View.OnClickListener {
     override fun onCreateView(
@@ -33,6 +38,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
         val to: AutoCompleteTextView = view.findViewById(R.id.to_home)
         val actv_from: ImageView = view.findViewById(R.id.actv1)
         val actv_to: ImageView = view.findViewById(R.id.actv2)
+        setVieww(view)
 
         val search: Button = view.findViewById(R.id.homeSearch)
         val swapStops: ImageButton = view.findViewById(R.id.swapStops)
@@ -69,6 +75,20 @@ class HomeFragment : Fragment(), View.OnClickListener {
             else
                 Toast.makeText(context, resources.getString(R.string.toast_search_message), Toast.LENGTH_SHORT).show()
         }
+
+        //TODO: improve favorite save system
+        saveFav()
+    }
+
+    private fun saveFav(){
+        val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        val editor = pref.edit()
+        val gson = Gson()
+
+        val json: String = gson.toJson(Datasource().getFavorite())
+
+        editor.putString("favorites", json)
+        editor.commit()
     }
 
     private fun createCards(view: View?){
@@ -78,11 +98,12 @@ class HomeFragment : Fragment(), View.OnClickListener {
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
         for (fav in Datasource().getFavorite())
-            cards.add(CardModel("", fav[0], fav[1], "", 0))
+            cards.add(CardModel("", fav[0], fav[1], "", 0, delete = true))
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
-            rv?.adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
+            var adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
+            rv?.adapter = adapter
         }
         if (cards.size == 0){
             emptymsg?.text = resources.getString(R.string.no_fav_message)
@@ -102,6 +123,35 @@ class HomeFragment : Fragment(), View.OnClickListener {
                 t.commit()
             }
     }
+
+    private fun setVieww(view: View){
+        vieww = view
+    }
+    fun getVieww(): View? {
+        return vieww
+    }
+
+    fun notifyDataChange(view: View){
+        Log.d("error", Datasource().getFavorite().toString())
+
+        var RV = view.findViewById<RecyclerView>(R.id.home_recyclerview)
+        var emptymsg = view.findViewById<TextView>(R.id.home_emptymsg)
+        var cards: MutableList<CardModel> = mutableListOf<CardModel>()
+
+        for (fav in Datasource().getFavorite())
+            cards.add(CardModel("", fav[0], fav[1], "", 0, delete = true))
+
+        if (cards.isEmpty())
+            emptymsg.visibility = View.VISIBLE
+        else
+            emptymsg.visibility = View.INVISIBLE
+
+        Log.d("error", cards.toString())
+
+        var adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
+        RV.adapter = adapter
+        adapter.notifyDataSetChanged()
+        }
 
     private fun swapFrags(f : Fragment) {
         val t = activity?.supportFragmentManager?.beginTransaction()

@@ -1,14 +1,16 @@
 package com.hsousa_apps.Autocarros.models
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
+import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
@@ -30,6 +32,18 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.from.text = route.from
         holder.to.text = route.to
         holder.time.text = route.time
+        if(route.delete) holder.delete.visibility = View.VISIBLE
+
+        holder.delete.setOnClickListener {
+            Datasource().removeFavorite(listOf(route.from, route.to) as List<String>)
+            Toast.makeText(
+                context,
+                Functions().removeFav(Datasource().getCurrentLang()),
+                Toast.LENGTH_SHORT
+            ).show()
+            HomeFragment().getVieww()?.let { it1 -> HomeFragment().notifyDataChange(it1) }
+        }
+
         route.img?.let { holder.company.setImageResource(it) }
         holder.click.setOnClickListener {
             if (op == 2){
@@ -55,6 +69,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         val time: TextView
         val company: ImageView
         val click: Button
+        val delete: ImageButton
 
         init {
             id = itemView.findViewById(R.id.route_id)
@@ -63,6 +78,8 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
             time = itemView.findViewById(R.id.route_time)
             company = itemView.findViewById(R.id.route_company)
             click = itemView.findViewById(R.id.go_to_route_page)
+            delete = itemView.findViewById(R.id.remove_fav_home)
+
         }
     }
 
