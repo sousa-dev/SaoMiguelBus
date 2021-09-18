@@ -1,6 +1,7 @@
 package com.hsousa_apps.Autocarros.models
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,7 @@ class StopTimesAdapter(private val context: Context, private val Times: ArrayLis
         val time: StopModel = Times[position]
         holder.stop.text = time.name
         holder.time.text = time.times
+        if (time.op) holder.stop.setTextColor(Color.parseColor("#218732"))
     }
 
     override fun getItemCount(): Int {
