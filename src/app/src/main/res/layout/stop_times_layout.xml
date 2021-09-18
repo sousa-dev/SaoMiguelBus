@@ -26,7 +26,6 @@
         android:layout_marginStart="52dp"
         android:layout_marginLeft="52dp"
         android:layout_marginTop="48dp"
-        android:maxWidth="350dp"
         android:text="time"
         android:textSize="18sp"
         android:textStyle="italic"

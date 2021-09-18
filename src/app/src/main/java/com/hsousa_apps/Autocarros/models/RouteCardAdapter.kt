@@ -32,7 +32,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.from.text = route.from
         holder.to.text = route.to
         holder.time.text = route.time
-        if(route.delete) holder.delete.visibility = View.VISIBLE
+        // TODO: if(route.delete) holder.delete.visibility = View.VISIBLE
 
         holder.delete.setOnClickListener {
             Datasource().removeFavorite(listOf(route.from, route.to) as List<String>)

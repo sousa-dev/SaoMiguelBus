@@ -110,8 +110,13 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             else {
                 for (stop in allTimes) {
                     var str = ""
+                    var count = 0
                     for (value in stop.value)
-                        if (value != "---") str = String.format("%s%5s   ", str, value)
+                        if (value != "---"){
+                            if (count%4 == 0) str += "\n"
+                            str = String.format("%s%5s   ", str, value)
+                            count += 1
+                        }
                     times.add(StopModel(stop.key.toString(), str))
                 }
             }
