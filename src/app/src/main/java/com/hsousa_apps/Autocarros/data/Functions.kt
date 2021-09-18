@@ -205,4 +205,16 @@ class Functions {
             }
         }
     }
+
+    fun removeFav(lang: String): String {
+        if (lang == "pt")
+            return "Rota Removida dos Favoritos!"
+        else if (lang == "de")
+            return "Route aus Favoriten entfernt!"
+        else if (lang == "fr")
+            return "Itinéraire supprimé des favoris!"
+        else if (lang == "es")
+            return "¡Ruta eliminada de favoritos!"
+        return "Route Removed from Favorites!"
+    }
 }
