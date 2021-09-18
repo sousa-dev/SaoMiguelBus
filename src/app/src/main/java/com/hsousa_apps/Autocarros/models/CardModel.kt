@@ -10,10 +10,11 @@ class CardModel {
     var img : Int? = null
     var info : String? = null
     var delete : Boolean = false
+    var unique_id: String = ""
 
 
     // Constructor
-    constructor(id: String, from: String, to: String, time: String, img: Int, info: String = "", delete: Boolean = false) {
+    constructor(id: String, from: String, to: String, time: String, img: Int, info: String = "", delete: Boolean = false, unique_id: String = "") {
         this.id = id
         this.from = from
         this.to = to
@@ -21,6 +22,7 @@ class CardModel {
         this.img = img
         this.info = info
         this.delete = delete
+        this.unique_id = unique_id
     }
 
 }

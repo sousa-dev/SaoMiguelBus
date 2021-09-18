@@ -2,10 +2,15 @@ package com.hsousa_apps.Autocarros.data
 
 import android.util.Log
 
-class Route constructor(val id: String, val stops: Map<Stop, List<String>>, val day: TypeOfDay, val company: Int, val info: String? = "") {
+class Route constructor(val id: String, val unique_id: String, val stops: Map<Stop, List<String>>, val day: TypeOfDay, val company: Int, val info: String? = "") {
     private var allStops: List<Stop> = stops.keys.toList()
     private var origin: Stop? = allStops[0]
     private var destination: Stop? = allStops[allStops.size - 1]
+
+    init {
+        if (Datasource().getRouteHash().containsKey(unique_id)) Log.w("ERROR", "$unique_id duplicated")
+        else Datasource().addRouteToHash(unique_id, this)
+    }
 
     fun getStopTime(stop: Stop?, position: Int): String? {
         return stops[stop]?.get(position)

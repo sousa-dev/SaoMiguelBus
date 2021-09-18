@@ -217,4 +217,28 @@ class Functions {
             return "¡Ruta eliminada de favoritos!"
         return "Route Removed from Favorites!"
     }
+
+    fun rossioBanif(lang: String): String? {
+        if (lang == "pt")
+            return "Passagem em 'Capelas - Rossio' junto ao Santander"
+        else if (lang == "de")
+            return "Bushaltestelle in 'Capelas - Rossio' bei Santander"
+        else if (lang == "fr")
+            return "Arrêt de bus à 'Capelas - Rossio' près de Santander"
+        else if (lang == "es")
+            return "Parada de autobús en 'Capelas - Rossio' cerca de Santander"
+        return "Bus Stop in 'Capelas - Rossio' near Santander"
+    }
+
+    fun rossioCaixa(lang: String): String? {
+        if (lang == "pt")
+            return "Passagem em 'Capelas - Rossio' junto à escola"
+        else if (lang == "de")
+            return "Bushaltestelle in 'Capelas - Rossio' in der Nähe der Schule"
+        else if (lang == "fr")
+            return "Arrêt de bus à 'Capelas - Rossio' près de l'école"
+        else if (lang == "es")
+            return "Parada de autobús en 'Capelas - Rossio' cerca de la escuela"
+        return "Bus Stop in 'Capelas - Rossio' near the School"
+    }
 }

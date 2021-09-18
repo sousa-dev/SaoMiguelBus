@@ -32,6 +32,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.from.text = route.from
         holder.to.text = route.to
         holder.time.text = route.time
+        holder.id.tag = route.unique_id
         // TODO: if(route.delete) holder.delete.visibility = View.VISIBLE
 
         holder.delete.setOnClickListener {
@@ -50,7 +51,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
                 HomeFragment().openFavRoute(holder.from.text.toString(), holder.to.text.toString(), holder.itemView)
             }
             else
-                route.info?.let { it1 -> SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op, day, info = it1) }
+                route.info?.let { it1 -> SearchFragment().openRoutePage(holder.id.text.toString(), holder.from.text.toString(), holder.to.text.toString(), holder.time.text.toString(), holder.itemView, op, day, info = it1, unique_id = route.unique_id) }
         }
     }
 

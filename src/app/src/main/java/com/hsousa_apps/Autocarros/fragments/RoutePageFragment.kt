@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,7 @@ import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.models.*
 import java.util.ArrayList
 
-class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY, private val info: String = "") : Fragment(), View.OnClickListener {
+class RoutePageFragment(private val id: String? = null, private val origin: String? = null, private val destination: String? = null, private val time: String? = null, private val op: Int? = 0, private val typeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY, private val info: String = "", private val unique_id: String = "") : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,6 +40,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         orig.text = origin
         dest.text = destination
         routeId.text = id
+        routeId.tag = unique_id
 
 
         if (op == 0){
@@ -103,26 +105,28 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         var times: MutableList<StopModel> = mutableListOf()
 
         if (op == 2) {
-            val allTimes = Datasource().getAllTimes(id, origin, destination, typeOfDay)
+            val allTimes = Datasource().getAllTimes(unique_id, origin, destination, typeOfDay)
 
-            if (allTimes.isEmpty())
-                handleError(id.toString())
-            else {
-                for (stop in allTimes) {
-                    var str = ""
-                    var count = 0
-                    for (value in stop.value)
-                        if (value != "---"){
-                            if (count%4 == 0) str += "\n"
-                            str = String.format("%s%5s   ", str, value)
-                            count += 1
-                        }
-                    times.add(StopModel(stop.key.toString(), str))
+            if (allTimes != null) {
+                if (allTimes.isEmpty())
+                    handleError(id.toString())
+                else {
+                    for (stop in allTimes) {
+                        var str = ""
+                        var count = 0
+                        for (value in stop.value)
+                            if (value != "---"){
+                                if ((count%4 == 0) and (count != 0)) str += "\n"
+                                str = String.format("%s%5s   ", str, value)
+                                count += 1
+                            }
+                        times.add(StopModel(stop.key.toString(), str))
+                    }
                 }
             }
 
         } else {
-            val allStops = Datasource().getAllStopTimes(id, time, origin, destination, typeOfDay)
+            val allStops = Datasource().getAllStopTimes(unique_id, time, origin, destination, typeOfDay)
             if ("ERROR" in allStops) {
                 handleError(id.toString())
             } else {

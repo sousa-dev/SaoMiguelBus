@@ -1,6 +1,7 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,7 @@ import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.ArrayList
 
 
-class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), View.OnClickListener {
+class FindFragment(private var times: ArrayList<Route>? = null, private var unique_id: String = ""): Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -75,8 +76,11 @@ class FindFragment(private var times: ArrayList<Route>? = null): Fragment(), Vie
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
         if (times != null)
-            for(route in times!!)
-                if (route.day == typeOfDay) route.info?.let { CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company, info = it)?.let { cards.add(it) } }
+            for(route in times!!){
+                if (route.day == typeOfDay) route.info?.let { CardModel(route.id, route.getOrigin().toString(), route.getDestination().toString(), "      ", route.company, info = it, unique_id = route.unique_id) }
+                    ?.let { cards.add(it) }
+            }
+
         if(cards.size > 1) cards = cards.sortedWith(compareBy { it.id }).toList() as MutableList<CardModel>
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)

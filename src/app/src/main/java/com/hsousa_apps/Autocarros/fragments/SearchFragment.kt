@@ -25,7 +25,7 @@ import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import kotlin.collections.ArrayList
 
 
-class SearchFragment(private var origin: String? = null, private var destination: String? = null, private var times: ArrayList<Route>? = null) : Fragment(), View.OnClickListener {
+class SearchFragment(private var origin: String? = null, private var destination: String? = null, private var times: ArrayList<Route>? = null, private var unique_id: String = "") : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,6 +41,9 @@ class SearchFragment(private var origin: String? = null, private var destination
         val from: TextView = view.findViewById(R.id.from_search)
         val to: TextView = view.findViewById(R.id.to_search)
         var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
+
+        origin = origin?.let { Datasource().getStop(it).name }
+        destination = destination?.let { Datasource().getStop(it).name }
 
         from.text = origin
         to.text = destination
@@ -142,7 +145,7 @@ class SearchFragment(private var origin: String? = null, private var destination
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             route.info?.let { it1 ->
                                 CardModel(route.id, origin, destination,
-                                    it, route.company, info = it1
+                                    it, route.company, info = it1, unique_id = route.unique_id
                                 )
                             }
                         }?.let { cards.add(it) }
@@ -170,10 +173,11 @@ class SearchFragment(private var origin: String? = null, private var destination
         view: View,
         op: Int = 0,
         TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY,
-        info : String = ""
+        info : String = "",
+        unique_id: String = ""
     ){
         val ctx: AppCompatActivity = view?.context as AppCompatActivity
-        val f : Fragment = RoutePageFragment(id, origin, destination, time, op, TypeOfDay, info)
+        val f : Fragment = RoutePageFragment(id, origin, destination, time, op, TypeOfDay, info, unique_id = unique_id)
         val t = ctx.supportFragmentManager.beginTransaction()
 
         if (t != null) {

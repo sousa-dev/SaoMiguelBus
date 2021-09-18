@@ -146,7 +146,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
         else
             emptymsg.visibility = View.INVISIBLE
 
-        Log.d("error", cards.toString())
+        //Log.d("error", cards.toString())
 
         var adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
         RV.adapter = adapter
