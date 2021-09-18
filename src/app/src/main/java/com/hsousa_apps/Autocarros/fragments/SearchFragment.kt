@@ -1,5 +1,6 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,10 +9,12 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
@@ -22,7 +25,7 @@ import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import kotlin.collections.ArrayList
 
 
-class SearchFragment(private val origin: String? = null, private val destination: String? = null, private var times: ArrayList<Route>? = null) : Fragment(), View.OnClickListener {
+class SearchFragment(private var origin: String? = null, private var destination: String? = null, private var times: ArrayList<Route>? = null) : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,7 +48,7 @@ class SearchFragment(private val origin: String? = null, private val destination
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsSearch)
 
         if (origin != null && destination != null) {
-            createCards(this.view, origin, destination)
+            createCards(this.view, origin!!, destination!!)
         }
 
         swapStops.setOnClickListener {
@@ -53,28 +56,76 @@ class SearchFragment(private val origin: String? = null, private val destination
             from.text = to.text
             to.text = temp
 
+            origin = from.text.toString()
+            destination = to.text.toString()
+
+            if (listOf(origin, destination) !in Datasource().getFavorite()) {
+                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                fav.setImageResource(R.mipmap.heartoff)
+                fav.tag = R.mipmap.heartoff
+            }
+            else{
+                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                fav.setImageResource(R.mipmap.hearton)
+                fav.tag = R.mipmap.hearton
+            }
+
             times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
             createCards(this.view, from.text as String, to.text as String)
-       }
+        }
 
         val SelectedTypeOfDay: RadioGroup = view.findViewById(R.id.weekdays)
         SelectedTypeOfDay.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == R.id.weekday_check){
+            if (checkedId == R.id.weekday_check) {
                 TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY
                 times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
                 createCards(this.view, from.text as String, to.text as String)
-            }
-            else if (checkedId == R.id.saturday_check){
+            } else if (checkedId == R.id.saturday_check) {
                 TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SATURDAY
                 times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
                 createCards(this.view, from.text as String, to.text as String)
-            }
-
-            else {
+            } else {
                 TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.SUNDAY
                 times = Functions().getOptions(from.text as String, to.text as String, TypeOfDay)
                 createCards(this.view, from.text as String, to.text as String)
             }
+        }
+
+        val fav = view?.findViewById<ImageButton>(R.id.favorite)
+
+        if (listOf(origin, destination) in Datasource().getFavorite()) {
+            fav.setImageResource(R.mipmap.hearton)
+            fav.tag = R.mipmap.hearton
+        }
+
+        fav.setOnClickListener {
+            if (fav.tag == R.mipmap.hearton) {
+                fav.setImageResource(R.mipmap.heartoff)
+                fav.tag = R.mipmap.heartoff
+                Datasource().removeFavorite(listOf(origin, destination) as List<String>)
+                Toast.makeText(
+                    context,
+                    resources.getString(R.string.remove_fav_toast_message),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                fav.setImageResource(R.mipmap.hearton)
+                fav.tag = R.mipmap.hearton
+                Datasource().addFavorite(origin, destination)
+                Toast.makeText(
+                    context,
+                    resources.getString(R.string.add_fav_toast_message),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
+            val editor = pref.edit()
+            val gson = Gson()
+
+            val json: String = gson.toJson(Datasource().getFavorite())
+
+            editor.putString("favorites", json)
+            editor.commit()
         }
     }
 
