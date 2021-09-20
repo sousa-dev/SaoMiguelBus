@@ -1,9 +1,7 @@
 package com.hsousa_apps.Autocarros
 
 import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -15,14 +13,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
-import com.hsousa_apps.Autocarros.data.Language
-import com.hsousa_apps.Autocarros.data.Route
-import com.hsousa_apps.Autocarros.fragments.FindFragment
-import com.hsousa_apps.Autocarros.fragments.HomeFragment
-import com.hsousa_apps.Autocarros.fragments.SearchFragment
-import com.hsousa_apps.Autocarros.fragments.SettingsFragment
-import java.io.Console
-import java.lang.reflect.Type
+import com.hsousa_apps.Autocarros.fragments.*
 import java.util.*
 
 
@@ -65,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.map_nb -> {
-                    target = SearchFragment("null", "null", arrayListOf())
+                    target = MapFragment()
                 }
 
                 R.id.settings_nb -> {
