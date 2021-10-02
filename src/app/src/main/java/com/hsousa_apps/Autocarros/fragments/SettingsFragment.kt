@@ -40,7 +40,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
         val rate: Button = view.findViewById(R.id.rate)
         val patreon: Button = view.findViewById(R.id.patreon)
-        val paypal: Button = view.findViewById(R.id.paypal)
         val mail: Button = view.findViewById(R.id.mail)
 
         rate.setOnClickListener {
@@ -72,34 +71,14 @@ class SettingsFragment: Fragment(), View.OnClickListener {
                 startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://www.patreon.com/sousadev")
+                        Uri.parse("https://linktr.ee/sousadev_")
                     )
                 )
             } catch (anfe: ActivityNotFoundException) {
                 startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://www.patreon.com/sousadev")
-                    )
-                )
-            }
-        }
-
-        paypal.setOnClickListener {
-            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
-
-            try {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://paypal.me/Wiky")
-                    )
-                )
-            } catch (anfe: ActivityNotFoundException) {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://paypal.me/Wiky")
+                        Uri.parse("https://linktr.ee/sousadev_")
                     )
                 )
             }
