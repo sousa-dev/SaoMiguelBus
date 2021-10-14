@@ -12,10 +12,10 @@
         android:title="@string/find_nb" />
     <item
         android:id="@+id/map_nb"
-        android:enabled="true"
+        android:enabled="false"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:title="@string/map_nb"
-        android:visible="true" />
+        android:visible="false" />
     <item
         android:id="@+id/settings_nb"
         android:enabled="true"
