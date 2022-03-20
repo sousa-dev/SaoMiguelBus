@@ -35,4 +35,5 @@
     <string name="page_dialog_title">"Problemas con la ruta "</string>
     <string name="page_dialog_message">¡Por favor, infórmalo!</string>
     <string name="map_dest_blank">El destino no puede estar en blanco</string>
+    <string name="map_warning">Cuando está abierto, cambia al modo bus</string>
 </resources>

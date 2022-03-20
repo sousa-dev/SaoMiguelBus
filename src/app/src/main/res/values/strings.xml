@@ -1,10 +1,6 @@
 <resources>
     <string name="app_name">São Miguel Bus</string>
-    <!-- Test Banner Ads ad unit id
-    <string name="ad_unit_home" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="ad_unit_settings" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
-    -->
-    <string name="ad_unit_settings" translatable="false">ca-app-pub-8246676797736648/8430967326</string>
+    <string name="test_ad_unit" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
     <string name="ad_unit_home" translatable="false">ca-app-pub-8246676797736648/2987068957</string>
     <string name="find_button">Find</string>
     <string name="find_hint_message">Find out which bus stops at a bus stop</string>
@@ -42,6 +38,7 @@
     <string name="page_dialog_title">Something wrong with Route </string>
     <string name="page_dialog_message">Please report it!</string>
     <string name="map_dest_blank">Destination cannot be blank</string>
+    <string name="map_warning">Once it launches change it to bus mode!</string>
 
 
 </resources>

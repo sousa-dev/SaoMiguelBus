@@ -14,11 +14,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.models.Dialog
@@ -36,6 +31,7 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         val getDirections = view.findViewById<Button>(R.id.getDirections)
         val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
