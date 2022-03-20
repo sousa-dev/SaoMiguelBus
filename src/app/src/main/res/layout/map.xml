@@ -17,18 +17,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></com.google.android.gms.ads.AdView>
 
+
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/find_routes_map"
         android:layout_width="197dp"
         android:layout_height="42dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="216dp"
         android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.236"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
-
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_find"

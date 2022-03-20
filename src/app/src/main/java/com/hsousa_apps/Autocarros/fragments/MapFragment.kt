@@ -2,6 +2,7 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.fragment.app.Fragment
 
@@ -16,7 +17,6 @@ import androidx.core.widget.doOnTextChanged
 
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.models.Dialog
 
 class MapFragment : Fragment() {
 
@@ -31,6 +31,8 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
 
 
         val getDirections = view.findViewById<Button>(R.id.getDirections)
