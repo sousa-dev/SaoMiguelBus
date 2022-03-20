@@ -20,14 +20,14 @@
         android:id="@+id/textView3"
         android:layout_width="327dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="116dp"
         android:gravity="center"
         android:text="@string/if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="@+id/textView2"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/settingsAdtemplate" />
+        app:layout_constraintTop_toBottomOf="@+id/rate" />
 
     <AutoCompleteTextView
         android:id="@+id/language"
@@ -151,29 +151,6 @@
         app:layout_constraintStart_toStartOf="@+id/textView3"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/settingsAd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        app:adSize="BANNER"
-        app:adUnitId="@string/ad_unit_settings"
-        app:layout_constraintEnd_toEndOf="@+id/textView2"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/rate" />
-
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/settingsAdtemplate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:visibility="invisible"
-        app:adSize="BANNER"
-        app:layout_constraintEnd_toEndOf="@+id/textView2"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/rate" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_settings"

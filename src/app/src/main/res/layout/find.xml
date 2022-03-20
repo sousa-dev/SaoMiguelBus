@@ -54,8 +54,8 @@
         app:backgroundTint="#218732"
         app:layout_constraintEnd_toEndOf="@+id/actv_find"
         app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@+id/find_routes"
-        app:layout_constraintTop_toBottomOf="@+id/find_routes" />
+        app:layout_constraintStart_toStartOf="@+id/find_routes_map"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
 
     <TextView
         android:id="@+id/find_hint"
@@ -70,7 +70,7 @@
         app:layout_constraintTop_toBottomOf="@+id/find_button" />
 
     <AutoCompleteTextView
-        android:id="@+id/find_routes"
+        android:id="@+id/find_routes_map"
         android:layout_width="197dp"
         android:layout_height="42dp"
         android:layout_marginTop="8dp"
@@ -88,7 +88,7 @@
         android:layout_marginTop="12dp"
         android:padding="5dp"
         android:src="@mipmap/baseline_arrow_drop_down_black_24"
-        app:layout_constraintEnd_toEndOf="@+id/find_routes"
+        app:layout_constraintEnd_toEndOf="@+id/find_routes_map"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
 
     <RadioGroup

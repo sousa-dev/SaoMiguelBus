@@ -17,16 +17,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></com.google.android.gms.ads.AdView>
 
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/find_routes_map"
+        android:layout_width="197dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="216dp"
+        android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.236"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/adtemplate_find"
-        tools:context=".fragments.MapFragment" />
+        app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_find"
@@ -41,5 +42,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/getDirections"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/find_button"
+        app:backgroundTint="#218732"
+        app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.408"
+        app:layout_constraintStart_toEndOf="@+id/find_routes_map"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_map"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/gifImageView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="68dp"
+        android:src="@drawable/bus_mode_gif"
+        app:layout_constraintEnd_toEndOf="@+id/getDirections"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/find_routes_map"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
+
+    <TextView
+        android:id="@+id/map_warning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/map_warning"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/gifImageView"
+        app:layout_constraintEnd_toEndOf="@+id/gifImageView"
+        app:layout_constraintHorizontal_bias="0.549"
+        app:layout_constraintStart_toStartOf="@+id/gifImageView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -34,4 +34,6 @@
     <string name="something_wrong"><u>Stimmt was nicht?</u></string>
     <string name="page_dialog_title">"Probleme mit der Route "</string>
     <string name="page_dialog_message">Bitte melden Sie es!</string>
+    <string name="map_dest_blank">Ziel darf nicht leer sein</string>
+    <string name="map_warning">Sobald es gestartet wird, ändern Sie es in den Busmodus!</string>
 </resources>

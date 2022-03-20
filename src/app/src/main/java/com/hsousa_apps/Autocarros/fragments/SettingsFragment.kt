@@ -28,11 +28,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        MobileAds.initialize(this.context) {}
-
-        val mAdView = view.findViewById<AdView>(R.id.settingsAd)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
 
         val language: AutoCompleteTextView = view.findViewById(R.id.language)
         val actv_language: ImageView = view.findViewById(R.id.actv_language)
