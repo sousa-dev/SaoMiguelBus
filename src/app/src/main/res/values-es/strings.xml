@@ -34,4 +34,5 @@
     <string name="something_wrong"><u>¿Algo mal?</u></string>
     <string name="page_dialog_title">"Problemas con la ruta "</string>
     <string name="page_dialog_message">¡Por favor, infórmalo!</string>
+    <string name="map_dest_blank">El destino no puede estar en blanco</string>
 </resources>

@@ -41,5 +41,7 @@
     <string name="something_wrong"><u>Something wrong?</u></string>
     <string name="page_dialog_title">Something wrong with Route </string>
     <string name="page_dialog_message">Please report it!</string>
+    <string name="map_dest_blank">Destination cannot be blank</string>
+
 
 </resources>

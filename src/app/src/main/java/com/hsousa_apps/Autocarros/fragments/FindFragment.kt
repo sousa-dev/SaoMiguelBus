@@ -1,7 +1,6 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,7 @@ class FindFragment(private var times: ArrayList<Route>? = null, private var uniq
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val stop: AutoCompleteTextView = view.findViewById(R.id.find_routes)
+        val stop: AutoCompleteTextView = view.findViewById(R.id.find_routes_map)
         val actv: ImageView = view.findViewById(R.id.actv_find)
         var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
 
