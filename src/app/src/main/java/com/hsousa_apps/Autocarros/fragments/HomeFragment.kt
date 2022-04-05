@@ -86,6 +86,12 @@ class HomeFragment : Fragment(), View.OnClickListener {
         view?.findViewById<TextView>(R.id.test_the_map)?.setOnClickListener {
            swapFrags(MapFragment())
         }
+        view?.findViewById<TextView>(R.id.warning)?.setOnClickListener {
+            var dialog = Dialog(getString(R.string.warning_dialog_title), getString(R.string.warning_dialog_message), "OK", DialogInterface.OnClickListener { dialog, which ->
+            });
+            dialog.isCancelable = false
+            dialog.show(parentFragmentManager, "App Info Warning")
+        }
     }
 
     private fun saveFav(){

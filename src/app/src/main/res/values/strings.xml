@@ -35,6 +35,8 @@
     <string name="route_dialog_message">Oops... There seems to be a problem loading this routes info. Please report it so I can fix it!</string>
     <string name="route_dialog_positive">Report</string>
     <string name="route_dialog_negative">No</string>
+    <string name="warning_dialog_title">WARNING</string>
+    <string name="warning_dialog_message">This app was not developed nor is supported by any bus company. The present schedule was taken from public documents made available by them. Some routes/hours may be outdated!</string>
     <string name="something_wrong"><u>Something wrong?</u></string>
     <string name="page_dialog_title">Something wrong with Route </string>
     <string name="page_dialog_message">Please report it!</string>

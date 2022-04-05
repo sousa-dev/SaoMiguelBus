@@ -37,4 +37,6 @@
     <string name="map_dest_blank">El destino no puede estar en blanco</string>
     <string name="map_warning">Cuando está abierto, cambia al modo bus</string>
     <string name="search_on_map"><u>Búscalo en el Mapa</u></string>
+    <string name="warning_dialog_message">Esta aplicación no fue desarrollada ni cuenta con el apoyo de ninguna empresa de autobuses. El presente cronograma fue tomado de documentos públicos puestos a disposición por ellos. ¡Algunas rutas/horas pueden estar desactualizadas!</string>
+    <string name="warning_dialog_title">ADVERTENCIA</string>
 </resources>
