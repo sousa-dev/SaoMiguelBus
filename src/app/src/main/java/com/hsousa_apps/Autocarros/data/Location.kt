@@ -1,4 +1,4 @@
 package com.hsousa_apps.Autocarros.data
 
-class Location(x: Double, y: Double){
+class Location(val x: Double, val y: Double){
 }
