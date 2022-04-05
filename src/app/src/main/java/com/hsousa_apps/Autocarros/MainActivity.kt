@@ -1,9 +1,14 @@
 package com.hsousa_apps.Autocarros
 
 import android.content.SharedPreferences
+import org.osmdroid.config.Configuration.*
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -31,6 +36,9 @@ class MainActivity : AppCompatActivity() {
         if (Locale.getDefault().language != "pt"){
             Functions().translateStops(Locale.getDefault().language)
         }
+
+        getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+
 
         Datasource().loaded()
 
