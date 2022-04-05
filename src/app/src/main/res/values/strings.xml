@@ -40,6 +40,7 @@
     <string name="page_dialog_message">Please report it!</string>
     <string name="map_dest_blank">Destination cannot be blank</string>
     <string name="map_warning">Once it launches change it to bus mode!</string>
+    <string name="search_on_map"><u>Search it on the map</u></string>
 
 
 </resources>

@@ -36,4 +36,5 @@
     <string name="page_dialog_message">S\'il vous plaît, signalez-le!</string>
     <string name="map_dest_blank">La destination ne peut pas être vide</string>
     <string name="map_warning">Une fois qu\'il est lancé, passez-le en mode bus !</string>
+    <string name="search_on_map"><u>Cherchez-le sur la carte</u></string>
 </resources>

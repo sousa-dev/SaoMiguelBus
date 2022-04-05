@@ -36,4 +36,5 @@
     <string name="page_dialog_message">Bitte melden Sie es!</string>
     <string name="map_dest_blank">Ziel darf nicht leer sein</string>
     <string name="map_warning">Sobald es gestartet wird, ändern Sie es in den Busmodus!</string>
+    <string name="search_on_map"><u>Suchen Sie es auf der Karte</u></string>
 </resources>

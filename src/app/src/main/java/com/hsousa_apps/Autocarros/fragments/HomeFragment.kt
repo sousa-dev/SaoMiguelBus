@@ -1,6 +1,9 @@
 package com.hsousa_apps.Autocarros.fragments
 
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,6 +20,7 @@ import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.Stop
 import com.hsousa_apps.Autocarros.models.CardModel
+import com.hsousa_apps.Autocarros.models.Dialog
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.ArrayList
 import kotlin.math.log
@@ -78,6 +82,10 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
         //TODO: improve favorite save system
         saveFav()
+
+        view?.findViewById<TextView>(R.id.test_the_map)?.setOnClickListener {
+           swapFrags(MapFragment())
+        }
     }
 
     private fun saveFav(){
