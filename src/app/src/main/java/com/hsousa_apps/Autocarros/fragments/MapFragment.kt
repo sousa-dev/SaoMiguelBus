@@ -18,7 +18,9 @@ import org.osmdroid.views.MapView
 
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
+import com.hsousa_apps.Autocarros.data.Datasource
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 
 class MapFragment : Fragment() {
 
@@ -39,7 +41,17 @@ class MapFragment : Fragment() {
 
         val mapController = map.controller
         mapController.setZoom(11)
-        mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598));
+        mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598))
+
+        for (stop in Datasource().getStops()){
+            if(stop.coordinates.x == 0.0) continue
+            val point = GeoPoint(stop.coordinates.x, stop.coordinates.y)
+            val marker = Marker(map)
+            marker.position = point
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            marker.title = stop.name
+            map.overlays.add(marker)
+        }
 
         val getDirections = view.findViewById<Button>(R.id.getDirections)
         val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)

@@ -147,7 +147,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                         "mailto", "sousadev@yahoo.com", null
                     )
                 )
-                intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
+                intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: Route $id")
                 startActivity(Intent.createChooser(intent, "Choose an Email client:"))
             }, getString(R.string.route_dialog_negative));
             dialog.isCancelable = false
@@ -162,7 +162,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
                     "mailto", "sousadev@yahoo.com", null
                 )
             )
-            intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
+            intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: Route $id")
             startActivity(Intent.createChooser(intent, "Choose an Email client:"))
         }, getString(R.string.route_dialog_negative));
         dialog.isCancelable = false
