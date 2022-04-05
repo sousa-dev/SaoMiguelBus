@@ -157,6 +157,20 @@
         app:layout_constraintStart_toStartOf="@+id/actv1"
         app:layout_constraintTop_toBottomOf="@+id/actv1" />
 
+    <TextView
+        android:id="@+id/test_the_map
+"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:text="@string/search_on_map"
+        android:textColor="#2196F3"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="@+id/homeSearch"
+        app:layout_constraintEnd_toStartOf="@+id/homeSearch"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/homeSearch" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_find"
         style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
@@ -170,4 +184,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/warning"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ic_baseline_info_24"
+        app:backgroundTint="#218732"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="@+id/imageView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

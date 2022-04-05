@@ -36,4 +36,7 @@
     <string name="page_dialog_message">Por favor, reporte!</string>
     <string name="map_dest_blank">O destino não pode ficar em branco</string>
     <string name="map_warning">Quando abrir mude para o modo autocarro</string>
+    <string name="search_on_map"><u>Pesquisa no Mapa</u></string>
+    <string name="warning_dialog_message">Esta app não foi desenvolvida nem tem apoio de nenhuma companhia de autocarros. Os horários presentes foram retirados de documentos públicos disponibilizados pelas mesmas. Algumas rotas/horas podem estar desatualizadas!</string>
+    <string name="warning_dialog_title">AVISO</string>
 </resources>

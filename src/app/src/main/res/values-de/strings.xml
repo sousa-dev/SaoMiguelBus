@@ -36,4 +36,7 @@
     <string name="page_dialog_message">Bitte melden Sie es!</string>
     <string name="map_dest_blank">Ziel darf nicht leer sein</string>
     <string name="map_warning">Sobald es gestartet wird, ändern Sie es in den Busmodus!</string>
+    <string name="search_on_map"><u>Suchen Sie es auf der Karte</u></string>
+    <string name="warning_dialog_message">Diese App wurde von keinem Busunternehmen entwickelt oder unterstützt. Der vorliegende Zeitplan wurde den von ihnen zur Verfügung gestellten öffentlichen Dokumenten entnommen. Einige Routen/Stunden können veraltet sein!</string>
+    <string name="warning_dialog_title">WARNUNG</string>
 </resources>

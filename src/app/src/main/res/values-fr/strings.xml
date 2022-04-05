@@ -36,4 +36,7 @@
     <string name="page_dialog_message">S\'il vous plaît, signalez-le!</string>
     <string name="map_dest_blank">La destination ne peut pas être vide</string>
     <string name="map_warning">Une fois qu\'il est lancé, passez-le en mode bus !</string>
+    <string name="search_on_map"><u>Cherchez-le sur la carte</u></string>
+    <string name="warning_dialog_message">Cette application n\'a été développée ni prise en charge par aucune compagnie de bus. Le présent calendrier a été tiré de documents publics mis à disposition par eux. Certains itinéraires/heures peuvent être obsolètes !</string>
+    <string name="warning_dialog_title">ATTENTION</string>
 </resources>

@@ -22,7 +22,7 @@
         android:id="@+id/find_routes_map"
         android:layout_width="197dp"
         android:layout_height="42dp"
-        android:layout_marginTop="216dp"
+        android:layout_marginTop="10dp"
         android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.236"
@@ -78,5 +78,17 @@
         app:layout_constraintEnd_toEndOf="@+id/gifImageView"
         app:layout_constraintHorizontal_bias="0.549"
         app:layout_constraintStart_toStartOf="@+id/gifImageView" />
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapview"
+        tilesource="Mapnik"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gifImageView"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
