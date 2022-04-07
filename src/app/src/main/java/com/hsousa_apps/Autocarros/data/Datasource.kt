@@ -79,9 +79,9 @@ class Datasource {
         Stop("Covoada - Encruzilhada", Location(37.778574057916046, -25.73097291728711))
         Stop("Relva - Igreja", Location(37.753752703865956, -25.72166073078083))
         Stop("Relva - Canto da Pia", Location(37.75149329290809, -25.71249373078105))
-        Stop("Ramal Cruz", Location(40.31194631740335, -24.794516287086644))
-        Stop("Ramal Ajuda", Location(41.2436907119826, -25.673422493267054))
-        Stop("Canada da Cova", Location(38.42768473102515, -25.68849341980258))
+        Stop("Ramal Cruz", Location(0.0,0.0))
+        Stop("Ramal Ajuda", Location(0.0,0.0))
+        Stop("Canada da Cova", Location(37.802238597230115, -25.683446031613002))
 
         /* Varela Routes */
         Stop("São Roque", Location(37.74859127356805, -25.633979733080785))
@@ -146,7 +146,7 @@ class Datasource {
         Stop("Lomba da Pedreira", Location(37.805661351146625, -25.14557230349052))
         Stop("Vila do Nordeste", Location(37.83196737315398, -25.145442369265457))
         Stop("Gramas", Location(37.81564406590625, -25.486157086602034))
-        Stop("Pico do Fogo", Location(14.950518776305142, -24.340261476355916))
+        Stop("Pico do Fogo", Location(37.7693785761531, -25.584831028992937))
         Stop("Santa Bárbara - Ribeira Grande", Location(37.79870809252399, -25.532752240977654))
         Stop("Furnas - Águas Quentes", Location(37.76946211793299, -25.31842235776762))
         Stop("Furnas - Caldeiras", Location(37.77141022925242, -25.303342917287157))
