@@ -1,22 +1,16 @@
 package com.hsousa_apps.Autocarros
 
-import android.app.VoiceInteractor
 import android.content.SharedPreferences
 import org.osmdroid.config.Configuration.*
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -27,6 +21,8 @@ import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.fragments.*
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.*
 
 
@@ -47,13 +43,30 @@ class MainActivity : AppCompatActivity() {
             Request.Method.GET,
             URL,
             null,
-            Response.Listener { response ->
-                Log.d("RESPONSE", response.toString())
+            { response ->
                 /**TODO: populate static files with response routes**/
+                Datasource().loadStopsFromAPI()
+                for(i in 0 until response.length()){
+                    val JSONobject: JSONObject? = response.getJSONObject(i)
+                    if (JSONobject != null) {
+                        val id: Int = JSONobject.get("id") as Int
+                        val route: String = JSONobject.get("route") as String
+                        val stops: JSONArray = JSONobject.get("stops") as JSONArray
+                        val times: JSONArray = JSONobject.get("times") as JSONArray
+                        val type_of_day: String = JSONobject.get("weekday") as String
+                        val information: String = JSONobject.get("information") as String
+
+                        Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
+
+                        Log.d("DEBUG", route+stops+times+type_of_day+information)
+                    }
+                }
+                Datasource().getAllRoutes()
             },
-            Response.ErrorListener { error ->
+            { error ->
                 Log.d("FAILED RESPONSE", error.toString())
                 if (!Datasource().getLoaded()) Datasource().load()
+
             }
         )
         requestQueue.add(objectRequest)
