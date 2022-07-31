@@ -43,6 +43,8 @@
     <string name="map_dest_blank">Destination cannot be blank</string>
     <string name="map_warning">Once it launches change it to bus mode!</string>
     <string name="search_on_map"><u>Search it on the map</u></string>
+    <string name="failed_response_title">Failed to connect to the server</string>
+    <string name="failed_response_desc">The app couldn\'t connect to the server in order to update the bus schedule data. Information in the app may be outdated </string>
 
 
 </resources>

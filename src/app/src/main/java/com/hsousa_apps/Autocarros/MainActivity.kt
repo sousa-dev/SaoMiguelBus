@@ -1,10 +1,12 @@
 package com.hsousa_apps.Autocarros
 
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import org.osmdroid.config.Configuration.*
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -21,6 +23,7 @@ import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.fragments.*
+import com.hsousa_apps.Autocarros.models.Dialog
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
@@ -65,11 +68,19 @@ class MainActivity : AppCompatActivity() {
             },
             { error ->
                 Log.d("FAILED RESPONSE", error.toString())
-                if (!Datasource().getLoaded()) Datasource().load()
+                Datasource().load()
 
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle(getString(R.string.failed_response_title))
+                builder.setMessage(getString(R.string.failed_response_desc))
+
+                builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                }
+
+                builder.show()
             }
         )
-        requestQueue.add(objectRequest)
+        if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
 
         if (Locale.getDefault().language != "pt"){
             Functions().translateStops(Locale.getDefault().language)
@@ -97,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.search_nb -> {
-                    target = FindFragment(Datasource().getAllRoutes())
+                    target = FindFragment(Datasource().getFindRoutes())
                 }
 
                 R.id.map_nb -> {

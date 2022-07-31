@@ -7,6 +7,7 @@ import org.json.JSONObject
 import java.lang.Exception
 
 var allRoutes: ArrayList<Route> = arrayListOf()
+var findRoutes: ArrayList<Route> = arrayListOf()
 var avmRoutes: ArrayList<Route> = arrayListOf()
 var varelaRoutes: ArrayList<Route> = arrayListOf()
 var crpRoutes: ArrayList<Route> = arrayListOf()
@@ -32,12 +33,23 @@ class Datasource {
         loadCRP()
         allRoutes.addAll(crpRoutes)
 
+        findRoutes = allRoutes
+
         //setCorrespondence()
     }
 
     fun loadStopsFromAPI(){
         Log.d("DEBUG", "loading stops from api")
         loadStops()
+
+        loadAVM()
+        findRoutes.addAll(avmRoutes)
+
+        loadVARELA()
+        findRoutes.addAll(varelaRoutes)
+
+        loadCRP()
+        findRoutes.addAll(crpRoutes)
     }
 
     fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
@@ -56,7 +68,7 @@ class Datasource {
 
         var info: JSONObject? = null
         if (information != "None") info = JSONObject(information)
-        if (info != null) {
+        if (info == null) {
             info = JSONObject("{'pt': '', 'en': '', 'es': '', 'fr': '', 'de': ''}")
         }
 
@@ -3928,6 +3940,10 @@ class Datasource {
         Log.d("ALLROUTES-SIZE", allRoutes.size.toString())
         Log.d("ALLROUTES", allRoutes.toString())
         return allRoutes
+    }
+
+    fun getFindRoutes(): ArrayList<Route> {
+        return findRoutes
     }
 
     fun getAvmRoutes(): ArrayList<Route> {

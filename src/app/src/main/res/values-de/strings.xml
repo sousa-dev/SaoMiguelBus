@@ -39,4 +39,6 @@
     <string name="search_on_map"><u>Suchen Sie es auf der Karte</u></string>
     <string name="warning_dialog_message">Diese App wurde von keinem Busunternehmen entwickelt oder unterstützt. Der vorliegende Zeitplan wurde den von ihnen zur Verfügung gestellten öffentlichen Dokumenten entnommen. Einige Routen/Stunden können veraltet sein!</string>
     <string name="warning_dialog_title">WARNUNG</string>
+    <string name="failed_response_title">Verbindung zum Server fehlgeschlagen</string>
+    <string name="failed_response_desc">Es kann keine Verbindung zum Server hergestellt werden, um die Anwendungsdaten zu aktualisieren. Die angezeigten Informationen können veraltet sein.</string>
 </resources>
