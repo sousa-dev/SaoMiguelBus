@@ -81,6 +81,18 @@ class MainActivity : AppCompatActivity() {
             }
         )
         if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
+        
+        val randomInt: Int = (0..10).random()
+        if (randomInt == 7){
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(getString(R.string.warning_dialog_title))
+            builder.setMessage(getString(R.string.warning_dialog_message))
+
+            builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder.show()
+        }
 
         if (Locale.getDefault().language != "pt"){
             Functions().translateStops(Locale.getDefault().language)
