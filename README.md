@@ -8,7 +8,7 @@ São Miguel Island Bus Schedule App.
 
 ###### All the information on this app was found on the bus companies' websites.  
 
-### v3.1 ###
+### v3.2 ###
 [![playstore](https://user-images.githubusercontent.com/56836057/133408897-e5d0c2f2-26d3-48cb-8e83-838344b3f02a.png)](https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros&hl=pt)
 
 ### TODO ###
