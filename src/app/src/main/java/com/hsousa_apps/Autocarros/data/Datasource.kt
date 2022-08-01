@@ -1,13 +1,13 @@
 package com.hsousa_apps.Autocarros.data
 
-import android.content.Context
 import android.util.Log
-import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.fragments.HomeFragment
+import org.json.JSONArray
+import org.json.JSONObject
 import java.lang.Exception
 
 var allRoutes: ArrayList<Route> = arrayListOf()
+var findRoutes: ArrayList<Route> = arrayListOf()
 var avmRoutes: ArrayList<Route> = arrayListOf()
 var varelaRoutes: ArrayList<Route> = arrayListOf()
 var crpRoutes: ArrayList<Route> = arrayListOf()
@@ -33,7 +33,66 @@ class Datasource {
         loadCRP()
         allRoutes.addAll(crpRoutes)
 
+        findRoutes = allRoutes
+
         //setCorrespondence()
+    }
+
+    fun loadStopsFromAPI(){
+        Log.d("DEBUG", "loading stops from api")
+        loadStops()
+
+        loadAVM()
+        findRoutes.addAll(avmRoutes)
+
+        loadVARELA()
+        findRoutes.addAll(varelaRoutes)
+
+        loadCRP()
+        findRoutes.addAll(crpRoutes)
+    }
+
+    fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
+        var day: TypeOfDay
+        /**TODO: Check if this is Right**/
+        when (type_of_day) {
+            "WEEKDAY" -> {
+                day = TypeOfDay.WEEKDAY
+            }
+            "SATURDAY" -> {
+                day = TypeOfDay.SATURDAY
+            }
+            "SUNDAY" -> {
+                day = TypeOfDay.SUNDAY
+            }
+        }
+
+        var info: JSONObject? = null
+        if (information != "None") info = JSONObject(information)
+        if (info == null) {
+            info = JSONObject("{'pt': '', 'en': '', 'es': '', 'fr': '', 'de': ''}")
+        }
+
+        var img: Int? = null
+        if (route.startsWith("1")) img = R.drawable.crp_logo
+        else if (route.startsWith("2")) img = R.drawable.avm_logo
+        else if (route.startsWith("3")) img = R.drawable.varela_logo
+
+
+        var stop_times: MutableMap<Stop, List<String>> = mutableMapOf()
+        for (i in 0 until stops.length()) stop_times[getStop(stops.getString(i))] = listOf<String>(times.getString(i))
+
+        Log.d("DEBUG-INFO", stop_times.toString())
+
+        val trip: Route? = img?.let {
+            Route(
+                route, id.toString(), stop_times, TypeOfDay.WEEKDAY, it, info?.getString(currentLanguage)
+            )
+        }
+
+        if (trip != null) {
+            allRoutes.add(trip)
+        }
     }
 
     private fun loadStops() {
@@ -3880,6 +3939,10 @@ class Datasource {
 
     fun getAllRoutes(): ArrayList<Route> {
         return allRoutes
+    }
+
+    fun getFindRoutes(): ArrayList<Route> {
+        return findRoutes
     }
 
     fun getAvmRoutes(): ArrayList<Route> {

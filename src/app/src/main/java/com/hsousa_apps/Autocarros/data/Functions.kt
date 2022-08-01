@@ -9,16 +9,19 @@ class Functions {
         val ret: MutableList<Route> = mutableListOf()
         val originStop: Stop = Datasource().getStop(origin)
         val destinationStop: Stop = Datasource().getStop(destination)
-        for (route in Datasource().getAllRoutes())
-            if(route.stops.containsKey(originStop) and route.stops.containsKey(destinationStop) and (route.getStopIdx(originStop) < route.getStopIdx(destinationStop)) and (route.day == TypeOfDay))
+        for (route in Datasource().getAllRoutes()){
+            if(route.stops.containsKey(originStop) and route.stops.containsKey(destinationStop) and (route.getStopIdx(originStop) < route.getStopIdx(destinationStop)) and (route.day == TypeOfDay)){
                 ret.add(route)
+            }
+        }
+        Log.d("TEST", "Functions().getOptions() | $ret")
         return ret as ArrayList<Route>
     }
 
     fun getStopRoutes(stop: String): ArrayList<Route>{
         val ret: MutableList<Route> = mutableListOf()
         val getStop: Stop = Datasource().getStop(stop)
-        for (route in Datasource().getAllRoutes())
+        for (route in Datasource().getFindRoutes())
            if (route.stops.containsKey(getStop)) ret.add(route)
         return ret as ArrayList<Route>
     }

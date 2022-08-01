@@ -39,4 +39,7 @@
     <string name="search_on_map"><u>Pesquisa no Mapa</u></string>
     <string name="warning_dialog_message">Esta app não foi desenvolvida nem tem apoio de nenhuma companhia de autocarros. Os horários presentes foram retirados de documentos públicos disponibilizados pelas mesmas. Algumas rotas/horas podem estar desatualizadas!</string>
     <string name="warning_dialog_title">AVISO</string>
+    <string name="failed_response_title">Falha ao conetar ao Servidor</string>
+    <string name="failed_response_desc">Não foi possível estabelecer conexão ao servidor para atualizar os dados da aplicação. As informações apresentadas podem estar desatualizadas</string>
+    <string name="loading">A Carregar</string>
 </resources>

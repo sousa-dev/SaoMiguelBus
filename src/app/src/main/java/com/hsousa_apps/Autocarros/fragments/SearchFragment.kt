@@ -138,18 +138,29 @@ class SearchFragment(private var origin: String? = null, private var destination
         emptymsg?.visibility = View.INVISIBLE
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
+        Log.d("TEST", "createCards() init | $times")
+
         if (times != null) {
-            for(route in times!!)
+            for(route in times!!){
+                Log.d("TEST", "Route: $route")
                 for (i in 0 until route.getNStops(route.getOrigin())!!)
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
+                    {
+                        Log.d("TEST", "inside route: ${route.info}")
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             route.info?.let { it1 ->
                                 CardModel(route.id, origin, destination,
                                     it, route.company, info = it1, unique_id = route.unique_id
                                 )
                             }
-                        }?.let { cards.add(it) }
+                        }?.let {
+                            Log.d("TEST", "Add Route: $route")
+                            cards.add(it) }
+                    }
+            }
         }
+
+        Log.d("TEST", "createCards() cards | $cards")
 
         if(cards.size > 1) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
 

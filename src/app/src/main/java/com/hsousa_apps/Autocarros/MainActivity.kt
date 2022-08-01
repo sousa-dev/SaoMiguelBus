@@ -1,15 +1,23 @@
 package com.hsousa_apps.Autocarros
 
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import org.osmdroid.config.Configuration.*
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -19,26 +27,91 @@ import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.fragments.*
+import com.hsousa_apps.Autocarros.models.Dialog
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        val URL = "https://saomiguelbus-api.herokuapp.com/api/v1/android/load"
         loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
         setContentView(R.layout.main)
 
         Datasource().changeCurrentLang(Locale.getDefault().language)
-        if (!Datasource().getLoaded()) Datasource().load()
+
+        /** Fetch routes from API **/
+        val progressBar: ConstraintLayout = findViewById(R.id.loadingGroup)
+        val requestQueue: RequestQueue = Volley.newRequestQueue(this)
+        val objectRequest: JsonArrayRequest = JsonArrayRequest(
+            Request.Method.GET,
+            URL,
+            null,
+            { response ->
+                progressBar.visibility = View.VISIBLE
+                Datasource().loadStopsFromAPI()
+                for(i in 0 until response.length()){
+                    val JSONobject: JSONObject? = response.getJSONObject(i)
+                    if (JSONobject != null) {
+                        val id: Int = JSONobject.get("id") as Int
+                        val route: String = JSONobject.get("route") as String
+                        val stops: JSONArray = JSONobject.get("stops") as JSONArray
+                        val times: JSONArray = JSONobject.get("times") as JSONArray
+                        val type_of_day: String = JSONobject.get("weekday") as String
+                        val information: String = JSONobject.get("information") as String
+
+                        Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
+
+                        Log.d("DEBUG", route+stops+times+type_of_day+information)
+                    }
+                }
+                progressBar.visibility = View.GONE
+
+                swapFrags(HomeFragment())
+
+            },
+            { error ->
+                Log.d("FAILED RESPONSE", error.toString())
+                Datasource().load()
+
+                progressBar.visibility = View.GONE
+
+
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle(getString(R.string.failed_response_title))
+                builder.setMessage(getString(R.string.failed_response_desc))
+
+                builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                }
+
+                builder.show()
+
+                swapFrags(HomeFragment())
+            }
+        )
+        if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
+
+        val randomInt: Int = (0..10).random()
+        if (randomInt == 7){
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(getString(R.string.warning_dialog_title))
+            builder.setMessage(getString(R.string.warning_dialog_message))
+
+            builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder.show()
+        }
 
         if (Locale.getDefault().language != "pt"){
             Functions().translateStops(Locale.getDefault().language)
         }
 
         getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-
 
         Datasource().loaded()
 
@@ -60,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.search_nb -> {
-                    target = FindFragment(Datasource().getAllRoutes())
+                    target = FindFragment(Datasource().getFindRoutes())
                 }
 
                 R.id.map_nb -> {
@@ -79,7 +152,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        swapFrags(HomeFragment())
     }
 
     fun saveData(op: String){

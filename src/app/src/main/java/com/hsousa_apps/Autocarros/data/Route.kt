@@ -42,4 +42,8 @@ class Route constructor(val id: String, val unique_id: String, val stops: Map<St
     fun getNStops(stop: Stop?): Int? {
         return stops[stop]?.size
     }
+
+    override fun toString (): String {
+        return "$id | $stops";
+    }
 }
