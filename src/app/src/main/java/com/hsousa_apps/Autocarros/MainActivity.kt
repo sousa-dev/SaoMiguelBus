@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
 
                         Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
 
-                        Log.d("DEBUG", route+stops+times+type_of_day+information)
                     }
                 }
                 progressBar.visibility = View.GONE
@@ -75,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
             },
             { error ->
-                Log.d("FAILED RESPONSE", error.toString())
+                Log.d("ERROR", "Failed Response: $error")
                 Datasource().load()
 
                 progressBar.visibility = View.GONE

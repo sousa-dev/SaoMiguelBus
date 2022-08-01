@@ -82,8 +82,6 @@ class Datasource {
         var stop_times: MutableMap<Stop, List<String>> = mutableMapOf()
         for (i in 0 until stops.length()) stop_times[getStop(stops.getString(i))] = listOf<String>(times.getString(i))
 
-        Log.d("DEBUG-INFO", stop_times.toString())
-
         val trip: Route? = img?.let {
             Route(
                 route, id.toString(), stop_times, TypeOfDay.WEEKDAY, it, info?.getString(currentLanguage)
@@ -1896,7 +1894,7 @@ class Datasource {
         varelaRoutes.addAll(
             arrayListOf(
                 Route(
-                    route, route+"v", mapOf(
+                    route, route+"vx", mapOf(
                         getStop("Ponta Delgada") to listOf(
                             "07h50",
                             "08h25",
@@ -1960,7 +1958,7 @@ class Datasource {
                     ), TypeOfDay.WEEKDAY, img
                 ),
                 Route(
-                    route, route+"i", mapOf(
+                    route, route+"ix", mapOf(
                         getStop("Lagoa") to listOf(
                             "07h10",
                             "07h20",
@@ -2020,7 +2018,7 @@ class Datasource {
                     ), TypeOfDay.WEEKDAY, img
                 ),
                 Route(
-                    route, route+"vs", mapOf(
+                    route, route+"vsx", mapOf(
                         getStop("Ponta Delgada") to listOf(
                             "09h30",
                             "10h30",
@@ -2056,7 +2054,7 @@ class Datasource {
                     ), TypeOfDay.SATURDAY, img
                 ),
                 Route(
-                    route, route+"is", mapOf(
+                    route, route+"isx", mapOf(
                         getStop("Lagoa") to listOf(
                             "07h00",
                             "07h45",
@@ -2092,7 +2090,7 @@ class Datasource {
                     ), TypeOfDay.SATURDAY, img
                 ),
                 Route(
-                    route, route+"id", mapOf(
+                    route, route+"idx", mapOf(
                         getStop("Ponta Delgada") to listOf("17h15", "20h00", "21h15", "23h15"),
                         getStop("São Roque") to listOf("17h20", "20h05", "21h30", "23h30"),
                         getStop("Livramento") to listOf("17h25", "20h15", "21h35", "23h35"),
@@ -2100,7 +2098,7 @@ class Datasource {
                     ), TypeOfDay.SUNDAY, img
                 ),
                 Route(
-                    route, route+"vd", mapOf(
+                    route, route+"vdx", mapOf(
                         getStop("Lagoa") to listOf("17h45", "22h00"),
                         getStop("Livramento") to listOf("17h55", "22h10"),
                         getStop("São Roque") to listOf("18h00", "22h15"),
@@ -4018,7 +4016,6 @@ class Datasource {
             val idx = getTimeIdx(route_id, timeToFind, origin, destination)
             val route = getRouteHash()[route_id]
                     for (i in route?.stops?.keys?.indices!!) {
-                        Log.d("debug", route.stops.toString())
                         val times: List<String>? = route.stops[getStop(route.stops.keys.toList()[i].toString())]
                         if (times != null) {
                             map[route.stops.keys.toList()[i].toString()] = times[idx]

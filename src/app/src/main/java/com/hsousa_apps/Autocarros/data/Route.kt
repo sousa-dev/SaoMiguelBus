@@ -19,7 +19,6 @@ class Route constructor(val id: String, val unique_id: String, val stops: Map<St
     fun getTimeIdx(times: List<String>, time: String?): Int {
         for (i in times.indices)
             if (times[i] == time) return i
-        Log.d("dl", times.toString() + time)
         return -1
     }
 

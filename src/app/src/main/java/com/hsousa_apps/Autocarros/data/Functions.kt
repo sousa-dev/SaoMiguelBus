@@ -14,7 +14,6 @@ class Functions {
                 ret.add(route)
             }
         }
-        Log.d("TEST", "Functions().getOptions() | $ret")
         return ret as ArrayList<Route>
     }
 
