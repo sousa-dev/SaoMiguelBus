@@ -54,6 +54,7 @@ class Datasource {
 
     fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
         var day: TypeOfDay
+        /**TODO: Check if this is Right**/
         when (type_of_day) {
             "WEEKDAY" -> {
                 day = TypeOfDay.WEEKDAY
@@ -3937,8 +3938,6 @@ class Datasource {
     }
 
     fun getAllRoutes(): ArrayList<Route> {
-        Log.d("ALLROUTES-SIZE", allRoutes.size.toString())
-        Log.d("ALLROUTES", allRoutes.toString())
         return allRoutes
     }
 

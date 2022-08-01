@@ -41,4 +41,5 @@
     <string name="warning_dialog_title">ADVERTENCIA</string>
     <string name="failed_response_title">Error al conectar con el servidor</string>
     <string name="failed_response_desc">No se puede establecer la conexión con el servidor para actualizar los datos de la aplicación. La información presentada puede estar desactualizada.</string>
+    <string name="loading">Cargando</string>
 </resources>

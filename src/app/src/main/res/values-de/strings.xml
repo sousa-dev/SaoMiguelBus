@@ -41,4 +41,5 @@
     <string name="warning_dialog_title">WARNUNG</string>
     <string name="failed_response_title">Verbindung zum Server fehlgeschlagen</string>
     <string name="failed_response_desc">Es kann keine Verbindung zum Server hergestellt werden, um die Anwendungsdaten zu aktualisieren. Die angezeigten Informationen können veraltet sein.</string>
+    <string name="loading">"Wird geladen "</string>
 </resources>

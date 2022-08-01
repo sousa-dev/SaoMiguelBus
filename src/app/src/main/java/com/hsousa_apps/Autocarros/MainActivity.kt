@@ -6,9 +6,13 @@ import org.osmdroid.config.Configuration.*
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -41,13 +45,14 @@ class MainActivity : AppCompatActivity() {
         Datasource().changeCurrentLang(Locale.getDefault().language)
 
         /** Fetch routes from API **/
+        val progressBar: ConstraintLayout = findViewById(R.id.loadingGroup)
         val requestQueue: RequestQueue = Volley.newRequestQueue(this)
         val objectRequest: JsonArrayRequest = JsonArrayRequest(
             Request.Method.GET,
             URL,
             null,
             { response ->
-                /**TODO: populate static files with response routes**/
+                progressBar.visibility = View.VISIBLE
                 Datasource().loadStopsFromAPI()
                 for(i in 0 until response.length()){
                     val JSONobject: JSONObject? = response.getJSONObject(i)
@@ -64,11 +69,17 @@ class MainActivity : AppCompatActivity() {
                         Log.d("DEBUG", route+stops+times+type_of_day+information)
                     }
                 }
-                Datasource().getAllRoutes()
+                progressBar.visibility = View.GONE
+
+                swapFrags(HomeFragment())
+
             },
             { error ->
                 Log.d("FAILED RESPONSE", error.toString())
                 Datasource().load()
+
+                progressBar.visibility = View.GONE
+
 
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(getString(R.string.failed_response_title))
@@ -78,10 +89,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 builder.show()
+
+                swapFrags(HomeFragment())
             }
         )
         if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
-        
+
         val randomInt: Int = (0..10).random()
         if (randomInt == 7){
             val builder = AlertDialog.Builder(this)
@@ -139,7 +152,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        swapFrags(HomeFragment())
     }
 
     fun saveData(op: String){
