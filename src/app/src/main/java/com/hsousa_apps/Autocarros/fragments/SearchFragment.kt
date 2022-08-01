@@ -139,23 +139,27 @@ class SearchFragment(private var origin: String? = null, private var destination
         var cards: MutableList<CardModel> = mutableListOf<CardModel>()
 
         if (times != null) {
-            for(route in times!!)
+            for(route in times!!){
                 for (i in 0 until route.getNStops(route.getOrigin())!!)
                     if (route.getStopTime(Datasource().getStop(origin), i) != "---" && route.getStopTime(Datasource().getStop(destination), i) != "---")
+                    {
                         route.getStopTime(Datasource().getStop(origin), i)?.let {
                             route.info?.let { it1 ->
                                 CardModel(route.id, origin, destination,
                                     it, route.company, info = it1, unique_id = route.unique_id
                                 )
                             }
-                        }?.let { cards.add(it) }
+                        }?.let {
+                            cards.add(it) }
+                    }
+            }
         }
+
 
         if(cards.size > 1) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
-            //Log.d("ERROR", cards.toString())
             rv?.adapter = RouteCardAdapter(view.context, cards as java.util.ArrayList<CardModel>)
         }
         if (cards.size == 0){

@@ -24,5 +24,7 @@ class CardModel {
         this.delete = delete
         this.unique_id = unique_id
     }
-
+    override fun toString (): String {
+        return "$id | $from -> $to | $time | $info";
+    }
 }

@@ -1,13 +1,13 @@
 package com.hsousa_apps.Autocarros.data
 
-import android.content.Context
 import android.util.Log
-import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.fragments.HomeFragment
+import org.json.JSONArray
+import org.json.JSONObject
 import java.lang.Exception
 
 var allRoutes: ArrayList<Route> = arrayListOf()
+var findRoutes: ArrayList<Route> = arrayListOf()
 var avmRoutes: ArrayList<Route> = arrayListOf()
 var varelaRoutes: ArrayList<Route> = arrayListOf()
 var crpRoutes: ArrayList<Route> = arrayListOf()
@@ -33,7 +33,63 @@ class Datasource {
         loadCRP()
         allRoutes.addAll(crpRoutes)
 
+        findRoutes = allRoutes
+
         //setCorrespondence()
+    }
+
+    fun loadStopsFromAPI(){
+        Log.d("DEBUG", "loading stops from api")
+        loadStops()
+
+        loadAVM()
+        findRoutes.addAll(avmRoutes)
+
+        loadVARELA()
+        findRoutes.addAll(varelaRoutes)
+
+        loadCRP()
+        findRoutes.addAll(crpRoutes)
+    }
+
+    fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
+        var day: TypeOfDay = TypeOfDay.WEEKDAY
+        when (type_of_day) {
+            "WEEKDAY" -> {
+                day = TypeOfDay.WEEKDAY
+            }
+            "SATURDAY" -> {
+                day = TypeOfDay.SATURDAY
+            }
+            "SUNDAY" -> {
+                day = TypeOfDay.SUNDAY
+            }
+        }
+        
+        var info: JSONObject? = null
+        if (information != "None") info = JSONObject(information)
+        if (info == null) {
+            info = JSONObject("{'pt': '', 'en': '', 'es': '', 'fr': '', 'de': ''}")
+        }
+
+        var img: Int? = null
+        if (route.startsWith("1")) img = R.drawable.crp_logo
+        else if (route.startsWith("2")) img = R.drawable.avm_logo
+        else if (route.startsWith("3")) img = R.drawable.varela_logo
+
+
+        var stop_times: MutableMap<Stop, List<String>> = mutableMapOf()
+        for (i in 0 until stops.length()) stop_times[getStop(stops.getString(i))] = listOf<String>(times.getString(i))
+
+        val trip: Route? = img?.let {
+            Route(
+                route, id.toString(), stop_times, day, it, info?.getString(currentLanguage)
+            )
+        }
+
+        if (trip != null) {
+            allRoutes.add(trip)
+        }
     }
 
     private fun loadStops() {
@@ -79,9 +135,9 @@ class Datasource {
         Stop("Covoada - Encruzilhada", Location(37.778574057916046, -25.73097291728711))
         Stop("Relva - Igreja", Location(37.753752703865956, -25.72166073078083))
         Stop("Relva - Canto da Pia", Location(37.75149329290809, -25.71249373078105))
-        Stop("Ramal Cruz", Location(40.31194631740335, -24.794516287086644))
-        Stop("Ramal Ajuda", Location(41.2436907119826, -25.673422493267054))
-        Stop("Canada da Cova", Location(38.42768473102515, -25.68849341980258))
+        Stop("Ramal Cruz", Location(0.0,0.0))
+        Stop("Ramal Ajuda", Location(0.0,0.0))
+        Stop("Canada da Cova", Location(37.802238597230115, -25.683446031613002))
 
         /* Varela Routes */
         Stop("São Roque", Location(37.74859127356805, -25.633979733080785))
@@ -146,7 +202,7 @@ class Datasource {
         Stop("Lomba da Pedreira", Location(37.805661351146625, -25.14557230349052))
         Stop("Vila do Nordeste", Location(37.83196737315398, -25.145442369265457))
         Stop("Gramas", Location(37.81564406590625, -25.486157086602034))
-        Stop("Pico do Fogo", Location(14.950518776305142, -24.340261476355916))
+        Stop("Pico do Fogo", Location(37.7693785761531, -25.584831028992937))
         Stop("Santa Bárbara - Ribeira Grande", Location(37.79870809252399, -25.532752240977654))
         Stop("Furnas - Águas Quentes", Location(37.76946211793299, -25.31842235776762))
         Stop("Furnas - Caldeiras", Location(37.77141022925242, -25.303342917287157))
@@ -1837,7 +1893,7 @@ class Datasource {
         varelaRoutes.addAll(
             arrayListOf(
                 Route(
-                    route, route+"v", mapOf(
+                    route, route+"vx", mapOf(
                         getStop("Ponta Delgada") to listOf(
                             "07h50",
                             "08h25",
@@ -1901,7 +1957,7 @@ class Datasource {
                     ), TypeOfDay.WEEKDAY, img
                 ),
                 Route(
-                    route, route+"i", mapOf(
+                    route, route+"ix", mapOf(
                         getStop("Lagoa") to listOf(
                             "07h10",
                             "07h20",
@@ -1961,7 +2017,7 @@ class Datasource {
                     ), TypeOfDay.WEEKDAY, img
                 ),
                 Route(
-                    route, route+"vs", mapOf(
+                    route, route+"vsx", mapOf(
                         getStop("Ponta Delgada") to listOf(
                             "09h30",
                             "10h30",
@@ -1997,7 +2053,7 @@ class Datasource {
                     ), TypeOfDay.SATURDAY, img
                 ),
                 Route(
-                    route, route+"is", mapOf(
+                    route, route+"isx", mapOf(
                         getStop("Lagoa") to listOf(
                             "07h00",
                             "07h45",
@@ -2033,7 +2089,7 @@ class Datasource {
                     ), TypeOfDay.SATURDAY, img
                 ),
                 Route(
-                    route, route+"id", mapOf(
+                    route, route+"idx", mapOf(
                         getStop("Ponta Delgada") to listOf("17h15", "20h00", "21h15", "23h15"),
                         getStop("São Roque") to listOf("17h20", "20h05", "21h30", "23h30"),
                         getStop("Livramento") to listOf("17h25", "20h15", "21h35", "23h35"),
@@ -2041,7 +2097,7 @@ class Datasource {
                     ), TypeOfDay.SUNDAY, img
                 ),
                 Route(
-                    route, route+"vd", mapOf(
+                    route, route+"vdx", mapOf(
                         getStop("Lagoa") to listOf("17h45", "22h00"),
                         getStop("Livramento") to listOf("17h55", "22h10"),
                         getStop("São Roque") to listOf("18h00", "22h15"),
@@ -3882,6 +3938,10 @@ class Datasource {
         return allRoutes
     }
 
+    fun getFindRoutes(): ArrayList<Route> {
+        return findRoutes
+    }
+
     fun getAvmRoutes(): ArrayList<Route> {
         return avmRoutes
     }
@@ -3955,7 +4015,6 @@ class Datasource {
             val idx = getTimeIdx(route_id, timeToFind, origin, destination)
             val route = getRouteHash()[route_id]
                     for (i in route?.stops?.keys?.indices!!) {
-                        Log.d("debug", route.stops.toString())
                         val times: List<String>? = route.stops[getStop(route.stops.keys.toList()[i].toString())]
                         if (times != null) {
                             map[route.stops.keys.toList()[i].toString()] = times[idx]
