@@ -53,8 +53,7 @@ class Datasource {
     }
 
     fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
-        var day: TypeOfDay
-        /**TODO: Check if this is Right**/
+        var day: TypeOfDay = TypeOfDay.WEEKDAY
         when (type_of_day) {
             "WEEKDAY" -> {
                 day = TypeOfDay.WEEKDAY
@@ -66,7 +65,7 @@ class Datasource {
                 day = TypeOfDay.SUNDAY
             }
         }
-
+        
         var info: JSONObject? = null
         if (information != "None") info = JSONObject(information)
         if (info == null) {
@@ -84,7 +83,7 @@ class Datasource {
 
         val trip: Route? = img?.let {
             Route(
-                route, id.toString(), stop_times, TypeOfDay.WEEKDAY, it, info?.getString(currentLanguage)
+                route, id.toString(), stop_times, day, it, info?.getString(currentLanguage)
             )
         }
 
