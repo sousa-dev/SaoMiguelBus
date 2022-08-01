@@ -146,7 +146,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
     }
 
     fun notifyDataChange(view: View){
-        Log.d("error", Datasource().getFavorite().toString())
 
         var RV = view.findViewById<RecyclerView>(R.id.home_recyclerview)
         var emptymsg = view.findViewById<TextView>(R.id.home_emptymsg)
@@ -159,8 +158,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
             emptymsg.visibility = View.VISIBLE
         else
             emptymsg.visibility = View.INVISIBLE
-
-        //Log.d("error", cards.toString())
 
         var adapter = RouteCardAdapter(view.context, cards as ArrayList<CardModel>, 2)
         RV.adapter = adapter
