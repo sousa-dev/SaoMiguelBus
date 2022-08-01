@@ -68,6 +68,11 @@ class MainActivity : AppCompatActivity() {
 
                     }
                 }
+
+                if (Locale.getDefault().language != "pt"){
+                    Functions().translateStops(Locale.getDefault().language)
+                }
+
                 progressBar.visibility = View.GONE
 
                 swapFrags(HomeFragment())
@@ -76,6 +81,10 @@ class MainActivity : AppCompatActivity() {
             { error ->
                 Log.d("ERROR", "Failed Response: $error")
                 Datasource().load()
+
+                if (Locale.getDefault().language != "pt"){
+                    Functions().translateStops(Locale.getDefault().language)
+                }
 
                 progressBar.visibility = View.GONE
 
@@ -106,9 +115,6 @@ class MainActivity : AppCompatActivity() {
             builder.show()
         }
 
-        if (Locale.getDefault().language != "pt"){
-            Functions().translateStops(Locale.getDefault().language)
-        }
 
         getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
 
