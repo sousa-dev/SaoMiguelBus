@@ -29,6 +29,7 @@ import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.fragments.*
 import com.hsousa_apps.Autocarros.models.Dialog
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -52,30 +53,54 @@ class MainActivity : AppCompatActivity() {
             URL,
             null,
             { response ->
-                progressBar.visibility = View.VISIBLE
-                Datasource().loadStopsFromAPI()
-                for(i in 0 until response.length()){
-                    val JSONobject: JSONObject? = response.getJSONObject(i)
-                    if (JSONobject != null) {
-                        val id: Int = JSONobject.get("id") as Int
-                        val route: String = JSONobject.get("route") as String
-                        val stops: JSONArray = JSONobject.get("stops") as JSONArray
-                        val times: JSONArray = JSONobject.get("times") as JSONArray
-                        val type_of_day: String = JSONobject.get("weekday") as String
-                        val information: String = JSONobject.get("information") as String
+                try {
+                    progressBar.visibility = View.VISIBLE
+                    Datasource().loadStopsFromAPI()
+                    for(i in 0 until response.length()){
+                        val JSONobject: JSONObject? = response.getJSONObject(i)
+                        if (JSONobject != null) {
+                            val id: Int = JSONobject.get("id") as Int
+                            val route: String = JSONobject.get("route") as String
+                            val stops: JSONArray = JSONobject.get("stops") as JSONArray
+                            val times: JSONArray = JSONobject.get("times") as JSONArray
+                            val type_of_day: String = JSONobject.get("weekday") as String
+                            val information: String = JSONobject.get("information") as String
 
-                        Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
+                            Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
 
+                        }
                     }
+
+                    if (Locale.getDefault().language != "pt"){
+                        Functions().translateStops(Locale.getDefault().language)
+                    }
+
+                    progressBar.visibility = View.GONE
+
+                    swapFrags(HomeFragment())
+                }catch (e: JSONException){
+                    Log.d("ERROR", "JSONException: $e")
+                    Datasource().load()
+
+                    if (Locale.getDefault().language != "pt"){
+                        Functions().translateStops(Locale.getDefault().language)
+                    }
+
+                    progressBar.visibility = View.GONE
+
+
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle(getString(R.string.failed_response_title))
+                    builder.setMessage(getString(R.string.failed_response_desc))
+
+                    builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                    }
+
+                    builder.show()
+
+                    swapFrags(HomeFragment())
                 }
 
-                if (Locale.getDefault().language != "pt"){
-                    Functions().translateStops(Locale.getDefault().language)
-                }
-
-                progressBar.visibility = View.GONE
-
-                swapFrags(HomeFragment())
 
             },
             { error ->
