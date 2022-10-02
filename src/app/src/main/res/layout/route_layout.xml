@@ -23,7 +23,7 @@
         android:id="@+id/route_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="50dp"
         android:text="00h00"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -47,7 +47,7 @@
         android:id="@+id/route_destination"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="75dp"
+        android:layout_marginTop="60dp"
         android:text="To"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -60,7 +60,7 @@
         android:layout_height="69dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="14dp"
         app:layout_constraintBottom_toBottomOf="@+id/go_to_route_page"
         app:layout_constraintStart_toStartOf="@+id/go_to_route_page"
@@ -89,7 +89,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageButton
         android:id="@+id/remove_fav_home"
@@ -101,6 +102,17 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/route_time"
         app:layout_constraintTop_toTopOf="@+id/go_to_route_page" />
+
+    <TextView
+        android:id="@+id/card_model_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:autoText="false"
+        android:textColor="#CC3B3B"
+        app:autoSizeStepGranularity="2sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toEndOf="@+id/route_time"
+        app:layout_constraintTop_toBottomOf="@+id/route_time" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
