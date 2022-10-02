@@ -14,6 +14,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import org.osmdroid.views.MapView
 
 import com.google.android.material.textfield.TextInputEditText
@@ -65,6 +69,13 @@ class MapFragment : Fragment() {
 
         getDirections.setOnClickListener{
             if (search != ""){
+                /** Send Stats to API **/
+                var language : String = Datasource().getCurrentLang()
+                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search&time=NA&language=$language&platform=android&day=NA"
+                val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+                var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+                requestQueue.add(request)
+                /***********************/
                 val search_split: String = search.replace(" ", "+")
                 startActivity(
                     Intent(

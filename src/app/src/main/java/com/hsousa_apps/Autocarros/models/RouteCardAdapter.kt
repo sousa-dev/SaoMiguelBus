@@ -33,6 +33,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         holder.to.text = route.to
         holder.time.text = route.time
         holder.id.tag = route.unique_id
+        holder.info.text = route.info
         // TODO: if(route.delete) holder.delete.visibility = View.VISIBLE
 
         holder.delete.setOnClickListener {
@@ -71,6 +72,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
         val company: ImageView
         val click: Button
         val delete: ImageButton
+        val info: TextView
 
         init {
             id = itemView.findViewById(R.id.route_id)
@@ -80,7 +82,7 @@ class RouteCardAdapter(private val context: Context, private val RoutesArrayList
             company = itemView.findViewById(R.id.route_company)
             click = itemView.findViewById(R.id.go_to_route_page)
             delete = itemView.findViewById(R.id.remove_fav_home)
-
+            info = itemView.findViewById(R.id.card_model_info)
         }
     }
 

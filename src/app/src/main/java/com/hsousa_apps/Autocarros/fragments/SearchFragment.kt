@@ -14,6 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
@@ -37,6 +42,14 @@ class SearchFragment(private var origin: String? = null, private var destination
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        /** Send Stats to API **/
+        var language : String = Datasource().getCurrentLang()
+        var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_route&origin=$origin&destination=$destination&time=NA&language=$language&platform=android&day=NA"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+        requestQueue.add(request)
+        /***********************/
 
         val from: TextView = view.findViewById(R.id.from_search)
         val to: TextView = view.findViewById(R.id.to_search)
