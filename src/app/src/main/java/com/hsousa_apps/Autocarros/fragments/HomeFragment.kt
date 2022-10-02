@@ -75,7 +75,33 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
         search.setOnClickListener{
             if (from.editableText.toString() != "" && to.editableText.toString() != "")
-                swapFrags(SearchFragment(from.editableText.toString(), to.editableText.toString(), Functions().getOptions(from.editableText.toString(), to.editableText.toString())))
+            {
+                var origin = ""
+                for (word in from.editableText.toString().split(' ')) {
+                    if (word != "" && word != " "){
+                        origin += if (word.toLowerCase() != "do" && word.toLowerCase() != "da" && word.toLowerCase() != "de" && word.toLowerCase() != "dos" && word.toLowerCase() != "das") {
+                            " " + word.capitalize()
+                        } else {
+                            " " + word.toLowerCase()
+                        }
+                    }
+                }
+                origin = origin.trim()
+                var destination = ""
+                for (word in to.editableText.toString().split(' ')){
+                    if (word != "" && word != " "){
+                        destination += if (word.toLowerCase() != "do" && word.toLowerCase()  != "da" && word.toLowerCase()  != "de" && word.toLowerCase() != "dos" && word.toLowerCase() != "das"){
+                            " " + word.capitalize()
+                        } else {
+                            " " + word.toLowerCase()
+                        }
+                    }
+
+                }
+                destination = destination.trim()
+                swapFrags(SearchFragment(origin, destination, Functions().getOptions(origin, destination)))
+            }
+
             else
                 Toast.makeText(context, resources.getString(R.string.toast_search_message), Toast.LENGTH_SHORT).show()
         }
