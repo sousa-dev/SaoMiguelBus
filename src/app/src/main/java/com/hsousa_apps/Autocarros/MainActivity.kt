@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -29,6 +30,7 @@ import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.fragments.*
 import com.hsousa_apps.Autocarros.models.Dialog
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -52,30 +54,54 @@ class MainActivity : AppCompatActivity() {
             URL,
             null,
             { response ->
-                progressBar.visibility = View.VISIBLE
-                Datasource().loadStopsFromAPI()
-                for(i in 0 until response.length()){
-                    val JSONobject: JSONObject? = response.getJSONObject(i)
-                    if (JSONobject != null) {
-                        val id: Int = JSONobject.get("id") as Int
-                        val route: String = JSONobject.get("route") as String
-                        val stops: JSONArray = JSONobject.get("stops") as JSONArray
-                        val times: JSONArray = JSONobject.get("times") as JSONArray
-                        val type_of_day: String = JSONobject.get("weekday") as String
-                        val information: String = JSONobject.get("information") as String
+                try {
+                    progressBar.visibility = View.VISIBLE
+                    Datasource().loadStopsFromAPI()
+                    for(i in 0 until response.length()){
+                        val JSONobject: JSONObject? = response.getJSONObject(i)
+                        if (JSONobject != null) {
+                            val id: Int = JSONobject.get("id") as Int
+                            val route: String = JSONobject.get("route") as String
+                            val stops: JSONArray = JSONobject.get("stops") as JSONArray
+                            val times: JSONArray = JSONobject.get("times") as JSONArray
+                            val type_of_day: String = JSONobject.get("weekday") as String
+                            val information: String = JSONobject.get("information") as String
 
-                        Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
+                            Datasource().loadFromAPI(id, route, stops, times, type_of_day, information);
 
+                        }
                     }
+
+                    if (Locale.getDefault().language != "pt"){
+                        Functions().translateStops(Locale.getDefault().language)
+                    }
+
+                    progressBar.visibility = View.GONE
+
+                    swapFrags(HomeFragment())
+                }catch (e: JSONException){
+                    Log.d("ERROR", "JSONException: $e")
+                    Datasource().load()
+
+                    if (Locale.getDefault().language != "pt"){
+                        Functions().translateStops(Locale.getDefault().language)
+                    }
+
+                    progressBar.visibility = View.GONE
+
+
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle(getString(R.string.failed_response_title))
+                    builder.setMessage(getString(R.string.failed_response_desc))
+
+                    builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                    }
+
+                    builder.show()
+
+                    swapFrags(HomeFragment())
                 }
 
-                if (Locale.getDefault().language != "pt"){
-                    Functions().translateStops(Locale.getDefault().language)
-                }
-
-                progressBar.visibility = View.GONE
-
-                swapFrags(HomeFragment())
 
             },
             { error ->
@@ -102,6 +128,12 @@ class MainActivity : AppCompatActivity() {
             }
         )
         if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
+
+        /** Send Stats to API **/
+        var URL_load= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=android_load&origin=NA&destination=NA&time=NA&language=${Locale.getDefault().language}&platform=android&day=NA"
+        var request: StringRequest = StringRequest(Request.Method.POST, URL_load, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+        requestQueue.add(request)
+        /***********************/
 
         val randomInt: Int = (0..10).random()
         if (randomInt == 7){
