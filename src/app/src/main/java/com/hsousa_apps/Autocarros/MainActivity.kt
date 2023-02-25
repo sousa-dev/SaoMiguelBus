@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
@@ -24,6 +25,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
@@ -33,6 +35,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
+import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
@@ -128,6 +131,43 @@ class MainActivity : AppCompatActivity() {
             }
         )
         if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
+
+        var lang = Datasource().getCurrentLang()
+        if (lang == "pt")
+            lang = "pt-pt"
+        val mapsURL="https://maps.googleapis.com/maps/api/directions/json?origin=Capelas&destination=Ponta%20Delgada&mode=transit&key=AIzaSyA0et-w8goFqEet3SfoPnKZV2VPOGSDtfU&language="+lang
+        val mapsRequest: JsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET,
+            mapsURL,
+            null,
+            { response ->
+                try {
+                    val routes: JSONArray = response["routes"] as JSONArray
+                    for (i in 0 until routes.length()) {
+                        val route: JSONObject = routes.getJSONObject(i)
+                        val legs: JSONArray = route.getJSONArray("legs")
+                        Log.d("MAPS", "route ${i+1}:")
+                        for (j in 0 until legs.length()){
+                            val leg: JSONObject = legs.getJSONObject(j)
+                            Log.d("MAPS", "\tleg ${j+1}:")
+                            val steps: JSONArray = leg.getJSONArray("steps")
+                            for (k in 0 until steps.length()){
+                                val step: JSONObject = steps.getJSONObject(k)
+                                Log.d("MAPS", "\t\tstep: $step")
+                            }
+                        }
+                    }
+                }catch (e: JSONException){
+                    Log.d("MAPS", "JSONException: $e")
+                }
+
+
+            },
+            { error ->
+                Log.d("MAPS", "Failed Response: $error")
+            }
+        )
+        requestQueue.add(mapsRequest)
 
         /** Send Stats to API **/
         var URL_load= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=android_load&origin=NA&destination=NA&time=NA&language=${Locale.getDefault().language}&platform=android&day=NA"
