@@ -153,7 +153,15 @@ class MainActivity : AppCompatActivity() {
                             val steps: JSONArray = leg.getJSONArray("steps")
                             for (k in 0 until steps.length()){
                                 val step: JSONObject = steps.getJSONObject(k)
-                                Log.d("MAPS", "\t\tstep: $step")
+                                val instructions: String = step.getString("html_instructions")
+
+                                val distance: JSONObject = step.getJSONObject("distance")
+                                val distance_text: String = distance.getString("text")
+
+                                val duration: JSONObject = step.getJSONObject("duration")
+                                val duration_text: String = duration.getString("text")
+
+                                Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $distance_text\n\t\t\tduration: $duration_text")
                             }
                         }
                     }
