@@ -132,51 +132,6 @@ class MainActivity : AppCompatActivity() {
         )
         if (!Datasource().getLoaded()) requestQueue.add(objectRequest)
 
-        var lang = Datasource().getCurrentLang()
-        if (lang == "pt")
-            lang = "pt-pt"
-        val mapsURL="https://maps.googleapis.com/maps/api/directions/json?origin=Capelas&destination=Ponta%20Delgada&mode=transit&key=AIzaSyA0et-w8goFqEet3SfoPnKZV2VPOGSDtfU&language="+lang
-        val mapsRequest: JsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET,
-            mapsURL,
-            null,
-            { response ->
-                try {
-                    val routes: JSONArray = response["routes"] as JSONArray
-                    for (i in 0 until routes.length()) {
-                        val route: JSONObject = routes.getJSONObject(i)
-                        val legs: JSONArray = route.getJSONArray("legs")
-                        Log.d("MAPS", "route ${i+1}:")
-                        for (j in 0 until legs.length()){
-                            val leg: JSONObject = legs.getJSONObject(j)
-                            Log.d("MAPS", "\tleg ${j+1}:")
-                            val steps: JSONArray = leg.getJSONArray("steps")
-                            for (k in 0 until steps.length()){
-                                val step: JSONObject = steps.getJSONObject(k)
-                                val instructions: String = step.getString("html_instructions")
-
-                                val distance: JSONObject = step.getJSONObject("distance")
-                                val distance_text: String = distance.getString("text")
-
-                                val duration: JSONObject = step.getJSONObject("duration")
-                                val duration_text: String = duration.getString("text")
-
-                                Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $distance_text\n\t\t\tduration: $duration_text")
-                            }
-                        }
-                    }
-                }catch (e: JSONException){
-                    Log.d("MAPS", "JSONException: $e")
-                }
-
-
-            },
-            { error ->
-                Log.d("MAPS", "Failed Response: $error")
-            }
-        )
-        requestQueue.add(mapsRequest)
-
         /** Send Stats to API **/
         var URL_load= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=android_load&origin=NA&destination=NA&time=NA&language=${Locale.getDefault().language}&platform=android&day=NA"
         var request: StringRequest = StringRequest(Request.Method.POST, URL_load, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })

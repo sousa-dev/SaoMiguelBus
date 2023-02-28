@@ -56,39 +56,25 @@
         app:layout_constraintTop_toTopOf="@+id/find_routes_map"
         app:layout_constraintVertical_bias="0.0" />
 
-    <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/gifImageView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
-        android:src="@drawable/bus_mode_gif"
-        app:layout_constraintEnd_toEndOf="@+id/getDirections"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/find_routes_map"
-        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
-
-    <TextView
-        android:id="@+id/map_warning"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/map_warning"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/gifImageView"
-        app:layout_constraintEnd_toEndOf="@+id/gifImageView"
-        app:layout_constraintHorizontal_bias="0.549"
-        app:layout_constraintStart_toStartOf="@+id/gifImageView" />
-
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
         tilesource="Mapnik"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/steps_text"
+        android:layout_width="336dp"
+        android:layout_height="500dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gifImageView"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
