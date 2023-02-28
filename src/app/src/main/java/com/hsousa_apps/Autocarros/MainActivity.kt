@@ -41,7 +41,7 @@ import kotlin.reflect.typeOf
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        val URL = "https://saomiguelbus-api.herokuapp.com/api/v1/android/load"
+        val URL = "https://api.saomiguelbus.com/api/v1/android/load"
         loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
