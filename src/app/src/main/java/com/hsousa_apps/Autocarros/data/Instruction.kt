@@ -4,7 +4,7 @@ import org.json.JSONArray
 
 
 class Instruction {
-    var routes: MutableList<StepRoute> =  mutableListOf<StepRoute>()
+    var routes: MutableList<StepRoute> =  mutableListOf()
 
     override fun toString(): String {
         var str = ""
@@ -49,5 +49,6 @@ class Step {
 
     lateinit var travel_mode: String
     lateinit var polyline: String
-    lateinit var steps: Step
+
+    var steps: MutableList<Step> = mutableListOf()
 }

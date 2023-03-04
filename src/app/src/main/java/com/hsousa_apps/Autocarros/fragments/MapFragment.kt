@@ -162,10 +162,29 @@ class MapFragment : Fragment() {
                                 instruction_step.distance = step.getJSONObject("distance").getString("text")
                                 instruction_step.duration = step.getJSONObject("duration").getString("text")
 
+                                instruction_step.polyline = step.getJSONObject("polyline").getString("points")
                                 instruction_step.travel_mode = step.getString("travel_mode")
                                 var step_steps: JSONArray? = null
-                                if (step.has("steps"))
+
+                                // Get Step steps
+                                if (step.has("steps")) {
                                     step_steps = step.getJSONArray("steps")
+                                    if (step_steps != null) {
+                                        for (l in 0 until step_steps.length()) {
+                                            val step_steps_step = step_steps.getJSONObject(l)
+                                            var instruction_step_steps = Step()
+                                            instruction_step.steps.add(instruction_step_steps)
+
+                                            instruction_step_steps.instructions = step_steps_step.getString("html_instructions")
+
+                                            instruction_step_steps.distance = step_steps_step.getJSONObject("distance").getString("text")
+                                            instruction_step_steps.duration = step_steps_step.getJSONObject("duration").getString("text")
+
+                                            instruction_step_steps.polyline = step_steps_step.getJSONObject("polyline").getString("points")
+                                            instruction_step_steps.travel_mode = step_steps_step.getString("travel_mode")
+                                        }
+                                    }
+                                }
 
                                 //TODO: Get bus details if travel_mode == TRANSIT
 
