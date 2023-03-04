@@ -24,8 +24,7 @@ import org.osmdroid.views.MapView
 
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
-import com.hsousa_apps.Autocarros.data.Datasource
-import com.hsousa_apps.Autocarros.data.Location
+import com.hsousa_apps.Autocarros.data.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -125,37 +124,45 @@ class MapFragment : Fragment() {
                 try {
                     steps_text.text = ""
                     val routes: JSONArray = response["routes"] as JSONArray
+                    var instructions = Instruction()
                     for (i in 0 until routes.length()) {
                         val route: JSONObject = routes.getJSONObject(i)
+                        var instruction_route = StepRoute()
+                        instructions.routes.add(instruction_route)
                         val legs: JSONArray = route.getJSONArray("legs")
 
-                        val overview_polyline_points = route.getJSONObject("overview_polyline").getString("points")
-                        val warnings = route.get("warnings")
+                        instruction_route.overview_polyline_points = route.getJSONObject("overview_polyline").getString("points")
+                        instruction_route.warnings = route.getJSONArray("warnings")
 
                         Log.d("MAPS", "route ${i+1}:")
                         for (j in 0 until legs.length()){
                             val leg: JSONObject = legs.getJSONObject(j)
+                            val instruction_leg = Leg()
+                            instruction_route.legs.add(instruction_leg)
                             Log.d("MAPS", "\tleg ${j+1}:")
 
-                            val start_address = leg.getString("start_address")
+                            instruction_leg.start_address = leg.getString("start_address")
                             val start_location = leg.getJSONObject("start_location")
-                            val end_address = leg.getString("end_address")
+                            instruction_leg.start_location = Location(start_location.getDouble("lat"), start_location.getDouble("lng"))
+                            instruction_leg.end_address = leg.getString("end_address")
                             val end_location = leg.getJSONObject("end_location")
+                            instruction_leg.end_location = Location(end_location.getDouble("lat"), end_location.getDouble("lng"))
 
-
-                            val departure_time = leg.getJSONObject("departure_time").getString("text")
-                            val arrival_time = leg.getJSONObject("arrival_time").getString("text")
-                            val total_duration = leg.getJSONObject("duration").getString("text")
+                            instruction_leg.departure = leg.getJSONObject("departure_time").getString("text")
+                            instruction_leg.arrival = leg.getJSONObject("arrival_time").getString("text")
+                            instruction_leg.duration = leg.getJSONObject("duration").getString("text")
 
                             val steps: JSONArray = leg.getJSONArray("steps")
                             for (k in 0 until steps.length()){
                                 val step: JSONObject = steps.getJSONObject(k)
-                                val instructions: String = step.getString("html_instructions")
+                                var instruction_step = Step()
+                                instruction_leg.steps.add(instruction_step)
+                                instruction_step.instructions = step.getString("html_instructions")
 
-                                val step_distance: String = step.getJSONObject("distance").getString("text")
-                                val step_duration: String = step.getJSONObject("duration").getString("text")
+                                instruction_step.distance = step.getJSONObject("distance").getString("text")
+                                instruction_step.duration = step.getJSONObject("duration").getString("text")
 
-                                val travel_mode = step.getString("travel_mode")
+                                instruction_step.travel_mode = step.getString("travel_mode")
                                 var step_steps: JSONArray? = null
                                 if (step.has("steps"))
                                     step_steps = step.getJSONArray("steps")
@@ -165,12 +172,8 @@ class MapFragment : Fragment() {
                                 /**TODO: Repeat previous code for the new steps **/
 
                                 val step_polyline = step.getJSONObject("polyline").getString("points")
-                                Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $step_distance\n\t\t\tduration: $step_duration")
-                                var new_text = steps_text.text as String + "$start_address -> $end_address\n" +
-                                        "$departure_time -> $arrival_time | $total_duration\n" +
-                                        "\t$travel_mode | $instructions\n" +
-                                        "\t\tdistance: $step_distance\n" +
-                                        "\t\tduration: $step_duration\n"
+                                //Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $step_distance\n\t\t\tduration: $step_duration")
+                                var new_text = instructions.toString()
                                 steps_text.text = new_text
                             }
                         }
