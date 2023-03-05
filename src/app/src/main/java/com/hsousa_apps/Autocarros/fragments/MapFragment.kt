@@ -192,13 +192,8 @@ class MapFragment : Fragment() {
                                         }
                                     }
                                 }
+                                if (step.has("transit_details")) instruction_step.transit_details = Instruction().init_transit_details(step.getJSONObject("transit_details"))
 
-                                //TODO: Get bus details if travel_mode == TRANSIT
-                                if (step.has("transit_details")) {
-
-                                }
-                                val step_polyline = step.getJSONObject("polyline").getString("points")
-                                //Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $step_distance\n\t\t\tduration: $step_duration")
                                 var new_text = instructions.toString()
                                 steps_text.text = new_text
                             }
