@@ -44,6 +44,11 @@ class Leg {
 class Step {
     lateinit var instructions: String
 
+    lateinit var start_location: Location
+    lateinit var end_location: Location
+
+    lateinit var maneuver: String
+
     lateinit var distance: String
     lateinit var duration: String
 

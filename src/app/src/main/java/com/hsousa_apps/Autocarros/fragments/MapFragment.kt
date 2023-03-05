@@ -159,6 +159,9 @@ class MapFragment : Fragment() {
                                 instruction_leg.steps.add(instruction_step)
                                 instruction_step.instructions = step.getString("html_instructions")
 
+                                instruction_step.start_location = Location(step.getJSONObject("start_location").getDouble("lat"), step.getJSONObject("start_location").getDouble("lng"))
+                                instruction_step.end_location = Location(step.getJSONObject("end_location").getDouble("lat"), step.getJSONObject("end_location").getDouble("lng"))
+
                                 instruction_step.distance = step.getJSONObject("distance").getString("text")
                                 instruction_step.duration = step.getJSONObject("duration").getString("text")
 
@@ -176,6 +179,10 @@ class MapFragment : Fragment() {
                                             instruction_step.steps.add(instruction_step_steps)
 
                                             instruction_step_steps.instructions = step_steps_step.getString("html_instructions")
+                                            if (step_steps_step.has("maneuver")) instruction_step_steps.maneuver = step_steps_step.getString("maneuver")
+
+                                            instruction_step_steps.start_location = Location(step_steps_step.getJSONObject("start_location").getDouble("lat"), step_steps_step.getJSONObject("start_location").getDouble("lng"))
+                                            instruction_step_steps.end_location = Location(step_steps_step.getJSONObject("end_location").getDouble("lat"), step_steps_step.getJSONObject("end_location").getDouble("lng"))
 
                                             instruction_step_steps.distance = step_steps_step.getJSONObject("distance").getString("text")
                                             instruction_step_steps.duration = step_steps_step.getJSONObject("duration").getString("text")
@@ -187,9 +194,9 @@ class MapFragment : Fragment() {
                                 }
 
                                 //TODO: Get bus details if travel_mode == TRANSIT
+                                if (step.has("transit_details")) {
 
-                                /**TODO: Repeat previous code for the new steps **/
-
+                                }
                                 val step_polyline = step.getJSONObject("polyline").getString("points")
                                 //Log.d("MAPS", "\t\t$instructions\n\t\t\tdistance: $step_distance\n\t\t\tduration: $step_duration")
                                 var new_text = instructions.toString()
