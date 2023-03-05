@@ -196,6 +196,7 @@ class MapFragment : Fragment() {
 
                                 var new_text = instructions.toString()
                                 steps_text.text = new_text
+                                Log.d("INSTRUCTIONS", new_text)
                             }
                         }
                     }

@@ -11,7 +11,7 @@ class Instruction {
         var transit_details = TransitDetails()
 
 
-        transit_details.departura_stop = json.getJSONObject("departure_stop").getString("name")
+        transit_details.departure_stop = json.getJSONObject("departure_stop").getString("name")
         transit_details.departure_location = Location(
             json.getJSONObject("departure_stop").getJSONObject("location").getDouble("lat"),
             json.getJSONObject("departure_stop").getJSONObject("location").getDouble("lng"),
@@ -69,18 +69,116 @@ class Instruction {
         return vehicle
     }
     override fun toString(): String {
-        var str = ""
-        for (route in routes){
-            for (leg in route.legs){
-                str += "${leg.start_address} -> ${leg.end_address} ${leg.duration}\n${leg.departure} -> ${leg.arrival}\n"
-                for (step in leg.steps){
-                    str += "\t${step.travel_mode} | ${step.instructions}\n" +
-                            "\t\tdistance: ${step.distance}\n" +
-                            "\t\tduration: ${step.duration}\n"
+        val json = JSONObject()
+        val routesArray = JSONArray()
+
+        for (route in routes) {
+            val routeObject = JSONObject()
+            val legsArray = JSONArray()
+
+            for (leg in route.legs) {
+                val legObject = JSONObject()
+
+                legObject.put("start_address", leg.start_address)
+                legObject.put("end_address", leg.end_address)
+                legObject.put("duration", leg.duration)
+                legObject.put("departure", leg.departure)
+                legObject.put("arrival", leg.arrival)
+
+                val stepsArray = JSONArray()
+
+                for (step in leg.steps) {
+                    val stepObject = JSONObject()
+
+                    stepObject.put("instructions", step.instructions)
+                    stepObject.put("travel_mode", step.travel_mode)
+                    stepObject.put("distance", step.distance)
+                    stepObject.put("duration", step.duration)
+                    stepObject.put("polyline", step.polyline)
+
+                    if (step.travel_mode == "TRANSIT") {
+                        val transitDetailsObject = JSONObject()
+
+                        transitDetailsObject.put("departure_stop", step.transit_details.departure_stop)
+                        transitDetailsObject.put("departure_location", JSONObject()
+                            .put("lat", step.transit_details.departure_location.x)
+                            .put("lng", step.transit_details.departure_location.y)
+                        )
+                        transitDetailsObject.put("departure_time", step.transit_details.departure_time)
+
+                        transitDetailsObject.put("arrival_stop", step.transit_details.arrival_stop)
+                        transitDetailsObject.put("arrival_location", JSONObject()
+                            .put("lat", step.transit_details.arrival_location.x)
+                            .put("lng", step.transit_details.arrival_location.y)
+                        )
+                        transitDetailsObject.put("arrival_time", step.transit_details.arrival_time)
+
+                        transitDetailsObject.put("headsign", step.transit_details.headsign)
+
+                        val lineObject = JSONObject()
+
+                        lineObject.put("name", step.transit_details.line.name)
+                        lineObject.put("short_name", step.transit_details.line.short_name)
+
+                        val vehicleObject = JSONObject()
+
+                        vehicleObject.put("icon", step.transit_details.line.vehicle.icon)
+                        vehicleObject.put("name", step.transit_details.line.vehicle.name)
+                        vehicleObject.put("type", step.transit_details.line.vehicle.type)
+
+                        lineObject.put("vehicle", vehicleObject)
+
+                        val agenciesArray = JSONArray()
+
+                        for (agency in step.transit_details.line.agencies) {
+                            val agencyObject = JSONObject()
+
+                            agencyObject.put("name", agency.name)
+                            agencyObject.put("phone", agency.phone)
+                            agencyObject.put("url", agency.url)
+
+                            agenciesArray.put(agencyObject)
+                        }
+
+                        lineObject.put("agencies", agenciesArray)
+
+                        transitDetailsObject.put("line", lineObject)
+                        transitDetailsObject.put("num_stops", step.transit_details.num_stops)
+
+                        stepObject.put("transit_details", transitDetailsObject)
+                    } else if (step.travel_mode == "WALKING"){
+                        val stepStepsArray = JSONArray()
+
+                        for (stepsStep in step.steps){
+                            val stepStepsStepObject = JSONObject()
+
+                            stepStepsStepObject.put("instructions", stepsStep.instructions)
+                            stepStepsStepObject.put("travel_mode", stepsStep.travel_mode)
+                            stepStepsStepObject.put("distance", stepsStep.distance)
+                            stepStepsStepObject.put("duration", stepsStep.duration)
+                            stepStepsStepObject.put("polyline", stepsStep.polyline)
+
+                            stepStepsArray.put(stepStepsStepObject)
+                        }
+                    }
+
+                    stepsArray.put(stepObject)
                 }
+
+                legObject.put("steps", stepsArray)
+                legsArray.put(legObject)
             }
+
+            routeObject.put("legs", legsArray)
+            routeObject.put("overview_polyline_points", route.overview_polyline_points)
+            routeObject.put("warnings", route.warnings)
+
+            routesArray.put(routeObject)
         }
-        return str
+
+        json.put("routes", routesArray)
+
+        return json.toString(4)
     }
 }
 
@@ -123,7 +221,7 @@ class Step {
 
 class TransitDetails {
     lateinit var departure_location: Location
-    lateinit var departura_stop: String
+    lateinit var departure_stop: String
     lateinit var departure_time: String
     lateinit var arrival_location: Location
     lateinit var arrival_stop: String
