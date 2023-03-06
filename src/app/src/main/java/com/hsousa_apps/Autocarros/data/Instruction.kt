@@ -1,11 +1,74 @@
 package com.hsousa_apps.Autocarros.data;
 
+import com.google.gson.JsonObject
 import org.json.JSONArray
 import org.json.JSONObject
 
 
 class Instruction {
     var routes: MutableList<StepRoute> =  mutableListOf()
+
+    fun init_instructions(routes: JSONArray): Instruction {
+
+        for (i in 0 until routes.length())
+            this.routes.add(init_step_route(routes.getJSONObject(i)))
+
+        return this
+    }
+
+    fun init_step_route(json: JSONObject): StepRoute {
+        var instruction_route = StepRoute()
+
+        instruction_route.overview_polyline_points = json.getJSONObject("overview_polyline").getString("points")
+        instruction_route.warnings = json.getJSONArray("warnings")
+        var legs = json.getJSONArray("legs")
+        for (j in 0 until legs.length())
+            instruction_route.legs.add(init_leg(legs.getJSONObject(j)))
+
+        return instruction_route
+    }
+
+    fun init_leg(json: JSONObject): Leg {
+        var leg = Leg()
+
+        leg.start_address = json.getString("start_address")
+        val start_location = json.getJSONObject("start_location")
+        leg.start_location = Location(start_location.getDouble("lat"), start_location.getDouble("lng"))
+        leg.end_address = json.getString("end_address")
+        val end_location = json.getJSONObject("end_location")
+        leg.end_location = Location(end_location.getDouble("lat"), end_location.getDouble("lng"))
+
+        leg.departure = json.getJSONObject("departure_time").getString("text")
+        leg.arrival = json.getJSONObject("arrival_time").getString("text")
+        leg.duration = json.getJSONObject("duration").getString("text")
+
+        val steps = json.getJSONArray("steps")
+        for (k in 0 until steps.length())
+            leg.steps.add(init_step(steps.getJSONObject(k)))
+
+        return leg
+    }
+
+    fun init_step(json: JSONObject): Step {
+        var step = Step()
+
+        step.instructions = json.getString("html_instructions")
+
+        step.start_location = Location(json.getJSONObject("start_location").getDouble("lat"), json.getJSONObject("start_location").getDouble("lng"))
+        step.end_location = Location(json.getJSONObject("end_location").getDouble("lat"), json.getJSONObject("end_location").getDouble("lng"))
+
+
+        step.distance = json.getJSONObject("distance").getString("text")
+        step.duration = json.getJSONObject("duration").getString("text")
+
+        step.polyline = json.getJSONObject("polyline").getString("points")
+        step.travel_mode = json.getString("travel_mode")
+
+        if (json.has("steps")) for (l in 0 until json.getJSONArray("steps").length()) step.steps.add(init_step(json.getJSONArray("steps").getJSONObject(l)))
+        else if (json.has("transit_details")) step.transit_details = init_transit_details(json.getJSONObject("transit_details"))
+
+        return step
+    }
 
     fun init_transit_details(json: JSONObject) : TransitDetails{
         var transit_details = TransitDetails()

@@ -124,82 +124,11 @@ class MapFragment : Fragment() {
                 try {
                     steps_text.text = ""
                     val routes: JSONArray = response["routes"] as JSONArray
-                    var instructions = Instruction()
-                    for (i in 0 until routes.length()) {
-                        val route: JSONObject = routes.getJSONObject(i)
-                        var instruction_route = StepRoute()
-                        instructions.routes.add(instruction_route)
-                        val legs: JSONArray = route.getJSONArray("legs")
+                    var instructions = Instruction().init_instructions(routes)
 
-                        instruction_route.overview_polyline_points = route.getJSONObject("overview_polyline").getString("points")
-                        instruction_route.warnings = route.getJSONArray("warnings")
-
-                        Log.d("MAPS", "route ${i+1}:")
-                        for (j in 0 until legs.length()){
-                            val leg: JSONObject = legs.getJSONObject(j)
-                            val instruction_leg = Leg()
-                            instruction_route.legs.add(instruction_leg)
-                            Log.d("MAPS", "\tleg ${j+1}:")
-
-                            instruction_leg.start_address = leg.getString("start_address")
-                            val start_location = leg.getJSONObject("start_location")
-                            instruction_leg.start_location = Location(start_location.getDouble("lat"), start_location.getDouble("lng"))
-                            instruction_leg.end_address = leg.getString("end_address")
-                            val end_location = leg.getJSONObject("end_location")
-                            instruction_leg.end_location = Location(end_location.getDouble("lat"), end_location.getDouble("lng"))
-
-                            instruction_leg.departure = leg.getJSONObject("departure_time").getString("text")
-                            instruction_leg.arrival = leg.getJSONObject("arrival_time").getString("text")
-                            instruction_leg.duration = leg.getJSONObject("duration").getString("text")
-
-                            val steps: JSONArray = leg.getJSONArray("steps")
-                            for (k in 0 until steps.length()){
-                                val step: JSONObject = steps.getJSONObject(k)
-                                var instruction_step = Step()
-                                instruction_leg.steps.add(instruction_step)
-                                instruction_step.instructions = step.getString("html_instructions")
-
-                                instruction_step.start_location = Location(step.getJSONObject("start_location").getDouble("lat"), step.getJSONObject("start_location").getDouble("lng"))
-                                instruction_step.end_location = Location(step.getJSONObject("end_location").getDouble("lat"), step.getJSONObject("end_location").getDouble("lng"))
-
-                                instruction_step.distance = step.getJSONObject("distance").getString("text")
-                                instruction_step.duration = step.getJSONObject("duration").getString("text")
-
-                                instruction_step.polyline = step.getJSONObject("polyline").getString("points")
-                                instruction_step.travel_mode = step.getString("travel_mode")
-                                var step_steps: JSONArray? = null
-
-                                // Get Step steps
-                                if (step.has("steps")) {
-                                    step_steps = step.getJSONArray("steps")
-                                    if (step_steps != null) {
-                                        for (l in 0 until step_steps.length()) {
-                                            val step_steps_step = step_steps.getJSONObject(l)
-                                            var instruction_step_steps = Step()
-                                            instruction_step.steps.add(instruction_step_steps)
-
-                                            instruction_step_steps.instructions = step_steps_step.getString("html_instructions")
-                                            if (step_steps_step.has("maneuver")) instruction_step_steps.maneuver = step_steps_step.getString("maneuver")
-
-                                            instruction_step_steps.start_location = Location(step_steps_step.getJSONObject("start_location").getDouble("lat"), step_steps_step.getJSONObject("start_location").getDouble("lng"))
-                                            instruction_step_steps.end_location = Location(step_steps_step.getJSONObject("end_location").getDouble("lat"), step_steps_step.getJSONObject("end_location").getDouble("lng"))
-
-                                            instruction_step_steps.distance = step_steps_step.getJSONObject("distance").getString("text")
-                                            instruction_step_steps.duration = step_steps_step.getJSONObject("duration").getString("text")
-
-                                            instruction_step_steps.polyline = step_steps_step.getJSONObject("polyline").getString("points")
-                                            instruction_step_steps.travel_mode = step_steps_step.getString("travel_mode")
-                                        }
-                                    }
-                                }
-                                if (step.has("transit_details")) instruction_step.transit_details = Instruction().init_transit_details(step.getJSONObject("transit_details"))
-
-                                var new_text = instructions.toString()
-                                steps_text.text = new_text
-                                Log.d("INSTRUCTIONS", new_text)
-                            }
-                        }
-                    }
+                    var new_text = instructions.toString()
+                    steps_text.text = new_text
+                    Log.d("INSTRUCTIONS", new_text)
                 }catch (e: JSONException){
                     Log.d("MAPS", "JSONException: $e")
                 }
