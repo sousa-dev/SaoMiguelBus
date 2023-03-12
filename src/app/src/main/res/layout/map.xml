@@ -22,13 +22,49 @@
         android:id="@+id/find_routes_map"
         android:layout_width="197dp"
         android:layout_height="42dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="52dp"
         android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.236"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/fin_routes_origin"
+        app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
+
+
+    <ImageButton
+        android:id="@+id/swapStops"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:src="@mipmap/baseline_swap_vert_black_36"
+        app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
+        app:layout_constraintTop_toTopOf="@+id/fin_routes_origin"
+        app:layout_constraintVertical_bias="0.52"
+        tools:layout_editor_absoluteX="38dp" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/fin_routes_origin"
+        android:layout_width="197dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="8dp"
+        android:hint="@string/origin_home_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.214"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
 
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/steps_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map"
+        app:layout_constraintVertical_bias="0.76" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_find"
         style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
@@ -51,7 +87,7 @@
         app:backgroundTint="#218732"
         app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.408"
+        app:layout_constraintHorizontal_bias="0.312"
         app:layout_constraintStart_toEndOf="@+id/find_routes_map"
         app:layout_constraintTop_toTopOf="@+id/find_routes_map"
         app:layout_constraintVertical_bias="0.0" />
@@ -67,8 +103,8 @@
 
     <TextView
         android:id="@+id/steps_text"
-        android:layout_width="336dp"
-        android:layout_height="500dp"
+        android:layout_width="353dp"
+        android:layout_height="460dp"
         android:ems="10"
         android:gravity="start|top"
         android:textSize="16sp"
