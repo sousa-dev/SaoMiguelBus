@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
@@ -46,6 +47,9 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+
         /**
         val map: MapView = view.findViewById<MapView>(R.id.mapview)
 
@@ -66,29 +70,39 @@ class MapFragment : Fragment() {
         }
         **/
         val getDirections = view.findViewById<Button>(R.id.getDirections)
+        val origin = view.findViewById<TextInputEditText>(R.id.find_routes_origin)
         val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
-        var search: String = ""
+        var search_origin: String = ""
+        var search_destination: String = ""
 
         steps_text = view.findViewById<TextView>(R.id.steps_text)
 
-
-
         destination.doOnTextChanged { text, start, before, count ->
-            search = text.toString()
+            search_destination = text.toString()
+        }
+
+        origin.doOnTextChanged { text, start, before, count ->
+            search_origin = text.toString()
+        }
+
+        swapStops.setOnClickListener {
+            val temp = destination.text
+            destination.text = origin.text
+            origin.text = temp
         }
 
         getDirections.setOnClickListener{
-            if (search != ""){
+            if (search_destination != "" && search_origin != ""){
                 /** Send Stats to API **/
                 var language : String = Datasource().getCurrentLang()
-                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search&time=NA&language=$language&platform=android&day=NA"
+                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                 var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                 requestQueue.add(request)
                 /***********************/
                 //Get Steps for Destination
 
-                fetchSteps(requestQueue, search)
+                fetchSteps(requestQueue, search_origin, search_destination)
 
                 /** Launch Google Maps Activity
                 val search_split: String = search.replace(" ", "+")
@@ -105,12 +119,12 @@ class MapFragment : Fragment() {
         }
     }
 
-    fun fetchSteps(requestQueue: RequestQueue, destination: String){
+    fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String){
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
         val mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
-                "origin=Ponta Delgada" +
+                "origin=" + origin +
                 "&destination=" + destination +
                 "&mode=transit" +
                 "&key=" + resources.getString(R.string.API_KEY) +

@@ -2,10 +2,7 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +20,6 @@ import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.Dialog
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import java.util.ArrayList
-import kotlin.math.log
 
 private var vieww: View? = null
 
@@ -45,7 +41,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
         setVieww(view)
 
         val search: Button = view.findViewById(R.id.homeSearch)
-        val swapStops: ImageButton = view.findViewById(R.id.swapStops)
+        val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
 
         from.threshold = 2
         to.threshold = 2

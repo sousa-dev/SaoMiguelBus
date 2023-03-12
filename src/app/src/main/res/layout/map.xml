@@ -26,23 +26,23 @@
         android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/fin_routes_origin"
+        app:layout_constraintStart_toStartOf="@+id/find_routes_origin"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
 
 
     <ImageButton
-        android:id="@+id/swapStops"
+        android:id="@+id/swapStopsMap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="#00FFFFFF"
         android:src="@mipmap/baseline_swap_vert_black_36"
         app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
-        app:layout_constraintTop_toTopOf="@+id/fin_routes_origin"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_origin"
         app:layout_constraintVertical_bias="0.52"
         tools:layout_editor_absoluteX="38dp" />
 
     <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/fin_routes_origin"
+        android:id="@+id/find_routes_origin"
         android:layout_width="197dp"
         android:layout_height="42dp"
         android:layout_marginStart="50dp"
