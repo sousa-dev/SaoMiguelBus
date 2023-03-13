@@ -8,22 +8,67 @@
 
 
     <TextView
-        android:id="@+id/map_origin"
+        android:id="@+id/step_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="@string/origin_home_hint"
+        android:text="Action"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.192"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.05"
+        app:layout_constraintStart_toEndOf="@+id/step_icon"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/map_destination"
+        android:id="@+id/step_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:text="Distance"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/step_action"
+        app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
+        app:layout_constraintTop_toTopOf="@+id/step_action" />
+
+    <TextView
+        android:id="@+id/step_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Time"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/step_distance"
+        app:layout_constraintTop_toTopOf="@+id/step_goal" />
+
+    <TextView
+        android:id="@+id/step_goal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:text="@string/destination_home_hint"
-        app:layout_constraintStart_toStartOf="@+id/map_origin"
-        app:layout_constraintTop_toBottomOf="@+id/map_origin" />
+        android:text="Goal"
+        app:layout_constraintStart_toStartOf="@+id/step_action"
+        app:layout_constraintTop_toBottomOf="@+id/step_action" />
+
+    <ImageView
+        android:id="@+id/step_icon"
+        android:layout_width="52dp"
+        android:layout_height="53dp"
+        android:layout_marginStart="50dp"
+        app:layout_constraintBottom_toBottomOf="@+id/step_goal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/step_action"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/bus" />
+
+    <ImageButton
+        android:id="@+id/step_spoiler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="14dp"
+        android:background="#00FFFFFF"
+        app:layout_constraintBottom_toBottomOf="@+id/step_time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/step_distance"
+        app:srcCompat="@drawable/baseline_arrow_drop_down_24" />
 </androidx.constraintlayout.widget.ConstraintLayout>
