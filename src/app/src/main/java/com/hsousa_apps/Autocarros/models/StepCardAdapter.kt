@@ -29,12 +29,11 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         // to set data to textview and imageview of each card layout
         val step: StepModel = StepsArrayList[position]
         holder.id.text = step.id
+        step.icon?.let { holder.icon.setImageResource(it) }
         holder.action.text = step.action
         holder.goal.text = step.goal
         holder.distance.text = step.distance
         holder.time.text = step.time
-
-        // TODO: Change the icon based on the id
 
     }
 

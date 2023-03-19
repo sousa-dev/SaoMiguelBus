@@ -16,6 +16,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -26,6 +27,8 @@ import org.osmdroid.views.MapView
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.*
+import com.hsousa_apps.Autocarros.models.CardModel
+import com.hsousa_apps.Autocarros.models.StepModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -119,6 +122,23 @@ class MapFragment : Fragment() {
         }
     }
 
+    private fun createCards(view: View?, step: Step) {
+        val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
+        var cards: MutableList<StepModel> = mutableListOf<StepModel>()
+
+        var id = step.travel_mode
+        //TODO: Get icon based on travel_mode
+        var icon = R.mipmap.logo_round
+        //TODO: Improve action based on travel_mode
+        var action = step.travel_mode
+        //TODO: Improve location handling
+        var goal = step.end_location.toString()
+        var distance = step.distance
+        var time = step.duration
+
+        cards.add(StepModel(id, icon, action, goal, distance, time))
+    }
+
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String){
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
@@ -140,9 +160,9 @@ class MapFragment : Fragment() {
                     val routes: JSONArray = response["routes"] as JSONArray
                     var instructions = Instruction().init_instructions(routes)
 
-                    var new_text = instructions.toString()
-                    steps_text.text = new_text
-                    Log.d("INSTRUCTIONS", new_text)
+                    for (step in instructions.routes[0].legs[0].steps)  createCards(view, step)
+
+                    Log.d("INSTRUCTIONS", instructions.toString())
                 }catch (e: JSONException){
                     Log.d("MAPS", "JSONException: $e")
                 }

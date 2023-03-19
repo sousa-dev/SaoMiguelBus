@@ -76,12 +76,12 @@ class SearchFragment(private var origin: String? = null, private var destination
             destination = to.text.toString()
 
             if (listOf(origin, destination) !in Datasource().getFavorite()) {
-                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                val fav = view.findViewById<ImageButton>(R.id.favorite)
                 fav.setImageResource(R.mipmap.heartoff)
                 fav.tag = R.mipmap.heartoff
             }
             else{
-                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                val fav = view.findViewById<ImageButton>(R.id.favorite)
                 fav.setImageResource(R.mipmap.hearton)
                 fav.tag = R.mipmap.hearton
             }
@@ -107,7 +107,7 @@ class SearchFragment(private var origin: String? = null, private var destination
             }
         }
 
-        val fav = view?.findViewById<ImageButton>(R.id.favorite)
+        val fav = view.findViewById<ImageButton>(R.id.favorite)
 
         if (listOf(origin, destination) in Datasource().getFavorite()) {
             fav.setImageResource(R.mipmap.hearton)
