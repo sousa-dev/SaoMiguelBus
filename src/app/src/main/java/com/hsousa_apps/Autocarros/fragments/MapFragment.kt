@@ -126,21 +126,23 @@ class MapFragment : Fragment() {
         }
     }
 
-    private fun createCards(view: View?, step: Step) {
+    private fun createCards(view: View?, steps: List<Step>) {
         val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
         var cards: MutableList<StepModel> = mutableListOf<StepModel>()
 
-        var id = step.travel_mode
-        //TODO: Get icon based on travel_mode
-        var icon = R.mipmap.logo_round
-        //TODO: Improve action based on travel_mode
-        var action = step.travel_mode
-        //TODO: Improve location handling
-        var goal = step.end_location.toString()
-        var distance = step.distance
-        var time = step.duration
+        for (step in steps){
+            var id = step.travel_mode
+            //TODO: Get icon based on travel_mode
+            var icon = R.mipmap.logo_round
+            //TODO: Improve action based on travel_mode
+            var action = step.instructions
+            //TODO: Improve location handling
+            var goal = step.end_location.toString()
+            var distance = step.distance
+            var time = step.duration
 
-        cards.add(StepModel(id, icon, action, goal, distance, time))
+            cards.add(StepModel(id, icon, action, goal, distance, time))
+        }
 
         //TODO: Handle cards.size() == 0
 
@@ -172,7 +174,7 @@ class MapFragment : Fragment() {
                     var instructions = Instruction().init_instructions(routes)
 
                     //TODO: Handle requests with no response
-                    for (step in instructions.routes[0].legs[0].steps)  createCards(view, step)
+                    createCards(view, instructions.routes[0].legs[0].steps)
 
                     Log.d("INSTRUCTIONS", instructions.toString())
                 }catch (e: JSONException){
