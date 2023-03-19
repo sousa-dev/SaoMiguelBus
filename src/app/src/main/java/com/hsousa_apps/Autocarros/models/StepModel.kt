@@ -5,7 +5,7 @@ class StepModel {
     var icon: Int? = null
     var action: String? = null
     var goal: String? = null
-    var distance : Int? = null
+    var distance : String? = null
     var time : String? = null
 
     constructor(
@@ -13,7 +13,7 @@ class StepModel {
         icon: Int?,
         action: String?,
         goal: String?,
-        distance: Int?,
+        distance: String?,
         time: String?
     ) {
         this.id = id
