@@ -15,7 +15,7 @@
         android:text="Action"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.05"
+        app:layout_constraintHorizontal_bias="0.07"
         app:layout_constraintStart_toEndOf="@+id/step_icon"
         app:layout_constraintTop_toTopOf="parent" />
 

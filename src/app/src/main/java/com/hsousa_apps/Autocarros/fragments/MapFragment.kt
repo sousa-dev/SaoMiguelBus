@@ -132,7 +132,6 @@ class MapFragment : Fragment() {
 
         for (step in steps){
             var id = step.travel_mode
-            //TODO: Get icon based on travel_mode
             var icon = R.mipmap.logo_round
             if (step.travel_mode == "TRANSIT") icon = R.drawable.bus_icon
             else if (step.travel_mode == "WALKING") icon = R.drawable.walking_icon
