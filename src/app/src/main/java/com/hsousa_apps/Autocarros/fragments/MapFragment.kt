@@ -16,6 +16,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -28,12 +29,15 @@ import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.*
 import com.hsousa_apps.Autocarros.models.CardModel
+import com.hsousa_apps.Autocarros.models.RouteCardAdapter
+import com.hsousa_apps.Autocarros.models.StepCardAdapter
 import com.hsousa_apps.Autocarros.models.StepModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
+import java.util.ArrayList
 
 class MapFragment : Fragment() {
 
@@ -137,6 +141,13 @@ class MapFragment : Fragment() {
         var time = step.duration
 
         cards.add(StepModel(id, icon, action, goal, distance, time))
+
+        //TODO: Handle cards.size() == 0
+
+        if (rv != null) {
+            rv.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
+        }
     }
 
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String){
@@ -160,6 +171,7 @@ class MapFragment : Fragment() {
                     val routes: JSONArray = response["routes"] as JSONArray
                     var instructions = Instruction().init_instructions(routes)
 
+                    //TODO: Handle requests with no response
                     for (step in instructions.routes[0].legs[0].steps)  createCards(view, step)
 
                     Log.d("INSTRUCTIONS", instructions.toString())

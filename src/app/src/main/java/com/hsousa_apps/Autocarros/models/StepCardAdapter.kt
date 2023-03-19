@@ -54,7 +54,7 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         val time: TextView
 
         init {
-            id = itemView.findViewById(R.id.route_id)
+            id = itemView.findViewById(R.id.step_id)
             icon = itemView.findViewById(R.id.step_icon)
             action = itemView.findViewById(R.id.step_action)
             goal = itemView.findViewById(R.id.step_goal)
