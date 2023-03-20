@@ -100,13 +100,13 @@ class MapFragment : Fragment() {
 
         getDirections.setOnClickListener{
             if (search_destination != "" && search_origin != ""){
-                /** Send Stats to API **/
+                val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+                /** Send Stats to API
                 var language : String = Datasource().getCurrentLang()
                 var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
-                val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                 var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                 requestQueue.add(request)
-                /***********************/
+                /***********************/**/
                 //Get Steps for Destination
 
                 fetchSteps(requestQueue, search_origin, search_destination)
@@ -133,12 +133,23 @@ class MapFragment : Fragment() {
         for (step in steps){
             var id = step.travel_mode
             var icon = R.mipmap.logo_round
-            if (step.travel_mode == "TRANSIT") icon = R.drawable.bus_icon
-            else if (step.travel_mode == "WALKING") icon = R.drawable.walking_icon
-            //TODO: Improve action based on travel_mode
             var action = step.instructions
-            //TODO: Improve location handling
-            var goal = step.end_location.toString()
+            if (step.travel_mode == "TRANSIT"){
+                icon = R.drawable.bus_icon
+                action = "Catch Bus to"
+                //TODO: action = R.string.step_catch_bus
+            }
+            else if (step.travel_mode == "WALKING"){
+                icon = R.drawable.walking_icon
+                action = "Walk to"
+                //TODO: action = R.string.step_walk
+            }
+            var instruction = step.instructions
+            var split = instruction.split(" ") as ArrayList
+            split.removeAt(0)
+            split.removeAt(0)
+            var goal = ""
+            for (word in split) goal += "$word "
             var distance = step.distance
             var time = step.duration
 
