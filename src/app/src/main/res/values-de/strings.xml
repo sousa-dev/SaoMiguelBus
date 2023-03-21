@@ -42,4 +42,7 @@
     <string name="failed_response_title">Verbindung zum Server fehlgeschlagen</string>
     <string name="failed_response_desc">Es kann keine Verbindung zum Server hergestellt werden, um die Anwendungsdaten zu aktualisieren. Die angezeigten Informationen können veraltet sein.</string>
     <string name="loading">"Wird geladen "</string>
+    <string name="catch_bus">Bus nach</string>
+    <string name="walk_to">Gehen zu</string>
+    <string name="leave_at">Verlassen um</string>
 </resources>

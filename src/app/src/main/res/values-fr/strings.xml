@@ -42,4 +42,7 @@
     <string name="failed_response_title">Impossible de se connecter au serveur</string>
     <string name="failed_response_desc">Impossible d\'établir la connexion au serveur pour mettre à jour les données d\'application. Les informations présentées peuvent être obsolètes.</string>
     <string name="loading">Chargement</string>
+    <string name="catch_bus">Autobus pour</string>
+    <string name="walk_to">Marche jusqu\'à</string>
+    <string name="leave_at">Quitte à</string>
 </resources>

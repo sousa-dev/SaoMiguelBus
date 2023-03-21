@@ -137,17 +137,15 @@ class MapFragment : Fragment() {
             var action = step.instructions
             if (step.travel_mode == "TRANSIT"){
                 icon = R.drawable.bus_icon
-                action = "Catch Bus to"
-                //TODO: action = R.string.step_catch_bus
+                action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
-                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, "Leave at", transit_details.arrival_stop, transit_details.arrival_time, "")
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at), transit_details.arrival_stop, transit_details.arrival_time, "")
 
             }
             else if (step.travel_mode == "WALKING"){
                 icon = R.drawable.walking_icon
-                action = "Walk to"
-                //TODO: action = R.string.step_walk
+                action = getString(R.string.walk_to)
             }
             var instruction = step.instructions
             var split = instruction.split(" ") as ArrayList
