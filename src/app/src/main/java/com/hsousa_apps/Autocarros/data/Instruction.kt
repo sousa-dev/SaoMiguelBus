@@ -1,6 +1,5 @@
 package com.hsousa_apps.Autocarros.data;
 
-import com.google.gson.JsonObject
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -44,13 +43,14 @@ class Instruction {
 
         val steps = json.getJSONArray("steps")
         for (k in 0 until steps.length())
-            leg.steps.add(init_step(steps.getJSONObject(k)))
+            leg.steps.add(init_step(steps.getJSONObject(k), leg))
 
         return leg
     }
 
-    fun init_step(json: JSONObject): Step {
+    fun init_step(json: JSONObject, leg: Leg?): Step {
         var step = Step()
+        step.leg = leg
 
         step.instructions = json.getString("html_instructions")
 
@@ -64,7 +64,7 @@ class Instruction {
         step.polyline = json.getJSONObject("polyline").getString("points")
         step.travel_mode = json.getString("travel_mode")
 
-        if (json.has("steps")) for (l in 0 until json.getJSONArray("steps").length()) step.steps.add(init_step(json.getJSONArray("steps").getJSONObject(l)))
+        if (json.has("steps")) for (l in 0 until json.getJSONArray("steps").length()) step.steps.add(init_step(json.getJSONArray("steps").getJSONObject(l), null))
         else if (json.has("transit_details")) step.transit_details = init_transit_details(json.getJSONObject("transit_details"))
 
         return step
@@ -265,6 +265,7 @@ class Leg {
 }
 
 class Step {
+    var leg: Leg? = null
     lateinit var instructions: String
 
     lateinit var start_location: Location

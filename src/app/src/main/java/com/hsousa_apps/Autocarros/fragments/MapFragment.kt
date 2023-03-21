@@ -147,12 +147,13 @@ class MapFragment : Fragment() {
                 icon = R.drawable.walking_icon
                 action = getString(R.string.walk_to)
             }
-            var instruction = step.instructions
+            var goal = step.leg?.end_address
+        /** var instruction = step.instructions
             var split = instruction.split(" ") as ArrayList
             split.removeAt(0)
             split.removeAt(0)
             var goal = ""
-            for (word in split) goal += "$word "
+            for (word in split) goal += "$word "**/
             var distance = step.distance
             var time = step.duration
 
