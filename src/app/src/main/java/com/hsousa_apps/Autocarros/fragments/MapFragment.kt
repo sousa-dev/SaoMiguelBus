@@ -131,6 +131,7 @@ class MapFragment : Fragment() {
         var cards: MutableList<StepModel> = mutableListOf<StepModel>()
 
         for (step in steps){
+            var leave_card: StepModel? = null
             var id = step.travel_mode
             var icon = R.mipmap.logo_round
             var action = step.instructions
@@ -138,6 +139,10 @@ class MapFragment : Fragment() {
                 icon = R.drawable.bus_icon
                 action = "Catch Bus to"
                 //TODO: action = R.string.step_catch_bus
+                var transit_details = step.transit_details
+
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, "Leave at", transit_details.arrival_stop, transit_details.arrival_time, "")
+
             }
             else if (step.travel_mode == "WALKING"){
                 icon = R.drawable.walking_icon
@@ -154,6 +159,7 @@ class MapFragment : Fragment() {
             var time = step.duration
 
             cards.add(StepModel(id, icon, action, goal, distance, time))
+            if (leave_card != null) cards.add(leave_card)
         }
 
         //TODO: Handle cards.size() == 0
