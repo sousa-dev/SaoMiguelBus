@@ -47,9 +47,6 @@
     <string name="failed_response_desc">The app couldn\'t connect to the server in order to update the bus schedule data. Information in the app may be outdated </string>
     <string name="loading">Loading</string>
     <string name="catch_bus">Catch Bus to</string>
-    <string name="API_KEY" translatable="false">AIzaSyA0et-w8goFqEet3SfoPnKZV2VPOGSDtfU</string>
     <string name="walk_to">Walk To</string>
     <string name="leave_at">Leave at</string>
-
-
 </resources>
