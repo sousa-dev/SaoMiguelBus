@@ -1,5 +1,6 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -38,7 +39,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
-import java.util.ArrayList
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MapFragment : Fragment() {
 
@@ -58,6 +60,24 @@ class MapFragment : Fragment() {
 
         val spinner: Spinner = view.findViewById(R.id.step_spinner)
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+
+        val time: TextView = view.findViewById(R.id.step_time_picker)
+        val select_time: Button = view.findViewById(R.id.step_change_time)
+
+        time.text = SimpleDateFormat("HH:mm").format(Calendar.getInstance().time)
+
+        select_time.setOnClickListener {
+            Log.d("click", "Time set clicked!")
+            val cal = Calendar.getInstance()
+            val timeSetListener = TimePickerDialog.OnTimeSetListener{
+                timePicker, hour, minute ->
+                cal.set(Calendar.HOUR_OF_DAY, hour)
+                cal.set(Calendar.MINUTE, minute)
+                time.text = SimpleDateFormat("HH:mm").format(cal.time)
+             }
+            //TODO: Set 24hformat true depending on user preference
+            TimePickerDialog(this.context, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+        }
 
         Log.d("spinner", spinner.selectedItem.toString())
 
@@ -80,6 +100,9 @@ class MapFragment : Fragment() {
             map.overlays.add(marker)
         }
         **/
+        time.setOnClickListener {
+
+        }
         val getDirections = view.findViewById<Button>(R.id.getDirections)
         val origin = view.findViewById<TextInputEditText>(R.id.find_routes_origin)
         val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
@@ -174,7 +197,6 @@ class MapFragment : Fragment() {
             rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
         }
     }
-
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String){
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
