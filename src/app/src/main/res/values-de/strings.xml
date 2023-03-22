@@ -45,4 +45,11 @@
     <string name="catch_bus">Bus nach</string>
     <string name="walk_to">Gehen zu</string>
     <string name="leave_at">Verlassen um</string>
+    <string-array name="steps_spinner_array">
+        <item>Abfahrt</item>
+        <item>Ankommen</item>
+    </string-array>
+    <string name="depart_arrive_placeholder">um</string>
+    <string name="depart">abfahrt</string>
+    <string name="arrive">ankommen</string>
 </resources>

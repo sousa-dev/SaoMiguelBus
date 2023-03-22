@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
@@ -55,7 +56,10 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val spinner: Spinner = view.findViewById(R.id.step_spinner)
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+
+        Log.d("spinner", spinner.selectedItem.toString())
 
         /**
         val map: MapView = view.findViewById<MapView>(R.id.mapview)
@@ -109,7 +113,9 @@ class MapFragment : Fragment() {
                 /***********************/**/
                 //Get Steps for Destination
 
-                fetchSteps(requestQueue, search_origin, search_destination)
+                fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase())
+                Log.d("spinner", spinner.selectedItem.toString())
+
 
                 /** Launch Google Maps Activity
                 val search_split: String = search.replace(" ", "+")
@@ -169,7 +175,7 @@ class MapFragment : Fragment() {
         }
     }
 
-    fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String){
+    fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String){
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
@@ -179,6 +185,13 @@ class MapFragment : Fragment() {
                 "&mode=transit" +
                 "&key=" + resources.getString(R.string.API_KEY) +
                 "&language=" + lang
+        if (selected == getString(R.string.depart)){
+            //TODO: Add depart time to maps URL
+            Log.d("spinner", "depart")
+        }else if (selected == getString(R.string.arrive)){
+            //TODO: Add arrive time to maps URL
+            Log.d("spinner", "arrive")
+        }
         Log.d("MAPS", mapsURL)
         val mapsRequest: JsonObjectRequest = JsonObjectRequest(
             Request.Method.GET,

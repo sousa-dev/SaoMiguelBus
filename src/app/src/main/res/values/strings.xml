@@ -49,4 +49,11 @@
     <string name="catch_bus">Catch Bus to</string>
     <string name="walk_to">Walk To</string>
     <string name="leave_at">Leave at</string>
+    <string name="depart_arrive_placeholder">at</string>
+    <string-array name="steps_spinner_array">
+        <item>Depart</item>
+        <item>Arrive</item>
+    </string-array>
+    <string name="depart">depart</string>
+    <string name="arrive">arrive</string>
 </resources>

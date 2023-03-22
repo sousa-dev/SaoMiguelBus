@@ -6,6 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/steps_arrive_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/depart_arrive_placeholder"
+        app:layout_constraintBottom_toBottomOf="@+id/step_spinner"
+        app:layout_constraintStart_toEndOf="@+id/step_spinner"
+        app:layout_constraintTop_toTopOf="@+id/step_spinner" />
+
     <com.google.android.gms.ads.AdView
         android:id="@+id/adtemplate_find"
         android:layout_width="wrap_content"
@@ -137,5 +146,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@mipmap/baseline_arrow_drop_down_black_24" />
+
+    <Spinner
+        android:id="@+id/step_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:dropDownWidth="wrap_content"
+        android:entries="@array/steps_spinner_array"
+        app:layout_constraintBottom_toTopOf="@+id/divider2"
+        app:layout_constraintStart_toStartOf="@+id/divider2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
