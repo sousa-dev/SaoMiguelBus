@@ -56,4 +56,5 @@
     </string-array>
     <string name="depart">depart</string>
     <string name="arrive">arrive</string>
+    <string name="today_placeholder">Today</string>
 </resources>

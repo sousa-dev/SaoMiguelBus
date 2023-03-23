@@ -52,4 +52,5 @@
     <string name="depart_arrive_placeholder">um</string>
     <string name="depart">abfahrt</string>
     <string name="arrive">ankommen</string>
+    <string name="today_placeholder">Heute</string>
 </resources>

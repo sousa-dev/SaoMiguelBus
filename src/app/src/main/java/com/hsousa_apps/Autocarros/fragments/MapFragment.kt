@@ -70,8 +70,7 @@ class MapFragment : Fragment() {
         val now = cal.time
 
         time.text = SimpleDateFormat("HH:mm").format(now)
-        //TODO: Change to string resource
-        date.text = "Today"
+        date.text = getString(R.string.today_placeholder)
 
         select_time.setOnClickListener {
             val timeSetListener = TimePickerDialog.OnTimeSetListener{

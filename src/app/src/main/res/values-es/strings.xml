@@ -52,4 +52,5 @@
     <string name="depart_arrive_placeholder">a las</string>
     <string name="depart">salir</string>
     <string name="arrive">llegar</string>
+    <string name="today_placeholder">Hoy</string>
 </resources>
