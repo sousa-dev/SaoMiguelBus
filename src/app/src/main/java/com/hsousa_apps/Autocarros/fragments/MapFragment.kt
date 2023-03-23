@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
@@ -20,6 +21,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +30,9 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
 import org.osmdroid.views.MapView
 
 import com.google.android.material.textfield.TextInputEditText
@@ -48,7 +53,7 @@ import java.util.*
 class MapFragment : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
-
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -62,6 +67,14 @@ class MapFragment : Fragment() {
 
         val spinner: Spinner = view.findViewById(R.id.step_spinner)
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+
+        fusedLocationProviderClient = activity?.let {
+            LocationServices.getFusedLocationProviderClient(
+                it
+            )
+        }!!
+
+        fetchLocation()
 
         val time: TextView = view.findViewById(R.id.step_time_picker)
         val date: TextView = view.findViewById(R.id.step_date)
@@ -175,6 +188,31 @@ class MapFragment : Fragment() {
             }
         }
     }
+
+    private fun fetchLocation() {
+        if (checkLocationPermissions()){
+            val task = fusedLocationProviderClient.lastLocation
+
+            task.addOnSuccessListener {
+                if (it != null) Toast.makeText(this.context, "${it.latitude}-${it.longitude}", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            this.activity?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+                return
+            }
+        }
+
+    }
+
+    private fun checkLocationPermissions(): Boolean{
+        if (this.context?.let { ActivityCompat.checkSelfPermission(it, android.Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED
+            && this.context?.let { ActivityCompat.checkSelfPermission(it, android.Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED)
+            return false
+        return true
+        }
 
     private fun createCards(view: View?, steps: List<Step>) {
         val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
