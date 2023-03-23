@@ -184,4 +184,26 @@
         app:layout_constraintTop_toBottomOf="@+id/find_routes_map"
         app:layout_constraintVertical_bias="0.0" />
 
+    <Button
+        android:id="@+id/step_change_date"
+        android:layout_width="38dp"
+        android:layout_height="0dp"
+        android:background="@drawable/baseline_arrow_drop_down_24"
+        app:backgroundTint="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/divider2"
+        app:layout_constraintEnd_toEndOf="@+id/find_routes_map"
+        app:layout_constraintHorizontal_bias="0.76"
+        app:layout_constraintStart_toEndOf="@+id/step_date"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/step_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Today"
+        app:layout_constraintBottom_toBottomOf="@+id/step_spinner"
+        app:layout_constraintStart_toEndOf="@+id/step_change_time"
+        app:layout_constraintTop_toTopOf="@+id/step_spinner" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

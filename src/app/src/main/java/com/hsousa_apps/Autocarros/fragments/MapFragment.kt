@@ -1,5 +1,6 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -63,20 +64,43 @@ class MapFragment : Fragment() {
 
         val time: TextView = view.findViewById(R.id.step_time_picker)
         val select_time: Button = view.findViewById(R.id.step_change_time)
+        val date: TextView = view.findViewById(R.id.step_date)
+        val select_date: Button = view.findViewById(R.id.step_change_date)
+        val cal = Calendar.getInstance()
+        val now = cal.time
 
-        time.text = SimpleDateFormat("HH:mm").format(Calendar.getInstance().time)
+        time.text = SimpleDateFormat("HH:mm").format(now)
+        //TODO: Change to string resource
+        date.text = "Today"
 
         select_time.setOnClickListener {
-            Log.d("click", "Time set clicked!")
-            val cal = Calendar.getInstance()
             val timeSetListener = TimePickerDialog.OnTimeSetListener{
                 timePicker, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
-                time.text = SimpleDateFormat("HH:mm").format(cal.time)
+                time.text = SimpleDateFormat("HH:mm").format(now)
              }
             //TODO: Set 24hformat true depending on user preference
             TimePickerDialog(this.context, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+        }
+
+        select_date.setOnClickListener {
+            select_date.setOnClickListener {
+                val dateSetListener =
+                    DatePickerDialog.OnDateSetListener { datePicker, year, month, day -> //Showing the picked value in the textView
+                        cal.set(Calendar.YEAR, year)
+                        cal.set(Calendar.MONTH, month)
+                        cal.set(Calendar.DAY_OF_MONTH, day)
+                        date.text = "$day-${month+1}-$year"
+                    }
+
+                context?.let { it1 ->
+                    DatePickerDialog(
+                        it1,
+                        dateSetListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
+                    )
+                }?.show()
+            }
         }
 
         Log.d("spinner", spinner.selectedItem.toString())
