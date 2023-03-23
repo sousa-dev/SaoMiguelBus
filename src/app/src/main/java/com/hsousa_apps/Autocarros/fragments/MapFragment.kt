@@ -146,14 +146,15 @@ class MapFragment : Fragment() {
 
         getLocation.setOnClickListener {
             fetchLocation()
-            //TODO: Change to string resource
-            origin.setText("Your Location")
+            origin.setText(getString(R.string.my_location))
+            search_origin = getString(R.string.my_location)
         }
 
         if (checkLocationPermissions()){
             fetchLocation()
-            //TODO: Change to string resource
-            origin.setText("Your Location")
+            //TODO: Improve my location string resource
+            origin.setText(getString(R.string.my_location))
+            search_origin = getString(R.string.my_location)
         }
 
 
@@ -205,9 +206,11 @@ class MapFragment : Fragment() {
         if (checkLocationPermissions()){
             val task = fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener {
-                if (it != null) Toast.makeText(this.context, "${it.latitude}-${it.longitude}", Toast.LENGTH_LONG).show()
-                currentLocation.x = it.latitude
-                currentLocation.y = it.longitude
+                if (it != null){
+                    Toast.makeText(this.context, "${it.latitude}-${it.longitude}", Toast.LENGTH_LONG).show()
+                    currentLocation.x = it.latitude
+                    currentLocation.y = it.longitude
+                }
             }
         } else {
             this.activity?.let {
@@ -262,14 +265,23 @@ class MapFragment : Fragment() {
         }
     }
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
+        var origin_url = origin
+        var destination_url = destination
+
         val emptymsg = view?.findViewById<TextView>(R.id.step_emptymsg)
+
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
 
+        if (origin == getString(R.string.my_location))
+            origin_url = "${currentLocation.x},${currentLocation.y}"
+        if (destination == getString(R.string.my_location))
+            destination_url = "${currentLocation.x},${currentLocation.y}"
+
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
-                "origin=" + origin +
-                "&destination=" + destination +
+                "origin=" + origin_url +
+                "&destination=" + destination_url +
                 "&mode=transit" +
                 "&key=" + resources.getString(R.string.API_KEY) +
                 "&language=" + lang
