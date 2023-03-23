@@ -195,4 +195,14 @@
         app:layout_constraintStart_toEndOf="@+id/step_time_picker"
         app:layout_constraintTop_toTopOf="@+id/step_spinner" />
 
+    <Button
+        android:id="@+id/step_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="9dp"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/find_routes_map"
+        app:layout_constraintStart_toEndOf="@+id/find_routes_origin"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_origin" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -74,8 +74,6 @@ class MapFragment : Fragment() {
             )
         }!!
 
-        fetchLocation()
-
         val time: TextView = view.findViewById(R.id.step_time_picker)
         val date: TextView = view.findViewById(R.id.step_date)
 
@@ -144,6 +142,20 @@ class MapFragment : Fragment() {
         var search_origin: String = ""
         var search_destination: String = ""
 
+        var getLocation: Button = view.findViewById(R.id.step_location)
+
+        getLocation.setOnClickListener {
+            fetchLocation()
+            //TODO: Change to string resource
+            origin.setText("Your Location")
+        }
+
+        if (checkLocationPermissions()){
+            fetchLocation()
+            //TODO: Change to string resource
+            origin.setText("Your Location")
+        }
+
 
         destination.doOnTextChanged { text, start, before, count ->
             search_destination = text.toString()
@@ -192,9 +204,10 @@ class MapFragment : Fragment() {
     private fun fetchLocation() {
         if (checkLocationPermissions()){
             val task = fusedLocationProviderClient.lastLocation
-
             task.addOnSuccessListener {
                 if (it != null) Toast.makeText(this.context, "${it.latitude}-${it.longitude}", Toast.LENGTH_LONG).show()
+                currentLocation.x = it.latitude
+                currentLocation.y = it.longitude
             }
         } else {
             this.activity?.let {
@@ -204,7 +217,6 @@ class MapFragment : Fragment() {
                 return
             }
         }
-
     }
 
     private fun checkLocationPermissions(): Boolean{
@@ -254,6 +266,7 @@ class MapFragment : Fragment() {
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
+
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
                 "origin=" + origin +
                 "&destination=" + destination +
