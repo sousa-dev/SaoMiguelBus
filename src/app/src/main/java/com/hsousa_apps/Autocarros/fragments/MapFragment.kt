@@ -48,8 +48,6 @@ import java.util.*
 class MapFragment : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
-    private lateinit var steps_text: TextView
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -133,7 +131,6 @@ class MapFragment : Fragment() {
         var search_origin: String = ""
         var search_destination: String = ""
 
-        steps_text = view.findViewById<TextView>(R.id.steps_text)
 
         destination.doOnTextChanged { text, start, before, count ->
             search_destination = text.toString()
@@ -231,6 +228,7 @@ class MapFragment : Fragment() {
                 "&mode=transit" +
                 "&key=" + resources.getString(R.string.API_KEY) +
                 "&language=" + lang
+
         if (selected == getString(R.string.depart)) mapsURL += "&departure_time=$time"
         else if (selected == getString(R.string.arrive)) mapsURL += "&arrival_time=$time"
 
@@ -240,20 +238,24 @@ class MapFragment : Fragment() {
             mapsURL,
             null,
             { response ->
-                try {
-                    steps_text.text = ""
-                    val routes: JSONArray = response["routes"] as JSONArray
-                    var instructions = Instruction().init_instructions(routes)
+                val status = response["status"]
 
-                    //TODO: Handle requests with no response
-                    createCards(view, instructions.routes[0].legs[0].steps)
+                if (status == "OK") {
+                    try {
+                        val routes: JSONArray = response["routes"] as JSONArray
+                        var instructions = Instruction().init_instructions(routes)
 
-                    Log.d("INSTRUCTIONS", instructions.toString())
-                }catch (e: JSONException){
-                    Log.d("MAPS", "JSONException: $e")
+                        //TODO: Handle requests with no response
+                        createCards(view, instructions.routes[0].legs[0].steps)
+
+                        Log.d("INSTRUCTIONS", instructions.toString())
+                    } catch (e: JSONException){
+                        Log.d("MAPS", "JSONException: $e")
+                    }
+                } else {
+                    //TODO: Warn the user that it couldn't find a route
+                    Log.e("STATUS", "Response NOT OK!")
                 }
-
-
             },
             { error ->
                 Log.d("MAPS", "Failed Response: $error")
