@@ -4,7 +4,7 @@
     <string name="find_button">Finden</string>
     <string name="stop">Bushaltestelle</string>
     <string name="no_fav_message">Es gibt keine Lieblingsrouten :(</string>
-    <string name="no_routes_search">Es wurden keine Routen gefunden :(</string>
+    <string name="no_routes_search">Es wurden keine routen gefunden :(</string>
     <string name="add_fav_toast_message">Route zu Favoriten hinzugefügt!</string>
     <string name="remove_fav_toast_message">Route aus Favoriten entfernt!</string>
     <string name="search_home_button">Suche</string>
