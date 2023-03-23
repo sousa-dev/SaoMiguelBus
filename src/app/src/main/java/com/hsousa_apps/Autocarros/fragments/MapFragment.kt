@@ -48,6 +48,7 @@ import java.util.*
 class MapFragment : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -56,7 +57,6 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.map, container, false)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -198,12 +198,7 @@ class MapFragment : Fragment() {
                 action = getString(R.string.walk_to)
             }
             var goal = step.leg?.end_address
-        /** var instruction = step.instructions
-            var split = instruction.split(" ") as ArrayList
-            split.removeAt(0)
-            split.removeAt(0)
-            var goal = ""
-            for (word in split) goal += "$word "**/
+
             var distance = step.distance
             var time = step.duration
 
@@ -211,14 +206,13 @@ class MapFragment : Fragment() {
             if (leave_card != null) cards.add(leave_card)
         }
 
-        //TODO: Handle cards.size() == 0
-
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
             rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
         }
     }
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
+        val emptymsg = view?.findViewById<TextView>(R.id.step_emptymsg)
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
@@ -241,11 +235,11 @@ class MapFragment : Fragment() {
                 val status = response["status"]
 
                 if (status == "OK") {
+                    emptymsg?.visibility = View.INVISIBLE
                     try {
                         val routes: JSONArray = response["routes"] as JSONArray
                         var instructions = Instruction().init_instructions(routes)
 
-                        //TODO: Handle requests with no response
                         createCards(view, instructions.routes[0].legs[0].steps)
 
                         Log.d("INSTRUCTIONS", instructions.toString())
@@ -253,8 +247,8 @@ class MapFragment : Fragment() {
                         Log.d("MAPS", "JSONException: $e")
                     }
                 } else {
-                    //TODO: Warn the user that it couldn't find a route
                     Log.e("STATUS", "Response NOT OK!")
+                    emptymsg?.visibility = View.VISIBLE
                 }
             },
             { error ->
