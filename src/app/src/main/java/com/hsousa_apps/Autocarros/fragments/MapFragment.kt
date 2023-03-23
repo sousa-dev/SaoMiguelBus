@@ -63,18 +63,17 @@ class MapFragment : Fragment() {
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
 
         val time: TextView = view.findViewById(R.id.step_time_picker)
-        val select_time: Button = view.findViewById(R.id.step_change_time)
         val date: TextView = view.findViewById(R.id.step_date)
-        val select_date: Button = view.findViewById(R.id.step_change_date)
+
         val cal = Calendar.getInstance()
         val now = cal.time
 
         time.text = SimpleDateFormat("HH:mm").format(now)
         date.text = getString(R.string.today_placeholder)
 
-        select_time.setOnClickListener {
+        time.setOnClickListener {
             val timeSetListener = TimePickerDialog.OnTimeSetListener{
-                timePicker, hour, minute ->
+                    _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 time.text = SimpleDateFormat("HH:mm").format(now)
@@ -83,23 +82,21 @@ class MapFragment : Fragment() {
             TimePickerDialog(this.context, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
         }
 
-        select_date.setOnClickListener {
-            select_date.setOnClickListener {
-                val dateSetListener =
-                    DatePickerDialog.OnDateSetListener { datePicker, year, month, day -> //Showing the picked value in the textView
-                        cal.set(Calendar.YEAR, year)
-                        cal.set(Calendar.MONTH, month)
-                        cal.set(Calendar.DAY_OF_MONTH, day)
-                        date.text = "$day-${month+1}-$year"
-                    }
+        date.setOnClickListener {
+            val dateSetListener =
+                DatePickerDialog.OnDateSetListener { _, year, month, day -> //Showing the picked value in the textView
+                    cal.set(Calendar.YEAR, year)
+                    cal.set(Calendar.MONTH, month)
+                    cal.set(Calendar.DAY_OF_MONTH, day)
+                    date.text = "$day-${month+1}-$year"
+                }
 
-                context?.let { it1 ->
-                    DatePickerDialog(
-                        it1,
-                        dateSetListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
-                    )
-                }?.show()
-            }
+            context?.let { it1 ->
+                DatePickerDialog(
+                    it1,
+                    dateSetListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
+                )
+            }?.show()
         }
 
         Log.d("spinner", spinner.selectedItem.toString())
@@ -123,9 +120,6 @@ class MapFragment : Fragment() {
             map.overlays.add(marker)
         }
         **/
-        time.setOnClickListener {
-
-        }
         val getDirections = view.findViewById<Button>(R.id.getDirections)
         val origin = view.findViewById<TextInputEditText>(R.id.find_routes_origin)
         val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
