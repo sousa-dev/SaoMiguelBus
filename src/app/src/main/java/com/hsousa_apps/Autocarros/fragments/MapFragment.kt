@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -18,6 +19,7 @@ import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -56,6 +58,7 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.map, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -71,15 +74,18 @@ class MapFragment : Fragment() {
         time.text = SimpleDateFormat("HH:mm").format(now)
         date.text = getString(R.string.today_placeholder)
 
+        Log.d("date", cal.toString() + " " + cal.timeInMillis)
+
         time.setOnClickListener {
             val timeSetListener = TimePickerDialog.OnTimeSetListener{
                     _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
-                time.text = SimpleDateFormat("HH:mm").format(now)
-             }
+                time.text = SimpleDateFormat("HH:mm").format(cal.time)
+            }
             //TODO: Set 24hformat true depending on user preference
             TimePickerDialog(this.context, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+
         }
 
         date.setOnClickListener {
@@ -98,6 +104,7 @@ class MapFragment : Fragment() {
                 )
             }?.show()
         }
+
 
         Log.d("spinner", spinner.selectedItem.toString())
 
@@ -153,7 +160,7 @@ class MapFragment : Fragment() {
                 /***********************/**/
                 //Get Steps for Destination
 
-                fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase())
+                fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
                 Log.d("spinner", spinner.selectedItem.toString())
 
 
@@ -214,23 +221,19 @@ class MapFragment : Fragment() {
             rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
         }
     }
-    fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String){
+    fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
         var lang = Datasource().getCurrentLang()
         if (lang == "pt")
             lang = "pt-pt"
-        val mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
+        var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
                 "origin=" + origin +
                 "&destination=" + destination +
                 "&mode=transit" +
                 "&key=" + resources.getString(R.string.API_KEY) +
                 "&language=" + lang
-        if (selected == getString(R.string.depart)){
-            //TODO: Add depart time to maps URL
-            Log.d("spinner", "depart")
-        }else if (selected == getString(R.string.arrive)){
-            //TODO: Add arrive time to maps URL
-            Log.d("spinner", "arrive")
-        }
+        if (selected == getString(R.string.depart)) mapsURL += "&departure_time=$time"
+        else if (selected == getString(R.string.arrive)) mapsURL += "&arrival_time=$time"
+
         Log.d("MAPS", mapsURL)
         val mapsRequest: JsonObjectRequest = JsonObjectRequest(
             Request.Method.GET,
