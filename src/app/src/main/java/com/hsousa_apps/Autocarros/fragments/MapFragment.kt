@@ -146,8 +146,10 @@ class MapFragment : Fragment() {
 
         getLocation.setOnClickListener {
             fetchLocation()
-            origin.setText(getString(R.string.my_location))
-            search_origin = getString(R.string.my_location)
+            if (checkLocationPermissions()){
+                origin.setText(getString(R.string.my_location))
+                search_origin = getString(R.string.my_location)
+            }
         }
 
         if (checkLocationPermissions()){
@@ -155,6 +157,7 @@ class MapFragment : Fragment() {
             //TODO: Improve my location string resource
             origin.setText(getString(R.string.my_location))
             search_origin = getString(R.string.my_location)
+
         }
 
 
@@ -207,7 +210,6 @@ class MapFragment : Fragment() {
             val task = fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener {
                 if (it != null){
-                    Toast.makeText(this.context, "${it.latitude}-${it.longitude}", Toast.LENGTH_LONG).show()
                     currentLocation.x = it.latitude
                     currentLocation.y = it.longitude
                 }
@@ -274,10 +276,23 @@ class MapFragment : Fragment() {
         if (lang == "pt")
             lang = "pt-pt"
 
-        if (origin == getString(R.string.my_location))
+        if (origin == getString(R.string.my_location)){
+            if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
+                //TODO: Use a string resource
+                Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
+                return
+            }
             origin_url = "${currentLocation.x},${currentLocation.y}"
-        if (destination == getString(R.string.my_location))
+
+        }
+        if (destination == getString(R.string.my_location)){
+            if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
+                //TODO: Use a string resource
+                Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
+                return
+            }
             destination_url = "${currentLocation.x},${currentLocation.y}"
+        }
 
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
                 "origin=" + origin_url +
