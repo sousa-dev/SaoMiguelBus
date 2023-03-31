@@ -169,11 +169,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:background="#00FFFFFF"
-        android:rotationX="-180"
+        android:rotation="90"
+        android:rotationY="0"
         app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@mipmap/baseline_arrow_drop_down_black_24" />
+        app:srcCompat="@drawable/baseline_arrow_back_ios_24" />
 
     <Spinner
         android:id="@+id/step_spinner"
@@ -195,14 +196,16 @@
         app:layout_constraintStart_toEndOf="@+id/step_time_picker"
         app:layout_constraintTop_toTopOf="@+id/step_spinner" />
 
-    <Button
+    <ImageButton
         android:id="@+id/step_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="9dp"
+        android:background="#00FFFFFF"
+        android:src="@drawable/baseline_my_location_24"
         android:text="Button"
         app:layout_constraintBottom_toTopOf="@+id/find_routes_map"
-        app:layout_constraintStart_toEndOf="@+id/find_routes_origin"
-        app:layout_constraintTop_toTopOf="@+id/find_routes_origin" />
+        app:layout_constraintEnd_toEndOf="@+id/find_routes_origin"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_origin"
+        app:layout_constraintVertical_bias="0.1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
