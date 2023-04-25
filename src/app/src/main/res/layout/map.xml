@@ -133,11 +133,14 @@
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
         tilesource="Mapnik"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/step_emptymsg"
+        app:layout_constraintVertical_bias="1.0"
+        tools:visibility="gone" />
 
     <TextView
         android:id="@+id/steps_text"
@@ -158,21 +161,22 @@
         android:layout_height="0dp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageButton"
+        app:layout_constraintBottom_toTopOf="@+id/show_map"
         app:layout_constraintEnd_toEndOf="@+id/divider2"
         app:layout_constraintStart_toStartOf="@+id/divider2"
         app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/show_map"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="5dp"
         android:background="#00FFFFFF"
         android:rotation="90"
         android:rotationY="0"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
+        app:layout_constraintBottom_toTopOf="@+id/mapview"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/baseline_arrow_back_ios_24" />
 

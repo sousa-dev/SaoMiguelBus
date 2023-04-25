@@ -2,57 +2,42 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.os.Build
-import androidx.fragment.app.Fragment
-
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.RequiresApi
+import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.Task
-import org.osmdroid.views.MapView
-
 import com.google.android.material.textfield.TextInputEditText
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.*
-import com.hsousa_apps.Autocarros.models.CardModel
-import com.hsousa_apps.Autocarros.models.RouteCardAdapter
 import com.hsousa_apps.Autocarros.models.StepCardAdapter
 import com.hsousa_apps.Autocarros.models.StepModel
 import org.json.JSONArray
 import org.json.JSONException
-import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Polyline
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MapFragment : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
+    private var overview_polyline: String = ""
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,6 +52,7 @@ class MapFragment : Fragment() {
 
         val spinner: Spinner = view.findViewById(R.id.step_spinner)
         val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+        val show_map: ImageButton = view.findViewById(R.id.show_map)
 
         fusedLocationProviderClient = activity?.let {
             LocationServices.getFusedLocationProviderClient(
@@ -117,14 +103,35 @@ class MapFragment : Fragment() {
 
         Log.d("spinner", spinner.selectedItem.toString())
 
-        /**
+
         val map: MapView = view.findViewById<MapView>(R.id.mapview)
+        map.visibility = View.GONE
 
 
         val mapController = map.controller
         mapController.setZoom(11)
         mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598))
+        show_map.setOnClickListener {
+            if (map.visibility == View.GONE) {
+                if (overview_polyline != ""){
+                    val decodedPolyline: List<GeoPoint> = decodePolyline(overview_polyline)
+                    val line = Polyline()
+                    line.setPoints(decodedPolyline)
+                    line.setColor(Color.RED)
+                    line.setWidth(5F)
+                    map.getOverlayManager().add(line)
+                    map.invalidate()
+                }
+                map.visibility = View.VISIBLE
+                show_map.rotation = (-90.0).toFloat()
+            }
+            else {
+                map.visibility = View.GONE
+                show_map.rotation = (90.0).toFloat()
+            }
+        }
 
+        /**
          Draw Waypoints on the map
         for (stop in Datasource().getStops()){
             if (stop.coordinates.x == 0.0) continue
@@ -188,6 +195,8 @@ class MapFragment : Fragment() {
 
                 fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
                 Log.d("spinner", spinner.selectedItem.toString())
+                map.overlayManager.removeAll(map.overlays)
+                map.invalidate()
 
 
                 /** Launch Google Maps Activity
@@ -203,6 +212,46 @@ class MapFragment : Fragment() {
                 Toast.makeText(context, resources.getString(R.string.map_dest_blank), Toast.LENGTH_SHORT).show()
             }
         }
+    }
+    fun decodePolyline(polyline: String): List<GeoPoint> {
+        val poly = ArrayList<GeoPoint>()
+        var index = 0
+        val len = polyline.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+
+            do {
+                b = polyline[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+
+            val dlat = if (result and 1 != 0) -(result shr 1) else result shr 1
+
+            shift = 0
+            result = 0
+
+            do {
+                b = polyline[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+
+            val dlng = if (result and 1 != 0) -(result shr 1) else result shr 1
+
+            lat += dlat
+            lng += dlng
+
+            val p = GeoPoint(lat.toDouble() / 1E5, lng.toDouble() / 1E5)
+            poly.add(p)
+        }
+
+        return poly
     }
 
     private fun fetchLocation() {
@@ -240,13 +289,14 @@ class MapFragment : Fragment() {
             var id = step.travel_mode
             var icon = R.mipmap.logo_round
             var action = step.instructions
+            var details = ""
             if (step.travel_mode == "TRANSIT"){
                 icon = R.drawable.bus_icon
                 //action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
                 leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time, "", "")
-
+                details = getDetails(step.transit_details)
             }
             else if (step.travel_mode == "WALKING"){
                 icon = R.drawable.walking_icon
@@ -257,7 +307,7 @@ class MapFragment : Fragment() {
             var distance = step.distance
             var time = step.duration
 
-            cards.add(StepModel(id, icon, action, goal, distance, time, "TEST"))
+            cards.add(StepModel(id, icon, action, goal, distance, time, details))
             if (leave_card != null) cards.add(leave_card)
         }
 
@@ -266,6 +316,9 @@ class MapFragment : Fragment() {
             rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
         }
     }
+
+    fun getDetails(transitDetails: TransitDetails) = "${transitDetails.line.name}\nDeparture Stop: ${transitDetails.departure_stop}\n\t${transitDetails.departure_time}\nArrival Stop: ${transitDetails.arrival_stop}\n\t${transitDetails.arrival_time}"
+
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
         var origin_url = origin
         var destination_url = destination
@@ -317,6 +370,8 @@ class MapFragment : Fragment() {
                     try {
                         val routes: JSONArray = response["routes"] as JSONArray
                         var instructions = Instruction().init_instructions(routes)
+
+                        overview_polyline = instructions.routes[0].overview_polyline_points
 
                         createCards(view, instructions.routes[0].legs[0].steps)
 
