@@ -6,9 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.widget.doOnTextChanged
@@ -110,6 +108,23 @@ class MapFragment : Fragment() {
 
         val mapController = map.controller
         mapController.setZoom(11)
+        // Disable all map interactions
+        map.setClickable(false)
+        map.setLongClickable(false)
+        map.setFocusable(false)
+        map.setMultiTouchControls(false)
+
+        // Disable double tap zooming
+        val doubleTapDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                return true
+            }
+        })
+        map.setOnTouchListener { _, event ->
+            doubleTapDetector.onTouchEvent(event)
+            true
+        }
+
         mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598))
         show_map.setOnClickListener {
             if (map.visibility == View.GONE) {

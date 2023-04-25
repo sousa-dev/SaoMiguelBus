@@ -19,7 +19,7 @@
         android:id="@+id/step_emptymsg"
         android:layout_width="239dp"
         android:layout_height="119dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="150dp"
         android:background="#07000000"
         android:gravity="center"
         android:text="@string/no_routes_search"
@@ -140,7 +140,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/step_emptymsg"
         app:layout_constraintVertical_bias="1.0"
-        tools:visibility="gone" />
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/steps_text"
