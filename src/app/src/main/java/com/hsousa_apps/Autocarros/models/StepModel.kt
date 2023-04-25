@@ -7,6 +7,7 @@ class StepModel {
     var goal: String? = null
     var distance : String? = null
     var time : String? = null
+    var details: String? = null
 
     constructor(
         id: String?,
@@ -14,7 +15,8 @@ class StepModel {
         action: String?,
         goal: String?,
         distance: String?,
-        time: String?
+        time: String?,
+        details: String?
     ) {
         this.id = id
         this.icon = icon
@@ -22,10 +24,11 @@ class StepModel {
         this.goal = goal
         this.distance = distance
         this.time = time
+        this.details = details
     }
 
     override fun toString(): String {
-        return "StepModel(id=$id, icon=$icon, action=$action, goal=$goal, distance=$distance, time=$time)"
+        return "StepModel(id=$id, icon=$icon, action=$action, goal=$goal, distance=$distance, time=$time, details=$details)"
     }
 
 

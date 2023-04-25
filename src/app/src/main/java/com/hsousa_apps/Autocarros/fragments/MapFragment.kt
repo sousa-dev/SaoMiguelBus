@@ -142,7 +142,7 @@ class MapFragment : Fragment() {
         var search_origin: String = ""
         var search_destination: String = ""
 
-        var getLocation: Button = view.findViewById(R.id.step_location)
+        var getLocation: ImageButton = view.findViewById(R.id.step_location)
 
         getLocation.setOnClickListener {
             fetchLocation()
@@ -245,7 +245,7 @@ class MapFragment : Fragment() {
                 //action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
-                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time, "")
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time, "", "")
 
             }
             else if (step.travel_mode == "WALKING"){
@@ -257,7 +257,7 @@ class MapFragment : Fragment() {
             var distance = step.distance
             var time = step.duration
 
-            cards.add(StepModel(id, icon, action, goal, distance, time))
+            cards.add(StepModel(id, icon, action, goal, distance, time, "TEST"))
             if (leave_card != null) cards.add(leave_card)
         }
 
