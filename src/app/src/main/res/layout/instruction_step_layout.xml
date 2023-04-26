@@ -13,10 +13,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:layout_marginTop="4dp"
-        android:maxLines="3"
+        android:maxLines="2"
         android:minLines="1"
         android:text="Action"
         android:textStyle="bold"
+        app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
         app:layout_constraintHorizontal_bias="0.07"
         app:layout_constraintStart_toEndOf="@+id/step_icon"
@@ -120,7 +121,7 @@
         app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
         app:layout_constraintStart_toStartOf="@+id/step_icon"
         app:layout_constraintTop_toBottomOf="@+id/step_icon"
-        tools:visibility="gone">
+        tools:visibility="visible">
 
         <TextView
             android:id="@+id/step_details"
