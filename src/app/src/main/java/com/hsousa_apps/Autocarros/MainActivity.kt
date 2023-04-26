@@ -41,7 +41,7 @@ import kotlin.reflect.typeOf
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        val URL = "https://api.saomiguelbus.com/api/v1/android/load"
+        val URL = "https://api.saomiguelbus.com/api/v2/android/load"
         loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
@@ -60,7 +60,12 @@ class MainActivity : AppCompatActivity() {
                 try {
                     progressBar.visibility = View.VISIBLE
                     Datasource().loadStopsFromAPI()
-                    for(i in 0 until response.length()){
+                    val variables: JSONObject? = response.getJSONObject(0)
+                    val version: String? = variables?.getString("version")
+                    val use_maps: Boolean? = variables?.getBoolean("maps")
+
+
+                    for(i in 1 until response.length()){
                         val JSONobject: JSONObject? = response.getJSONObject(i)
                         if (JSONobject != null) {
                             val id: Int = JSONobject.get("id") as Int

@@ -176,7 +176,6 @@ class MapFragment(private var redirected_origin: String? = null, private var red
 
         if (checkLocationPermissions()){
             fetchLocation()
-            //TODO: Improve my location string resource
             origin.setText(getString(R.string.map_my_location))
             search_origin = getString(R.string.map_my_location)
 
