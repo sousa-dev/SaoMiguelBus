@@ -322,6 +322,11 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         val show_map = view?.findViewById<ImageButton>(R.id.show_map)
         var cards: MutableList<StepModel> = mutableListOf<StepModel>()
 
+        if (rv != null){
+            rv?.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
+        }
+
         for (step in steps){
             var leave_card: StepModel? = null
             var id = step.travel_mode
@@ -451,7 +456,22 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     }
                 } else {
                     Log.e("STATUS", "Response NOT OK!")
+
+                    val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
+                    var cards: MutableList<StepModel> = mutableListOf<StepModel>()
+
+                    if (rv != null){
+                        rv?.layoutManager = LinearLayoutManager(view?.context)
+                        rv?.adapter = view?.let { StepCardAdapter(it.context, cards as ArrayList<StepModel>) }
+                    }
+                    val map = view?.findViewById<MapView>(R.id.mapview)
+                    val show_map = view?.findViewById<ImageButton>(R.id.show_map)
+                    map?.overlayManager?.removeAll(map.overlays)
+                    map?.invalidate()
+                    map?.visibility = View.GONE
+                    show_map?.rotation = (90.0).toFloat()
                     emptymsg?.visibility = View.VISIBLE
+                    overview_polyline = ""
                 }
             },
             { error ->
