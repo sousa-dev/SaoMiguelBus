@@ -1,5 +1,6 @@
 package com.hsousa_apps.Autocarros.data;
 
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -109,6 +110,7 @@ class Instruction {
         for (i in 0 until agencies_json.length())
             agencies.add(init_agency(agencies_json.getJSONObject(i)))
 
+        line.agencies = agencies
         line.name = json.getString("name")
         line.short_name = json.getString("short_name")
 

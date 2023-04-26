@@ -345,7 +345,18 @@ class MapFragment : Fragment() {
         }
     }
 
-    fun getDetails(transitDetails: TransitDetails) = "${transitDetails.line.name}\nDeparture Stop: ${transitDetails.departure_stop}\n\t${transitDetails.departure_time}\nArrival Stop: ${transitDetails.arrival_stop}\n\t${transitDetails.arrival_time}"
+    fun getDetails(transitDetails: TransitDetails): String {
+        //TODO: Change to string resource
+        var details = "${transitDetails.line.name}\nDeparture Stop: ${transitDetails.departure_stop}\n\t${transitDetails.departure_time}\nArrival Stop: ${transitDetails.arrival_stop}\n\t${transitDetails.arrival_time}"
+        Log.d("SIZE", transitDetails.line.agencies.size.toString())
+
+        if (transitDetails.line.agencies.size > 0){
+            for (agency in transitDetails.line.agencies){
+                details += "\nAgency: " + agency.name + "\nPhone: " + agency.phone + "\nWebsite: " + agency.url
+            }
+        }
+        return details
+    }
 
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
         var origin_url = origin
