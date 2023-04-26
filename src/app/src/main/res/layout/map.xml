@@ -19,7 +19,7 @@
         android:id="@+id/step_emptymsg"
         android:layout_width="239dp"
         android:layout_height="119dp"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="200dp"
         android:background="#07000000"
         android:gravity="center"
         android:text="@string/no_routes_search"

@@ -297,6 +297,8 @@ class MapFragment : Fragment() {
 
     private fun createCards(view: View?, steps: List<Step>) {
         val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
+        val map = view?.findViewById<MapView>(R.id.mapview)
+        val show_map = view?.findViewById<ImageButton>(R.id.show_map)
         var cards: MutableList<StepModel> = mutableListOf<StepModel>()
 
         for (step in steps){
@@ -329,6 +331,17 @@ class MapFragment : Fragment() {
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
             rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
+            if (overview_polyline != ""){
+                val decodedPolyline: List<GeoPoint> = decodePolyline(overview_polyline)
+                val line = Polyline()
+                line.setPoints(decodedPolyline)
+                line.setColor(Color.RED)
+                line.setWidth(5F)
+                map?.getOverlayManager()?.add(line)
+                map?.invalidate()
+            }
+            map?.visibility = View.VISIBLE
+            show_map?.rotation = (-90.0).toFloat()
         }
     }
 
