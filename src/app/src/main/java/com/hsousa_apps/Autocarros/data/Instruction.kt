@@ -1,6 +1,7 @@
 package com.hsousa_apps.Autocarros.data;
 
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
 
@@ -52,7 +53,11 @@ class Instruction {
         var step = Step()
         step.leg = leg
 
-        step.instructions = json.getString("html_instructions")
+        try {
+            step.instructions = json.getString("html_instructions")
+        } catch (e: JSONException) {
+            step.instructions = ""
+        }
 
         step.start_location = Location(json.getJSONObject("start_location").getDouble("lat"), json.getJSONObject("start_location").getDouble("lng"))
         step.end_location = Location(json.getJSONObject("end_location").getDouble("lat"), json.getJSONObject("end_location").getDouble("lng"))

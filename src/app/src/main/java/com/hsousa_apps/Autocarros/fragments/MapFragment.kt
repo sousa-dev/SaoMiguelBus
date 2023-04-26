@@ -378,6 +378,7 @@ class MapFragment : Fragment() {
             mapsURL,
             null,
             { response ->
+                Log.d("DEBUG", "response: $response")
                 val status = response["status"]
 
                 if (status == "OK") {
