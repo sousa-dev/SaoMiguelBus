@@ -42,4 +42,16 @@
     <string name="failed_response_title">Error al conectar con el servidor</string>
     <string name="failed_response_desc">No se puede establecer la conexión con el servidor para actualizar los datos de la aplicación. La información presentada puede estar desactualizada.</string>
     <string name="loading">Cargando</string>
+    <string name="catch_bus">Autobús a</string>
+    <string name="walk_to">Caminar hasta</string>
+    <string name="leave_at">Dejar en</string>
+    <string-array name="steps_spinner_array">
+        <item>Salir</item>
+        <item>Llegar</item>
+    </string-array>
+    <string name="depart_arrive_placeholder">a las</string>
+    <string name="depart">salir</string>
+    <string name="arrive">llegar</string>
+    <string name="today_placeholder">Hoy</string>
+    <string name="service_run">Servicio a cargo de</string>
 </resources>

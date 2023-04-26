@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_product_list"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <TextView
+        android:id="@+id/step_action"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="4dp"
+        android:maxLines="2"
+        android:minLines="1"
+        android:text="Action"
+        android:textStyle="bold"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
+        app:layout_constraintHorizontal_bias="0.07"
+        app:layout_constraintStart_toEndOf="@+id/step_icon"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/step_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:text="Distance"
+        android:textAlignment="viewEnd"
+        app:layout_constraintBottom_toBottomOf="@+id/step_time"
+        app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
+        app:layout_constraintTop_toTopOf="@+id/step_time" />
+
+    <TextView
+        android:id="@+id/step_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:lines="1"
+        android:text="Time"
+        android:textAlignment="viewStart"
+        android:textSize="14sp"
+        app:autoSizeMaxTextSize="14sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toBottomOf="@+id/step_icon"
+        app:layout_constraintEnd_toStartOf="@+id/step_distance"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/step_action" />
+
+    <TextView
+        android:id="@+id/step_goal"
+        android:layout_width="124dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="15dp"
+        android:autoText="false"
+        android:lines="3"
+        android:text="Goal"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:autoSizeMaxTextSize="16sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toStartOf="@+id/step_time"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/step_action"
+        app:layout_constraintTop_toBottomOf="@+id/step_action" />
+
+    <ImageView
+        android:id="@+id/step_icon"
+        android:layout_width="52dp"
+        android:layout_height="53dp"
+        android:layout_marginStart="50dp"
+        app:layout_constraintBottom_toBottomOf="@+id/step_goal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/step_action"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/bus_icon" />
+
+    <ImageButton
+        android:id="@+id/step_spoiler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="40dp"
+        android:background="#00FFFFFF"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/step_time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/step_action"
+        app:srcCompat="@drawable/baseline_arrow_drop_down_24" />
+
+    <TextView
+        android:id="@+id/step_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        tools:layout_editor_absoluteX="10dp"
+        tools:layout_editor_absoluteY="33dp"
+        tools:visibility="gone" />
+
+    <View
+        android:id="@+id/divider5"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="-20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/step_spoiler"
+        app:layout_constraintStart_toStartOf="@+id/step_icon"
+        app:layout_constraintTop_toBottomOf="@+id/step_time" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/step_details_group"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/divider5"
+        app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
+        app:layout_constraintStart_toStartOf="@+id/step_icon"
+        app:layout_constraintTop_toBottomOf="@+id/step_icon"
+        tools:visibility="gone">
+
+        <TextView
+            android:id="@+id/step_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:visibility="gone" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

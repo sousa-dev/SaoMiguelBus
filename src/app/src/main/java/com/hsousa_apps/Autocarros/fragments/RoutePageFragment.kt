@@ -33,9 +33,9 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val orig = view?.findViewById<TextView>(R.id.route_page_origin)
-        val dest = view?.findViewById<TextView>(R.id.route_page_destination)
-        val routeId = view?.findViewById<TextView>(R.id.route_page_id)
+        val orig = view.findViewById<TextView>(R.id.route_page_origin)
+        val dest = view.findViewById<TextView>(R.id.route_page_destination)
+        val routeId = view.findViewById<TextView>(R.id.route_page_id)
 
         orig.text = origin
         dest.text = destination
@@ -47,7 +47,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             createStops(this.view)
         }
         else {
-            val day = view?.findViewById<TextView>(R.id.route_day)
+            val day = view.findViewById<TextView>(R.id.route_day)
 
             var type = when (typeOfDay) {
                 TypeOfDay.WEEKDAY -> resources.getString(R.string.weekdays)
@@ -60,7 +60,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             createStops(this.view, 2)
         }
 
-        val fav = view?.findViewById<ImageButton>(R.id.favorite)
+        val fav = view.findViewById<ImageButton>(R.id.favorite)
 
         if (listOf(origin, destination) in Datasource().getFavorite()){
             fav.setImageResource(R.mipmap.hearton)
@@ -68,7 +68,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         }
         var ret: String? = info
         if (ret != ""){
-            val info = view?.findViewById<TextView>(R.id.obs)
+            val info = view.findViewById<TextView>(R.id.obs)
             info.text = ret.toString()
             info.visibility = View.VISIBLE
         }

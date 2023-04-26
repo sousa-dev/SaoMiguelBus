@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
@@ -24,6 +25,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
@@ -33,12 +35,13 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
+import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        val URL = "https://saomiguelbus-api.herokuapp.com/api/v1/android/load"
+        val URL = "https://api.saomiguelbus.com/api/v1/android/load"
         loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }

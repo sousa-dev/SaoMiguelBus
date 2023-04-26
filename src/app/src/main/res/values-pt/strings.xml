@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">São Miguel Bus</string>
-    <string name="find_button">Encontrar</string>
+    <string name="find_button">Pesquisar</string>
     <string name="find_hint_message">Descubra quais rotas passam numa paragem</string>
     <string name="stop">Paragem</string>
     <string name="no_fav_message">Não há rotas nos favoritos\n:(</string>
@@ -42,4 +42,16 @@
     <string name="failed_response_title">Falha ao conetar ao Servidor</string>
     <string name="failed_response_desc">Não foi possível estabelecer conexão ao servidor para atualizar os dados da aplicação. As informações apresentadas podem estar desatualizadas</string>
     <string name="loading">A Carregar</string>
+    <string name="catch_bus">Autocarro para</string>
+    <string name="walk_to">Andar para</string>
+    <string name="leave_at">Sair em</string>
+    <string-array name="steps_spinner_array">
+        <item>Partir</item>
+        <item>Chegar</item>
+    </string-array>
+    <string name="depart_arrive_placeholder">às</string>
+    <string name="depart">partir</string>
+    <string name="arrive">chegar</string>
+    <string name="today_placeholder">Hoje</string>
+    <string name="service_run">Serviço realizado por</string>
 </resources>
