@@ -64,9 +64,10 @@ class MainActivity : AppCompatActivity() {
 
                     if (latest_version != null) {
                         if (latest_version > current_version){
+                            //TODO: Redirect to google play store page
                             val builder = AlertDialog.Builder(this)
-                            builder.setTitle("update")//getString(R.string.new_app_version))
-                            builder.setMessage("update")//getString(R.string.update_app))
+                            builder.setTitle(getString(R.string.new_app_version))
+                            builder.setMessage(getString(R.string.update_app))
 
                             builder.setPositiveButton(android.R.string.yes) { dialog, which ->
                             }

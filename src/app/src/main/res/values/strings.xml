@@ -59,4 +59,7 @@
     <string name="today_placeholder">Today</string>
     <string name="service_run">Service run by</string>
     <string name="map_my_location">My Location</string>
+    <string name="new_app_version">New Version Available</string>
+    <string name="update_app">A new version of this app with even more features is available to download right now on the Play Store</string>
+    <string name="update_label">Update</string>
 </resources>

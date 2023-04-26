@@ -55,4 +55,6 @@
     <string name="today_placeholder">Hoy</string>
     <string name="service_run">Servicio a cargo de</string>
     <string name="map_my_location">Mi ubicacion</string>
+    <string name="new_app_version">Nueva versión disponible</string>
+    <string name="update_app">Una nueva versión de esta aplicación con aún más funciones está disponible para descargar ahora mismo en Play Store</string>
 </resources>
