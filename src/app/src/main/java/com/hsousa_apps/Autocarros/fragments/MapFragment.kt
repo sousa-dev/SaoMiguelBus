@@ -32,7 +32,7 @@ import org.osmdroid.views.overlay.Polyline
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MapFragment : Fragment() {
+class MapFragment(private var redirected_origin: String? = null, private var redirected_destination: String? = null) : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
     private var overview_polyline: String = ""
@@ -209,7 +209,6 @@ class MapFragment : Fragment() {
                 //Get Steps for Destination
 
                 fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
-                Log.d("spinner", spinner.selectedItem.toString())
                 map.overlayManager.removeAll(map.overlays)
                 map.invalidate()
 
@@ -226,6 +225,28 @@ class MapFragment : Fragment() {
             else{
                 Toast.makeText(context, resources.getString(R.string.map_dest_blank), Toast.LENGTH_SHORT).show()
             }
+        }
+
+        if (redirected_origin != null && redirected_destination != null){
+            search_origin = redirected_origin as String
+            origin.setText(redirected_origin)
+            search_destination = redirected_destination as String
+            destination.setText(redirected_destination)
+
+            val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+            //TODO: Uncomment all send stats to api
+            /** Send Stats to API
+            var language : String = Datasource().getCurrentLang()
+            var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
+            var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+            requestQueue.add(request)
+            /***********************/**/
+            //Get Steps for Destination
+
+            fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
+
+            map.overlayManager.removeAll(map.overlays)
+            map.invalidate()
         }
     }
     fun decodePolyline(polyline: String): List<GeoPoint> {
