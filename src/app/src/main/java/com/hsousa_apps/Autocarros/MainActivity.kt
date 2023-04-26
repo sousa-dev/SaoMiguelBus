@@ -1,11 +1,15 @@
 package com.hsousa_apps.Autocarros
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Half.toFloat
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -64,12 +68,27 @@ class MainActivity : AppCompatActivity() {
 
                     if (latest_version != null) {
                         if (latest_version > current_version){
-                            //TODO: Redirect to google play store page
                             val builder = AlertDialog.Builder(this)
                             builder.setTitle(getString(R.string.new_app_version))
                             builder.setMessage(getString(R.string.update_app))
 
-                            builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                            builder.setCancelable(true)
+                            builder.setPositiveButton(R.string.update_label) { dialog, which ->
+                                try {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("market://details?id=com.hsousa_apps.Autocarros")
+                                        )
+                                    )
+                                } catch (anfe: ActivityNotFoundException) {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros")
+                                        )
+                                    )
+                                }
                             }
 
                             builder.show()

@@ -57,4 +57,5 @@
     <string name="map_my_location">Ma position</string>
     <string name="new_app_version">Nouvelle version disponible</string>
     <string name="update_app">Une nouvelle version de cette application avec encore plus de fonctionnalités est disponible en téléchargement dès maintenant sur le Play Store</string>
+    <string name="update_label">Mettre à jour</string>
 </resources>
