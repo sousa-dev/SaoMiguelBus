@@ -169,16 +169,16 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         getLocation.setOnClickListener {
             fetchLocation()
             if (checkLocationPermissions()){
-                origin.setText(getString(R.string.my_location))
-                search_origin = getString(R.string.my_location)
+                origin.setText(getString(R.string.map_my_location))
+                search_origin = getString(R.string.map_my_location)
             }
         }
 
         if (checkLocationPermissions()){
             fetchLocation()
             //TODO: Improve my location string resource
-            origin.setText(getString(R.string.my_location))
-            search_origin = getString(R.string.my_location)
+            origin.setText(getString(R.string.map_my_location))
+            search_origin = getString(R.string.map_my_location)
 
         }
 
@@ -403,7 +403,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         if (lang == "pt")
             lang = "pt-pt"
 
-        if (origin == getString(R.string.my_location)){
+        if (origin == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
                 //TODO: Use a string resource
                 Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
@@ -412,7 +412,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             origin_url = "${currentLocation.x},${currentLocation.y}"
 
         }
-        if (destination == getString(R.string.my_location)){
+        if (destination == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
                 //TODO: Use a string resource
                 Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
