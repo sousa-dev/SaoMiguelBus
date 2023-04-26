@@ -53,4 +53,5 @@
     <string name="depart">salir</string>
     <string name="arrive">llegar</string>
     <string name="today_placeholder">Hoy</string>
+    <string name="service_run">Servicio a cargo de</string>
 </resources>

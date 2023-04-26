@@ -347,12 +347,18 @@ class MapFragment : Fragment() {
 
     fun getDetails(transitDetails: TransitDetails): String {
         //TODO: Change to string resource
-        var details = "${transitDetails.line.name}\nDeparture Stop: ${transitDetails.departure_stop}\n\t${transitDetails.departure_time}\nArrival Stop: ${transitDetails.arrival_stop}\n\t${transitDetails.arrival_time}"
-        Log.d("SIZE", transitDetails.line.agencies.size.toString())
-
+        var details = ""
+        details += "${transitDetails.line.name}\n\n"
+        /**
+        details += "\t${transitDetails.departure_stop} -> ${transitDetails.arrival_stop}\n"
+        details += "\t${transitDetails.departure_time} -> ${transitDetails.arrival_time}\n"
+        **/
         if (transitDetails.line.agencies.size > 0){
             for (agency in transitDetails.line.agencies){
-                details += "\nAgency: " + agency.name + "\nPhone: " + agency.phone + "\nWebsite: " + agency.url
+                var phone = agency.phone
+                if (phone.startsWith("011")) phone = phone.replace("011 ", "+")
+                details += "${getString(R.string.service_run)} "
+                details += agency.name + "\n\t" + phone /**+ "\n\t" + agency.url**/
             }
         }
         return details

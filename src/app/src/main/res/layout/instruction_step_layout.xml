@@ -121,12 +121,14 @@
         app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
         app:layout_constraintStart_toStartOf="@+id/step_icon"
         app:layout_constraintTop_toBottomOf="@+id/step_icon"
-        tools:visibility="visible">
+        tools:visibility="gone">
 
         <TextView
             android:id="@+id/step_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
             tools:visibility="gone" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
