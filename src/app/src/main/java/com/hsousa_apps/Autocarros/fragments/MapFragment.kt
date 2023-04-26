@@ -32,7 +32,7 @@ import org.osmdroid.views.overlay.Polyline
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MapFragment : Fragment() {
+class MapFragment(private var redirected_origin: String? = null, private var redirected_destination: String? = null) : Fragment() {
 
     private var currentLocation: Location = Location(0.0, 0.0)
     private var overview_polyline: String = ""
@@ -169,16 +169,16 @@ class MapFragment : Fragment() {
         getLocation.setOnClickListener {
             fetchLocation()
             if (checkLocationPermissions()){
-                origin.setText(getString(R.string.my_location))
-                search_origin = getString(R.string.my_location)
+                origin.setText(getString(R.string.map_my_location))
+                search_origin = getString(R.string.map_my_location)
             }
         }
 
         if (checkLocationPermissions()){
             fetchLocation()
             //TODO: Improve my location string resource
-            origin.setText(getString(R.string.my_location))
-            search_origin = getString(R.string.my_location)
+            origin.setText(getString(R.string.map_my_location))
+            search_origin = getString(R.string.map_my_location)
 
         }
 
@@ -209,7 +209,6 @@ class MapFragment : Fragment() {
                 //Get Steps for Destination
 
                 fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
-                Log.d("spinner", spinner.selectedItem.toString())
                 map.overlayManager.removeAll(map.overlays)
                 map.invalidate()
 
@@ -226,6 +225,28 @@ class MapFragment : Fragment() {
             else{
                 Toast.makeText(context, resources.getString(R.string.map_dest_blank), Toast.LENGTH_SHORT).show()
             }
+        }
+
+        if (redirected_origin != null && redirected_destination != null){
+            search_origin = redirected_origin as String
+            origin.setText(redirected_origin)
+            search_destination = redirected_destination as String
+            destination.setText(redirected_destination)
+
+            val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+            //TODO: Uncomment all send stats to api
+            /** Send Stats to API
+            var language : String = Datasource().getCurrentLang()
+            var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
+            var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+            requestQueue.add(request)
+            /***********************/**/
+            //Get Steps for Destination
+
+            fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
+
+            map.overlayManager.removeAll(map.overlays)
+            map.invalidate()
         }
     }
     fun decodePolyline(polyline: String): List<GeoPoint> {
@@ -300,6 +321,11 @@ class MapFragment : Fragment() {
         val map = view?.findViewById<MapView>(R.id.mapview)
         val show_map = view?.findViewById<ImageButton>(R.id.show_map)
         var cards: MutableList<StepModel> = mutableListOf<StepModel>()
+
+        if (rv != null){
+            rv?.layoutManager = LinearLayoutManager(view?.context)
+            rv?.adapter = StepCardAdapter(view.context, cards as ArrayList<StepModel>)
+        }
 
         for (step in steps){
             var leave_card: StepModel? = null
@@ -377,7 +403,7 @@ class MapFragment : Fragment() {
         if (lang == "pt")
             lang = "pt-pt"
 
-        if (origin == getString(R.string.my_location)){
+        if (origin == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
                 //TODO: Use a string resource
                 Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
@@ -386,7 +412,7 @@ class MapFragment : Fragment() {
             origin_url = "${currentLocation.x},${currentLocation.y}"
 
         }
-        if (destination == getString(R.string.my_location)){
+        if (destination == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
                 //TODO: Use a string resource
                 Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
@@ -430,7 +456,22 @@ class MapFragment : Fragment() {
                     }
                 } else {
                     Log.e("STATUS", "Response NOT OK!")
+
+                    val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
+                    var cards: MutableList<StepModel> = mutableListOf<StepModel>()
+
+                    if (rv != null){
+                        rv?.layoutManager = LinearLayoutManager(view?.context)
+                        rv?.adapter = view?.let { StepCardAdapter(it.context, cards as ArrayList<StepModel>) }
+                    }
+                    val map = view?.findViewById<MapView>(R.id.mapview)
+                    val show_map = view?.findViewById<ImageButton>(R.id.show_map)
+                    map?.overlayManager?.removeAll(map.overlays)
+                    map?.invalidate()
+                    map?.visibility = View.GONE
+                    show_map?.rotation = (90.0).toFloat()
                     emptymsg?.visibility = View.VISIBLE
+                    overview_polyline = ""
                 }
             },
             { error ->

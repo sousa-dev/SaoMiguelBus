@@ -178,8 +178,13 @@ class SearchFragment(private var origin: String? = null, private var destination
         if (cards.size == 0){
             emptymsg?.text = resources.getString(R.string.no_routes_found)
             emptymsg?.visibility = View.VISIBLE
+            redirectToMap(origin, destination)
         }
 
+    }
+
+    fun redirectToMap(origin: String, destination: String){
+        swapFrags(MapFragment(origin.split("-")[0],destination.split("-")[0]))
     }
 
     fun openRoutePage(
