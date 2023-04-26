@@ -312,7 +312,7 @@ class MapFragment : Fragment() {
                 //action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
-                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time, "", "")
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time.replace(":", "h"), "", "")
                 details = getDetails(step.transit_details)
             }
             else if (step.travel_mode == "WALKING"){
@@ -323,6 +323,10 @@ class MapFragment : Fragment() {
 
             var distance = step.distance
             var time = step.duration
+
+            if (step.travel_mode == "TRANSIT"){
+                distance = step.transit_details.departure_time.replace(":", "h")
+            }
 
             cards.add(StepModel(id, icon, action, goal, distance, time, details))
             if (leave_card != null) cards.add(leave_card)
@@ -346,7 +350,6 @@ class MapFragment : Fragment() {
     }
 
     fun getDetails(transitDetails: TransitDetails): String {
-        //TODO: Change to string resource
         var details = ""
         details += "${transitDetails.line.name}\n\n"
         /**

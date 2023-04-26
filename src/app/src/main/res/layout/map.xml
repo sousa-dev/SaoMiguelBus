@@ -69,12 +69,11 @@
         android:id="@+id/find_routes_origin"
         android:layout_width="197dp"
         android:layout_height="42dp"
-        android:layout_marginStart="50dp"
         android:layout_marginTop="8dp"
         android:hint="@string/origin_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.214"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.12"
+        app:layout_constraintStart_toStartOf="@+id/adtemplate_find"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
 
     <View
@@ -122,6 +121,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/find_button"
+        android:textSize="14sp"
         app:backgroundTint="#218732"
         app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
         app:layout_constraintEnd_toEndOf="parent"
