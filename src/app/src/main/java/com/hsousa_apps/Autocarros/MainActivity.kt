@@ -1,23 +1,19 @@
 package com.hsousa_apps.Autocarros
 
-import android.content.DialogInterface
 import android.content.SharedPreferences
-import org.osmdroid.config.Configuration.*
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Half.toFloat
 import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdRequest
@@ -25,17 +21,18 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
-import com.hsousa_apps.Autocarros.fragments.*
-import com.hsousa_apps.Autocarros.models.Dialog
+import com.hsousa_apps.Autocarros.fragments.FindFragment
+import com.hsousa_apps.Autocarros.fragments.HomeFragment
+import com.hsousa_apps.Autocarros.fragments.MapFragment
+import com.hsousa_apps.Autocarros.fragments.SettingsFragment
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.osmdroid.config.Configuration.getInstance
 import java.util.*
-import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
@@ -61,8 +58,22 @@ class MainActivity : AppCompatActivity() {
                     progressBar.visibility = View.VISIBLE
                     Datasource().loadStopsFromAPI()
                     val variables: JSONObject? = response.getJSONObject(0)
-                    val version: String? = variables?.getString("version")
+                    val latest_version: String? = variables?.getString("version")
                     val use_maps: Boolean? = variables?.getBoolean("maps")
+                    val current_version = BuildConfig.VERSION_NAME
+
+                    if (latest_version != null) {
+                        if (latest_version > current_version){
+                            val builder = AlertDialog.Builder(this)
+                            builder.setTitle("update")//getString(R.string.new_app_version))
+                            builder.setMessage("update")//getString(R.string.update_app))
+
+                            builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+                            }
+
+                            builder.show()
+                        }
+                    }
 
 
                     for(i in 1 until response.length()){
