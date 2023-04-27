@@ -64,4 +64,5 @@
     <string name="update_label">Update</string>
     <string name="monthly_limit_reached_title">Monthly Map Limit Reached</string>
     <string name="monthly_limit_reached_body">The monthly limit for accessing our map feature has been reached. As a result, you will not be able to use the map feature until the start of the next month. Apologies for any inconvenience this may cause.</string>
+    <string name="app_developed_by">This app was developed by\nSousa Dev</string>
 </resources>

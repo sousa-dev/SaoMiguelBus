@@ -29,10 +29,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        val language: AutoCompleteTextView = view.findViewById(R.id.language)
-        val actv_language: ImageView = view.findViewById(R.id.actv_language)
-        val flag: ImageView = view.findViewById(R.id.flag)
-
         val rate: Button = view.findViewById(R.id.rate)
         val patreon: Button = view.findViewById(R.id.patreon)
         val mail: Button = view.findViewById(R.id.mail)
@@ -87,52 +83,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
             )
             intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
             startActivity(Intent.createChooser(intent, "Choose an Email client:"))
-        }
-
-
-        language.setText(Datasource().getCurrentLang())
-
-        when (Datasource().getCurrentLang()){
-            "Português" -> flag.setImageResource(R.drawable.portugal)
-            "English" -> flag.setImageResource(R.drawable.english)
-            "Deutsch" -> flag.setImageResource(R.drawable.germany)
-
-        }
-
-        language.threshold = 2
-
-        val adapter: ArrayAdapter<String> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, arrayListOf("Português", "English", "Deutsch"))
-        language.setAdapter(adapter)
-
-        actv_language.setOnClickListener {
-            language.showDropDown()
-        }
-        language.setOnClickListener {
-            language.showDropDown()
-        }
-
-        language.setOnItemClickListener { _, _, position, _ ->
-            val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
-            val editor = pref.edit()
-            var str = ""
-
-            if (position == 0){
-                flag.setImageResource(R.drawable.portugal)
-                str = "Português"
-            }
-            else if (position == 1){
-                flag.setImageResource(R.drawable.english)
-                str = "English"
-            }
-
-            else{
-                flag.setImageResource(R.drawable.germany)
-                str = "Deutsch"
-            }
-
-            Datasource().changeCurrentLang(str)
-            editor.putString("lang", str)
-            editor.commit()
         }
     }
 

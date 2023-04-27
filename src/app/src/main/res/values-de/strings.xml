@@ -60,4 +60,5 @@
     <string name="update_label">Aktualisieren</string>
     <string name="monthly_limit_reached_title">Monatliches Kartenlimit erreicht</string>
     <string name="monthly_limit_reached_body">Das monatliche Limit für den Zugriff auf unsere Kartenfunktion wurde erreicht. Infolgedessen können Sie die Kartenfunktion bis Anfang des nächsten Monats nicht nutzen. Wir entschuldigen uns für eventuelle Unannehmlichkeiten.</string>
+    <string name="app_developed_by">Diese App wurde von Sousa Dev entwickelt</string>
 </resources>

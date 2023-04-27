@@ -60,4 +60,5 @@
     <string name="update_label">Actualizar</string>
     <string name="monthly_limit_reached_title">Límite mensual de mapas alcanzado</string>
     <string name="monthly_limit_reached_body">Se ha alcanzado el límite mensual para acceder a nuestra función de mapa. Como resultado, no podrá usar la función de mapa hasta el comienzo del próximo mes. Disculpas por cualquier inconveniente que esto pueda causar.</string>
+    <string name="app_developed_by">Esta aplicación fue desarrollada por Sousa Dev</string>
 </resources>
