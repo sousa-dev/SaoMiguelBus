@@ -61,9 +61,18 @@ class MainActivity : AppCompatActivity() {
                 try {
                     progressBar.visibility = View.VISIBLE
                     Datasource().loadStopsFromAPI()
-                    val variables: JSONObject? = response.getJSONObject(0)
-                    val latest_version: String? = variables?.getString("version")
-                    val use_maps: Boolean? = variables?.getBoolean("maps")
+                    var latest_version = "0"
+                    var use_maps: Boolean? = null
+                    try{
+                        val variables: JSONObject? = response.getJSONObject(0)
+                        latest_version = variables?.getString("version").toString()
+                        use_maps = variables?.getBoolean("maps") == true
+                    } catch (e: Exception){
+                        latest_version = "0"
+                        use_maps = null
+                    }
+
+                    Datasource().setUseMap(use_maps)
                     val current_version = BuildConfig.VERSION_NAME
 
                     if (latest_version != null) {

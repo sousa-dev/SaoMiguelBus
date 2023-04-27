@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -46,109 +47,118 @@ class MapFragment(private var redirected_origin: String? = null, private var red
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
-        val spinner: Spinner = view.findViewById(R.id.step_spinner)
-        val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
-        val show_map: ImageButton = view.findViewById(R.id.show_map)
+        if (Datasource().getUseMap() == true) {
 
-        fusedLocationProviderClient = activity?.let {
-            LocationServices.getFusedLocationProviderClient(
-                it
-            )
-        }!!
+            super.onViewCreated(view, savedInstanceState)
 
-        val time: TextView = view.findViewById(R.id.step_time_picker)
-        val date: TextView = view.findViewById(R.id.step_date)
+            val spinner: Spinner = view.findViewById(R.id.step_spinner)
+            val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
+            val show_map: ImageButton = view.findViewById(R.id.show_map)
 
-        val cal = Calendar.getInstance()
-        val now = cal.time
-
-        time.text = SimpleDateFormat("HH:mm").format(now)
-        date.text = getString(R.string.today_placeholder)
-
-        Log.d("date", cal.toString() + " " + cal.timeInMillis)
-
-        time.setOnClickListener {
-            val timeSetListener = TimePickerDialog.OnTimeSetListener{
-                    _, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
-                time.text = SimpleDateFormat("HH:mm").format(cal.time)
-            }
-            //TODO: Set 24hformat true depending on user preference
-            TimePickerDialog(this.context, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
-
-        }
-
-        date.setOnClickListener {
-            val dateSetListener =
-                DatePickerDialog.OnDateSetListener { _, year, month, day -> //Showing the picked value in the textView
-                    cal.set(Calendar.YEAR, year)
-                    cal.set(Calendar.MONTH, month)
-                    cal.set(Calendar.DAY_OF_MONTH, day)
-                    date.text = "$day-${month+1}-$year"
-                }
-
-            context?.let { it1 ->
-                DatePickerDialog(
-                    it1,
-                    dateSetListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
+            fusedLocationProviderClient = activity?.let {
+                LocationServices.getFusedLocationProviderClient(
+                    it
                 )
-            }?.show()
-        }
+            }!!
 
+            val time: TextView = view.findViewById(R.id.step_time_picker)
+            val date: TextView = view.findViewById(R.id.step_date)
 
-        Log.d("spinner", spinner.selectedItem.toString())
+            val cal = Calendar.getInstance()
+            val now = cal.time
 
+            time.text = SimpleDateFormat("HH:mm").format(now)
+            date.text = getString(R.string.today_placeholder)
 
-        val map: MapView = view.findViewById<MapView>(R.id.mapview)
-        map.visibility = View.GONE
-
-
-        val mapController = map.controller
-        mapController.setZoom(11)
-        // Disable all map interactions
-        map.setClickable(false)
-        map.setLongClickable(false)
-        map.setFocusable(false)
-        map.setMultiTouchControls(false)
-
-        // Disable double tap zooming
-        val doubleTapDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                return true
-            }
-        })
-        map.setOnTouchListener { _, event ->
-            doubleTapDetector.onTouchEvent(event)
-            true
-        }
-
-        mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598))
-        show_map.setOnClickListener {
-            if (map.visibility == View.GONE) {
-                if (overview_polyline != ""){
-                    val decodedPolyline: List<GeoPoint> = decodePolyline(overview_polyline)
-                    val line = Polyline()
-                    line.setPoints(decodedPolyline)
-                    line.setColor(Color.RED)
-                    line.setWidth(5F)
-                    map.getOverlayManager().add(line)
-                    map.invalidate()
+            time.setOnClickListener {
+                val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                    cal.set(Calendar.HOUR_OF_DAY, hour)
+                    cal.set(Calendar.MINUTE, minute)
+                    time.text = SimpleDateFormat("HH:mm").format(cal.time)
                 }
-                map.visibility = View.VISIBLE
-                show_map.rotation = (-90.0).toFloat()
-            }
-            else {
-                map.visibility = View.GONE
-                show_map.rotation = (90.0).toFloat()
-            }
-        }
+                //TODO: Set 24hformat true depending on user preference
+                TimePickerDialog(
+                    this.context,
+                    timeSetListener,
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE),
+                    true
+                ).show()
 
-        /**
-         Draw Waypoints on the map
-        for (stop in Datasource().getStops()){
+            }
+
+            date.setOnClickListener {
+                val dateSetListener =
+                    DatePickerDialog.OnDateSetListener { _, year, month, day -> //Showing the picked value in the textView
+                        cal.set(Calendar.YEAR, year)
+                        cal.set(Calendar.MONTH, month)
+                        cal.set(Calendar.DAY_OF_MONTH, day)
+                        date.text = "$day-${month + 1}-$year"
+                    }
+
+                context?.let { it1 ->
+                    DatePickerDialog(
+                        it1,
+                        dateSetListener,
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH)
+                    )
+                }?.show()
+            }
+
+
+            Log.d("spinner", spinner.selectedItem.toString())
+
+
+            val map: MapView = view.findViewById<MapView>(R.id.mapview)
+            map.visibility = View.GONE
+
+
+            val mapController = map.controller
+            mapController.setZoom(11)
+            // Disable all map interactions
+            map.setClickable(false)
+            map.setLongClickable(false)
+            map.setFocusable(false)
+            map.setMultiTouchControls(false)
+
+            // Disable double tap zooming
+            val doubleTapDetector =
+                GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
+                        return true
+                    }
+                })
+            map.setOnTouchListener { _, event ->
+                doubleTapDetector.onTouchEvent(event)
+                true
+            }
+
+            mapController.setCenter(GeoPoint(37.782712259083866, -25.497047075842598))
+            show_map.setOnClickListener {
+                if (map.visibility == View.GONE) {
+                    if (overview_polyline != "") {
+                        val decodedPolyline: List<GeoPoint> = decodePolyline(overview_polyline)
+                        val line = Polyline()
+                        line.setPoints(decodedPolyline)
+                        line.setColor(Color.RED)
+                        line.setWidth(5F)
+                        map.getOverlayManager().add(line)
+                        map.invalidate()
+                    }
+                    map.visibility = View.VISIBLE
+                    show_map.rotation = (-90.0).toFloat()
+                } else {
+                    map.visibility = View.GONE
+                    show_map.rotation = (90.0).toFloat()
+                }
+            }
+
+            /**
+            Draw Waypoints on the map
+            for (stop in Datasource().getStops()){
             if (stop.coordinates.x == 0.0) continue
             val point = GeoPoint(stop.coordinates.x, stop.coordinates.y)
             val marker = Marker(map)
@@ -156,49 +166,93 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
             marker.title = stop.name
             map.overlays.add(marker)
-        }
-        **/
-        val getDirections = view.findViewById<Button>(R.id.getDirections)
-        val origin = view.findViewById<TextInputEditText>(R.id.find_routes_origin)
-        val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
-        var search_origin: String = ""
-        var search_destination: String = ""
+            }
+             **/
+            val getDirections = view.findViewById<Button>(R.id.getDirections)
+            val origin = view.findViewById<TextInputEditText>(R.id.find_routes_origin)
+            val destination = view.findViewById<TextInputEditText>(R.id.find_routes_map)
+            var search_origin: String = ""
+            var search_destination: String = ""
 
-        var getLocation: ImageButton = view.findViewById(R.id.step_location)
+            var getLocation: ImageButton = view.findViewById(R.id.step_location)
 
-        getLocation.setOnClickListener {
-            fetchLocation()
-            if (checkLocationPermissions()){
+            getLocation.setOnClickListener {
+                fetchLocation()
+                if (checkLocationPermissions()) {
+                    origin.setText(getString(R.string.map_my_location))
+                    search_origin = getString(R.string.map_my_location)
+                }
+            }
+
+            if (checkLocationPermissions()) {
+                fetchLocation()
                 origin.setText(getString(R.string.map_my_location))
                 search_origin = getString(R.string.map_my_location)
+
             }
-        }
-
-        if (checkLocationPermissions()){
-            fetchLocation()
-            origin.setText(getString(R.string.map_my_location))
-            search_origin = getString(R.string.map_my_location)
-
-        }
 
 
-        destination.doOnTextChanged { text, start, before, count ->
-            search_destination = text.toString()
-        }
+            destination.doOnTextChanged { text, start, before, count ->
+                search_destination = text.toString()
+            }
 
-        origin.doOnTextChanged { text, start, before, count ->
-            search_origin = text.toString()
-        }
+            origin.doOnTextChanged { text, start, before, count ->
+                search_origin = text.toString()
+            }
 
-        swapStops.setOnClickListener {
-            val temp = destination.text
-            destination.text = origin.text
-            origin.text = temp
-        }
+            swapStops.setOnClickListener {
+                val temp = destination.text
+                destination.text = origin.text
+                origin.text = temp
+            }
 
-        getDirections.setOnClickListener{
-            if (search_destination != "" && search_origin != ""){
+            getDirections.setOnClickListener {
+                if (search_destination != "" && search_origin != "") {
+                    val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+                    /** Send Stats to API
+                    var language : String = Datasource().getCurrentLang()
+                    var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
+                    var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+                    requestQueue.add(request)
+                    /***********************/**/
+                    //Get Steps for Destination
+
+                    fetchSteps(
+                        requestQueue,
+                        search_origin,
+                        search_destination,
+                        spinner.selectedItem.toString().lowercase(),
+                        cal.timeInMillis / 1000
+                    )
+                    map.overlayManager.removeAll(map.overlays)
+                    map.invalidate()
+
+
+                    /** Launch Google Maps Activity
+                    val search_split: String = search.replace(" ", "+")
+                    startActivity(
+                    Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("google.navigation:q=$search_split")
+                    ).setPackage("com.google.android.apps.maps"))
+                     **/
+                } else {
+                    Toast.makeText(
+                        context,
+                        resources.getString(R.string.map_dest_blank),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            if (redirected_origin != null && redirected_destination != null) {
+                search_origin = redirected_origin as String
+                origin.setText(redirected_origin)
+                search_destination = redirected_destination as String
+                destination.setText(redirected_destination)
+
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+                //TODO: Uncomment all send stats to api
                 /** Send Stats to API
                 var language : String = Datasource().getCurrentLang()
                 var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
@@ -207,45 +261,37 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 /***********************/**/
                 //Get Steps for Destination
 
-                fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
+                fetchSteps(
+                    requestQueue,
+                    search_origin,
+                    search_destination,
+                    spinner.selectedItem.toString().lowercase(),
+                    cal.timeInMillis / 1000
+                )
+
                 map.overlayManager.removeAll(map.overlays)
                 map.invalidate()
-
-
-                /** Launch Google Maps Activity
-                val search_split: String = search.replace(" ", "+")
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("google.navigation:q=$search_split")
-                    ).setPackage("com.google.android.apps.maps"))
-                **/
             }
-            else{
-                Toast.makeText(context, resources.getString(R.string.map_dest_blank), Toast.LENGTH_SHORT).show()
+        } else if (Datasource().getUseMap() == false) {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.monthly_limit_reached_title))
+            builder?.setMessage(getString(R.string.monthly_limit_reached_body))
+
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+                swapFrags(HomeFragment())
             }
-        }
 
-        if (redirected_origin != null && redirected_destination != null){
-            search_origin = redirected_origin as String
-            origin.setText(redirected_origin)
-            search_destination = redirected_destination as String
-            destination.setText(redirected_destination)
+            builder?.show()
+        } else {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.failed_response_title))
+            builder?.setMessage(getString(R.string.failed_response_desc))
 
-            val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
-            //TODO: Uncomment all send stats to api
-            /** Send Stats to API
-            var language : String = Datasource().getCurrentLang()
-            var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
-            var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
-            requestQueue.add(request)
-            /***********************/**/
-            //Get Steps for Destination
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+                swapFrags(HomeFragment())
+            }
 
-            fetchSteps(requestQueue, search_origin, search_destination, spinner.selectedItem.toString().lowercase(), cal.timeInMillis / 1000)
-
-            map.overlayManager.removeAll(map.overlays)
-            map.invalidate()
+            builder?.show()
         }
     }
     fun decodePolyline(polyline: String): List<GeoPoint> {
@@ -308,6 +354,14 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         }
     }
 
+    private fun swapFrags(f : Fragment) {
+        val t = activity?.supportFragmentManager?.beginTransaction()
+        if (t != null) {
+            t.replace(R.id.frag_container, f)
+            t.addToBackStack(null)
+            t.commit()
+        }
+    }
     private fun checkLocationPermissions(): Boolean{
         if (this.context?.let { ActivityCompat.checkSelfPermission(it, android.Manifest.permission.ACCESS_FINE_LOCATION) } != PackageManager.PERMISSION_GRANTED
             && this.context?.let { ActivityCompat.checkSelfPermission(it, android.Manifest.permission.ACCESS_COARSE_LOCATION) } != PackageManager.PERMISSION_GRANTED)

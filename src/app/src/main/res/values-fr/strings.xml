@@ -58,4 +58,6 @@
     <string name="new_app_version">Nouvelle version disponible</string>
     <string name="update_app">Une nouvelle version de cette application avec encore plus de fonctionnalités est disponible en téléchargement dès maintenant sur le Play Store</string>
     <string name="update_label">Mettre à jour</string>
+    <string name="monthly_limit_reached_title">Limite de carte mensuelle atteinte</string>
+    <string name="monthly_limit_reached_body">La limite mensuelle d\'accès à notre fonctionnalité de carte a été atteinte. Par conséquent, vous ne pourrez pas utiliser la fonction de carte avant le début du mois prochain. Nous vous prions de nous excuser pour tout inconvénient que cela pourrait causer.</string>
 </resources>
