@@ -59,4 +59,9 @@
     <string name="today_placeholder">Today</string>
     <string name="service_run">Service run by</string>
     <string name="map_my_location">My Location</string>
+    <string name="new_app_version">New Version Available</string>
+    <string name="update_app">A new version of this app with even more features is available to download right now on the Play Store</string>
+    <string name="update_label">Update</string>
+    <string name="monthly_limit_reached_title">Monthly Map Limit Reached</string>
+    <string name="monthly_limit_reached_body">The monthly limit for accessing our map feature has been reached. As a result, you will not be able to use the map feature until the start of the next month. Apologies for any inconvenience this may cause.</string>
 </resources>

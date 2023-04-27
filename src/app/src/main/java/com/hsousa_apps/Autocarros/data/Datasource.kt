@@ -18,6 +18,7 @@ var routeHash: HashMap<String, Route> = hashMapOf()
 var favorite: MutableList<List<String>> = mutableListOf()
 var currentLanguage: String = "pt"
 var loaded: Boolean = false
+var use_maps: Boolean? = null
 
 class Datasource {
 
@@ -4074,5 +4075,12 @@ class Datasource {
     }
     fun getRouteHash(): HashMap<String, Route> {
         return routeHash
+    }
+
+    fun setUseMap(bool: Boolean?){
+        use_maps = bool
+    }
+    fun getUseMap(): Boolean? {
+        return use_maps
     }
 }

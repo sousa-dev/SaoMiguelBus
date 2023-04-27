@@ -184,7 +184,8 @@ class SearchFragment(private var origin: String? = null, private var destination
     }
 
     fun redirectToMap(origin: String, destination: String){
-        swapFrags(MapFragment(origin.split("-")[0],destination.split("-")[0]))
+        if (Datasource().getUseMap() == true)
+            swapFrags(MapFragment(origin.split("-")[0],destination.split("-")[0]))
     }
 
     fun openRoutePage(
