@@ -61,4 +61,7 @@
     <string name="monthly_limit_reached_title">Limite mensal atingido</string>
     <string name="monthly_limit_reached_body">O limite mensal para aceder à nossa funcionalidade de mapa foi atingido. Como resultado, não será possível utilizar a funcionalidade de mapa até ao início do próximo mês. Pedimos desculpa por qualquer inconveniente causado.</string>
     <string name="app_developed_by">Esta aplicação foi desenvolvida por Sousa Dev</string>
+    <string name="faq_label">Perguntas Frequentes</string>
+    <string name="company_contacts_label">Contacto das Companhias de Autocarros</string>
+    <string name="settings_warning_label">"Aplicação Não Desenvolvida pelas Empresas de Autocarros "</string>
 </resources>

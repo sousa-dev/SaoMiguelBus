@@ -31,6 +31,45 @@
         app:layout_constraintStart_toStartOf="@+id/sousadev_logo"
         app:layout_constraintTop_toBottomOf="@+id/imageView5" />
 
+    <View
+        android:id="@+id/divider7"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="@+id/settings_info_1"
+        app:layout_constraintHorizontal_bias="0.015"
+        app:layout_constraintStart_toStartOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+
+    <View
+        android:id="@+id/divider8"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="@+id/settings_info_1"
+        app:layout_constraintHorizontal_bias="0.015"
+        app:layout_constraintStart_toStartOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toBottomOf="@+id/imageView7" />
+
+    <View
+        android:id="@+id/divider9"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="@+id/settings_info_1"
+        app:layout_constraintHorizontal_bias="0.015"
+        app:layout_constraintStart_toStartOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toBottomOf="@+id/imageView8" />
+
     <ImageView
         android:id="@+id/sousadev_logo"
         android:layout_width="72dp"
@@ -52,6 +91,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></com.google.android.gms.ads.AdView>
 
+
+    <Button
+        android:id="@+id/rate"
+        android:layout_width="163dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/rate_app"
+        android:textColor="#000000"
+        app:backgroundTint="#00FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.475"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="gone" />
+
     <ImageView
         android:id="@+id/imageView3"
         android:layout_width="131dp"
@@ -61,45 +115,35 @@
         app:layout_constraintHorizontal_bias="0.464"
         app:layout_constraintStart_toStartOf="@+id/patreon"
         app:layout_constraintTop_toTopOf="@+id/patreon"
-        app:layout_constraintVertical_bias="0.52"
-        app:srcCompat="@drawable/patreon" />
-
-
-    <Button
-        android:id="@+id/rate"
-        android:layout_width="163dp"
-        android:layout_height="58dp"
-        android:text="@string/rate_app"
-        android:textColor="#000000"
-        app:backgroundTint="#00FFFFFF"
-        app:layout_constraintBottom_toTopOf="@+id/imageView3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.475"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/patreon"
-        android:layout_width="159dp"
-        android:layout_height="76dp"
-        android:layout_marginBottom="164dp"
-        android:textColor="#000000"
-        app:backgroundTint="#00FFFFFF"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_template_settings"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.476"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintVertical_bias="0.44"
+        app:srcCompat="@drawable/patreon"
+        tools:visibility="gone" />
 
     <Button
         android:id="@+id/mail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="20dp"
         android:text="@string/report_a_problem"
         app:backgroundTint="#C30D0D"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.473"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        tools:visibility="gone" />
+
+    <Button
+        android:id="@+id/patreon"
+        android:layout_width="159dp"
+        android:layout_height="76dp"
+        android:layout_marginBottom="104dp"
+        android:textColor="#000000"
+        app:backgroundTint="#00FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_template_settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.476"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="gone" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_settings"
@@ -142,6 +186,81 @@
         app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
         app:layout_constraintTop_toTopOf="@+id/sousadev_logo" />
 
+    <TextView
+        android:id="@+id/settings_info_2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:maxLines="5"
+        android:text="@string/settings_warning_label"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView5"
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView5" />
+
+    <TextView
+        android:id="@+id/settings_info_3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:maxLines="5"
+        android:text="@string/company_contacts_label"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView6"
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView6" />
+
+    <TextView
+        android:id="@+id/settings_info_4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:maxLines="5"
+        android:text="@string/faq_label"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView7"
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView7" />
+
+    <TextView
+        android:id="@+id/settings_info_5"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:maxLines="5"
+        android:text="@string/rate_app"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView8"
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView8" />
+
+    <TextView
+        android:id="@+id/settings_info_6"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:maxLines="5"
+        android:text="@string/support_creator"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView9"
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/sousadev_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView9" />
+
     <ImageView
         android:id="@+id/imageView5"
         android:layout_width="72dp"
@@ -151,4 +270,47 @@
         app:layout_constraintStart_toStartOf="@+id/sousadev_logo"
         app:layout_constraintTop_toBottomOf="@+id/divider4"
         app:srcCompat="@drawable/baseline_warning_24" />
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="72dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/imageView5"
+        app:layout_constraintStart_toStartOf="@+id/imageView5"
+        app:layout_constraintTop_toBottomOf="@+id/divider6"
+        app:srcCompat="@drawable/bus_icon" />
+
+    <ImageView
+        android:id="@+id/imageView7"
+        android:layout_width="72dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/imageView5"
+        app:layout_constraintStart_toStartOf="@+id/imageView5"
+        app:layout_constraintTop_toBottomOf="@+id/divider7"
+        app:srcCompat="@drawable/baseline_question_mark_24" />
+
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="72dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/imageView5"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/imageView5"
+        app:layout_constraintTop_toBottomOf="@+id/divider8"
+        app:srcCompat="@drawable/baseline_star_rate_24" />
+
+    <ImageView
+        android:id="@+id/imageView9"
+        android:layout_width="72dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/imageView5"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/imageView5"
+        app:layout_constraintTop_toBottomOf="@+id/divider9"
+        app:srcCompat="@drawable/baseline_monetization_on_24" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
