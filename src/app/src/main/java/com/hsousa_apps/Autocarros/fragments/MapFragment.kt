@@ -37,11 +37,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
 
     private var currentLocation: Location = Location(0.0, 0.0)
     private var overview_polyline: String = ""
-    private var locations: Map<String, String> = mapOf(
-            "lagoa" to "37.74510863626705,-25.572122582145198",
-            "bretanha" to "37.898054208457445,-25.75317627710749",
-            "aflitos" to "37.81178649398811,-25.636478343085766"
-            )
+    private var locations: Map<String, String> = Datasource().getStopLocations()
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -479,11 +475,11 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             destination_url = "${currentLocation.x},${currentLocation.y}"
         }
 
-        if (origin.strip().lowercase() in locations.keys){
-            origin_url = locations[origin.strip().lowercase()].toString()
+        if (origin.strip().lowercase().replace("-", "").replace(" ", "") in locations.keys){
+            origin_url = locations[origin.strip().lowercase().replace("-", "").replace(" ", "")].toString()
         }
-        if (destination.strip().lowercase() in locations.keys){
-            destination_url = locations[destination.strip().lowercase()].toString()
+        if (destination.strip().lowercase().replace(" ", "") in locations.keys){
+            destination_url = locations[destination.strip().lowercase().replace("-", "").replace(" ", "")].toString()
         }
 
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
