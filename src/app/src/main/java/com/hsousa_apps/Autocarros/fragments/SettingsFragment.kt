@@ -38,6 +38,39 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val patreon: Button = view.findViewById(R.id.button_support_creator)
         val mail: TextView = view.findViewById(R.id.report_mail)
         val bus_contacts: Button = view.findViewById(R.id.button_bus_contact)
+        val faqs: Button = view.findViewById(R.id.button_faq)
+        val sousadev_logo: ImageView = view.findViewById(R.id.sousadev_logo)
+
+        sousadev_logo.setOnClickListener {
+            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://linktr.ee/sousadev_")
+                    )
+                )
+            } catch (anfe: ActivityNotFoundException) {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://linktr.ee/sousadev_")
+                    )
+                )
+            }
+        }
+
+        faqs.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.faq_label))
+            builder?.setMessage(getString(R.string.faq1_question) + "\n\t\t" + getString(R.string.faq1_answer)
+            + "\n\n" + getString(R.string.faq2_question) + "\n\t\t" + getString(R.string.faq2_answer))
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
 
         bus_contacts.setOnClickListener {
             val builder = context?.let { AlertDialog.Builder(it) }

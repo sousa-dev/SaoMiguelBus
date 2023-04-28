@@ -64,4 +64,9 @@
     <string name="faq_label">Häufig gestellte fragen</string>
     <string name="company_contacts_label">Busunternehmen kontaktieren</string>
     <string name="settings_warning_label">App nicht von den Busunternehmen entwickelt</string>
+    <string name="faq1_question">Wie kann ich ein Busticket kaufen?</string>
+    <string name="faq1_answer">Die Tickets müssen beim Betreten des Busses gekauft werden und im Moment ist nur Bargeld erlaubt.</string>
+    <string name="faq2_question">Warum so viele Anzeigen in der App?</string>
+    <string name="faq2_answer">Diese App wurde von einer Einzelperson erstellt und wird in keiner Weise von Busunternehmen unterstützt. Anzeigen helfen dabei, die Zeit zu monetarisieren, die für die Entwicklung dieser App aufgewendet wurde, um Nutzern öffentlicher Verkehrsmittel zu helfen.</string>
+    <string name="contact_dev">Wenden Sie sich an den Entwickler</string>
 </resources>

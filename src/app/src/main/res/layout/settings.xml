@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:text="@string/report_a_problem"
+        android:text="@string/contact_dev"
         android:textColor="#2196F3"
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="@+id/button_support_creator"
@@ -87,9 +87,10 @@
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_marginTop="20dp"
+        android:clickable="true"
         app:layout_constraintStart_toStartOf="@+id/adtemplate_home"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_home"
-        app:srcCompat="@drawable/sousadev_logo" />
+        app:srcCompat="@mipmap/sousa_dev_logo_bg_round" />
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adtemplate_home"

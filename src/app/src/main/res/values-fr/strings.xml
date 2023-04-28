@@ -64,4 +64,9 @@
     <string name="faq_label">Questions fréquemment posées</string>
     <string name="company_contacts_label">Contacter les compagnies de bus</string>
     <string name="settings_warning_label">Application non développée par les compagnies de bus</string>
+    <string name="faq1_question">Comment puis-je acheter un ticket de bus ?</string>
+    <string name="faq1_answer">Les billets doivent être achetés lorsque vous entrez dans le bus et pour le moment, seuls les espèces sont autorisées.</string>
+    <string name="faq2_question">Pourquoi tant de publicités sur l\'application ?</string>
+    <string name="faq2_answer">Cette application a été créée par un individu et n\'est en aucun cas prise en charge par les compagnies de bus. Les publicités permettent de monétiser le temps passé à développer cette application pour aider les usagers des transports en commun.</string>
+    <string name="contact_dev">Contacter le développeur</string>
 </resources>

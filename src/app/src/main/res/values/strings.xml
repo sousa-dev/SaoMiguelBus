@@ -68,4 +68,9 @@
     <string name="faq_label">Frequently Asked Questions</string>
     <string name="company_contacts_label">Bus Companies Contact</string>
     <string name="settings_warning_label">App Not Developed by the Bus Companies</string>
+    <string name="faq1_question">How can I buy a bus ticket?</string>
+    <string name="faq1_answer">The tickets must be bought when you enter the bus and at the moment only cash is accepted.</string>
+    <string name="faq2_question">Why so many ads on the app?</string>
+    <string name="faq2_answer">This application was created by an individual and is not supported by any company. Ads help to monetize the time spent on its development.</string>
+    <string name="contact_dev">Contact the Developer</string>
 </resources>
