@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +37,25 @@ class SettingsFragment: Fragment(), View.OnClickListener {
         val rate: Button = view.findViewById(R.id.button_rate_app)
         val patreon: Button = view.findViewById(R.id.button_support_creator)
         val mail: TextView = view.findViewById(R.id.report_mail)
+        val bus_contacts: Button = view.findViewById(R.id.button_bus_contact)
+
+        bus_contacts.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.company_contacts_label))
+            builder?.setMessage(
+                "" + Html.fromHtml("<b>AutoViação Micaelense</b>") + "\n\t\t+351 296 301 350\n\t\t" +
+                        Html.fromHtml("<a href='http://www.autoviacaomicaelense.pt'>autoviacaomicaelense.pt</a>") +
+                "\n\n" + Html.fromHtml("<b>Varela E Cª Lda.</b>") + "\n\t\t+351 296 301 800\n\t\t" +
+                        Html.fromHtml("<a href='https://www.grupobensaude.pt/en/business-areas/services/varela-servicos/'>grupobensaude.pt</a>") +
+                "\n\n" + Html.fromHtml("<b>CRP - Caetano, Raposo E Pereiras Lda.</b>") + "\n\t\t+351 296 304 260\n\t\t" +
+                        Html.fromHtml("<a href='https://www.crp-caetanoraposopereiras.pt'>crp-caetanoraposopereiras.pt</a>")
+            )
+
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
 
         not_developed.setOnClickListener {
             val builder = context?.let { AlertDialog.Builder(it) }
