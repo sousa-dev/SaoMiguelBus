@@ -2,6 +2,7 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,12 +10,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.models.Dialog
 
 
 class SettingsFragment: Fragment(), View.OnClickListener {
@@ -29,9 +32,21 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        val rate: Button = view.findViewById(R.id.rate)
-        val patreon: Button = view.findViewById(R.id.patreon)
-        val mail: Button = view.findViewById(R.id.mail)
+        val not_developed: Button = view.findViewById(R.id.button_not_developed)
+        val rate: Button = view.findViewById(R.id.button_rate_app)
+        val patreon: Button = view.findViewById(R.id.button_support_creator)
+        val mail: TextView = view.findViewById(R.id.report_mail)
+
+        not_developed.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.warning_dialog_title))
+            builder?.setMessage(getString(R.string.warning_dialog_message))
+
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
 
         rate.setOnClickListener {
             Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
