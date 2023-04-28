@@ -19,6 +19,7 @@ var favorite: MutableList<List<String>> = mutableListOf()
 var currentLanguage: String = "pt"
 var loaded: Boolean = false
 var use_maps: Boolean? = null
+var locations: Map<String, String> = mapOf()
 
 class Datasource {
 
@@ -51,6 +52,8 @@ class Datasource {
 
         loadCRP()
         findRoutes.addAll(crpRoutes)
+
+        initStopLocations()
     }
 
     fun loadFromAPI(id: Int, route: String, stops: JSONArray, times: JSONArray, type_of_day: String, information: String){
@@ -136,8 +139,8 @@ class Datasource {
         Stop("Covoada - Encruzilhada", Location(37.778574057916046, -25.73097291728711))
         Stop("Relva - Igreja", Location(37.753752703865956, -25.72166073078083))
         Stop("Relva - Canto da Pia", Location(37.75149329290809, -25.71249373078105))
-        Stop("Ramal Cruz", Location(0.0,0.0))
-        Stop("Ramal Ajuda", Location(0.0,0.0))
+        Stop("Ramal Cruz", Location(37.86726926587509, -25.70986454787054))
+        Stop("Ramal Ajuda", Location(37.897896604222424, -25.75640513908344))
         Stop("Canada da Cova", Location(37.802238597230115, -25.683446031613002))
 
         /* Varela Routes */
@@ -150,7 +153,7 @@ class Datasource {
         Stop("Água de Pau", Location(37.72047535887218, -25.508480188452598))
         Stop("Ribeira Chã", Location(37.720002845985256, -25.488890086604037))
         Stop("Vila Franca", Location(37.71635169477059, -25.435942646123777))
-        Stop("Furnas", Location(0.0, 0.0))
+        Stop("Furnas", Location(37.77597177423025, -25.310740638173108))
         Stop("Povoação", Location(37.74734613312273, -25.24461983262972))
         Stop("Covoada", Location(37.77851469857914, -25.730951459616065))
         Stop("Quartel", Location(37.7758512621779, -25.70775245961612))
@@ -4082,5 +4085,29 @@ class Datasource {
     }
     fun getUseMap(): Boolean? {
         return use_maps
+    }
+
+    fun initStopLocations(){
+        var new_loc = mutableMapOf<String, String>(
+            "bretanha" to "37.898054208457445,-25.75317627710749",
+            "aflitos" to "37.81178649398811,-25.636478343085766",
+            "saoroque" to "37.749980739111486,-25.632731844332604",
+            "saovicente" to "37.81853003239133,-25.665822034161422",
+            "saovicenteferreira" to "37.81853003239133,-25.665822034161422",
+            "farropo" to "37.822994043073486,-25.63393100445186"
+        )
+        for (busStop in stops){
+            if (busStop.coordinates.x != 0.0 && busStop.coordinates.y != 0.0){
+                new_loc[busStop.name.strip().lowercase().replace("-", "").replace(" ", "")] = "${busStop.coordinates.x},${busStop.coordinates.y}"
+            }
+        }
+        setStopLocations(new_loc as Map<String, String>)
+    }
+    fun setStopLocations(stop_locations: Map<String, String>){
+        locations = stop_locations
+
+    }
+    fun getStopLocations(): Map<String, String>{
+        return locations
     }
 }

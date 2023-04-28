@@ -37,6 +37,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
 
     private var currentLocation: Location = Location(0.0, 0.0)
     private var overview_polyline: String = ""
+    private var locations: Map<String, String> = Datasource().getStopLocations()
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -472,6 +473,13 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 return
             }
             destination_url = "${currentLocation.x},${currentLocation.y}"
+        }
+
+        if (origin.strip().lowercase().replace("-", "").replace(" ", "") in locations.keys){
+            origin_url = locations[origin.strip().lowercase().replace("-", "").replace(" ", "")].toString()
+        }
+        if (destination.strip().lowercase().replace(" ", "") in locations.keys){
+            destination_url = locations[destination.strip().lowercase().replace("-", "").replace(" ", "")].toString()
         }
 
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
