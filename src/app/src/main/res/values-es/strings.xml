@@ -60,4 +60,13 @@
     <string name="update_label">Actualizar</string>
     <string name="monthly_limit_reached_title">Límite mensual de mapas alcanzado</string>
     <string name="monthly_limit_reached_body">Se ha alcanzado el límite mensual para acceder a nuestra función de mapa. Como resultado, no podrá usar la función de mapa hasta el comienzo del próximo mes. Disculpas por cualquier inconveniente que esto pueda causar.</string>
+    <string name="app_developed_by">Esta aplicación fue desarrollada por Sousa Dev</string>
+    <string name="faq_label">Preguntas frecuentes</string>
+    <string name="company_contacts_label">Contacto empresas de autobuses</string>
+    <string name="settings_warning_label">Aplicación no desarrollada por las empresas de autobuses</string>
+    <string name="faq1_question">¿Cómo puedo comprar un billete de autobús?</string>
+    <string name="faq1_answer">Los boletos deben comprarse al ingresar al bus y por el momento solo se permite efectivo.</string>
+    <string name="faq2_question">¿Por qué tantos anuncios en la aplicación?</string>
+    <string name="faq2_answer">Esta aplicación fue creada por un individuo y no cuenta con el apoyo de ninguna compañía de autobuses de ninguna manera. Los anuncios ayudan a monetizar el tiempo dedicado a desarrollar esta aplicación para ayudar a los usuarios del transporte público.</string>
+    <string name="contact_dev">Contactar al Desarrollador</string>
 </resources>

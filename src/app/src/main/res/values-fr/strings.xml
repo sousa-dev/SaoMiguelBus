@@ -60,4 +60,13 @@
     <string name="update_label">Mettre à jour</string>
     <string name="monthly_limit_reached_title">Limite de carte mensuelle atteinte</string>
     <string name="monthly_limit_reached_body">La limite mensuelle d\'accès à notre fonctionnalité de carte a été atteinte. Par conséquent, vous ne pourrez pas utiliser la fonction de carte avant le début du mois prochain. Nous vous prions de nous excuser pour tout inconvénient que cela pourrait causer.</string>
+    <string name="app_developed_by">Cette application a été développée par Sousa Dev</string>
+    <string name="faq_label">Questions fréquemment posées</string>
+    <string name="company_contacts_label">Contacter les compagnies de bus</string>
+    <string name="settings_warning_label">Application non développée par les compagnies de bus</string>
+    <string name="faq1_question">Comment puis-je acheter un ticket de bus ?</string>
+    <string name="faq1_answer">Les billets doivent être achetés lorsque vous entrez dans le bus et pour le moment, seuls les espèces sont autorisées.</string>
+    <string name="faq2_question">Pourquoi tant de publicités sur l\'application ?</string>
+    <string name="faq2_answer">Cette application a été créée par un individu et n\'est en aucun cas prise en charge par les compagnies de bus. Les publicités permettent de monétiser le temps passé à développer cette application pour aider les usagers des transports en commun.</string>
+    <string name="contact_dev">Contacter le développeur</string>
 </resources>

@@ -2,19 +2,23 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.models.Dialog
 
 
 class SettingsFragment: Fragment(), View.OnClickListener {
@@ -29,13 +33,73 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        val language: AutoCompleteTextView = view.findViewById(R.id.language)
-        val actv_language: ImageView = view.findViewById(R.id.actv_language)
-        val flag: ImageView = view.findViewById(R.id.flag)
+        val not_developed: Button = view.findViewById(R.id.button_not_developed)
+        val rate: Button = view.findViewById(R.id.button_rate_app)
+        val patreon: Button = view.findViewById(R.id.button_support_creator)
+        val mail: TextView = view.findViewById(R.id.report_mail)
+        val bus_contacts: Button = view.findViewById(R.id.button_bus_contact)
+        val faqs: Button = view.findViewById(R.id.button_faq)
+        val sousadev_logo: ImageView = view.findViewById(R.id.sousadev_logo)
 
-        val rate: Button = view.findViewById(R.id.rate)
-        val patreon: Button = view.findViewById(R.id.patreon)
-        val mail: Button = view.findViewById(R.id.mail)
+        sousadev_logo.setOnClickListener {
+            Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://linktr.ee/sousadev_")
+                    )
+                )
+            } catch (anfe: ActivityNotFoundException) {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://linktr.ee/sousadev_")
+                    )
+                )
+            }
+        }
+
+        faqs.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.faq_label))
+            builder?.setMessage(getString(R.string.faq1_question) + "\n\t\t" + getString(R.string.faq1_answer)
+            + "\n\n" + getString(R.string.faq2_question) + "\n\t\t" + getString(R.string.faq2_answer))
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
+
+        bus_contacts.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.company_contacts_label))
+            builder?.setMessage(
+                "" + Html.fromHtml("<b>AutoViação Micaelense</b>") + "\n\t\t+351 296 301 350\n\t\t" +
+                        Html.fromHtml("<a href='http://www.autoviacaomicaelense.pt'>autoviacaomicaelense.pt</a>") +
+                "\n\n" + Html.fromHtml("<b>Varela E Cª Lda.</b>") + "\n\t\t+351 296 301 800\n\t\t" +
+                        Html.fromHtml("<a href='https://www.grupobensaude.pt/en/business-areas/services/varela-servicos/'>grupobensaude.pt</a>") +
+                "\n\n" + Html.fromHtml("<b>CRP - Caetano, Raposo E Pereiras Lda.</b>") + "\n\t\t+351 296 304 260\n\t\t" +
+                        Html.fromHtml("<a href='https://www.crp-caetanoraposopereiras.pt'>crp-caetanoraposopereiras.pt</a>")
+            )
+
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
+
+        not_developed.setOnClickListener {
+            val builder = context?.let { AlertDialog.Builder(it) }
+            builder?.setTitle(getString(R.string.warning_dialog_title))
+            builder?.setMessage(getString(R.string.warning_dialog_message))
+
+            builder?.setPositiveButton(android.R.string.yes) { dialog, which ->
+            }
+
+            builder?.show()
+        }
 
         rate.setOnClickListener {
             Toast.makeText(context, resources.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
@@ -87,52 +151,6 @@ class SettingsFragment: Fragment(), View.OnClickListener {
             )
             intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: [Problem]")
             startActivity(Intent.createChooser(intent, "Choose an Email client:"))
-        }
-
-
-        language.setText(Datasource().getCurrentLang())
-
-        when (Datasource().getCurrentLang()){
-            "Português" -> flag.setImageResource(R.drawable.portugal)
-            "English" -> flag.setImageResource(R.drawable.english)
-            "Deutsch" -> flag.setImageResource(R.drawable.germany)
-
-        }
-
-        language.threshold = 2
-
-        val adapter: ArrayAdapter<String> = ArrayAdapter(view.context, android.R.layout.simple_dropdown_item_1line, arrayListOf("Português", "English", "Deutsch"))
-        language.setAdapter(adapter)
-
-        actv_language.setOnClickListener {
-            language.showDropDown()
-        }
-        language.setOnClickListener {
-            language.showDropDown()
-        }
-
-        language.setOnItemClickListener { _, _, position, _ ->
-            val pref = requireActivity().getPreferences(Context.MODE_PRIVATE)
-            val editor = pref.edit()
-            var str = ""
-
-            if (position == 0){
-                flag.setImageResource(R.drawable.portugal)
-                str = "Português"
-            }
-            else if (position == 1){
-                flag.setImageResource(R.drawable.english)
-                str = "English"
-            }
-
-            else{
-                flag.setImageResource(R.drawable.germany)
-                str = "Deutsch"
-            }
-
-            Datasource().changeCurrentLang(str)
-            editor.putString("lang", str)
-            editor.commit()
         }
     }
 

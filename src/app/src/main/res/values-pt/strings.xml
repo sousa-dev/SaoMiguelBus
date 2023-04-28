@@ -60,4 +60,13 @@
     <string name="update_label">Atualizar</string>
     <string name="monthly_limit_reached_title">Limite mensal atingido</string>
     <string name="monthly_limit_reached_body">O limite mensal para aceder à nossa funcionalidade de mapa foi atingido. Como resultado, não será possível utilizar a funcionalidade de mapa até ao início do próximo mês. Pedimos desculpa por qualquer inconveniente causado.</string>
+    <string name="app_developed_by">Esta aplicação foi desenvolvida por Sousa Dev</string>
+    <string name="faq_label">Perguntas Frequentes</string>
+    <string name="company_contacts_label">Contato das Companhias de Autocarros</string>
+    <string name="settings_warning_label">"Aplicação Não Desenvolvida pelas Empresas de Autocarros "</string>
+    <string name="faq1_question">Como posso comprar um bilhete de autocarro?</string>
+    <string name="faq1_answer">Os bilhetes devem ser comprados ao entrar no autocarro e de momento só é permitido dinheiro.</string>
+    <string name="faq2_question">Porquê anúncios na aplicação?</string>
+    <string name="faq2_answer">Esta aplicação foi criada por um indivíduo e não é suportada por nenhuma empresa. Os anúncios ajudam a monetizar o tempo gasto no seu desenvolvimento.</string>
+    <string name="contact_dev">Contate o Desenvolvedor</string>
 </resources>
