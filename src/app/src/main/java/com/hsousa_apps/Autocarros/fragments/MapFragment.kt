@@ -57,6 +57,12 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             val swapStops: ImageButton = view.findViewById(R.id.swapStopsMap)
             val show_map: ImageButton = view.findViewById(R.id.show_map)
 
+            var progressBar: ProgressBar? = view?.findViewById(R.id.progressBar_Map)
+            var loadingText: TextView? = view?.findViewById(R.id.loadingText_Map)
+
+            progressBar?.visibility = View.INVISIBLE
+            loadingText?.visibility = View.INVISIBLE
+
             fusedLocationProviderClient = activity?.let {
                 LocationServices.getFusedLocationProviderClient(
                     it
@@ -218,6 +224,8 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     /***********************/**/
                     //Get Steps for Destination
 
+                    progressBar?.visibility = View.VISIBLE
+                    loadingText?.visibility = View.VISIBLE
                     fetchSteps(
                         requestQueue,
                         search_origin,
@@ -448,6 +456,9 @@ class MapFragment(private var redirected_origin: String? = null, private var red
     }
 
     fun fetchSteps(requestQueue: RequestQueue, origin: String, destination: String, selected: String, time: Long){
+        var progressBar: ProgressBar? = view?.findViewById(R.id.progressBar_Map)
+        var loadingText: TextView? = view?.findViewById(R.id.loadingText_Map)
+
         var origin_url = origin
         var destination_url = destination
 
@@ -492,13 +503,15 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         if (selected == getString(R.string.depart)) mapsURL += "&departure_time=$time"
         else if (selected == getString(R.string.arrive)) mapsURL += "&arrival_time=$time"
 
-        Log.d("MAPS", mapsURL)
+        //Log.d("MAPS", mapsURL)
         val mapsRequest: JsonObjectRequest = JsonObjectRequest(
             Request.Method.GET,
             mapsURL,
             null,
             { response ->
-                Log.d("DEBUG", "response: $response")
+                progressBar?.visibility = View.VISIBLE
+                loadingText?.visibility = View.VISIBLE
+                //Log.d("DEBUG", "response: $response")
                 val status = response["status"]
 
                 if (status == "OK") {
@@ -508,12 +521,14 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                         var instructions = Instruction().init_instructions(routes)
 
                         overview_polyline = instructions.routes[0].overview_polyline_points
-
                         createCards(view, instructions.routes[0].legs[0].steps)
 
                         Log.d("INSTRUCTIONS", instructions.toString())
                     } catch (e: JSONException){
                         Log.d("MAPS", "JSONException: $e")
+                        progressBar?.visibility = View.INVISIBLE
+                        loadingText?.visibility = View.INVISIBLE
+                        emptymsg?.visibility = View.VISIBLE
                     }
                 } else {
                     Log.e("STATUS", "Response NOT OK!")
@@ -534,9 +549,15 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     emptymsg?.visibility = View.VISIBLE
                     overview_polyline = ""
                 }
+
+                progressBar?.visibility = View.INVISIBLE
+                loadingText?.visibility = View.INVISIBLE
             },
             { error ->
                 Log.d("MAPS", "Failed Response: $error")
+                progressBar?.visibility = View.INVISIBLE
+                loadingText?.visibility = View.INVISIBLE
+                emptymsg?.visibility = View.VISIBLE
             }
         )
         requestQueue.add(mapsRequest)
