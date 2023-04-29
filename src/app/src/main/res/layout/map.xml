@@ -6,6 +6,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/progressBar_Map"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="57dp"
+        android:layout_height="0dp"
+        android:background="#00FFFFFF"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/loadingText_Map"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/loadingText_Map"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="@string/loading"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/step_emptymsg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
     <TextView
         android:id="@+id/steps_arrive_placeholder"
         android:layout_width="wrap_content"
