@@ -31,6 +31,8 @@ import kotlin.collections.ArrayList
 
 
 class SearchFragment(private var origin: String? = null, private var destination: String? = null, private var times: ArrayList<Route>? = null, private var unique_id: String = "") : Fragment(), View.OnClickListener {
+    private var og_origin = origin
+    private var og_destination = destination
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -178,14 +180,14 @@ class SearchFragment(private var origin: String? = null, private var destination
         if (cards.size == 0){
             emptymsg?.text = resources.getString(R.string.no_routes_found)
             emptymsg?.visibility = View.VISIBLE
-            redirectToMap(origin, destination)
+            redirectToMap()
         }
 
     }
 
-    fun redirectToMap(origin: String, destination: String){
+    fun redirectToMap(){
         if (Datasource().getUseMap() == true)
-            swapFrags(MapFragment(origin.split("-")[0],destination.split("-")[0]))
+            swapFrags(MapFragment(og_origin?.split("-")?.get(0), og_destination?.split("-")?.get(0)))
     }
 
     fun openRoutePage(
