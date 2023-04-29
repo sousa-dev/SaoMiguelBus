@@ -528,6 +528,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                         Log.d("MAPS", "JSONException: $e")
                         progressBar?.visibility = View.INVISIBLE
                         loadingText?.visibility = View.INVISIBLE
+                        emptymsg?.setText(R.string.no_routes_search)
                         emptymsg?.visibility = View.VISIBLE
                     }
                 } else {
@@ -546,6 +547,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     map?.invalidate()
                     map?.visibility = View.GONE
                     show_map?.rotation = (90.0).toFloat()
+                    emptymsg?.setText(R.string.no_routes_search)
                     emptymsg?.visibility = View.VISIBLE
                     overview_polyline = ""
                 }
@@ -557,6 +559,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 Log.d("MAPS", "Failed Response: $error")
                 progressBar?.visibility = View.INVISIBLE
                 loadingText?.visibility = View.INVISIBLE
+                emptymsg?.setText(R.string.failed_response_title)
                 emptymsg?.visibility = View.VISIBLE
             }
         )
