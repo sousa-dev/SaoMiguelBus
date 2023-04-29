@@ -214,6 +214,13 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             }
 
             getDirections.setOnClickListener {
+                val rv = view?.findViewById<RecyclerView>(R.id.map_recyclerView)
+                var cards: MutableList<StepModel> = mutableListOf<StepModel>()
+
+                if (rv != null){
+                    rv?.layoutManager = LinearLayoutManager(view?.context)
+                    rv?.adapter = view?.let { StepCardAdapter(it.context, cards as ArrayList<StepModel>) }
+                }
                 if (search_destination != "" && search_origin != "") {
                     val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                     /** Send Stats to API
