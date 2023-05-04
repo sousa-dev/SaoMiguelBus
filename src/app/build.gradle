@@ -12,7 +12,7 @@ android {
         applicationId "com.hsousa_apps.Autocarros"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 28
+        versionCode 29
         versionName '4.0'
 
         multiDexEnabled true

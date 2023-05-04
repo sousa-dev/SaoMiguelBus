@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -223,12 +224,12 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 }
                 if (search_destination != "" && search_origin != "") {
                     val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
-                    /** Send Stats to API
+                    // Send Stats to API
                     var language : String = Datasource().getCurrentLang()
                     var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
                     var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                     requestQueue.add(request)
-                    /***********************/**/
+                    /***********************/
                     //Get Steps for Destination
 
                     progressBar?.visibility = View.VISIBLE
@@ -268,13 +269,12 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 destination.setText(redirected_destination)
 
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
-                //TODO: Uncomment all send stats to api
-                /** Send Stats to API
+                // Send Stats to API
                 var language : String = Datasource().getCurrentLang()
                 var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
                 var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                 requestQueue.add(request)
-                /***********************/**/
+                /***********************/
                 //Get Steps for Destination
 
                 fetchSteps(
@@ -477,8 +477,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
 
         if (origin == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
-                //TODO: Use a string resource
-                Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.context, R.string.no_location_permission, Toast.LENGTH_SHORT).show()
                 return
             }
             origin_url = "${currentLocation.x},${currentLocation.y}"
@@ -486,8 +485,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         }
         if (destination == getString(R.string.map_my_location)){
             if (currentLocation.x == 0.0 && currentLocation.y == 0.0){
-                //TODO: Use a string resource
-                Toast.makeText(this.context, "The app doesn't have permission to access your location", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.context, R.string.no_location_permission, Toast.LENGTH_SHORT).show()
                 return
             }
             destination_url = "${currentLocation.x},${currentLocation.y}"

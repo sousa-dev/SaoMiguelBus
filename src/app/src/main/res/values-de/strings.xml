@@ -69,4 +69,5 @@
     <string name="faq2_question">Warum so viele Anzeigen in der App?</string>
     <string name="faq2_answer">Diese App wurde von einer Einzelperson erstellt und wird in keiner Weise von Busunternehmen unterstützt. Anzeigen helfen dabei, die Zeit zu monetarisieren, die für die Entwicklung dieser App aufgewendet wurde, um Nutzern öffentlicher Verkehrsmittel zu helfen.</string>
     <string name="contact_dev">Wenden Sie sich an den Entwickler</string>
+    <string name="no_location_permission">Die App hat keine Berechtigung, auf Ihren Standort zuzugreifen.</string>
 </resources>

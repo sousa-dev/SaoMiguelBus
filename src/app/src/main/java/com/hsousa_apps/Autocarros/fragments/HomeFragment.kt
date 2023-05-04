@@ -102,7 +102,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
                 Toast.makeText(context, resources.getString(R.string.toast_search_message), Toast.LENGTH_SHORT).show()
         }
 
-        //TODO: improve favorite save system
         saveFav()
 
         view?.findViewById<TextView>(R.id.test_the_map)?.setOnClickListener {

@@ -73,4 +73,5 @@
     <string name="faq2_question">Why so many ads on the app?</string>
     <string name="faq2_answer">This application was created by an individual and is not supported by any company. Ads help to monetize the time spent on its development.</string>
     <string name="contact_dev">Contact the Developer</string>
+    <string name="no_location_permission">The app has no permission to access your location.</string>
 </resources>

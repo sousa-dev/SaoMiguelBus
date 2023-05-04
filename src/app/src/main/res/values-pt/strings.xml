@@ -69,4 +69,5 @@
     <string name="faq2_question">Porquê anúncios na aplicação?</string>
     <string name="faq2_answer">Esta aplicação foi criada por um indivíduo e não é suportada por nenhuma empresa. Os anúncios ajudam a monetizar o tempo gasto no seu desenvolvimento.</string>
     <string name="contact_dev">Contate o Desenvolvedor</string>
+    <string name="no_location_permission">A aplicação não tem permissão para aceder à sua localização</string>
 </resources>
