@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         /** Fetch routes from API **/
         val progressBar: ConstraintLayout = findViewById(R.id.loadingGroup)
+        val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
         val requestQueue: RequestQueue = Volley.newRequestQueue(this)
         val objectRequest: JsonArrayRequest = JsonArrayRequest(
             Request.Method.GET,
@@ -125,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     progressBar.visibility = View.GONE
-
+                    bottomNavigation.visibility = View.VISIBLE
                     swapFrags(HomeFragment())
                 }catch (e: JSONException){
                     Log.d("ERROR", "JSONException: $e")
@@ -136,7 +137,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     progressBar.visibility = View.GONE
-
+                    bottomNavigation.visibility = View.VISIBLE
 
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle(getString(R.string.failed_response_title))
@@ -161,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 progressBar.visibility = View.GONE
-
+                bottomNavigation.visibility = View.VISIBLE
 
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(getString(R.string.failed_response_title))
