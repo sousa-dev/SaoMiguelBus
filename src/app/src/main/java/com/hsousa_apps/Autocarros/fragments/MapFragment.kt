@@ -402,6 +402,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             var icon = R.mipmap.logo_round
             var action = step.instructions
             var details = ""
+            var walkDestinationLocation: Location = Location(0.0, 0.0)
             if (step.travel_mode == "TRANSIT"){
                 icon = R.drawable.bus_icon
                 //action = getString(R.string.catch_bus)
@@ -412,6 +413,8 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             }
             else if (step.travel_mode == "WALKING"){
                 icon = R.drawable.walking_icon
+                walkDestinationLocation = step.end_location
+                details = "walk"
                 //action = getString(R.string.walk_to)
             }
             var goal = step.leg?.end_address
@@ -423,7 +426,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 distance = step.transit_details.departure_time.replace(":", "h")
             }
 
-            cards.add(StepModel(id, icon, action, goal, distance, time, details))
+            cards.add(StepModel(id, icon, action, goal, distance, time, details, currentLocation, walkDestinationLocation))
             if (leave_card != null) cards.add(leave_card)
         }
 

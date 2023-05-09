@@ -132,4 +132,30 @@
             tools:visibility="gone" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/walk_details_group"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/divider5"
+        app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
+        app:layout_constraintStart_toStartOf="@+id/step_icon"
+        app:layout_constraintTop_toBottomOf="@+id/step_icon"
+        tools:visibility="gone">
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/walk_mapview"
+            tilesource="Mapnik"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

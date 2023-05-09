@@ -3,7 +3,9 @@
 import android.content.Context
 import android.opengl.Visibility
 import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -16,6 +18,9 @@ import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.fragments.HomeFragment
 import com.hsousa_apps.Autocarros.fragments.SearchFragment
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import java.util.ArrayList
 
 class StepCardAdapter(private val context: Context, private val StepsArrayList: ArrayList<StepModel>) : RecyclerView.Adapter<StepCardAdapter.Viewholder>() {
@@ -39,16 +44,65 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         holder.time.text = step.time
         holder.details.text = step.details
         if (step.details == "") holder.show_details.visibility = View.INVISIBLE
-        holder.show_details.setOnClickListener {
-            if (holder.details_group.visibility == View.GONE){
-                holder.details_group.visibility = View.VISIBLE
-                holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_up_24)
+
+        if (step.destinationLocation.x != 0.0 && step.destinationLocation.y != 0.0){
+
+            val mapController = holder.map.controller
+            mapController.setZoom(15)
+            // Disable all map interactions
+            holder.map.setClickable(false)
+            holder.map.setLongClickable(false)
+            holder.map.setFocusable(false)
+            holder.map.setMultiTouchControls(false)
+
+            // Disable double tap zooming
+            val doubleTapDetector =
+                GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
+                        return true
+                    }
+                })
+            holder.map.setOnTouchListener { _, event ->
+                doubleTapDetector.onTouchEvent(event)
+                true
             }
-            else {
-                holder.details_group.visibility = View.GONE
-                holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_down_24)
+
+            val point = GeoPoint(step.destinationLocation.x, step.destinationLocation.y)
+            val marker = Marker(holder.map)
+            marker.position = point
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            marker.title = step.goal
+            holder.map.overlays.add(marker)
+
+            mapController.setCenter(GeoPoint(step.destinationLocation.x, step.destinationLocation.y))
+        }
+
+        holder.show_details.setOnClickListener {
+            if (step.destinationLocation.y != 0.0 && step.destinationLocation.y != 0.0){
+                if (holder.walk_details_group.visibility == View.GONE){
+                    holder.walk_details_group.visibility = View.VISIBLE
+                    holder.map.visibility = View.VISIBLE
+                    holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_up_24)
+                }
+                else {
+                    holder.walk_details_group.visibility = View.GONE
+                    holder.map.visibility = View.GONE
+                    holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_down_24)
+                }
+            } else{
+                if (holder.details_group.visibility == View.GONE){
+                    holder.details_group.visibility = View.VISIBLE
+
+                    holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_up_24)
+                }
+                else {
+                    holder.details_group.visibility = View.GONE
+
+                    holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_down_24)
+                }
             }
         }
+
     }
 
     override fun getItemCount(): Int {
@@ -68,6 +122,8 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         val time: TextView
         val details: TextView
         val details_group: ConstraintLayout
+        val walk_details_group: ConstraintLayout
+        val map: MapView
         val show_details: ImageButton
         init {
             id = itemView.findViewById(R.id.step_id)
@@ -78,6 +134,8 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
             time = itemView.findViewById(R.id.step_time)
             details = itemView.findViewById(R.id.step_details)
             details_group = itemView.findViewById(R.id.step_details_group)
+            walk_details_group = itemView.findViewById(R.id.walk_details_group)
+            map = itemView.findViewById(R.id.walk_mapview)
             show_details = itemView.findViewById(R.id.step_spoiler)
         }
     }
