@@ -4110,4 +4110,32 @@ class Datasource {
     fun getStopLocations(): Map<String, String>{
         return locations
     }
+
+    fun getDayOfWeek(number: Int): String{
+        when (number) {
+            1 -> return "SUNDAY"
+            7 -> return "SATURDAY"
+            else -> return "WEEKDAY"
+        }
+    }
+    fun getClosestLocation(loc: Location): String{
+        var search_location = android.location.Location("")
+        search_location.latitude = loc.x
+        search_location.longitude = loc.y
+        var stop_name: String = "Ponta Delgada"
+        var closest: Float = 9.9999999999999E7F
+        for (stop in stops){
+            var stop_coordinates = stop.coordinates
+            var stop_location = android.location.Location("")
+            stop_location.latitude = stop_coordinates.x
+            stop_location.longitude = stop_coordinates.y
+            var distance = search_location.distanceTo(stop_location)
+            if (distance < closest) {
+                stop_name = stop.name
+                closest = distance
+            }
+        }
+        Log.d("Location", "Returning closest stop to User Location: " + stop_name)
+        return stop_name
+    }
 }

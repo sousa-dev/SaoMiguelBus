@@ -230,17 +230,22 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     //TODO: Handle "My Location" entries
                     var origin_for_api = search_origin
                     if (origin_for_api == getString(R.string.map_my_location)){
-                        origin_for_api = origin_for_api //TODO
+                        origin_for_api = Datasource().getClosestLocation(currentLocation)
                     }
                     var destination_for_api = search_destination
                     if (destination_for_api == getString(R.string.map_my_location)){
-                        destination_for_api = destination_for_api //TODO
+                        destination_for_api = Datasource().getClosestLocation(currentLocation)
                     }
-                    //TODO: Add time and day to stat
+                    origin_for_api = origin_for_api.capitalize()
+                    destination_for_api = destination_for_api.capitalize()
+
+                    val day_for_api = Datasource().getDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
+                    val time_for_api = cal.get(Calendar.HOUR_OF_DAY).toString()+'h'+cal.get(Calendar.MINUTE).toString()
                     //Use cal variable to get time and day
-                    var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=NA&language=$language&platform=android&day=NA"
-                    var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
-                    requestQueue.add(request)
+                    var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=$time_for_api&language=$language&platform=android&day=$day_for_api"
+                    Log.d("PUSHURL", URL)
+                    //var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+                    //requestQueue.add(request)
                     /***********************/
                     //Get Steps for Destination
 
@@ -283,9 +288,25 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                 // Send Stats to API
                 var language : String = Datasource().getCurrentLang()
-                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
-                var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
-                requestQueue.add(request)
+
+                //TODO: Handle "My Location" entries
+                var origin_for_api = search_origin
+                if (origin_for_api == getString(R.string.map_my_location)){
+                    origin_for_api = origin_for_api //TODO
+                }
+                var destination_for_api = search_destination
+                if (destination_for_api == getString(R.string.map_my_location)){
+                    destination_for_api = destination_for_api //TODO
+                }
+                //TODO: Add time and day to stat
+
+                Log.d("CAL", cal.toString())
+                //day = WEEKDAY; SATURDAY; SUNDAY
+                //Use cal variable to get time and day
+                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=NA&language=$language&platform=android&day=NA"
+                Log.d("PUSHURL", URL)
+                //var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+                //requestQueue.add(request)
                 /***********************/
                 //Get Steps for Destination
 
