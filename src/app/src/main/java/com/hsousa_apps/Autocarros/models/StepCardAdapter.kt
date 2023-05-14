@@ -1,6 +1,7 @@
  package com.hsousa_apps.Autocarros.models
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.opengl.Visibility
@@ -50,6 +51,13 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         holder.details.text = step.details
         if (step.details == "") holder.show_details.visibility = View.INVISIBLE
 
+        var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
+        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
+        var options: Bundle? = null
+        if (step.icon.toString() == "2131230865"){
+            intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$loc_intent"))
+        }
+
         if (step.destinationLocation.x != 0.0 && step.destinationLocation.y != 0.0){
 
             val mapController = holder.map.controller
@@ -69,9 +77,17 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
                 })
             holder.map.setOnTouchListener { _, event ->
                 doubleTapDetector.onTouchEvent(event)
-                var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
-                var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
-                var options: Bundle? = null
+                /**
+                var dialog = Dialog(getString(R.string.page_dialog_title) + "$id?", getString(R.string.page_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
+                    var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
+                    var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
+                    var options: Bundle? = null
+                    startActivity(context, intent, options)
+                }, getString(R.string.route_dialog_negative));
+                dialog.isCancelable = false
+                dialog.show(manager)**/
+
+                //TODO: delete when dialog is implemented
                 startActivity(context, intent, options)
 
                 true
