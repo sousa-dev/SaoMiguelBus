@@ -227,20 +227,19 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     // Send Stats to API
                     var language : String = Datasource().getCurrentLang()
 
-                    //TODO: Handle "My Location" entries
                     var origin_for_api = search_origin
                     if (origin_for_api == getString(R.string.map_my_location)){
-                        origin_for_api = Datasource().getClosestLocation(currentLocation)
+                        origin_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                     }
                     var destination_for_api = search_destination
                     if (destination_for_api == getString(R.string.map_my_location)){
-                        destination_for_api = Datasource().getClosestLocation(currentLocation)
+                        destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                     }
                     origin_for_api = origin_for_api.capitalize()
                     destination_for_api = destination_for_api.capitalize()
 
                     val day_for_api = Datasource().getDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
-                    val time_for_api = cal.get(Calendar.HOUR_OF_DAY).toString()+'h'+cal.get(Calendar.MINUTE).toString()
+                    val time_for_api = String.format("%02dh%02d",cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE))
                     //Use cal variable to get time and day
                     var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=$time_for_api&language=$language&platform=android&day=$day_for_api"
                     var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
@@ -288,20 +287,19 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 // Send Stats to API
                 var language : String = Datasource().getCurrentLang()
 
-                //TODO: Handle "My Location" entries
                 var origin_for_api = search_origin
                 if (origin_for_api == getString(R.string.map_my_location)){
-                    origin_for_api = Datasource().getClosestLocation(currentLocation) + " (+)"
+                    origin_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                 }
                 var destination_for_api = search_destination
                 if (destination_for_api == getString(R.string.map_my_location)){
-                    destination_for_api = Datasource().getClosestLocation(currentLocation) + " (+)"
+                    destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                 }
                 origin_for_api = origin_for_api.capitalize()
                 destination_for_api = destination_for_api.capitalize()
 
                 val day_for_api = Datasource().getDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
-                val time_for_api = cal.get(Calendar.HOUR_OF_DAY).toString()+'h'+cal.get(Calendar.MINUTE).toString()
+                val time_for_api = String.format("%02dh%02d",cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE))
                 //Use cal variable to get time and day
                 var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=$time_for_api&language=$language&platform=android&day=$day_for_api"
                 var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
@@ -440,7 +438,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 //action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
-                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time.replace(":", "h"), "", "")
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time.replace(":", "h"), "", "leave", currentLocation, step.end_location)
                 details = getDetails(step.transit_details)
             }
             else if (step.travel_mode == "WALKING"){
