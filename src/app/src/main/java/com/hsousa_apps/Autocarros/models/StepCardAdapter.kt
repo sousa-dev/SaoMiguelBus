@@ -1,7 +1,10 @@
  package com.hsousa_apps.Autocarros.models
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.opengl.Visibility
+import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
@@ -9,7 +12,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.Nullable
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
@@ -64,7 +69,13 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
                 })
             holder.map.setOnTouchListener { _, event ->
                 doubleTapDetector.onTouchEvent(event)
+                var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
+                var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
+                var options: Bundle? = null
+                startActivity(context, intent, options)
+
                 true
+
             }
 
             val point = GeoPoint(step.destinationLocation.x, step.destinationLocation.y)
