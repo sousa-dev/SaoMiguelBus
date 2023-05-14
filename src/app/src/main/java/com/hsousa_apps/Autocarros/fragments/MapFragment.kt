@@ -291,11 +291,11 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 //TODO: Handle "My Location" entries
                 var origin_for_api = search_origin
                 if (origin_for_api == getString(R.string.map_my_location)){
-                    origin_for_api = Datasource().getClosestLocation(currentLocation)
+                    origin_for_api = Datasource().getClosestLocation(currentLocation) + " (+)"
                 }
                 var destination_for_api = search_destination
                 if (destination_for_api == getString(R.string.map_my_location)){
-                    destination_for_api = Datasource().getClosestLocation(currentLocation)
+                    destination_for_api = Datasource().getClosestLocation(currentLocation) + " (+)"
                 }
                 origin_for_api = origin_for_api.capitalize()
                 destination_for_api = destination_for_api.capitalize()
