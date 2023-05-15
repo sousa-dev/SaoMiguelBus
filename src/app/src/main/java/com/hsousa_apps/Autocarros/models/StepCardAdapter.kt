@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.opengl.Visibility
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -85,12 +86,23 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
 
             }
 
-            val point = GeoPoint(step.destinationLocation.x, step.destinationLocation.y)
-            val marker = Marker(holder.map)
-            marker.position = point
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-            marker.title = step.goal
-            holder.map.overlays.add(marker)
+            val goal_point = GeoPoint(step.destinationLocation.x, step.destinationLocation.y)
+            val goal_marker = Marker(holder.map)
+            goal_marker.position = goal_point
+            goal_marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            goal_marker.title = step.goal
+
+            val current_point = GeoPoint(step.currentLocation.x, step.currentLocation.y)
+            val current_marker = Marker(holder.map)
+            current_marker.position = current_point
+            current_marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            current_marker.title = context.getString(R.string.map_my_location)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                goal_marker.icon = context.getDrawable(R.drawable.baseline_my_location_24)
+                current_marker.icon = context.getDrawable(R.drawable.baseline_my_location_24)
+            }
+            holder.map.overlays.add(goal_marker)
 
             mapController.setCenter(GeoPoint(step.destinationLocation.x, step.destinationLocation.y))
         }
