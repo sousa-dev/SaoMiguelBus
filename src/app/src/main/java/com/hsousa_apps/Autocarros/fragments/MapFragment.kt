@@ -2,6 +2,7 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
@@ -531,11 +532,18 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             destination_url = locations[destination.strip().lowercase().replace("-", "").replace(" ", "")].toString()
         }
 
+        //get the KEY value from the meta-data in AndroidManifest
+        val ai: ApplicationInfo = requireContext().packageManager
+            .getApplicationInfo(requireContext().packageName, PackageManager.GET_META_DATA)
+        val value = ai?.metaData?.get("com.google.android.geo.API_KEY")
+        val key = value.toString()
+
+
         var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
                 "origin=" + origin_url +
                 "&destination=" + destination_url +
                 "&mode=transit" +
-                "&key=" + resources.getString(R.string.API_KEY) +
+                "&key=" + key +
                 "&language=" + lang
 
         if (selected == getString(R.string.depart)) mapsURL += "&departure_time=$time"
