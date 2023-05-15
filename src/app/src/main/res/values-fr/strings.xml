@@ -70,4 +70,5 @@
     <string name="faq2_answer">Cette application a été créée par un individu et n\'est en aucun cas prise en charge par les compagnies de bus. Les publicités permettent de monétiser le temps passé à développer cette application pour aider les usagers des transports en commun.</string>
     <string name="contact_dev">Contacter le développeur</string>
     <string name="no_location_permission">L\'application n\'a pas la permission d\'accéder à votre emplacement.</string>
+    <string name="double_tap_maps">Double-cliquez pour ouvrir une vue de carte complète</string>
 </resources>

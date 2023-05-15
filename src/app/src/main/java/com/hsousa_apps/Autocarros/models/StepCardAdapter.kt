@@ -72,23 +72,14 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
             val doubleTapDetector =
                 GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
                     override fun onDoubleTap(e: MotionEvent): Boolean {
+                        startActivity(context, intent, options)
                         return true
                     }
                 })
             holder.map.setOnTouchListener { _, event ->
-                doubleTapDetector.onTouchEvent(event)
-                /**
-                var dialog = Dialog(getString(R.string.page_dialog_title) + "$id?", getString(R.string.page_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
-                    var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
-                    var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
-                    var options: Bundle? = null
-                    startActivity(context, intent, options)
-                }, getString(R.string.route_dialog_negative));
-                dialog.isCancelable = false
-                dialog.show(manager)**/
+                Toast.makeText(context, context.getString(R.string.double_tap_maps), Toast.LENGTH_SHORT).show()
 
-                //TODO: delete when dialog is implemented
-                startActivity(context, intent, options)
+                doubleTapDetector.onTouchEvent(event)
 
                 true
 
