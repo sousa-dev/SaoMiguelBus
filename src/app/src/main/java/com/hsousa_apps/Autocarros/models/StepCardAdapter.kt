@@ -89,7 +89,7 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
             val goal_point = GeoPoint(step.destinationLocation.x, step.destinationLocation.y)
             val goal_marker = Marker(holder.map)
             goal_marker.position = goal_point
-            goal_marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            goal_marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             goal_marker.title = step.goal
 
             val current_point = GeoPoint(step.currentLocation.x, step.currentLocation.y)
@@ -99,8 +99,8 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
             current_marker.title = context.getString(R.string.map_my_location)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                goal_marker.icon = context.getDrawable(R.drawable.baseline_my_location_24)
-                current_marker.icon = context.getDrawable(R.drawable.baseline_my_location_24)
+                goal_marker.icon = context.getDrawable(R.drawable.baseline_location_on_24)
+                current_marker.icon = context.getDrawable(R.drawable.baseline_my_location_24_blue)
             }
             holder.map.overlays.add(goal_marker)
 
