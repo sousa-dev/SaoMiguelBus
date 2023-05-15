@@ -70,4 +70,5 @@
     <string name="faq2_answer">Esta aplicación fue creada por un individuo y no cuenta con el apoyo de ninguna compañía de autobuses de ninguna manera. Los anuncios ayudan a monetizar el tiempo dedicado a desarrollar esta aplicación para ayudar a los usuarios del transporte público.</string>
     <string name="contact_dev">Contactar al Desarrollador</string>
     <string name="no_location_permission">La aplicación no tiene permiso para acceder a tu ubicación.</string>
+    <string name="double_tap_maps">Haga doble clic para abrir una vista de mapa completa</string>
 </resources>

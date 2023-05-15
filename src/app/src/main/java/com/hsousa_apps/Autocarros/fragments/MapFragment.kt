@@ -226,7 +226,22 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                     // Send Stats to API
                     var language : String = Datasource().getCurrentLang()
-                    var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
+
+                    var origin_for_api = search_origin
+                    if (origin_for_api == getString(R.string.map_my_location)){
+                        origin_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
+                    }
+                    var destination_for_api = search_destination
+                    if (destination_for_api == getString(R.string.map_my_location)){
+                        destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
+                    }
+                    origin_for_api = origin_for_api.capitalize()
+                    destination_for_api = destination_for_api.capitalize()
+
+                    val day_for_api = Datasource().getDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
+                    val time_for_api = String.format("%02dh%02d",cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE))
+                    //Use cal variable to get time and day
+                    var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=$time_for_api&language=$language&platform=android&day=$day_for_api"
                     var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                     requestQueue.add(request)
                     /***********************/
@@ -271,7 +286,22 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                 // Send Stats to API
                 var language : String = Datasource().getCurrentLang()
-                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=NA&destination=$search_destination&time=NA&language=$language&platform=android&day=NA"
+
+                var origin_for_api = search_origin
+                if (origin_for_api == getString(R.string.map_my_location)){
+                    origin_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
+                }
+                var destination_for_api = search_destination
+                if (destination_for_api == getString(R.string.map_my_location)){
+                    destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
+                }
+                origin_for_api = origin_for_api.capitalize()
+                destination_for_api = destination_for_api.capitalize()
+
+                val day_for_api = Datasource().getDayOfWeek(cal.get(Calendar.DAY_OF_WEEK))
+                val time_for_api = String.format("%02dh%02d",cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE))
+                //Use cal variable to get time and day
+                var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_directions&origin=$origin_for_api&destination=$destination_for_api&time=$time_for_api&language=$language&platform=android&day=$day_for_api"
                 var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
                 requestQueue.add(request)
                 /***********************/
@@ -402,16 +432,19 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             var icon = R.mipmap.logo_round
             var action = step.instructions
             var details = ""
+            var walkDestinationLocation: Location = Location(0.0, 0.0)
             if (step.travel_mode == "TRANSIT"){
                 icon = R.drawable.bus_icon
                 //action = getString(R.string.catch_bus)
                 var transit_details = step.transit_details
 
-                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time.replace(":", "h"), "", "")
+                leave_card = StepModel(step.travel_mode, R.drawable.bus_alert_icon, getString(R.string.leave_at) + " " + transit_details.arrival_stop, transit_details.arrival_stop, transit_details.arrival_time.replace(":", "h"), "", "leave", currentLocation, step.end_location)
                 details = getDetails(step.transit_details)
             }
             else if (step.travel_mode == "WALKING"){
                 icon = R.drawable.walking_icon
+                walkDestinationLocation = step.end_location
+                details = "walk"
                 //action = getString(R.string.walk_to)
             }
             var goal = step.leg?.end_address
@@ -423,7 +456,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 distance = step.transit_details.departure_time.replace(":", "h")
             }
 
-            cards.add(StepModel(id, icon, action, goal, distance, time, details))
+            cards.add(StepModel(id, icon, action, goal, distance, time, details, currentLocation, walkDestinationLocation))
             if (leave_card != null) cards.add(leave_card)
         }
 
