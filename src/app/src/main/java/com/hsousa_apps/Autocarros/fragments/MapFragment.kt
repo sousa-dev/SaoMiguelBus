@@ -569,9 +569,9 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                         overview_polyline = instructions.routes[0].overview_polyline_points
                         createCards(view, instructions.routes[0].legs[0].steps)
 
-                        Log.d("INSTRUCTIONS", instructions.toString())
+                        //Log.d("INSTRUCTIONS", instructions.toString())
                     } catch (e: JSONException){
-                        Log.d("MAPS", "JSONException: $e")
+                        //Log.d("MAPS", "JSONException: $e")
                         progressBar?.visibility = View.INVISIBLE
                         loadingText?.visibility = View.INVISIBLE
                         emptymsg?.setText(R.string.no_routes_search)

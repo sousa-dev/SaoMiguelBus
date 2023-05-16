@@ -138,6 +138,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="20dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/divider5"
         app:layout_constraintEnd_toStartOf="@+id/step_spoiler"
         app:layout_constraintStart_toStartOf="@+id/step_icon"

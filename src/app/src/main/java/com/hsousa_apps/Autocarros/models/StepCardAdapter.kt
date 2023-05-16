@@ -108,10 +108,10 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         }
 
         holder.show_details.setOnClickListener {
-            if (step.destinationLocation.y != 0.0 && step.destinationLocation.y != 0.0){
+            if (step.destinationLocation.x != 0.0 && step.destinationLocation.y != 0.0){
                 if (holder.walk_details_group.visibility == View.GONE){
-                    holder.walk_details_group.visibility = View.VISIBLE
                     holder.map.visibility = View.VISIBLE
+                    holder.walk_details_group.visibility = View.VISIBLE
                     holder.show_details.setImageResource(R.drawable.baseline_arrow_drop_up_24)
                 }
                 else {
