@@ -55,7 +55,7 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
         var loc_intent = "${step.destinationLocation.x},${step.destinationLocation.y}"
         var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?daddr=$loc_intent&travelmode=walking"))
         var options: Bundle? = null
-        if (step.icon.toString() == "2131230865"){
+        if (step.details == "leave"){
             intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$loc_intent"))
         }
 
