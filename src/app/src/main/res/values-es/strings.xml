@@ -42,4 +42,33 @@
     <string name="failed_response_title">Error al conectar con el servidor</string>
     <string name="failed_response_desc">No se puede establecer la conexión con el servidor para actualizar los datos de la aplicación. La información presentada puede estar desactualizada.</string>
     <string name="loading">Cargando</string>
+    <string name="catch_bus">Autobús a</string>
+    <string name="walk_to">Caminar hasta</string>
+    <string name="leave_at">Dejar en</string>
+    <string-array name="steps_spinner_array">
+        <item>Salir</item>
+        <item>Llegar</item>
+    </string-array>
+    <string name="depart_arrive_placeholder">a las</string>
+    <string name="depart">salir</string>
+    <string name="arrive">llegar</string>
+    <string name="today_placeholder">Hoy</string>
+    <string name="service_run">Servicio a cargo de</string>
+    <string name="map_my_location">Mi ubicacion</string>
+    <string name="new_app_version">Nueva versión disponible</string>
+    <string name="update_app">Una nueva versión de esta aplicación con aún más funciones está disponible para descargar ahora mismo en Play Store</string>
+    <string name="update_label">Actualizar</string>
+    <string name="monthly_limit_reached_title">Límite mensual de mapas alcanzado</string>
+    <string name="monthly_limit_reached_body">Se ha alcanzado el límite mensual para acceder a nuestra función de mapa. Como resultado, no podrá usar la función de mapa hasta el comienzo del próximo mes. Disculpas por cualquier inconveniente que esto pueda causar.</string>
+    <string name="app_developed_by">Esta aplicación fue desarrollada por Sousa Dev</string>
+    <string name="faq_label">Preguntas frecuentes</string>
+    <string name="company_contacts_label">Contacto empresas de autobuses</string>
+    <string name="settings_warning_label">Aplicación no desarrollada por las empresas de autobuses</string>
+    <string name="faq1_question">¿Cómo puedo comprar un billete de autobús?</string>
+    <string name="faq1_answer">Los boletos deben comprarse al ingresar al bus y por el momento solo se permite efectivo.</string>
+    <string name="faq2_question">¿Por qué tantos anuncios en la aplicación?</string>
+    <string name="faq2_answer">Esta aplicación fue creada por un individuo y no cuenta con el apoyo de ninguna compañía de autobuses de ninguna manera. Los anuncios ayudan a monetizar el tiempo dedicado a desarrollar esta aplicación para ayudar a los usuarios del transporte público.</string>
+    <string name="contact_dev">Contactar al Desarrollador</string>
+    <string name="no_location_permission">La aplicación no tiene permiso para acceder a tu ubicación.</string>
+    <string name="double_tap_maps">Haga doble clic para abrir una vista de mapa completa</string>
 </resources>

@@ -2,8 +2,56 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bringup_map"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <ProgressBar
+        android:id="@+id/progressBar_Map"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="57dp"
+        android:layout_height="0dp"
+        android:background="#00FFFFFF"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/loadingText_Map"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/loadingText_Map"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="@string/loading"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/step_emptymsg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+    <TextView
+        android:id="@+id/steps_arrive_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/depart_arrive_placeholder"
+        app:layout_constraintBottom_toBottomOf="@+id/step_spinner"
+        app:layout_constraintStart_toEndOf="@+id/step_spinner"
+        app:layout_constraintTop_toTopOf="@+id/step_spinner" />
+
+    <TextView
+        android:id="@+id/step_emptymsg"
+        android:layout_width="239dp"
+        android:layout_height="119dp"
+        android:layout_marginTop="200dp"
+        android:background="#07000000"
+        android:gravity="center"
+        android:text="@string/no_routes_search"
+        android:textSize="19sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adtemplate_find"
@@ -22,20 +70,55 @@
         android:id="@+id/find_routes_map"
         android:layout_width="197dp"
         android:layout_height="42dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="52dp"
         android:hint="@string/destination_home_hint"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.236"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/find_routes_origin"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
+
+
+    <ImageButton
+        android:id="@+id/swapStopsMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:src="@mipmap/baseline_swap_vert_black_36"
+        app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
+        app:layout_constraintEnd_toStartOf="@+id/find_routes_map"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_origin"
+        app:layout_constraintVertical_bias="0.52" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/find_routes_origin"
+        android:layout_width="197dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="8dp"
+        android:hint="@string/origin_home_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.12"
+        app:layout_constraintStart_toStartOf="@+id/adtemplate_find"
+        app:layout_constraintTop_toBottomOf="@+id/adtemplate_find" />
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_template_find"
         style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
         android:layout_width="match_parent"
-        android:visibility="invisible"
         android:layout_height="wrap_content"
         android:background="#218732"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -43,52 +126,112 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
+    <TextView
+        android:id="@+id/step_time_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/steps_arrive_placeholder"
+        app:layout_constraintEnd_toEndOf="@+id/find_routes_map"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/steps_arrive_placeholder"
+        app:layout_constraintTop_toTopOf="@+id/steps_arrive_placeholder" />
+
     <Button
         android:id="@+id/getDirections"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/find_button"
+        android:textSize="14sp"
         app:backgroundTint="#218732"
         app:layout_constraintBottom_toBottomOf="@+id/find_routes_map"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.408"
+        app:layout_constraintHorizontal_bias="0.312"
         app:layout_constraintStart_toEndOf="@+id/find_routes_map"
         app:layout_constraintTop_toTopOf="@+id/find_routes_map"
         app:layout_constraintVertical_bias="0.0" />
 
-    <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/gifImageView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
-        android:src="@drawable/bus_mode_gif"
-        app:layout_constraintEnd_toEndOf="@+id/getDirections"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/find_routes_map"
-        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
-
-    <TextView
-        android:id="@+id/map_warning"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/map_warning"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/gifImageView"
-        app:layout_constraintEnd_toEndOf="@+id/gifImageView"
-        app:layout_constraintHorizontal_bias="0.549"
-        app:layout_constraintStart_toStartOf="@+id/gifImageView" />
-
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
         tilesource="Mapnik"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="250dp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gifImageView"
-        app:layout_constraintVertical_bias="0.0" />
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/steps_text"
+        android:layout_width="353dp"
+        android:layout_height="460dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_template_find"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/find_routes_map" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/map_recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/show_map"
+        app:layout_constraintEnd_toEndOf="@+id/divider2"
+        app:layout_constraintStart_toStartOf="@+id/divider2"
+        app:layout_constraintTop_toBottomOf="@+id/divider2" />
+
+    <ImageButton
+        android:id="@+id/show_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:background="#00FFFFFF"
+        android:rotation="90"
+        android:rotationY="0"
+        app:layout_constraintBottom_toTopOf="@+id/mapview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/baseline_arrow_back_ios_24" />
+
+    <Spinner
+        android:id="@+id/step_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:dropDownWidth="wrap_content"
+        android:entries="@array/steps_spinner_array"
+        app:layout_constraintBottom_toTopOf="@+id/divider2"
+        app:layout_constraintStart_toStartOf="@+id/divider2" />
+
+    <TextView
+        android:id="@+id/step_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:text="Today"
+        app:layout_constraintBottom_toBottomOf="@+id/step_spinner"
+        app:layout_constraintStart_toEndOf="@+id/step_time_picker"
+        app:layout_constraintTop_toTopOf="@+id/step_spinner" />
+
+    <ImageButton
+        android:id="@+id/step_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:src="@drawable/baseline_my_location_24"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/find_routes_map"
+        app:layout_constraintEnd_toEndOf="@+id/find_routes_origin"
+        app:layout_constraintTop_toTopOf="@+id/find_routes_origin"
+        app:layout_constraintVertical_bias="0.1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,18 +1,19 @@
 package com.hsousa_apps.Autocarros
 
-import android.content.DialogInterface
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.SharedPreferences
-import org.osmdroid.config.Configuration.*
+import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Half.toFloat
 import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -27,18 +28,21 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
-import com.hsousa_apps.Autocarros.fragments.*
-import com.hsousa_apps.Autocarros.models.Dialog
+import com.hsousa_apps.Autocarros.fragments.FindFragment
+import com.hsousa_apps.Autocarros.fragments.HomeFragment
+import com.hsousa_apps.Autocarros.fragments.MapFragment
+import com.hsousa_apps.Autocarros.fragments.SettingsFragment
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.osmdroid.config.Configuration.getInstance
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        val URL = "https://saomiguelbus-api.herokuapp.com/api/v1/android/load"
+        val URL = "https://api.saomiguelbus.com/api/v2/android/load"
         loadData()
         super.onCreate(savedInstanceState)
         try { this.supportActionBar!!.hide() } catch (e: NullPointerException) { }
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         /** Fetch routes from API **/
         val progressBar: ConstraintLayout = findViewById(R.id.loadingGroup)
+        val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
         val requestQueue: RequestQueue = Volley.newRequestQueue(this)
         val objectRequest: JsonArrayRequest = JsonArrayRequest(
             Request.Method.GET,
@@ -57,7 +62,51 @@ class MainActivity : AppCompatActivity() {
                 try {
                     progressBar.visibility = View.VISIBLE
                     Datasource().loadStopsFromAPI()
-                    for(i in 0 until response.length()){
+                    var latest_version = "0"
+                    var use_maps: Boolean? = null
+                    try{
+                        val variables: JSONObject? = response.getJSONObject(0)
+                        latest_version = variables?.getString("version").toString()
+                        use_maps = variables?.getBoolean("maps") == true
+                    } catch (e: Exception){
+                        latest_version = "0"
+                        use_maps = null
+                    }
+
+                    Datasource().setUseMap(use_maps)
+                    val current_version = BuildConfig.VERSION_NAME
+
+                    if (latest_version != null) {
+                        if (latest_version > current_version){
+                            val builder = AlertDialog.Builder(this)
+                            builder.setTitle(getString(R.string.new_app_version))
+                            builder.setMessage(getString(R.string.update_app))
+
+                            builder.setCancelable(true)
+                            builder.setPositiveButton(R.string.update_label) { dialog, which ->
+                                try {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("market://details?id=com.hsousa_apps.Autocarros")
+                                        )
+                                    )
+                                } catch (anfe: ActivityNotFoundException) {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros")
+                                        )
+                                    )
+                                }
+                            }
+
+                            builder.show()
+                        }
+                    }
+
+
+                    for(i in 1 until response.length()){
                         val JSONobject: JSONObject? = response.getJSONObject(i)
                         if (JSONobject != null) {
                             val id: Int = JSONobject.get("id") as Int
@@ -77,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     progressBar.visibility = View.GONE
-
+                    bottomNavigation.visibility = View.VISIBLE
                     swapFrags(HomeFragment())
                 }catch (e: JSONException){
                     Log.d("ERROR", "JSONException: $e")
@@ -88,7 +137,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     progressBar.visibility = View.GONE
-
+                    bottomNavigation.visibility = View.VISIBLE
 
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle(getString(R.string.failed_response_title))
@@ -113,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 progressBar.visibility = View.GONE
-
+                bottomNavigation.visibility = View.VISIBLE
 
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(getString(R.string.failed_response_title))

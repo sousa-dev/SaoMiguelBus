@@ -41,7 +41,7 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/adtemplate_home"
-        app:srcCompat="@drawable/bus" />
+        app:srcCompat="@drawable/baseline_directions_bus_24" />
 
     <Button
         android:id="@+id/homeSearch"
@@ -100,7 +100,7 @@
         app:layout_constraintTop_toTopOf="@+id/divider" />
 
     <ImageButton
-        android:id="@+id/swapStops"
+        android:id="@+id/swapStopsMap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -192,6 +192,6 @@
         android:background="@drawable/ic_baseline_info_24"
         app:backgroundTint="#218732"
         app:layout_constraintBottom_toTopOf="@+id/imageView"
-        app:layout_constraintEnd_toEndOf="@+id/imageView" />
+        app:layout_constraintEnd_toEndOf="@+id/adtemplate_home" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

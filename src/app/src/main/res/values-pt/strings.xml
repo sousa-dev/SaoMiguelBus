@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">São Miguel Bus</string>
-    <string name="find_button">Encontrar</string>
+    <string name="find_button">Pesquisar</string>
     <string name="find_hint_message">Descubra quais rotas passam numa paragem</string>
     <string name="stop">Paragem</string>
     <string name="no_fav_message">Não há rotas nos favoritos\n:(</string>
@@ -42,4 +42,33 @@
     <string name="failed_response_title">Falha ao conetar ao Servidor</string>
     <string name="failed_response_desc">Não foi possível estabelecer conexão ao servidor para atualizar os dados da aplicação. As informações apresentadas podem estar desatualizadas</string>
     <string name="loading">A Carregar</string>
+    <string name="catch_bus">Autocarro para</string>
+    <string name="walk_to">Andar para</string>
+    <string name="leave_at">Sair em</string>
+    <string-array name="steps_spinner_array">
+        <item>Partir</item>
+        <item>Chegar</item>
+    </string-array>
+    <string name="depart_arrive_placeholder">às</string>
+    <string name="depart">partir</string>
+    <string name="arrive">chegar</string>
+    <string name="today_placeholder">Hoje</string>
+    <string name="service_run">Serviço realizado por</string>
+    <string name="map_my_location">A sua localização</string>
+    <string name="new_app_version">Nova Versão Disponível</string>
+    <string name="update_app">Uma nova versão da aplicação com ainda mais e melhores funcionalidades está disponível para download na Play Store.</string>
+    <string name="update_label">Atualizar</string>
+    <string name="monthly_limit_reached_title">Limite mensal atingido</string>
+    <string name="monthly_limit_reached_body">O limite mensal para aceder à nossa funcionalidade de mapa foi atingido. Como resultado, não será possível utilizar a funcionalidade de mapa até ao início do próximo mês. Pedimos desculpa por qualquer inconveniente causado.</string>
+    <string name="app_developed_by">Esta aplicação foi desenvolvida por Sousa Dev</string>
+    <string name="faq_label">Perguntas Frequentes</string>
+    <string name="company_contacts_label">Contato das Companhias de Autocarros</string>
+    <string name="settings_warning_label">"Aplicação Não Desenvolvida pelas Empresas de Autocarros "</string>
+    <string name="faq1_question">Como posso comprar um bilhete de autocarro?</string>
+    <string name="faq1_answer">Os bilhetes devem ser comprados ao entrar no autocarro e de momento só é permitido dinheiro.</string>
+    <string name="faq2_question">Porquê anúncios na aplicação?</string>
+    <string name="faq2_answer">Esta aplicação foi criada por um indivíduo e não é suportada por nenhuma empresa. Os anúncios ajudam a monetizar o tempo gasto no seu desenvolvimento.</string>
+    <string name="contact_dev">Contate o Desenvolvedor</string>
+    <string name="no_location_permission">A aplicação não tem permissão para aceder à sua localização</string>
+    <string name="double_tap_maps">Clique duas vezes para abrir o mapa</string>
 </resources>

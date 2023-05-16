@@ -31,6 +31,8 @@ import kotlin.collections.ArrayList
 
 
 class SearchFragment(private var origin: String? = null, private var destination: String? = null, private var times: ArrayList<Route>? = null, private var unique_id: String = "") : Fragment(), View.OnClickListener {
+    private var og_origin = origin
+    private var og_destination = destination
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -76,12 +78,12 @@ class SearchFragment(private var origin: String? = null, private var destination
             destination = to.text.toString()
 
             if (listOf(origin, destination) !in Datasource().getFavorite()) {
-                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                val fav = view.findViewById<ImageButton>(R.id.favorite)
                 fav.setImageResource(R.mipmap.heartoff)
                 fav.tag = R.mipmap.heartoff
             }
             else{
-                val fav = view?.findViewById<ImageButton>(R.id.favorite)
+                val fav = view.findViewById<ImageButton>(R.id.favorite)
                 fav.setImageResource(R.mipmap.hearton)
                 fav.tag = R.mipmap.hearton
             }
@@ -107,7 +109,7 @@ class SearchFragment(private var origin: String? = null, private var destination
             }
         }
 
-        val fav = view?.findViewById<ImageButton>(R.id.favorite)
+        val fav = view.findViewById<ImageButton>(R.id.favorite)
 
         if (listOf(origin, destination) in Datasource().getFavorite()) {
             fav.setImageResource(R.mipmap.hearton)
@@ -178,8 +180,14 @@ class SearchFragment(private var origin: String? = null, private var destination
         if (cards.size == 0){
             emptymsg?.text = resources.getString(R.string.no_routes_found)
             emptymsg?.visibility = View.VISIBLE
+            redirectToMap()
         }
 
+    }
+
+    fun redirectToMap(){
+        if (Datasource().getUseMap() == true)
+            swapFrags(MapFragment(og_origin?.split("-")?.get(0), og_destination?.split("-")?.get(0)))
     }
 
     fun openRoutePage(
