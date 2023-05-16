@@ -118,7 +118,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             }
 
 
-            Log.d("spinner", spinner.selectedItem.toString())
+            //Log.d("spinner", spinner.selectedItem.toString())
 
 
             val map: MapView = view.findViewById<MapView>(R.id.mapview)
@@ -208,6 +208,7 @@ class MapFragment(private var redirected_origin: String? = null, private var red
             origin.doOnTextChanged { text, start, before, count ->
                 search_origin = text.toString()
             }
+
 
             swapStops.setOnClickListener {
                 val temp = destination.text
