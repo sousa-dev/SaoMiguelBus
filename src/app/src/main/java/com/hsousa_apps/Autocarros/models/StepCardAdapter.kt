@@ -72,13 +72,16 @@ class StepCardAdapter(private val context: Context, private val StepsArrayList: 
             // Disable double tap zooming
             val doubleTapDetector =
                 GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onSingleTapUp(e: MotionEvent): Boolean {
+                        Toast.makeText(context, context.getString(R.string.double_tap_maps), Toast.LENGTH_SHORT).show()
+                        return super.onSingleTapUp(e)
+                    }
                     override fun onDoubleTap(e: MotionEvent): Boolean {
                         startActivity(context, intent, options)
                         return true
                     }
                 })
             holder.map.setOnTouchListener { _, event ->
-                Toast.makeText(context, context.getString(R.string.double_tap_maps), Toast.LENGTH_SHORT).show()
 
                 doubleTapDetector.onTouchEvent(event)
 
