@@ -45,14 +45,6 @@ class SearchFragment(private var origin: String? = null, private var destination
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /** Send Stats to API **/
-        var language : String = Datasource().getCurrentLang()
-        var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_route&origin=$origin&destination=$destination&time=NA&language=$language&platform=android&day=NA"
-        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
-        var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
-        requestQueue.add(request)
-        /***********************/
-
         val from: TextView = view.findViewById(R.id.from_search)
         val to: TextView = view.findViewById(R.id.to_search)
         var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
@@ -171,7 +163,16 @@ class SearchFragment(private var origin: String? = null, private var destination
         }
 
 
-        if(cards.size > 1) cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
+        if(cards.size > 1){
+            /** Send Stats to API **/
+            var language : String = Datasource().getCurrentLang()
+            var URL= "https://saomiguelbus-api.herokuapp.com/api/v1/stat?request=get_route&origin=$origin&destination=$destination&time=NA&language=$language&platform=android&day=NA"
+            val requestQueue: RequestQueue = Volley.newRequestQueue(view?.context)
+            var request: StringRequest = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+            requestQueue.add(request)
+            /***********************/
+            cards = cards.sortedWith(compareBy { it.time }).toList() as MutableList<CardModel>
+        }
 
         if (rv != null) {
             rv.layoutManager = LinearLayoutManager(view?.context)
