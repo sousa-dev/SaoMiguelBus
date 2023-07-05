@@ -34,11 +34,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    var _currentIndex = 0;
     return Scaffold(
-      body: Center(
+      //Add top bar for ads banner
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
+          children: <Widget>[
             Text(
               'São Miguel Bus',
             ),
@@ -46,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       // Add a NavBar
-      bottomNavigationBar: NavBar(key: UniqueKey(), selectedIndex: 4),
+      bottomNavigationBar: NavBar(key: UniqueKey(), selectedIndex: _currentIndex),
     );
   }
 }

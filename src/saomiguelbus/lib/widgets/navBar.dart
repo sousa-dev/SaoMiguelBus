@@ -1,5 +1,3 @@
-// Create a navbar widget
-
 import 'package:flutter/material.dart';
 
 class NavBar extends StatelessWidget {
@@ -20,14 +18,14 @@ class NavBar extends StatelessWidget {
           icon: Icon(Icons.home),
           label: 'Home',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.directions_bus), label: 'Bus'),
-        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Car'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.directions_bike), label: 'Bike'),
+        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Find'),
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+        BottomNavigationBarItem(icon: Icon(Icons.info_outline), label: 'Info'),
       ],
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Theme.of(context).colorScheme.onSurface,
       showUnselectedLabels: true,
+      onTap: ((value) => print(value)),
       currentIndex: selectedIndex,
     );
     return navbar;
