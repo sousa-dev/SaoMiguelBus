@@ -1,32 +1,50 @@
 import 'package:flutter/material.dart';
 
-class NavBar extends StatelessWidget {
-  NavBar({Key? key, this.selectedIndex = 0}) : super(key: key);
+class NavBar extends StatefulWidget {
+  const NavBar({Key? key}) : super(key: key);
 
-  int selectedIndex;
+  @override
+  _NavBarState createState() => _NavBarState();
+}
+
+class _NavBarState extends State<NavBar> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    if (selectedIndex >= 4) {
-      selectedIndex = 0;
+    if (_selectedIndex >= 4) {
+      _selectedIndex = 0;
     }
 
-    var navbar = BottomNavigationBar(
-      key: key,
+    final navbar = BottomNavigationBar(
+      key: widget.key,
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Find'),
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-        BottomNavigationBarItem(icon: Icon(Icons.info_outline), label: 'Info'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: 'Find',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map),
+          label: 'Map',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.info_outline),
+          label: 'Info',
+        ),
       ],
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Theme.of(context).colorScheme.onSurface,
       showUnselectedLabels: true,
-      onTap: ((value) => print(value)),
-      currentIndex: selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      currentIndex: _selectedIndex,
     );
     return navbar;
   }

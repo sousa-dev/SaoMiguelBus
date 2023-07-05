@@ -32,11 +32,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
-    var _currentIndex = 0;
     return Scaffold(
-      //Add top bar for ads banner
       appBar: AppBar(
         title: Text(widget.title),
       ),
@@ -50,8 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      // Add a NavBar
-      bottomNavigationBar: NavBar(key: UniqueKey(), selectedIndex: _currentIndex),
+      bottomNavigationBar: NavBar(key: UniqueKey()),
     );
   }
 }
