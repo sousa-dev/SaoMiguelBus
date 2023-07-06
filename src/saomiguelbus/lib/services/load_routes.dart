@@ -4,15 +4,19 @@ import 'package:package_info/package_info.dart';
 
 import './android_load_v2.dart';
 
+List localLoad() {
+  return androidLoadV2();
+}
+
 void retrieveData(kDebugMode) async {
   // TODO: get version from pubspec.yaml
   // final packageInfo = await PackageInfo.fromPlatform();
   // final version = packageInfo.version;
   final version = '1.0.0';
-  Map information = {'version': version, 'maps': true};
+  Map information = {'version': version, 'maps': false};
   List data = [];
   if (kDebugMode) {
-    data = androidLoadV2();
+    data = localLoad();
   } else {
     final response = await http
         .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
@@ -24,6 +28,7 @@ void retrieveData(kDebugMode) async {
       data = data.sublist(1);
     } else {
       print('Request failed with status: ${response.statusCode}.');
+      data = localLoad();
     }
   }
   print(information);
