@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import './widgets/navBar.dart';
-import './layout/home.dart';
-import './layout/find.dart';
-import './layout/map.dart';
-import './layout/info.dart';
-
+import './widgets/index.dart';
+import './layout/index.dart';
 void main() {
   runApp(MyApp());
 }
