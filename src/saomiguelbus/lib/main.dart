@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import './widgets/navBar.dart';
+import './layout/home.dart';
+import './layout/find.dart';
+import './layout/map.dart';
+import './layout/info.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,42 +18,55 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF218732)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF218732)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'São Miguel Bus'),
+      home: MyHomePage(title: 'São Miguel Bus'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title});
 
+  final Map<int, StatefulWidget> _pages = {
+    0: const HomePageBody(),
+    1: const FindPageBody(),
+    2: const MapPageBody(),
+    3: const InfoPageBody(),
+  };
   final String title;
+  int _currentIndex = 0;
+  Widget body = const HomePageBody();
+
+  void onNavBarItemSelected(int index) {
+    _currentIndex = index;
+  }
+
+  Widget getBody() => _pages[_currentIndex]!;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
+  void _updateBody(int index) {
+    setState(() {
+      widget.onNavBarItemSelected(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'São Miguel Bus',
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: NavBar(key: UniqueKey()),
+      body: widget.getBody(),
+      bottomNavigationBar: NavBar(
+          key: UniqueKey(),
+          currentIndex: widget._currentIndex,
+          onItemSelected: _updateBody),
     );
   }
 }

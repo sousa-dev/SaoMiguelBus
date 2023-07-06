@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 
 class NavBar extends StatefulWidget {
-  const NavBar({Key? key}) : super(key: key);
+  NavBar({Key? key, required this.currentIndex, required this.onItemSelected})
+      : super(key: key);
+
+  final Function(int) onItemSelected;
+  int currentIndex;
 
   @override
+  // ignore: library_private_types_in_public_api
   _NavBarState createState() => _NavBarState();
 }
 
 class _NavBarState extends State<NavBar> {
-  int _selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
-    if (_selectedIndex >= 4) {
-      _selectedIndex = 0;
-    }
+    // if (widget.currentIndex >= 4) {
+    //   widget.currentIndex = 0;
+    // }
 
     final navbar = BottomNavigationBar(
       key: widget.key,
@@ -41,10 +44,12 @@ class _NavBarState extends State<NavBar> {
       showUnselectedLabels: true,
       onTap: (index) {
         setState(() {
-          _selectedIndex = index;
+          widget.currentIndex = index;
         });
+        
+        widget.onItemSelected(index);
       },
-      currentIndex: _selectedIndex,
+      currentIndex: widget.currentIndex,
     );
     return navbar;
   }
