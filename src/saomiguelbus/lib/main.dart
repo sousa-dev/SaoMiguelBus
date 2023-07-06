@@ -5,11 +5,10 @@ import './widgets/index.dart';
 import './layout/index.dart';
 import './utils/index.dart';
 
-void main() {
-  start(kDebugMode);
-  runApp(MyApp());
-}
-// void main() => runApp(const MyApp());
+// void main() {
+//   runApp(MyApp());
+// }
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'São Miguel Bus',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF218732)),
         useMaterial3: true,
@@ -62,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    start(kDebugMode);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),

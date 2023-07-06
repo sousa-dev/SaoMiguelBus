@@ -9,10 +9,8 @@ List localLoad() {
 }
 
 void retrieveData(kDebugMode) async {
-  // TODO: get version from pubspec.yaml
-  // final packageInfo = await PackageInfo.fromPlatform();
-  // final version = packageInfo.version;
-  final version = '1.0.0';
+  final packageInfo = await PackageInfo.fromPlatform();
+  final version = packageInfo.version;
   Map information = {'version': version, 'maps': false};
   List data = [];
   if (kDebugMode) {
