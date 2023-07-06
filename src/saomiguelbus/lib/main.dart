@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
 import './widgets/index.dart';
 import './layout/index.dart';
 import './utils/index.dart';
 
 void main() {
+  start(kDebugMode);
   runApp(MyApp());
 }
 // void main() => runApp(const MyApp());
