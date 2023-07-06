@@ -4,7 +4,11 @@
 import 'package:flutter/material.dart';
 
 class HomePageBody extends StatefulWidget {
-  const HomePageBody({Key? key}) : super(key: key);
+  const HomePageBody({Key? key, required this.onChangeOrigin, required this.onChangeDestination})
+      : super(key: key);
+
+  final Function onChangeOrigin;
+  final Function onChangeDestination;
 
   @override
   _HomePageBodyState createState() => _HomePageBodyState();
@@ -13,12 +17,33 @@ class HomePageBody extends StatefulWidget {
 class _HomePageBodyState extends State<HomePageBody> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'São Miguel Bus Home Page',
+        children: [
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Origin',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              widget.onChangeOrigin(value);
+            },
+            // (value) {
+            //   setState(() {
+            //     _origin = value;
+            //   });
+            // },
+          ),
+          const SizedBox(height: 16.0),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Destination',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              widget.onChangeDestination(value);
+            },
           ),
         ],
       ),

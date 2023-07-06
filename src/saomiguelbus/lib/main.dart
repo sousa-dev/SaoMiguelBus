@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import './widgets/index.dart';
 import './layout/index.dart';
+import './utils/index.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -25,15 +27,18 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({super.key, required this.title});
 
-  final Map<int, StatefulWidget> _pages = {
-    0: const HomePageBody(),
-    1: const FindPageBody(),
-    2: const MapPageBody(),
-    3: const InfoPageBody(),
-  };
+  final List<StatefulWidget> _pages = [
+    HomePageBody(
+      key: UniqueKey(),
+      onChangeOrigin: onChangeOriginHome,
+      onChangeDestination: onChangeDestinationHome,
+    ),
+    const FindPageBody(),
+    const MapPageBody(),
+    const InfoPageBody(),
+  ];
   final String title;
   int _currentIndex = 0;
-  Widget body = const HomePageBody();
 
   void onNavBarItemSelected(int index) {
     _currentIndex = index;
