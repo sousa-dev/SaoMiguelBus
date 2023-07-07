@@ -3,9 +3,9 @@ import 'index.dart';
 class Route {
   final String id;
   final String uniqueId;
-  final Map<Stop, List<String>> stops;
+  final Map<Stop, String> stops;
   final TypeOfDay day;
-  final int company;
+  final Company company;
   final String? info;
 
   List<Stop> allStops = [];
@@ -22,11 +22,12 @@ class Route {
     //   Datasource().addRouteToHash(uniqueId, this);
     // }
   }
-
+  
+  //TODO: Refactor this bcoz it's not a list anymore
   String? getStopTime(Stop? stop, int position) {
-    return stops[stop]?.elementAt(position);
+    return stops[stop];
   }
-
+  //TODO: Refactor this bcoz it's not a list anymore
   int getTimeIdx(List<String> times, String? time) {
     for (int i = 0; i < times.length; i++) {
       if (times[i] == time) {
@@ -35,7 +36,7 @@ class Route {
     }
     return -1;
   }
-
+  //TODO: Refactor this bcoz it's not a list anymore
   int getStopIdx(Stop? stop) {
     int i = 0;
     for (Stop st in stops.keys) {
