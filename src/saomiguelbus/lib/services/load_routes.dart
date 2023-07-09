@@ -6,12 +6,25 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 
 import './android_load_v2.dart';
+import './get_stops_v1.dart';
 
 List localLoad() {
   return androidLoadV2();
 }
 
-void createLocalDB(List data) {
+List localStops() {
+  return getStopsV1();
+}
+
+void loadStops(List stopsJSON) {
+  for (var i = 0; i < stopsJSON.length; i++) {
+    var stop = stopsJSON[i];
+    allStops[stop['name']] =
+        Stop(stop['name'], Location(stop['latitude'], stop['longitude']));
+  }
+}
+
+void loadRoutes(List data) {
   for (var i = 0; i < data.length; i++) {
     var id = data[i]['id'];
     var route = data[i]['route'];
@@ -42,7 +55,6 @@ void createLocalDB(List data) {
     for (var j = 0; j < stops.length; j++) {
       var stop = stops[j];
       var time = times[j];
-      // TODO: Create all the Stops First
       Stop stopObj = Stop(stop, Location(0, 0));
       stopsMap[stopObj] = time;
     }
@@ -62,7 +74,23 @@ void createLocalDB(List data) {
         Route(route, id.toString(), stopsMap, weekday, company, info: info);
     allRoutes.add(routeObj);
   }
+}
 
+void createLocalDB(List data, List stops) {
+  loadStops(stops);
+  loadRoutes(data);
+
+  for (var i = 0; i < allRoutes.length; i++) {
+    var route = allRoutes[i];
+    var stops = route.stops.keys.toList();
+    for (var j = 0; j < stops.length; j++) {
+      var stop = stops[j];
+      if (!allStops.containsKey(stop)) {
+        allStops[stop.name] = stop;
+        print("Added Stop: $stop");
+      }
+    }
+  }
 }
 
 void retrieveData(kDebugMode) async {
@@ -70,12 +98,13 @@ void retrieveData(kDebugMode) async {
   final version = packageInfo.version;
   Map information = {'version': version, 'maps': false};
   List data = [];
+  List stopsJSON = [];
   if (kDebugMode) {
     data = localLoad();
+    stopsJSON = localStops();
   } else {
     final response = await http
         .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
-
     if (response.statusCode == 200) {
       final jsonString = utf8.decode(response.bodyBytes);
       data = jsonDecode(jsonString);
@@ -85,7 +114,18 @@ void retrieveData(kDebugMode) async {
       print('Request failed with status: ${response.statusCode}.');
       data = localLoad();
     }
+
+    final responseStops =
+        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+    if (responseStops.statusCode == 200) {
+      final jsonString = utf8.decode(responseStops.bodyBytes);
+      print(jsonString);
+      stopsJSON = jsonDecode(jsonString);
+    } else {
+      print('Request failed with status: ${response.statusCode}.');
+      stopsJSON = localStops();
+    }
   }
 
-  createLocalDB(data);
+  createLocalDB(data, stopsJSON);
 }

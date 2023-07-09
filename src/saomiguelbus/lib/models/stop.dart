@@ -12,6 +12,6 @@ class Stop {
 
   @override
   String toString() {
-    return name;
+    return "$name, loc: $coordinates";
   }
 }

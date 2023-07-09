@@ -1,3 +1,4 @@
 library my_project.globals;
 
-var allRoutes = [];
+List allRoutes = [];
+var allStops = {};
