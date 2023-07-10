@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info/package_info.dart';
+
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
-
-import './android_load_v2.dart';
-import './get_stops_v1.dart';
+import 'package:saomiguelbus/services/android_load_v2.dart';
+import 'package:saomiguelbus/services/get_stops_v1.dart';
 
 List localLoad() {
   return androidLoadV2();
