@@ -2,8 +2,8 @@
 // Path: lib/layout/home.dart
 
 import 'package:flutter/material.dart';
-import 'package:saomiguelbus/models/type_of_day.dart';
 
+import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 
@@ -24,6 +24,7 @@ class HomePageBody extends StatefulWidget {
 }
 
 class _HomePageBodyState extends State<HomePageBody> {
+  var _selectedStop = '';
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -58,8 +59,9 @@ class _HomePageBodyState extends State<HomePageBody> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                widget._routes = findRoutes(
-                  getStop(origin), getStop(destination), TypeOfDay.weekday).toString();
+                widget._routes = findRoutes(getStop(origin),
+                        getStop(destination), TypeOfDay.weekday)
+                    .toString();
               });
             },
             child: const Text('Search'),
