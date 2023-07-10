@@ -2,13 +2,22 @@
 // Path: lib/layout/home.dart
 
 import 'package:flutter/material.dart';
+import 'package:saomiguelbus/models/type_of_day.dart';
+
+import 'package:saomiguelbus/services/index.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
 class HomePageBody extends StatefulWidget {
-  const HomePageBody({Key? key, required this.onChangeOrigin, required this.onChangeDestination})
+  HomePageBody(
+      {Key? key,
+      required this.onChangeOrigin,
+      required this.onChangeDestination})
       : super(key: key);
 
   final Function onChangeOrigin;
   final Function onChangeDestination;
+
+  String _routes = '';
 
   @override
   _HomePageBodyState createState() => _HomePageBodyState();
@@ -45,6 +54,17 @@ class _HomePageBodyState extends State<HomePageBody> {
               widget.onChangeDestination(value);
             },
           ),
+          //Add a search button
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                widget._routes = findRoutes(
+                  getStop(origin), getStop(destination), TypeOfDay.weekday).toString();
+              });
+            },
+            child: const Text('Search'),
+          ),
+          Text(widget._routes)
         ],
       ),
     );
