@@ -85,17 +85,6 @@ void loadRoutes(List data) {
 void createLocalDB(List data, List stops) {
   loadStops(stops);
   loadRoutes(data);
-
-  for (var i = 0; i < allRoutes.length; i++) {
-    var route = allRoutes[i];
-    var stops = route.stops.keys.toList();
-    for (var j = 0; j < stops.length; j++) {
-      var stop = stops[j];
-      if (!allStops.containsKey(stop.name)) {
-        allStops[stop.name] = stop;
-      }
-    }
-  }
 }
 
 void retrieveData(kDebugMode) async {
