@@ -22,6 +22,7 @@ void loadStops(List stopsJSON) {
     allStops[stop['name']] =
         Stop(stop['name'], Location(stop['latitude'], stop['longitude']));
   }
+  print("Loaded ${allStops.length} stops");
 }
 
 void loadRoutes(List data) {
@@ -56,6 +57,11 @@ void loadRoutes(List data) {
       var stop = stops[j];
       var time = times[j];
       Stop stopObj = Stop(stop, Location(0, 0));
+      if (allStops.containsKey(stop)) {
+        stopObj = allStops[stop];
+      } else {
+        allStops[stop] = stopObj;
+      }
       stopsMap[stopObj] = time;
     }
 
@@ -85,9 +91,8 @@ void createLocalDB(List data, List stops) {
     var stops = route.stops.keys.toList();
     for (var j = 0; j < stops.length; j++) {
       var stop = stops[j];
-      if (!allStops.containsKey(stop)) {
+      if (!allStops.containsKey(stop.name)) {
         allStops[stop.name] = stop;
-        print("Added Stop: $stop");
       }
     }
   }
@@ -103,6 +108,19 @@ void retrieveData(kDebugMode) async {
     data = localLoad();
     stopsJSON = localStops();
   } else {
+    // Load Stops from API
+    final responseStops =
+        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+    if (responseStops.statusCode == 200) {
+      final jsonString = utf8.decode(responseStops.bodyBytes);
+      print(jsonString);
+      stopsJSON = jsonDecode(jsonString);
+    } else {
+      print('Request failed with status: ${responseStops.statusCode}.');
+      stopsJSON = localStops();
+    }
+
+    // Load Routes from API
     final response = await http
         .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
     if (response.statusCode == 200) {
@@ -113,17 +131,6 @@ void retrieveData(kDebugMode) async {
     } else {
       print('Request failed with status: ${response.statusCode}.');
       data = localLoad();
-    }
-
-    final responseStops =
-        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
-    if (responseStops.statusCode == 200) {
-      final jsonString = utf8.decode(responseStops.bodyBytes);
-      print(jsonString);
-      stopsJSON = jsonDecode(jsonString);
-    } else {
-      print('Request failed with status: ${response.statusCode}.');
-      stopsJSON = localStops();
     }
   }
 
