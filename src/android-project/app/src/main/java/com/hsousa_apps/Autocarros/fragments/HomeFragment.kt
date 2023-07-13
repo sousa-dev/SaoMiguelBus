@@ -2,6 +2,8 @@ package com.hsousa_apps.Autocarros.fragments
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -156,6 +158,8 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
 
         var media_url = response.getString("media")
+        var action = response.getString("action")
+        var target = response.getString("target")
 
 
         if (media_url != ""){
@@ -163,7 +167,66 @@ class HomeFragment : Fragment(), View.OnClickListener {
                 .load(media_url)
                 .into(customAd_banner)
         }
+
+        customAd_banner.setOnClickListener {
+            if (action != null && target != null) {
+                when (action) {
+                    "open" -> {
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
+                        startActivity(browserIntent)
+                    }
+
+                    "directions" -> {
+                        val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                        startActivity(mapIntent)
+                    }
+
+                    "call" -> {
+                        val intent = Intent(Intent.ACTION_DIAL)
+                        intent.data = Uri.parse("tel:$target")
+                        startActivity(intent)
+                    }
+
+                    "sms" -> {
+                        val intent = Intent(Intent.ACTION_SENDTO)
+                        intent.data = Uri.parse("smsto:$target")
+                        startActivity(intent)
+                    }
+
+                    "email" -> {
+                        val intent = Intent(Intent.ACTION_SENDTO)
+                        intent.data = Uri.parse("mailto:$target")
+                        startActivity(intent)
+                    }
+
+                    "whatsapp" -> {//TODO: Test this one
+                        val intent = Intent(Intent.ACTION_SENDTO)
+                        intent.data = Uri.parse("https://wa.me/$target")
+                        startActivity(intent)
+                    }
+
+                    "share" -> { //TODO: Test this one
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, target)
+                            type = "text/plain"
+                        }
+
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        startActivity(shareIntent)
+                    }
+                }
+            } else {
+                //TODO: Add a general action that points to my website explaining how to advertise on the app
+                Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
+            }
+        }
+
+
         customAd_banner.visibility = View.VISIBLE
+
+
 
         Log.d("DEBUG", "Loaded Personalized Ad")
 
