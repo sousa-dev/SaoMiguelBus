@@ -1,17 +1,30 @@
 package com.hsousa_apps.Autocarros.fragments
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
+import com.hsousa_apps.Autocarros.BuildConfig
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
 import com.hsousa_apps.Autocarros.data.Functions
@@ -19,7 +32,13 @@ import com.hsousa_apps.Autocarros.data.Stop
 import com.hsousa_apps.Autocarros.models.CardModel
 import com.hsousa_apps.Autocarros.models.Dialog
 import com.hsousa_apps.Autocarros.models.RouteCardAdapter
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.ArrayList
+import java.util.Locale
 
 private var vieww: View? = null
 
@@ -34,6 +53,8 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        checkForHomeAd(view)
+
         val from: AutoCompleteTextView = view.findViewById(R.id.from_home)
         val to: AutoCompleteTextView = view.findViewById(R.id.to_home)
         val actv_from: ImageView = view.findViewById(R.id.actv1)
@@ -113,6 +134,24 @@ class HomeFragment : Fragment(), View.OnClickListener {
             dialog.isCancelable = false
             dialog.show(parentFragmentManager, "App Info Warning")
         }
+    }
+
+    private fun checkForHomeAd(view: View){
+        //get date time in unix format on any api level
+        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=home"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        val objectRequest: JsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET,
+            URL,
+            null,
+            { response ->
+                Log.d("RESPONSE", "Response: $response")
+            },
+            { error ->
+                Log.d("ERROR", "Failed Response: $error")
+            }
+        )
+        requestQueue.add(objectRequest)
     }
 
     private fun saveFav(){
