@@ -124,20 +124,25 @@ class HomeFragment : Fragment(), View.OnClickListener {
         }
     }
 
-    private fun checkForHomeAd(view: View){
-        //get date time in unix format on any api level
-        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=home"
+    private fun checkForHomeAd(view: View, on: String = "home"){
+        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=$on&platform=android"
         val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
         val objectRequest: JsonObjectRequest = JsonObjectRequest(
             Request.Method.GET,
             URL,
             null,
             { response ->
+                //TODO: Deal with blank response
                 Log.d("RESPONSE", "Response: $response")
                 loadPersonalizedAd(response, view)
             },
             { error ->
                 Log.d("ERROR", "Failed Response: $error")
+                val gAd_banner = requireActivity().findViewById<AdView>(R.id.adView)
+                gAd_banner.visibility = View.VISIBLE
+
+                val customAd_banner = requireActivity().findViewById<ImageButton>(R.id.customAd)
+                customAd_banner.visibility = View.INVISIBLE
             }
         )
         requestQueue.add(objectRequest)
