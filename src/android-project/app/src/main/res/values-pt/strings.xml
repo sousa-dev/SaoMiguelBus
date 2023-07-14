@@ -25,6 +25,7 @@
     <string name="sunday_only">Domingos</string>
     <string name="toast_search_message">Preencha todos os campos.</string>
     <string name="toast_link_message">A abrir link externo...</string>
+    <string name="toast_directions_message">A obter direções para</string>
     <string name="report_a_problem">Reportar um Problema</string>
     <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Se encontrar algum problema ou horários incorretos na app, por favor, informe</string>
     <string name="route_dialog_title">"ERRO na Rota "</string>
@@ -71,4 +72,7 @@
     <string name="contact_dev">Contate o Desenvolvedor</string>
     <string name="no_location_permission">A aplicação não tem permissão para aceder à sua localização</string>
     <string name="double_tap_maps">Clique duas vezes para abrir o mapa</string>
+    <string name="toast_calling_message">Ligar para</string>
+    <string name="toast_send_message">Enviar mensagem para</string>
+    <string name="toast_email_message">Enviar email para</string>
 </resources>

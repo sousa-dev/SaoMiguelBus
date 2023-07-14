@@ -74,6 +74,7 @@ class Functions {
         var action = response.getString("action")
         var target = response.getString("target")
         var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
+        var toast_msg = view.context.getString(R.string.toast_link_message)
         if (action != null && target != null) {
             when (action) {
                 "open" -> {
@@ -83,25 +84,30 @@ class Functions {
                 "directions" -> {
                     val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
                     intent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                    toast_msg = "${view.context.getString(R.string.toast_directions_message)} '$target'..."
                 }
 
                 "call" -> {
                     intent = Intent(Intent.ACTION_DIAL)
                     intent.data = Uri.parse("tel:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_calling_message)} '${response.getString("entity")}'..."
                 }
 
                 "sms" -> {
                     intent = Intent(Intent.ACTION_SENDTO)
                     intent.data = Uri.parse("smsto:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_send_message)} '${response.getString("entity")}'..."
                 }
 
                 "email" -> {
                     intent = Intent(Intent.ACTION_SENDTO)
                     intent.data = Uri.parse("mailto:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_email_message)} '${response.getString("entity")}'..."
                 }
 
                 "whatsapp" -> {
                     intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
+                    toast_msg = "${view.context.getString(R.string.toast_send_message)} '${response.getString("entity")}'..."
                 }
                 /**
                 "share" -> {
@@ -115,13 +121,11 @@ class Functions {
                 intent = Intent.createChooser(sendIntent, null)
                 startActivity(intent)
                 }**/
-                else -> {Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app") }
+                else -> {Log.d("WARN", "Unknown action: $action") }
             }
-        } else {
-            //TODO: Add a general action that points to my website explaining how to advertise on the app
-            Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
         }
         view.context.startActivity(intent)
+        Toast.makeText(view.context, toast_msg, Toast.LENGTH_SHORT).show()
     }
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
