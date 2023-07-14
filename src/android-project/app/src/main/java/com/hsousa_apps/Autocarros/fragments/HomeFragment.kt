@@ -43,7 +43,7 @@ class HomeFragment : Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        checkForHomeAd(view)
+        Functions().checkForCustomAd(view, requireActivity(), "home")
 
         val from: AutoCompleteTextView = view.findViewById(R.id.from_home)
         val to: AutoCompleteTextView = view.findViewById(R.id.to_home)
@@ -124,112 +124,6 @@ class HomeFragment : Fragment(), View.OnClickListener {
             dialog.isCancelable = false
             dialog.show(parentFragmentManager, "App Info Warning")
         }
-    }
-
-    private fun checkForHomeAd(view: View, on: String = "home"){
-        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=$on&platform=android"
-        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
-        val objectRequest: JsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET,
-            URL,
-            null,
-            { response ->
-                //TODO: Deal with blank response
-                Log.d("RESPONSE", "Response: $response")
-                loadPersonalizedAd(response, view)
-            },
-            { error ->
-                Log.d("ERROR", "Failed Response: $error")
-                val gAd_banner = requireActivity().findViewById<AdView>(R.id.adView)
-                gAd_banner.visibility = View.VISIBLE
-
-                val customAd_banner = requireActivity().findViewById<ImageButton>(R.id.customAd)
-                customAd_banner.visibility = View.INVISIBLE
-            }
-        )
-        requestQueue.add(objectRequest)
-    }
-
-    private fun loadPersonalizedAd(response: JSONObject, view: View){
-
-        val gAd_banner = requireActivity().findViewById<AdView>(R.id.adView)
-        gAd_banner.visibility = View.INVISIBLE
-        val customAd_banner = requireActivity().findViewById<ImageButton>(R.id.customAd)
-
-
-        var media_url = response.getString("media")
-        var action = response.getString("action")
-        var target = response.getString("target")
-
-
-        if (media_url != ""){
-            Glide.with(view.context)
-                .load(media_url)
-                .into(customAd_banner)
-        }
-
-        customAd_banner.setOnClickListener {
-            if (action != null && target != null) {
-                when (action) {
-                    "open" -> {
-                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
-                        startActivity(browserIntent)
-                    }
-
-                    "directions" -> {
-                        val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
-                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                        startActivity(mapIntent)
-                    }
-
-                    "call" -> {
-                        val intent = Intent(Intent.ACTION_DIAL)
-                        intent.data = Uri.parse("tel:$target")
-                        startActivity(intent)
-                    }
-
-                    "sms" -> {
-                        val intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("smsto:$target")
-                        startActivity(intent)
-                    }
-
-                    "email" -> {
-                        val intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("mailto:$target")
-                        startActivity(intent)
-                    }
-
-                    "whatsapp" -> {//TODO: Test this one
-                        val intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("https://wa.me/$target")
-                        startActivity(intent)
-                    }
-
-                    "share" -> { //TODO: Test this one
-                        val sendIntent: Intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, target)
-                            type = "text/plain"
-                        }
-
-                        val shareIntent = Intent.createChooser(sendIntent, null)
-                        startActivity(shareIntent)
-                    }
-                }
-            } else {
-                //TODO: Add a general action that points to my website explaining how to advertise on the app
-                Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
-            }
-        }
-
-
-        customAd_banner.visibility = View.VISIBLE
-
-
-
-        Log.d("DEBUG", "Loaded Personalized Ad")
-
     }
 
     private fun saveFav(){

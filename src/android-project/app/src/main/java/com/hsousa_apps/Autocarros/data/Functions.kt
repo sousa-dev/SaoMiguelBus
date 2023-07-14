@@ -1,9 +1,125 @@
 package com.hsousa_apps.Autocarros.data
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.view.View
+import android.widget.ImageButton
+import androidx.fragment.app.FragmentActivity
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdView
+import com.hsousa_apps.Autocarros.R
+import org.json.JSONObject
+import android.widget.*
+
 
 
 class Functions {
+
+    fun checkForCustomAd(view: View, mainActivity: FragmentActivity, on: String = "home"){
+        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=$on&platform=android"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        val objectRequest: JsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET,
+            URL,
+            null,
+            { response ->
+                //TODO: Deal with blank response
+                Log.d("RESPONSE", "Response: $response")
+                loadPersonalizedAd(view, mainActivity, response)
+            },
+            { error ->
+                Log.d("ERROR", "Failed Response: $error")
+                val gAd_banner = mainActivity.findViewById<AdView>(R.id.adView)
+                gAd_banner.visibility = View.VISIBLE
+
+                val customAd_banner = mainActivity.findViewById<ImageButton>(R.id.customAd)
+                customAd_banner.visibility = View.INVISIBLE
+            }
+        )
+        requestQueue.add(objectRequest)
+    }
+
+    private fun loadPersonalizedAd(view: View, mainActivity: FragmentActivity, response: JSONObject){
+
+        val gAd_banner = mainActivity.findViewById<AdView>(R.id.adView)
+        gAd_banner.visibility = View.INVISIBLE
+        val customAd_banner = mainActivity.findViewById<ImageButton>(R.id.customAd)
+
+
+        var media_url = response.getString("media")
+        var action = response.getString("action")
+        var target = response.getString("target")
+
+
+        if (media_url != ""){
+            Glide.with(view.context)
+                .load(media_url)
+                .into(customAd_banner)
+        }
+
+        customAd_banner.setOnClickListener {
+            //Create the default intent
+            var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
+            if (action != null && target != null) {
+                when (action) {
+                    "open" -> {
+                        intent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
+                    }
+
+                    "directions" -> {
+                        val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
+                        val intent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                    }
+
+                    "call" -> {
+                        intent = Intent(Intent.ACTION_DIAL)
+                        intent.data = Uri.parse("tel:$target")
+                    }
+
+                    "sms" -> {
+                        intent = Intent(Intent.ACTION_SENDTO)
+                        intent.data = Uri.parse("smsto:$target")
+                    }
+
+                    "email" -> {
+                        intent = Intent(Intent.ACTION_SENDTO)
+                        intent.data = Uri.parse("mailto:$target")
+                    }
+
+                    "whatsapp" -> {
+                        intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
+                    }
+                    /**
+                    "share" -> {
+                    //TODO: Fix
+                    val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "${response.getString("description")}\n$target ")
+                    type = "text/plain"
+                    }
+
+                    intent = Intent.createChooser(sendIntent, null)
+                    startActivity(intent)
+                    }**/
+                    else -> {Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app") }
+                }
+            } else {
+                //TODO: Add a general action that points to my website explaining how to advertise on the app
+                Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
+            }
+            view.context.startActivity(intent)
+        }
+
+        customAd_banner.visibility = View.VISIBLE
+
+        Log.d("DEBUG", "Loaded Personalized Ad")
+
+    }
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
         val ret: MutableList<Route> = mutableListOf()
