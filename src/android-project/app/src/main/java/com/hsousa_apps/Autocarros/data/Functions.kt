@@ -15,7 +15,7 @@ import com.google.android.gms.ads.AdView
 import com.hsousa_apps.Autocarros.R
 import org.json.JSONObject
 import android.widget.*
-
+import com.android.volley.toolbox.StringRequest
 
 
 class Functions {
@@ -61,7 +61,7 @@ class Functions {
         }
 
         customAd_banner.setOnClickListener {
-            adOnClick(view, mainActivity, response)
+            adOnClick(view, response)
         }
 
         customAd_banner.visibility = View.VISIBLE
@@ -70,7 +70,9 @@ class Functions {
 
     }
 
-    private fun adOnClick(view: View, mainActivity: FragmentActivity, response: JSONObject){
+    private fun adOnClick(view: View, response: JSONObject){
+        adClickIncrement(view, response.getString("id"))
+
         var action = response.getString("action")
         var target = response.getString("target")
         var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
@@ -126,6 +128,13 @@ class Functions {
         }
         view.context.startActivity(intent)
         Toast.makeText(view.context, toast_msg, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun adClickIncrement(view: View, id: String){
+        var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/ad/click?id=$id"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        var request = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+        requestQueue.add(request)
     }
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
