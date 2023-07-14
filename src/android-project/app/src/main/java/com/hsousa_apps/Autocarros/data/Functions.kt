@@ -52,8 +52,6 @@ class Functions {
 
 
         var media_url = response.getString("media")
-        var action = response.getString("action")
-        var target = response.getString("target")
 
 
         if (media_url != ""){
@@ -63,62 +61,67 @@ class Functions {
         }
 
         customAd_banner.setOnClickListener {
-            //Create the default intent
-            var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
-            if (action != null && target != null) {
-                when (action) {
-                    "open" -> {
-                        intent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
-                    }
-
-                    "directions" -> {
-                        val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
-                        val intent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                    }
-
-                    "call" -> {
-                        intent = Intent(Intent.ACTION_DIAL)
-                        intent.data = Uri.parse("tel:$target")
-                    }
-
-                    "sms" -> {
-                        intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("smsto:$target")
-                    }
-
-                    "email" -> {
-                        intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("mailto:$target")
-                    }
-
-                    "whatsapp" -> {
-                        intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
-                    }
-                    /**
-                    "share" -> {
-                    //TODO: Fix
-                    val sendIntent: Intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "${response.getString("description")}\n$target ")
-                    type = "text/plain"
-                    }
-
-                    intent = Intent.createChooser(sendIntent, null)
-                    startActivity(intent)
-                    }**/
-                    else -> {Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app") }
-                }
-            } else {
-                //TODO: Add a general action that points to my website explaining how to advertise on the app
-                Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
-            }
-            view.context.startActivity(intent)
+            adOnClick(view, mainActivity, response)
         }
 
         customAd_banner.visibility = View.VISIBLE
 
         Log.d("DEBUG", "Loaded Personalized Ad")
 
+    }
+
+    private fun adOnClick(view: View, mainActivity: FragmentActivity, response: JSONObject){
+        var action = response.getString("action")
+        var target = response.getString("target")
+        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
+        if (action != null && target != null) {
+            when (action) {
+                "open" -> {
+                    intent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
+                }
+
+                "directions" -> {
+                    val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
+                    intent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                }
+
+                "call" -> {
+                    intent = Intent(Intent.ACTION_DIAL)
+                    intent.data = Uri.parse("tel:$target")
+                }
+
+                "sms" -> {
+                    intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("smsto:$target")
+                }
+
+                "email" -> {
+                    intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("mailto:$target")
+                }
+
+                "whatsapp" -> {
+                    intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
+                }
+                /**
+                "share" -> {
+                //TODO: Fix
+                val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "${response.getString("description")}\n$target ")
+                type = "text/plain"
+                }
+
+                intent = Intent.createChooser(sendIntent, null)
+                startActivity(intent)
+                }**/
+                else -> {Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app") }
+            }
+        } else {
+            //TODO: Add a general action that points to my website explaining how to advertise on the app
+            Log.d("TODO", "Add a general action that points to my website explaining how to advertise on the app")
+        }
+        view.context.startActivity(intent)
     }
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
