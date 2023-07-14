@@ -43,6 +43,8 @@ class SearchFragment(private var origin: String? = null, private var destination
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Functions().checkForCustomAd(view, requireActivity(), "$origin -> $destination")
+
         super.onViewCreated(view, savedInstanceState)
 
         val from: TextView = view.findViewById(R.id.from_search)
