@@ -218,7 +218,18 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 val temp = destination.text
                 destination.text = origin.text
                 origin.text = temp
-                Functions().checkForCustomAd(view, requireActivity(), "$search_origin -> $search_destination")
+
+                var origin_for_api = origin.text.toString()
+                if (origin.text.toString() == getString(R.string.map_my_location)){
+                    origin_for_api = Datasource().getClosestLocation(currentLocation)
+                }
+                
+                var destination_for_api = destination.text.toString()
+                if (destination.text.toString() == getString(R.string.map_my_location)){
+                    destination_for_api = Datasource().getClosestLocation(currentLocation)
+                }
+
+                Functions().checkForCustomAd(view, requireActivity(), "$origin_for_api -> $destination_for_api")
             }
 
             getDirections.setOnClickListener {
@@ -230,8 +241,6 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     rv?.adapter = view?.let { StepCardAdapter(it.context, cards as ArrayList<StepModel>) }
                 }
                 if (search_destination != "" && search_origin != "") {
-                    Functions().checkForCustomAd(view, requireActivity(), "$search_origin -> $search_destination")
-
                     val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                     // Send Stats to API
                     var language : String = Datasource().getCurrentLang()
@@ -244,6 +253,9 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                     if (destination_for_api == getString(R.string.map_my_location)){
                         destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                     }
+
+                    Functions().checkForCustomAd(view, requireActivity(), "${origin_for_api.replace(" ()", "")} -> ${destination_for_api.replace(" ()", "")}")
+
                     origin_for_api = origin_for_api.capitalize()
                     destination_for_api = destination_for_api.capitalize()
 
@@ -293,7 +305,6 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 search_destination = redirected_destination as String
                 destination.setText(redirected_destination)
 
-                Functions().checkForCustomAd(view, requireActivity(), "$search_origin -> $search_destination")
 
                 val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
                 // Send Stats to API
@@ -307,6 +318,9 @@ class MapFragment(private var redirected_origin: String? = null, private var red
                 if (destination_for_api == getString(R.string.map_my_location)){
                     destination_for_api = Datasource().getClosestLocation(currentLocation) + " ()"
                 }
+
+                Functions().checkForCustomAd(view, requireActivity(), "${origin_for_api.replace(" ()", "")} -> ${destination_for_api.replace(" ()", "")}")
+
                 origin_for_api = origin_for_api.capitalize()
                 destination_for_api = destination_for_api.capitalize()
 
