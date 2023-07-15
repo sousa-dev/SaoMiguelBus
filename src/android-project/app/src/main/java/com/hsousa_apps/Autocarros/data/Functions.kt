@@ -35,7 +35,6 @@ class Functions {
             URL,
             null,
             { response ->
-                //TODO: Deal with blank response
                 Log.d("RESPONSE", "Response: $response")
                 loadPersonalizedAd(view, mainActivity, response)
             },
@@ -49,12 +48,14 @@ class Functions {
                     customAd_banner.visibility = View.INVISIBLE
                 } else {
                     gAd_banner.visibility = View.INVISIBLE
-                    var res_ids = listOf<Int>(R.drawable.ad_loading)
-                    customAd_banner.setImageResource(res_ids.random())
+                    var res_ids = listOf<Int>(R.drawable.offline_ad_1, R.drawable.offline_ad_2,
+                        R.drawable.offline_ad_3,  R.drawable.offline_ad_4)
+                    Glide.with(view.context)
+                        .load(res_ids.random())
+                        .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(500))
+                        .into(customAd_banner)
                     customAd_banner.visibility = View.VISIBLE
-                    Log.d("DEBUG", "No Internet Connection")
                 }
-
             }
         )
         requestQueue.add(objectRequest)
@@ -95,7 +96,7 @@ class Functions {
         var action = response.getString("action")
         var target = response.getString("target")
         //TODO: Change this to the correct url
-        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
+        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("ad.saomiguelbus.com"))
         var toast_msg = view.context.getString(R.string.toast_link_message)
         if (action != null && target != null) {
             when (action) {
