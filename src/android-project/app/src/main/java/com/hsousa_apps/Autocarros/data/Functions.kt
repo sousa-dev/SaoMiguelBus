@@ -78,6 +78,7 @@ class Functions {
         var entity = response.getString("entity")
         var action = response.getString("action")
         var target = response.getString("target")
+        //TODO: Change this to the correct url
         var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://saomiguelbus.com"))
         var toast_msg = view.context.getString(R.string.toast_link_message)
         if (action != null && target != null) {
@@ -114,18 +115,7 @@ class Functions {
                     intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
                     toast_msg = "${view.context.getString(R.string.toast_send_message)} '${entity}'..."
                 }
-                /**
-                "share" -> {
-                //TODO: Fix
-                val sendIntent: Intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "${response.getString("description")}\n$target ")
-                type = "text/plain"
-                }
 
-                intent = Intent.createChooser(sendIntent, null)
-                startActivity(intent)
-                }**/
                 else -> {Log.d("WARN", "Unknown action: $action") }
             }
         }
