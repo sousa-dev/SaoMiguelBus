@@ -57,7 +57,8 @@ class Functions {
         if (media_url != ""){
             Glide.with(view.context)
                 .load(media_url)
-                //.placeholder(R.drawable.avm_logo)
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(500))
+                .placeholder(R.drawable.ad_loading)
                 .into(customAd_banner)
         }
 
