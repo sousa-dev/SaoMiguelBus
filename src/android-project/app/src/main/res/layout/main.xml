@@ -26,12 +26,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:src="@drawable/ad_loading"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="@+id/adView"
         app:layout_constraintStart_toStartOf="@+id/adView"
-        app:layout_constraintTop_toTopOf="@+id/adView"
-        app:srcCompat="@drawable/common_google_signin_btn_text_light_normal_background" />
+        app:layout_constraintTop_toTopOf="@+id/adView" />
 
     <FrameLayout
         android:id="@+id/frag_container"
