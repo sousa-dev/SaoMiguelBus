@@ -1,21 +1,28 @@
 package com.hsousa_apps.Autocarros.data
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.FragmentActivity
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.google.android.gms.ads.AdView
 import com.hsousa_apps.Autocarros.R
 import org.json.JSONObject
-import android.widget.*
-import com.android.volley.toolbox.StringRequest
 
 
 class Functions {
@@ -35,10 +42,19 @@ class Functions {
             { error ->
                 Log.d("ERROR", "Failed Response: $error")
                 val gAd_banner = mainActivity.findViewById<AdView>(R.id.adView)
-                gAd_banner.visibility = View.VISIBLE
-
                 val customAd_banner = mainActivity.findViewById<ImageButton>(R.id.customAd)
-                customAd_banner.visibility = View.INVISIBLE
+
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && (isOnline(view.context))){
+                    gAd_banner.visibility = View.VISIBLE
+                    customAd_banner.visibility = View.INVISIBLE
+                } else {
+                    gAd_banner.visibility = View.INVISIBLE
+                    var res_ids = listOf<Int>(R.drawable.ad_loading)
+                    customAd_banner.setImageResource(res_ids.random())
+                    customAd_banner.visibility = View.VISIBLE
+                    Log.d("DEBUG", "No Internet Connection")
+                }
+
             }
         )
         requestQueue.add(objectRequest)
@@ -129,6 +145,30 @@ class Functions {
         var request = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
         requestQueue.add(request)
     }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connectivityManager != null) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
         val ret: MutableList<Route> = mutableListOf()

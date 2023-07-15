@@ -23,16 +23,17 @@
 
     <ImageButton
         android:id="@+id/customAd"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="318dp"
+        android:layout_height="49dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:background="#00FFFFFF"
         android:scaleType="fitXY"
         android:src="@drawable/ad_loading"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/adView"
-        app:layout_constraintEnd_toEndOf="@+id/adView"
-        app:layout_constraintStart_toStartOf="@+id/adView"
-        app:layout_constraintTop_toTopOf="@+id/adView" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/frag_container" />
 
     <FrameLayout
         android:id="@+id/frag_container"
