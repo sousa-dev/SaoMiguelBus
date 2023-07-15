@@ -55,6 +55,11 @@ class Functions {
                         .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(500))
                         .into(customAd_banner)
                     customAd_banner.visibility = View.VISIBLE
+                    customAd_banner.setOnClickListener {
+                        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ad.saomiguelbus.com/"))
+                        Toast.makeText(view.context, view.context.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+                        view.context.startActivity(intent)
+                    }
                 }
             }
         )
@@ -95,8 +100,7 @@ class Functions {
         var entity = response.getString("entity")
         var action = response.getString("action")
         var target = response.getString("target")
-        //TODO: Change this to the correct url
-        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("ad.saomiguelbus.com"))
+        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ad.saomiguelbus.com/"))
         var toast_msg = view.context.getString(R.string.toast_link_message)
         if (action != null && target != null) {
             when (action) {
