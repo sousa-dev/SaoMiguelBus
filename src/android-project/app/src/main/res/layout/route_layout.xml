@@ -71,6 +71,7 @@
         android:id="@+id/route_company"
         android:layout_width="93dp"
         android:layout_height="43dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/route_destination"
         app:layout_constraintEnd_toStartOf="@+id/route_time"
         app:layout_constraintHorizontal_bias="0.858"
@@ -104,16 +105,21 @@
 
     <TextView
         android:id="@+id/card_model_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="10dp"
         android:autoText="false"
         android:textAlignment="center"
-        android:textColor="#CC3B3B"
-        android:textSize="12dp"
+        android:textColor="#218732"
+        android:textSize="14sp"
+        app:autoSizeMaxTextSize="14sp"
+        app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toBottomOf="@+id/go_to_route_page"
         app:layout_constraintEnd_toEndOf="@+id/route_time"
-        app:layout_constraintStart_toStartOf="@+id/imageView2"
-        app:layout_constraintTop_toBottomOf="@+id/route_time" />
+        app:layout_constraintStart_toStartOf="@+id/route_destination"
+        app:layout_constraintTop_toBottomOf="@+id/route_destination" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
