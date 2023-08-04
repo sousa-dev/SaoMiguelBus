@@ -36,44 +36,38 @@ class _HomePageBodyState extends State<HomePageBody> {
               if (textEditingValue.text == '') {
                 return const Iterable<String>.empty();
               }
-              List<String> _stopMatches = <String>[];
-              _stopMatches.addAll(allStops.keys.cast<String>());
+              List<String> stopMatches = <String>[];
+              stopMatches.addAll(allStops.keys.cast<String>());
 
-              _stopMatches.retainWhere((stop) {
+              stopMatches.retainWhere((stop) {
                 return removeDiacritics(stop.toLowerCase()).contains(
                     removeDiacritics(textEditingValue.text.toLowerCase()));
               });
-              return _stopMatches;
+              return stopMatches;
+            },
+            onSelected: (String selection) {
+              widget.onChangeOrigin(selection);
+            },
+          ),
+          const SizedBox(height: 16.0),
+          Autocomplete<String>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text == '') {
+                return const Iterable<String>.empty();
+              }
+              List<String> stopMatches = <String>[];
+              stopMatches.addAll(allStops.keys.cast<String>());
+
+              stopMatches.retainWhere((stop) {
+                return removeDiacritics(stop.toLowerCase()).contains(
+                    removeDiacritics(textEditingValue.text.toLowerCase()));
+              });
+              return stopMatches;
             },
             onSelected: (String selection) {
               widget.onChangeDestination(selection);
             },
           ),
-          // TextField(
-          //   decoration: const InputDecoration(
-          //     labelText: 'Origin',
-          //     border: OutlineInputBorder(),
-          //   ),
-          //   onChanged: (value) {
-          //     widget.onChangeOrigin(value);
-          //   },
-          //   // (value) {
-          //   //   setState(() {
-          //   //     _origin = value;
-          //   //   });
-          //   // },
-          // ),
-          const SizedBox(height: 16.0),
-          TextField(
-            decoration: const InputDecoration(
-              labelText: 'Destination',
-              border: OutlineInputBorder(),
-            ),
-            onChanged: (value) {
-              widget.onChangeDestination(value);
-            },
-          ),
-          //Add a search button
           ElevatedButton(
             onPressed: () {
               setState(() {
