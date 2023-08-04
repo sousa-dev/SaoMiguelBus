@@ -36,7 +36,11 @@ class MyHomePage extends StatefulWidget {
       onChangeDestination: onChangeDestinationHome,
     ),
     const FindPageBody(),
-    const MapPageBody(),
+    MapPageBody(
+      key: UniqueKey(),
+      onChangeOrigin: onChangeOriginHome,
+      onChangeDestination: onChangeDestinationHome,
+    ),
     const InfoPageBody(),
   ];
   final String title;
