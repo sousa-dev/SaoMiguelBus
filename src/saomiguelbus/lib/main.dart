@@ -54,7 +54,7 @@ class MyHomePage extends StatefulWidget {
     _currentIndex = index;
   }
 
-  Widget getBody() => _pages[_currentIndex]!;
+  Widget getBody() => _pages[_currentIndex];
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();

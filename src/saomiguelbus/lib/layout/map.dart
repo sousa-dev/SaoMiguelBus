@@ -2,6 +2,7 @@
 // Path: lib/layout/map.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
@@ -77,7 +78,7 @@ class _MapPageBodyState extends State<MapPageBody> {
                     .toString();
               });
             },
-            child: const Text('Search'),
+            child: Text(AppLocalizations.of(context)!.search),
           ),
           Text(widget._routes)
         ],

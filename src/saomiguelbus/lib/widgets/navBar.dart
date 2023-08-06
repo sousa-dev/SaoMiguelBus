@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NavBar extends StatefulWidget {
   NavBar({Key? key, required this.currentIndex, required this.onItemSelected})
@@ -21,22 +22,22 @@ class _NavBarState extends State<NavBar> {
 
     final navbar = BottomNavigationBar(
       key: widget.key,
-      items: const <BottomNavigationBarItem>[
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
+          icon: const Icon(Icons.home),
+          label: AppLocalizations.of(context)!.home,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: 'Find',
+          icon: const Icon(Icons.search),
+          label: AppLocalizations.of(context)!.find,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.map),
-          label: 'Map',
+          icon: const Icon(Icons.map),
+          label: AppLocalizations.of(context)!.map,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.info_outline),
-          label: 'Info',
+          icon: const Icon(Icons.info_outline),
+          label: AppLocalizations.of(context)!.info,
         ),
       ],
       selectedItemColor: Theme.of(context).colorScheme.primary,
@@ -46,7 +47,7 @@ class _NavBarState extends State<NavBar> {
         setState(() {
           widget.currentIndex = index;
         });
-        
+
         widget.onItemSelected(index);
       },
       currentIndex: widget.currentIndex,
