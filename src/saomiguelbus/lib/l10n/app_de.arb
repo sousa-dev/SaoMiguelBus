@@ -1,7 +1,10 @@
 {
-    "language": "Portuguese",
-    "origin": "Origin",
-    "destination": "Destination",
-    "search": "Search",
-    "map": "Map"
+  "destination": "Ziel",
+  "find": "Finden",
+  "home": "Home",
+  "info": "Info",
+  "language": "German",
+  "map": "Map",
+  "origin": "Herkunft",
+  "search": "Suchen"
 }

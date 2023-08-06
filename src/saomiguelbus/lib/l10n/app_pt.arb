@@ -1,22 +1,34 @@
 {
-    "language": "Portuguese",
-    "@language":{
-        "description": "The current language of the application"
-    },
-    "origin": "Origem",
-    "@origin":{
-        "description": "Label for origin text fields"
-    },
-    "destination": "Destino",
-    "@destination":{
-        "description": "Label for destination text fields"
-    },
-    "search": "Pesquisar",
-    "@search":{
-        "description": "Label for search button"
-    },
-    "map": "Mapa",
-    "@map":{
-        "description": "Label for map button"
-    }
+  "@destination": {
+    "description": "Label for destination text fields"
+  },
+  "@find": {
+    "description": "Label for find button"
+  },
+  "@home": {
+    "description": "Label for home button"
+  },
+  "@info": {
+    "description": "Label for info button"
+  },
+  "@language": {
+    "description": "The current language of the application"
+  },
+  "@map": {
+    "description": "Label for map button"
+  },
+  "@origin": {
+    "description": "Label for origin text fields"
+  },
+  "@search": {
+    "description": "Label for search button"
+  },
+  "destination": "Destino",
+  "find": "Ver",
+  "home": "Início",
+  "info": "Info",
+  "language": "Portuguese",
+  "map": "Mapa",
+  "origin": "Origem",
+  "search": "Pesquisar"
 }
