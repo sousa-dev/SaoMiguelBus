@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:saomiguelbus/env.dart';
 
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
@@ -14,7 +15,7 @@ Future<String> getGoogleRoutes(
       destination.name +
       "&mode=transit" +
       "&key=" +
-      key;
+      Env.googleMapsApiKey;
   //+ "&language=" + lang
 
   final responseStops = await http.get(Uri.parse(mapsURL));
