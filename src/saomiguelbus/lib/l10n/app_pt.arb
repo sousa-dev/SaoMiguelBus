@@ -1,0 +1,22 @@
+{
+    "language": "Portuguese",
+    "@language":{
+        "description": "The current language of the application"
+    },
+    "origin": "Origem",
+    "@origin":{
+        "description": "Label for origin text fields"
+    },
+    "destination": "Destino",
+    "@destination":{
+        "description": "Label for destination text fields"
+    },
+    "search": "Pesquisar",
+    "@search":{
+        "description": "Label for search button"
+    },
+    "map": "Mapa",
+    "@map":{
+        "description": "Label for map button"
+    }
+}

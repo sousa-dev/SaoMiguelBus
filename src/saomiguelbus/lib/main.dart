@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:saomiguelbus/l10n/l10n.dart';
 
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
@@ -21,6 +22,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF218732)),
         useMaterial3: true,
       ),
+      supportedLocales: L10n.all,
+      locale: L10n.defaultLocale,
+      localizationsDelegates: L10n.localizationsDelegates,
       home: MyHomePage(title: 'São Miguel Bus'),
     );
   }
