@@ -13,8 +13,6 @@ class L10n {
 
   static Locale? Function(Locale?, Iterable<Locale>)? localeFallback =
       (locale, supportedLocales) {
-    print('localeFallback: $locale');
-    print('supportedLocales: $supportedLocales');
     final _supportedLanguageCodes =
         supportedLocales.map((e) => e.languageCode).toList();
     if (!_supportedLanguageCodes.contains(locale?.languageCode)) {

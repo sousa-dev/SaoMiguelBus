@@ -23,11 +23,15 @@
   "@search": {
     "description": "Label for search button"
   },
+  "@languageCode": {
+    "description": "The current language code of the application"
+  },
   "destination": "Destino",
   "find": "Ver",
   "home": "Início",
   "info": "Info",
   "language": "Portuguese",
+  "languageCode": "pt_PT",
   "map": "Mapa",
   "origin": "Origem",
   "search": "Pesquisar"

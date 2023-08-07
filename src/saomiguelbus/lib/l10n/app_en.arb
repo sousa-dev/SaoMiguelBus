@@ -4,6 +4,7 @@
   "home": "Home",
   "info": "Info",
   "language": "English",
+  "languageCode": "en",
   "map": "Map",
   "origin": "Origin",
   "search": "Search"
