@@ -11,7 +11,17 @@ class L10n {
     const Locale('de'),
   ];
 
-  static Locale defaultLocale = const Locale('pt');
+  static Locale? Function(Locale?, Iterable<Locale>)? localeFallback =
+      (locale, supportedLocales) {
+    print('localeFallback: $locale');
+    print('supportedLocales: $supportedLocales');
+    final _supportedLanguageCodes =
+        supportedLocales.map((e) => e.languageCode).toList();
+    if (!_supportedLanguageCodes.contains(locale?.languageCode)) {
+      return const Locale('en');
+    }
+    return locale;
+  };
 
   static List<LocalizationsDelegate<Object>> localizationsDelegates = const [
     AppLocalizations.delegate,

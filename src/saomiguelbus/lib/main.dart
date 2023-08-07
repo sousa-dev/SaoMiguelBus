@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       supportedLocales: L10n.all,
-      locale: L10n.defaultLocale,
+      localeResolutionCallback: L10n.localeFallback,      
       localizationsDelegates: L10n.localizationsDelegates,
       home: MyHomePage(title: 'São Miguel Bus'),
     );
