@@ -74,7 +74,8 @@ class _MapPageBodyState extends State<MapPageBody> {
             onPressed: () {
               setState(() {
                 widget._routes = getGoogleRoutes(getStop(origin),
-                        getStop(destination), TypeOfDay.weekday)
+                        getStop(destination), TypeOfDay.weekday, 
+                        AppLocalizations.of(context)!.languageCode)
                     .toString();
               });
             },

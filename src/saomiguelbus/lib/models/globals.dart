@@ -5,3 +5,5 @@ var allStops = {};
 
 String origin = '';
 String destination = '';
+
+String language = 'en';
