@@ -101,7 +101,7 @@ void createLocalDB(List data, List stops) {
 void retrieveData(kDebugMode) async {
   final packageInfo = await PackageInfo.fromPlatform();
   final version = packageInfo.version;
-  Map information = {'version': version, 'maps': false};
+  Map information = {'version': version, 'maps': true}; //TODO: Change default to false on production
   List data = [];
   List stopsJSON = [];
   //SharedPreferences.setMockInitialValues({});

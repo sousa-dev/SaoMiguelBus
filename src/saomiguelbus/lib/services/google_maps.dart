@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 import 'package:saomiguelbus/env.dart';
 
 import 'package:saomiguelbus/models/index.dart';
@@ -15,12 +16,13 @@ Future<Object> getGoogleRoutes(Stop origin, Stop destination,
   // TODO: Try to get more than one possible route
   // Load Possible Routes from GMAPS API
   var mapsURL =
-      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.name}&destination=${destination.name}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}";
+      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.name}&destination=${destination.name}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
   try {
     final responseStops = await http.get(Uri.parse(mapsURL));
     if (responseStops.statusCode == 200) {
       var instructions = Instruction()
           .initInstructions(jsonDecode(responseStops.body)['routes']);
+      developer.log("Routes Length: ${instructions.routes.length}");
       return instructions;
     } else {
       return 'NA';
