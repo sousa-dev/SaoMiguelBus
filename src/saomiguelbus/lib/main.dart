@@ -10,7 +10,6 @@ import 'package:saomiguelbus/utils/index.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  //Keep splash screen open while it loads data
   initialization();
 
   runApp(const MyApp());
@@ -21,7 +20,6 @@ initialization() {
 
   FlutterNativeSplash.remove();
 }
-// void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
