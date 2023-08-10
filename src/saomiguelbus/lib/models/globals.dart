@@ -7,3 +7,6 @@ String origin = '';
 String destination = '';
 
 String language = 'en';
+
+bool canUseMaps = false;
+String latestVersion = '';

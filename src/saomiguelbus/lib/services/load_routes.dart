@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -154,5 +156,11 @@ void retrieveData(kDebugMode) async {
     }
   }
   developer.log("fisrt: ${prefs.getKeys()}");
+  canUseMaps = information['maps'];
+  latestVersion = information['version'];
+
+  developer.log("canUseMaps: $canUseMaps");
+  developer.log("latestVersion: $latestVersion");
+  
   createLocalDB(data, stopsJSON);
 }
