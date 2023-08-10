@@ -7,13 +7,32 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/android_load_v2.dart';
 import 'package:saomiguelbus/services/get_stops_v1.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-List localLoad() {
-  return androidLoadV2();
+List localLoad(SharedPreferences prefs) {
+  var data = androidLoadV2();
+  print("localload: ${prefs.getKeys()}");
+
+  if (prefs.containsKey('routes_api_response')) {
+    final jsonString = prefs.getString('routes_api_response');
+    print("Loading Stored API Response...");
+    data = jsonDecode(jsonString!);
+    //information = data[0];
+    data = data.sublist(1);
+  }
+  return data;
 }
 
-List localStops() {
-  return getStopsV1();
+List localStops(SharedPreferences prefs) {
+  var stopsJSON = getStopsV1();
+
+  if (prefs.containsKey('stops_api_response')) {
+    final jsonString = prefs.getString('stops_api_response');
+    print("Loading Stored API Response...");
+    print(jsonString);
+    stopsJSON = jsonDecode(jsonString!);
+  }
+  return stopsJSON;
 }
 
 void loadStops(List stopsJSON) {
@@ -93,35 +112,57 @@ void retrieveData(kDebugMode) async {
   Map information = {'version': version, 'maps': false};
   List data = [];
   List stopsJSON = [];
-  if (kDebugMode) {
-    data = localLoad();
-    stopsJSON = localStops();
+  //SharedPreferences.setMockInitialValues({});
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (kDebugMode &&
+      prefs.containsKey('routes_api_response') &&
+      prefs.containsKey('stops_api_response')) {
+    data = localLoad(prefs);
+    stopsJSON = localStops(prefs);
   } else {
-    // Load Stops from API
-    final responseStops =
-        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
-    if (responseStops.statusCode == 200) {
-      final jsonString = utf8.decode(responseStops.bodyBytes);
-      print(jsonString);
-      stopsJSON = jsonDecode(jsonString);
-    } else {
-      print('Request failed with status: ${responseStops.statusCode}.');
-      stopsJSON = localStops();
+    try {
+      // Load Stops from API
+      final responseStops = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+      if (responseStops.statusCode == 200) {
+        final jsonString = utf8.decode(responseStops.bodyBytes);
+        print(jsonString);
+        prefs.setString('stops_api_response', jsonString);
+        prefs.commit();
+        print("Storing new routes API Response on cache...");
+        stopsJSON = jsonDecode(jsonString);
+      } else {
+        print('Request failed with status: ${responseStops.statusCode}.');
+
+        stopsJSON = localStops(prefs);
+      }
+    } catch (e) {
+      print(e);
+      stopsJSON = localStops(prefs);
     }
 
-    // Load Routes from API
-    final response = await http
-        .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
-    if (response.statusCode == 200) {
-      final jsonString = utf8.decode(response.bodyBytes);
-      data = jsonDecode(jsonString);
-      information = data[0];
-      data = data.sublist(1);
-    } else {
-      print('Request failed with status: ${response.statusCode}.');
-      data = localLoad();
+    try {
+      // Load Routes from API
+      final response = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
+      if (response.statusCode == 200) {
+        final jsonString = utf8.decode(response.bodyBytes);
+        data = jsonDecode(jsonString);
+        prefs.setString('routes_api_response', jsonString);
+        prefs.commit();
+        print("Storing new routes API Response on cache...");
+        information = data[0];
+        data = data.sublist(1);
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+
+        data = localLoad(prefs);
+      }
+    } catch (e) {
+      print(e);
+      data = localLoad(prefs);
     }
   }
-
+  print("fisrt: ${prefs.getKeys()}");
   createLocalDB(data, stopsJSON);
 }
