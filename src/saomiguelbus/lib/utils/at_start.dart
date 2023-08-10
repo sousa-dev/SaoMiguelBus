@@ -2,9 +2,10 @@ import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/services/index.dart';
 
-void start(kDebugMode) {
+bool start(kDebugMode) {
   retrieveData(kDebugMode);
   kDebugMode ? init_debug_mode() : init_release_mode();
+  return true;
 }
 
 void init_debug_mode() {

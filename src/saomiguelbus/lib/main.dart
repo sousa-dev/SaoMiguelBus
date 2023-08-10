@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:saomiguelbus/l10n/l10n.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+import 'package:saomiguelbus/l10n/l10n.dart';
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/utils/index.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
-void main() => runApp(const MyApp());
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  //Keep splash screen open while it loads data
+  initialization();
+
+  runApp(const MyApp());
+}
+
+initialization() {
+  start(kDebugMode);
+
+  FlutterNativeSplash.remove();
+}
+// void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -23,7 +35,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       supportedLocales: L10n.all,
-      localeResolutionCallback: L10n.localeFallback,      
+      localeResolutionCallback: L10n.localeFallback,
       localizationsDelegates: L10n.localizationsDelegates,
       home: MyHomePage(title: 'São Miguel Bus'),
     );
@@ -69,7 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    start(kDebugMode);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
