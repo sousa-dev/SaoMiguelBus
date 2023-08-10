@@ -124,7 +124,8 @@ void retrieveData(kDebugMode) async {
         developer.log("Storing new routes API Response on cache...");
         stopsJSON = jsonDecode(jsonString);
       } else {
-        developer.log('Request failed with status: ${responseStops.statusCode}.');
+        developer
+            .log('Request failed with status: ${responseStops.statusCode}.');
 
         stopsJSON = localStops(prefs);
       }
@@ -143,6 +144,7 @@ void retrieveData(kDebugMode) async {
         prefs.setString('routes_api_response', jsonString);
         prefs.commit();
         developer.log("Storing new routes API Response on cache...");
+        developer.log("data: $data");
         information = data[0];
         data = data.sublist(1);
       } else {
@@ -161,6 +163,6 @@ void retrieveData(kDebugMode) async {
 
   developer.log("canUseMaps: $canUseMaps");
   developer.log("latestVersion: $latestVersion");
-  
+
   createLocalDB(data, stopsJSON);
 }
