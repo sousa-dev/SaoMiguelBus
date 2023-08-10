@@ -17,7 +17,7 @@ class Route {
     origin = allStops[0];
     destination = allStops[allStops.length - 1];
     // if (Datasource().getRouteHash().containsKey(uniqueId)) {
-    //   print('ERROR: $uniqueId duplicated');
+    //   developer.log('ERROR: $uniqueId duplicated');
     // } else {
     //   Datasource().addRouteToHash(uniqueId, this);
     // }

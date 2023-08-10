@@ -1,5 +1,6 @@
-import '../services/index.dart';
-import '../utils/index.dart';
+import 'dart:developer' as developer;
+
+import 'package:saomiguelbus/services/index.dart';
 
 void start(kDebugMode) {
   retrieveData(kDebugMode);
@@ -7,7 +8,7 @@ void start(kDebugMode) {
 }
 
 void init_debug_mode() {
-  print("Running in debug mode...");
+  developer.log("Running in debug mode...");
 }
 
 void init_release_mode() {}

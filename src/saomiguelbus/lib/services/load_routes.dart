@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 import 'package:package_info/package_info.dart';
 
 import 'package:saomiguelbus/models/index.dart';
@@ -11,11 +12,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 List localLoad(SharedPreferences prefs) {
   var data = androidLoadV2();
-  print("localload: ${prefs.getKeys()}");
+  developer.log("localload: ${prefs.getKeys()}");
 
   if (prefs.containsKey('routes_api_response')) {
     final jsonString = prefs.getString('routes_api_response');
-    print("Loading Stored API Response...");
+    developer.log("Loading Stored API Response...");
     data = jsonDecode(jsonString!);
     //information = data[0];
     data = data.sublist(1);
@@ -28,9 +29,9 @@ List localStops(SharedPreferences prefs) {
 
   if (prefs.containsKey('stops_api_response')) {
     final jsonString = prefs.getString('stops_api_response');
-    print("Loading Stored API Response...");
-    print(jsonString);
-    stopsJSON = jsonDecode(jsonString!);
+    developer.log("Loading Stored API Response...");
+    developer.log(jsonString!);
+    stopsJSON = jsonDecode(jsonString);
   }
   return stopsJSON;
 }
@@ -41,7 +42,7 @@ void loadStops(List stopsJSON) {
     allStops[stop['name']] =
         Stop(stop['name'], Location(stop['latitude'], stop['longitude']));
   }
-  print("Loaded ${allStops.length} stops");
+  developer.log("Loaded ${allStops.length} stops");
 }
 
 void loadRoutes(List data) {
@@ -66,7 +67,7 @@ void loadRoutes(List data) {
       company = Company.varela;
     } else {
       if (kDebugMode) {
-        print("Invalid Route Number: $route");
+        developer.log("Invalid Route Number: $route");
         Error();
       }
     }
@@ -84,17 +85,6 @@ void loadRoutes(List data) {
       stopsMap[stopObj] = time;
     }
 
-    if (i < 0 && kDebugMode) {
-      print(data[i]);
-      print(id);
-      print(route);
-      print(stops);
-      print(times);
-      print(stopsMap);
-      print(weekday);
-      print(info);
-      print(company);
-    }
     Route routeObj =
         Route(route, id.toString(), stopsMap, weekday, company, info: info);
     allRoutes.add(routeObj);
@@ -126,18 +116,18 @@ void retrieveData(kDebugMode) async {
           .get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
       if (responseStops.statusCode == 200) {
         final jsonString = utf8.decode(responseStops.bodyBytes);
-        print(jsonString);
+        developer.log(jsonString);
         prefs.setString('stops_api_response', jsonString);
         prefs.commit();
-        print("Storing new routes API Response on cache...");
+        developer.log("Storing new routes API Response on cache...");
         stopsJSON = jsonDecode(jsonString);
       } else {
-        print('Request failed with status: ${responseStops.statusCode}.');
+        developer.log('Request failed with status: ${responseStops.statusCode}.');
 
         stopsJSON = localStops(prefs);
       }
     } catch (e) {
-      print(e);
+      developer.log(e.toString());
       stopsJSON = localStops(prefs);
     }
 
@@ -150,19 +140,19 @@ void retrieveData(kDebugMode) async {
         data = jsonDecode(jsonString);
         prefs.setString('routes_api_response', jsonString);
         prefs.commit();
-        print("Storing new routes API Response on cache...");
+        developer.log("Storing new routes API Response on cache...");
         information = data[0];
         data = data.sublist(1);
       } else {
-        print('Request failed with status: ${response.statusCode}.');
+        developer.log('Request failed with status: ${response.statusCode}.');
 
         data = localLoad(prefs);
       }
     } catch (e) {
-      print(e);
+      developer.log(e.toString());
       data = localLoad(prefs);
     }
   }
-  print("fisrt: ${prefs.getKeys()}");
+  developer.log("fisrt: ${prefs.getKeys()}");
   createLocalDB(data, stopsJSON);
 }

@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/utils/levenshtein_distance.dart';
@@ -18,21 +20,21 @@ List<Route> findRoutes(Stop origin, Stop destination, TypeOfDay typeOfDay) {
 
 Stop getStop(String name) {
   if (allStops[name] == null) {
-    print("Stop $name not found");
+    developer.log("Stop $name not found");
     String? mostSimilarStop;
     double smallestDistance = double.infinity;
-    for (var stop_name in allStops.keys) {
-      int distance = levenshteinDistance(name, stop_name);
+    for (var stopName in allStops.keys) {
+      int distance = levenshteinDistance(name, stopName);
       if (distance < smallestDistance) {
         smallestDistance = distance.toDouble();
-        mostSimilarStop = stop_name;
+        mostSimilarStop = stopName;
       }
     }
     if (mostSimilarStop == null) {
-      print("No similar stop found");
+      developer.log("No similar stop found");
       return Stop(name, Location(0, 0));
     }
-    print(name + " not found, using " + mostSimilarStop + " instead");
+    developer.log("$name not found, using $mostSimilarStop instead");
     return allStops[mostSimilarStop];
   }
   return allStops[name];
