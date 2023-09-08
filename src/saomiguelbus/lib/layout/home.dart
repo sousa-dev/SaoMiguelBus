@@ -2,6 +2,7 @@
 // Path: lib/layout/home.dart
 
 import 'package:flutter/material.dart';
+import 'package:saomiguelbus/layout/results.dart';
 
 import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
@@ -58,11 +59,16 @@ class _HomePageBodyState extends State<HomePageBody> {
           //Add a search button
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                widget._routes = findRoutes(getStop(origin),
-                        getStop(destination), TypeOfDay.weekday)
-                    .toString();
-              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ResultsPageBody()),
+              );
+              // setState(() {
+              //   widget._routes = findRoutes(getStop(origin),
+              //           getStop(destination), TypeOfDay.weekday)
+              //       .toString();
+              // });
             },
             child: const Text('Search'),
           ),
