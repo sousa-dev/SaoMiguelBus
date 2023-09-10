@@ -19,7 +19,7 @@ class HomePageBody extends StatefulWidget {
   final Function onChangeOrigin;
   final Function onChangeDestination;
 
-  String _routes = '';
+  List _routes = [];
 
   @override
   _HomePageBodyState createState() => _HomePageBodyState();
@@ -72,10 +72,14 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
           ElevatedButton(
             onPressed: () {
+              widget._routes = findRoutes(
+                      getStop(origin), getStop(destination), TypeOfDay.weekday);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const ResultsPageBody()),
+                    builder: (context) => ResultsPageBody(
+                          routesNumber: widget._routes.length,
+                        )),
               );
               // setState(() {
               //   widget._routes = findRoutes(getStop(origin),
@@ -84,9 +88,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               // });
             },
             child: Text(AppLocalizations.of(context)!.search),
-
           ),
-          Text(widget._routes)
         ],
       ),
     );
