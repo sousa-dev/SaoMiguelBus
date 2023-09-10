@@ -18,6 +18,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.models.Dialog
 
 
@@ -32,6 +33,7 @@ class SettingsFragment: Fragment(), View.OnClickListener {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Functions().checkForCustomAd(view, requireActivity())
 
         val not_developed: Button = view.findViewById(R.id.button_not_developed)
         val rate: Button = view.findViewById(R.id.button_rate_app)

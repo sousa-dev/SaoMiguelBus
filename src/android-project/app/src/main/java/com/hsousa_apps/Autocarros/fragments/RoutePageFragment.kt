@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.Datasource
+import com.hsousa_apps.Autocarros.data.Functions
 import com.hsousa_apps.Autocarros.data.TypeOfDay
 import com.hsousa_apps.Autocarros.models.*
 import java.util.ArrayList
@@ -33,6 +34,12 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if (origin != null && destination != null) {
+            Functions().checkForCustomAd(view, requireActivity(), "$origin -> $destination")
+        } else {
+            Functions().checkForCustomAd(view, requireActivity())
+        }
+
         val orig = view.findViewById<TextView>(R.id.route_page_origin)
         val dest = view.findViewById<TextView>(R.id.route_page_destination)
         val routeId = view.findViewById<TextView>(R.id.route_page_id)

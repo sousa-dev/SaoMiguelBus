@@ -25,6 +25,7 @@
     <string name="map_nb">MAPA</string>
     <string name="toast_search_message">Por favor llena todos los espacios.</string>
     <string name="toast_link_message">Abriendo enlace externo...</string>
+    <string name="toast_directions_message">Obtener indicaciones para</string>
     <string name="report_a_problem">Informar de un Problema</string>
     <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Si encuentra algún problema o tiempos incorrectos en la aplicación, háganoslo saber.</string>
     <string name="route_dialog_title">"ERROR en Ruta "</string>
@@ -71,4 +72,7 @@
     <string name="contact_dev">Contactar al Desarrollador</string>
     <string name="no_location_permission">La aplicación no tiene permiso para acceder a tu ubicación.</string>
     <string name="double_tap_maps">Haga doble clic para abrir una vista de mapa completa</string>
+    <string name="toast_calling_message">Llamar a</string>
+    <string name="toast_send_message">Enviar mensaje a</string>
+    <string name="toast_email_message">Enviar el email a</string>
 </resources>

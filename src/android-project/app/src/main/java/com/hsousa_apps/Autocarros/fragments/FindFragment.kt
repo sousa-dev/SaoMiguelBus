@@ -31,6 +31,8 @@ class FindFragment(private var times: ArrayList<Route>? = null, private var uniq
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Functions().checkForCustomAd(view, requireActivity())
+
         val stop: AutoCompleteTextView = view.findViewById(R.id.find_routes_map)
         val actv: ImageView = view.findViewById(R.id.actv_find)
         var TypeOfDay: TypeOfDay = TypeOfDay.WEEKDAY
@@ -50,6 +52,8 @@ class FindFragment(private var times: ArrayList<Route>? = null, private var uniq
 
         find.setOnClickListener {
             if(stop.editableText.toString() != ""){
+                val on = "None -> ${stop.editableText}"
+                Functions().checkForCustomAd(view, requireActivity(), on)
                 times = Functions().getStopRoutes(stop.editableText.toString())
                 createCards(this.view, TypeOfDay)
                 /** Send Stats to API **/

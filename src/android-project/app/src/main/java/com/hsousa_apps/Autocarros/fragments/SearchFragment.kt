@@ -43,6 +43,8 @@ class SearchFragment(private var origin: String? = null, private var destination
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Functions().checkForCustomAd(view, requireActivity(), "$origin -> $destination")
+
         super.onViewCreated(view, savedInstanceState)
 
         val from: TextView = view.findViewById(R.id.from_search)
@@ -68,6 +70,8 @@ class SearchFragment(private var origin: String? = null, private var destination
 
             origin = from.text.toString()
             destination = to.text.toString()
+
+            Functions().checkForCustomAd(view, requireActivity(), "$origin -> $destination")
 
             if (listOf(origin, destination) !in Datasource().getFavorite()) {
                 val fav = view.findViewById<ImageButton>(R.id.favorite)

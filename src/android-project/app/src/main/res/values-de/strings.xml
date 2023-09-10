@@ -25,6 +25,7 @@
     <string name="toast_search_message">Fülle bitte alle Felder aus.</string>
     <string name="toast_link_message">Externen Link öffnen...</string>
     <string name="find_hint_message">Finden Sie heraus, welche Routen an einer Bushaltestelle vorbeiführen</string>
+    <string name="toast_directions_message">Wegbeschreibung zu</string>
     <string name="report_a_problem">Ein Problem melden</string>
     <string name="if_you_find_any_problem_or_wrong_times_on_the_app_please_report_it">Wenn Sie ein Problem oder falsche Zeiten in der App finden, melden Sie es bitte</string>
     <string name="route_dialog_title">"FEHLER auf der Route "</string>
@@ -71,4 +72,7 @@
     <string name="contact_dev">Wenden Sie sich an den Entwickler</string>
     <string name="no_location_permission">Die App hat keine Berechtigung, auf Ihren Standort zuzugreifen.</string>
     <string name="double_tap_maps">Doppelklicken Sie Klicken, um eine vollständige Kartenansicht zu öffnen</string>
+    <string name="toast_calling_message">Ruf an</string>
+    <string name="toast_send_message">Nachricht senden an</string>
+    <string name="toast_email_message">Schicke eine Email an</string>
 </resources>

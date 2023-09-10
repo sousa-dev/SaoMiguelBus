@@ -1,9 +1,179 @@
 package com.hsousa_apps.Autocarros.data
 
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
+import android.net.Uri
+import android.os.Build
 import android.util.Log
+import android.view.View
+import android.widget.ImageButton
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.FragmentActivity
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdView
+import com.hsousa_apps.Autocarros.R
+import org.json.JSONObject
 
 
 class Functions {
+
+    fun checkForCustomAd(view: View, mainActivity: FragmentActivity, on: String = "home"){
+        var URL = "https://api.saomiguelbus.com/api/v1/ad?on=$on&platform=android"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        val objectRequest: JsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET,
+            URL,
+            null,
+            { response ->
+                Log.d("RESPONSE", "Response: $response")
+                loadPersonalizedAd(view, mainActivity, response)
+            },
+            { error ->
+                Log.d("ERROR", "Failed Response: $error")
+                val gAd_banner = mainActivity.findViewById<AdView>(R.id.adView)
+                val customAd_banner = mainActivity.findViewById<ImageButton>(R.id.customAd)
+
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && (isOnline(view.context))){
+                    gAd_banner.visibility = View.VISIBLE
+                    customAd_banner.visibility = View.INVISIBLE
+                } else {
+                    gAd_banner.visibility = View.INVISIBLE
+                    var res_ids = listOf<Int>(R.drawable.offline_ad_1, R.drawable.offline_ad_2,
+                        R.drawable.offline_ad_3,  R.drawable.offline_ad_4)
+                    Glide.with(view.context)
+                        .load(res_ids.random())
+                        .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(500))
+                        .into(customAd_banner)
+                    customAd_banner.visibility = View.VISIBLE
+                    customAd_banner.setOnClickListener {
+                        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ad.saomiguelbus.com/"))
+                        Toast.makeText(view.context, view.context.getString(R.string.toast_link_message), Toast.LENGTH_SHORT).show()
+                        view.context.startActivity(intent)
+                    }
+                }
+            }
+        )
+        requestQueue.add(objectRequest)
+    }
+
+    private fun loadPersonalizedAd(view: View, mainActivity: FragmentActivity, response: JSONObject){
+
+        val gAd_banner = mainActivity.findViewById<AdView>(R.id.adView)
+        gAd_banner.visibility = View.INVISIBLE
+        val customAd_banner = mainActivity.findViewById<ImageButton>(R.id.customAd)
+
+
+        var media_url = response.getString("media")
+
+
+        if (media_url != ""){
+            Glide.with(view.context)
+                .load(media_url)
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(500))
+                .placeholder(R.drawable.ad_loading)
+                .into(customAd_banner)
+        }
+
+        customAd_banner.setOnClickListener {
+            adOnClick(view, response)
+        }
+
+        customAd_banner.visibility = View.VISIBLE
+
+        Log.d("DEBUG", "Loaded Personalized Ad")
+
+    }
+
+    private fun adOnClick(view: View, response: JSONObject){
+        adClickIncrement(view, response.getString("id"))
+
+        var entity = response.getString("entity")
+        var action = response.getString("action")
+        var target = response.getString("target")
+        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ad.saomiguelbus.com/"))
+        var toast_msg = view.context.getString(R.string.toast_link_message)
+        if (action != null && target != null) {
+            when (action) {
+                "open" -> {
+                    intent = Intent(Intent.ACTION_VIEW, Uri.parse(target))
+                }
+
+                "directions" -> {
+                    val gmmIntentUri = Uri.parse("google.navigation:q=$target&mode=transit")
+                    intent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                    toast_msg = "${view.context.getString(R.string.toast_directions_message)} '$entity'..."
+                }
+
+                "call" -> {
+                    intent = Intent(Intent.ACTION_DIAL)
+                    intent.data = Uri.parse("tel:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_calling_message)} '${entity}'..."
+                }
+
+                "sms" -> {
+                    intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("smsto:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_send_message)} '${entity}'..."
+                }
+
+                "email" -> {
+                    intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("mailto:$target")
+                    toast_msg = "${view.context.getString(R.string.toast_email_message)} '${entity}'..."
+                }
+
+                "whatsapp" -> {
+                    intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$target"))
+                    toast_msg = "${view.context.getString(R.string.toast_send_message)} '${entity}'..."
+                }
+
+                else -> {Log.d("WARN", "Unknown action: $action") }
+            }
+        }
+        view.context.startActivity(intent)
+        Toast.makeText(view.context, toast_msg, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun adClickIncrement(view: View, id: String){
+        var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/ad/click?id=$id"
+        val requestQueue: RequestQueue = Volley.newRequestQueue(view.context)
+        var request = StringRequest(Request.Method.POST, URL, { response -> (Log.d("DEBUG", "Response: $response")) }, { error -> (Log.d("DEBUG", "Error Response: $error")) })
+        requestQueue.add(request)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connectivityManager != null) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
 
     fun getOptions(origin: String, destination: String, TypeOfDay: TypeOfDay = com.hsousa_apps.Autocarros.data.TypeOfDay.WEEKDAY): ArrayList<Route>{
         val ret: MutableList<Route> = mutableListOf()

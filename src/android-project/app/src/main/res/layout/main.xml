@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:visibility="visible"
         app:adSize="BANNER"
         app:adUnitId="@string/ad_unit_home"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,6 +20,20 @@
         app:layout_constraintTop_toTopOf="@+id/frag_container">
         <!--app:adUnitId="ca-app-pub-8246676797736648/2987068957"-->
     </com.google.android.gms.ads.AdView>
+
+    <ImageButton
+        android:id="@+id/customAd"
+        android:layout_width="318dp"
+        android:layout_height="49dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:src="@drawable/ad_loading"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/frag_container" />
 
     <FrameLayout
         android:id="@+id/frag_container"
@@ -73,6 +88,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </FrameLayout>
