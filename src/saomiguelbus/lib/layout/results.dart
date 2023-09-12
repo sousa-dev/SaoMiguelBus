@@ -6,9 +6,15 @@ import 'package:saomiguelbus/models/card_route.dart';
 
 class ResultsPageBody extends StatefulWidget {
   const ResultsPageBody(
-      {Key? key, required this.routesNumber, required this.routes})
+      {Key? key,
+      required this.origin,
+      required this.destination,
+      required this.routesNumber,
+      required this.routes})
       : super(key: key);
 
+  final String origin;
+  final String destination;
   final int routesNumber;
   final List routes;
 
@@ -19,9 +25,8 @@ class ResultsPageBody extends StatefulWidget {
 class _ResultsPageBodyState extends State<ResultsPageBody> {
   @override
   Widget build(BuildContext context) {
-    print("Routes: " + widget.routes.toString());
-    List _routes = _routeToCard(widget.routes);
-    print(_routes);
+    List _routes =
+        _routeToCard(widget.routes, widget.origin, widget.destination);
     //TODO: Change the text to internationalization
     if (widget.routesNumber == 0) {
       return const Material(
@@ -71,14 +76,25 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  static List _routeToCard(List routes) {
+  static List _routeToCard(List routes, String origin, String destination) {
     List cardRoutes = [];
     for (var route in routes) {
-      String origin = route.stops.keys.first.name;
-      String destination = route.stops.keys.last.name;
+      String startTime = route.getStopTime(origin);
+      String endTime = route.getStopTime(destination);
+      DateTime startTimeDateTime = DateTime.parse(
+          '2022-01-01 ${startTime.split("h")[0]}:${startTime.split("h")[1]}:00');
+      DateTime endTimeDateTime = DateTime.parse(
+          '2022-01-01 ${endTime.split("h")[0]}:${endTime.split("h")[1]}:00');
+      int durationInMinutes =
+          endTimeDateTime.difference(startTimeDateTime).inMinutes;
       cardRoutes.add(CardRoute(
         trailing: const Icon(Icons.arrow_forward_ios),
-        title: Text(route.id),
+        title: Text(route.id +
+            ' - ' +
+            (durationInMinutes ~/ 60).toString() +
+            ' hours and ' +
+            (durationInMinutes % 60).toString() +
+            'minutes'),
         subtitle: Text(origin + ' - ' + destination),
         leading: const Icon(Icons.directions_bus),
       ));

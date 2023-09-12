@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saomiguelbus/layout/results.dart';
+import 'package:saomiguelbus/models/stop.dart';
 
 import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
@@ -72,12 +73,16 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
           ElevatedButton(
             onPressed: () {
-              widget._routes = findRoutes(
-                      getStop(origin), getStop(destination), TypeOfDay.weekday);
+              Stop fixedOrigin = getStop(origin);
+              Stop fixedDestination = getStop(destination);
+              widget._routes =
+                  findRoutes(fixedOrigin, fixedDestination, TypeOfDay.weekday);
               Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => ResultsPageBody(
+                          origin: fixedOrigin.name,
+                          destination: fixedDestination.name,
                           routesNumber: widget._routes.length,
                           routes: widget._routes,
                         )),
