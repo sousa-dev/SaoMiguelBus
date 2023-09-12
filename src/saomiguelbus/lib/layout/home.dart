@@ -79,6 +79,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 MaterialPageRoute(
                     builder: (context) => ResultsPageBody(
                           routesNumber: widget._routes.length,
+                          routes: widget._routes,
                         )),
               );
               // setState(() {
