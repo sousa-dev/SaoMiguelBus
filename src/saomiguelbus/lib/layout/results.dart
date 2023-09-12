@@ -46,21 +46,25 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
           Text(
             'São Miguel Bus Results Page',
           ),
-          ListView.builder(
-            physics: const ScrollPhysics(parent: null),
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                color: Colors.blue,
-                child: ListTile(
-                  trailing: _routes[index].trailing,
-                  title: _routes[index].title,
-                  subtitle: _routes[index].subtitle,
-                  leading: _routes[index].leading,
-                ),
-              );
-            },
-            itemCount: widget.routesNumber,
+          Expanded(
+            child: SingleChildScrollView(
+              child: ListView.builder(
+                physics: const ScrollPhysics(parent: null),
+                shrinkWrap: true,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    color: Colors.blue,
+                    child: ListTile(
+                      trailing: _routes[index].trailing,
+                      title: _routes[index].title,
+                      subtitle: _routes[index].subtitle,
+                      leading: _routes[index].leading,
+                    ),
+                  );
+                },
+                itemCount: widget.routesNumber,
+              ),
+            ),
           ),
         ],
       ),
