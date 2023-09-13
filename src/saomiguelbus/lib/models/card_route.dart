@@ -13,11 +13,13 @@ class CardRoute {
   late Stop catchStop;
   late String arrivalTime;
   late Stop arrivalStop;
+  late Map<Stop, String> stops;
 
   CardRoute(route, origin, destination)
       : trailing = const Icon(Icons.arrow_forward_ios),
         leading = const Icon(Icons.directions_bus) {
     routeId = route.id;
+    stops = route.stops;
 
     var (originStop, originTime) = route.getStopTime(origin);
     catchStop = originStop;
