@@ -79,25 +79,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   static List _routeToCard(List routes, String origin, String destination) {
     List cardRoutes = [];
     for (var route in routes) {
-      String startTime = route.getStopTime(origin);
-      String endTime = route.getStopTime(destination);
-      DateTime startTimeDateTime = DateTime.parse(
-          '2022-01-01 ${startTime.split("h")[0]}:${startTime.split("h")[1]}:00');
-      DateTime endTimeDateTime = DateTime.parse(
-          '2022-01-01 ${endTime.split("h")[0]}:${endTime.split("h")[1]}:00');
-      int durationInMinutes =
-          endTimeDateTime.difference(startTimeDateTime).inMinutes;
-      cardRoutes.add(CardRoute(
-        trailing: const Icon(Icons.arrow_forward_ios),
-        title: Text(route.id +
-            ' - ' +
-            (durationInMinutes ~/ 60).toString() +
-            ' hours and ' +
-            (durationInMinutes % 60).toString() +
-            'minutes'),
-        subtitle: Text(origin + ' - ' + destination),
-        leading: const Icon(Icons.directions_bus),
-      ));
+      cardRoutes.add(CardRoute(route, origin, destination));
     }
     return cardRoutes;
   }
