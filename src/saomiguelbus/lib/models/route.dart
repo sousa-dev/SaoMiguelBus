@@ -26,13 +26,13 @@ class Route {
   }
 
   //TODO: Refactor this bcoz it's not a list anymore
-  String? getStopTime(String stopName) {
+  (Stop?, String?) getStopTime(String stopName) {
     for (Stop stop in stops.keys) {
       if (stop.name == stopName) {
-        return stops[stop];
+        return (stop, stops[stop]);
       }
     }
-    return null;
+    return (null, null);
   }
 
   //TODO: Refactor this bcoz it's not a list anymore
