@@ -75,6 +75,7 @@ class _HomePageBodyState extends State<HomePageBody> {
             onPressed: () {
               Stop fixedOrigin = getStop(origin);
               Stop fixedDestination = getStop(destination);
+              //TODO: Change the Type Of Day
               widget._routes =
                   findRoutes(fixedOrigin, fixedDestination, TypeOfDay.weekday);
               Navigator.push(

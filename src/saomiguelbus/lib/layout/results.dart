@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:saomiguelbus/models/card_route.dart';
+import 'package:saomiguelbus/models/instruction.dart';
 
 class ResultsPageBody extends StatefulWidget {
   const ResultsPageBody(
@@ -12,13 +13,15 @@ class ResultsPageBody extends StatefulWidget {
       required this.origin,
       required this.destination,
       required this.routesNumber,
-      required this.routes})
+      this.routes,
+      this.instructions})
       : super(key: key);
 
   final String origin;
   final String destination;
   final int routesNumber;
-  final List routes;
+  final List? routes;
+  final Instruction? instructions;
 
   @override
   _ResultsPageBodyState createState() => _ResultsPageBodyState();
@@ -27,8 +30,6 @@ class ResultsPageBody extends StatefulWidget {
 class _ResultsPageBodyState extends State<ResultsPageBody> {
   @override
   Widget build(BuildContext context) {
-    List _routes =
-        _routeToCard(widget.routes, widget.origin, widget.destination);
     if (widget.routesNumber == 0) {
       return Material(
         child: Column(
@@ -42,13 +43,42 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
       );
     }
 
+    if (widget.instructions != null) {
+      return Material(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: ListView.builder(
+                  physics: const ScrollPhysics(parent: null),
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ExpansionTile(
+                      iconColor: Colors.blue,
+                      textColor: Colors.black,
+                      title: Text("Text"),
+                      children: [
+                        Text(
+                          "Hello",
+                        ),
+                      ],
+                    );
+                  },
+                  itemCount: widget.routesNumber,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    List _routes =
+        _routeToCard(widget.routes ?? [], widget.origin, widget.destination);
     return Material(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'São Miguel Bus Results Page',
-          ),
           Expanded(
             child: SingleChildScrollView(
               child: ListView.builder(

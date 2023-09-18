@@ -3,6 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:saomiguelbus/layout/results.dart';
+import 'package:saomiguelbus/models/instruction.dart';
+import 'package:saomiguelbus/models/stop.dart';
 
 import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
@@ -20,7 +23,7 @@ class MapPageBody extends StatefulWidget {
   final Function onChangeOrigin;
   final Function onChangeDestination;
 
-  String _routes = '';
+  Instruction _instructions = Instruction().initWarning('');
 
   @override
   _MapPageBodyState createState() => _MapPageBodyState();
@@ -73,15 +76,39 @@ class _MapPageBodyState extends State<MapPageBody> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                getGoogleRoutes(getStop(origin),
-                        getStop(destination), TypeOfDay.weekday, 
+                //instructions.routes.length
+                Stop fixedOrigin = getStop(origin);
+                Stop fixedDestination = getStop(destination);
+                //TODO: Change type of day
+                getGoogleRoutes(
+                        getStop(origin),
+                        getStop(destination),
+                        TypeOfDay.weekday,
                         AppLocalizations.of(context)!.languageCode)
-                    .then((value) => widget._routes = value.toString());
+                    .then((value) {
+                  widget._instructions = value;
+                  if (widget._instructions.runtimeType == String) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(widget._instructions.toString()),
+                    ));
+                    return;
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ResultsPageBody(
+                              origin: fixedOrigin.name,
+                              destination: fixedDestination.name,
+                              routesNumber: widget._instructions.routes.length,
+                              instructions: widget._instructions,
+                            )),
+                  );
+                });
               });
             },
             child: Text(AppLocalizations.of(context)!.search),
           ),
-          Text(widget._routes)
         ],
       ),
     );
