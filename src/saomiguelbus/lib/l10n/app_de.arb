@@ -2,10 +2,15 @@
   "destination": "Ziel",
   "find": "Finden",
   "home": "Home",
+  "hour": "Stunde",
+  "hours": "Stunden",
   "info": "Info",
   "language": "German",
   "languageCode": "de",
   "map": "Karte",
+  "minute": "minute",
+  "minutes": "Minuten",
+  "noRoutesFound": "Keine Routen gefunden",
   "origin": "Herkunft",
   "search": "Suchen"
 }

@@ -1,38 +1,46 @@
 {
+  "destination": "Destino",
   "@destination": {
     "description": "Label for destination text fields"
   },
+  "find": "Ver",
   "@find": {
     "description": "Label for find button"
   },
+  "home": "Início",
   "@home": {
     "description": "Label for home button"
   },
+  "hour": "hora",
+  "hours": "horas",
+  "info": "Info",
   "@info": {
     "description": "Label for info button"
   },
+  "language": "Portuguese",
   "@language": {
     "description": "The current language of the application"
   },
-  "@map": {
-    "description": "Label for map button"
-  },
-  "@origin": {
-    "description": "Label for origin text fields"
-  },
-  "@search": {
-    "description": "Label for search button"
-  },
+  "languageCode": "pt_PT",
   "@languageCode": {
     "description": "The current language code of the application"
   },
-  "destination": "Destino",
-  "find": "Ver",
-  "home": "Início",
-  "info": "Info",
-  "language": "Portuguese",
-  "languageCode": "pt_PT",
   "map": "Mapa",
+  "@map": {
+    "description": "Label for map button"
+  },
+  "minute": "minuto",
+  "minutes": "minutos",
+  "noRoutesFound": "Não Foram Encontradas Rotas",
+  "@noRoutesFound": {
+    "description": "Text for when there were no routes found"
+  },
   "origin": "Origem",
-  "search": "Pesquisar"
+  "@origin": {
+    "description": "Label for origin text fields"
+  },
+  "search": "Pesquisar",
+  "@search": {
+    "description": "Label for search button"
+  }
 }

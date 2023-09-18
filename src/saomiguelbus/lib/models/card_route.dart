@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:saomiguelbus/models/stop.dart';
 
 class CardRoute {
@@ -15,7 +17,7 @@ class CardRoute {
   late Stop arrivalStop;
   late Map<Stop, String> stops;
 
-  CardRoute(route, origin, destination)
+  CardRoute(route, origin, destination, context)
       : trailing = const Icon(Icons.arrow_forward_ios),
         leading = const Icon(Icons.directions_bus) {
     routeId = route.id;
@@ -35,25 +37,24 @@ class CardRoute {
         '2001-05-08 ${arrivalTime.split("h")[0]}:${arrivalTime.split("h")[1]}:00');
     duration = endTimeDateTime.difference(startTimeDateTime);
 
-    title = Text(route.id + ': ' + durationText(duration));
+    title = Text(route.id + ': ' + durationText(duration, context));
 
     subtitle = Text(origin + ' - ' + destination);
   }
 
-  String durationText(duration) {
-    //TODO: Replace with int8 text
+  String durationText(duration, context) {
     int hours = duration.inMinutes ~/ 60;
     int minutes = duration.inMinutes % 60;
     String text = '';
     if (hours == 1) {
-      text += '$hours hour';
+      text += '$hours ${AppLocalizations.of(context)!.hour}';
     } else if (hours > 1) {
-      text += '$hours hours';
+      text += '$hours ${AppLocalizations.of(context)!.hours}';
     }
     if (minutes == 1) {
-      text += ' $minutes minute';
+      text += ' $minutes ${AppLocalizations.of(context)!.minute}';
     } else if (minutes > 1) {
-      text += ' $minutes minutes';
+      text += ' $minutes ${AppLocalizations.of(context)!.minutes}';
     }
     return text.trim();
   }

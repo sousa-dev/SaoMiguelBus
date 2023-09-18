@@ -2,6 +2,8 @@
 // Path: lib/layout/results.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:saomiguelbus/models/card_route.dart';
 
 class ResultsPageBody extends StatefulWidget {
@@ -27,17 +29,13 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   Widget build(BuildContext context) {
     List _routes =
         _routeToCard(widget.routes, widget.origin, widget.destination);
-    //TODO: Change the text to internationalization
     if (widget.routesNumber == 0) {
-      return const Material(
+      return Material(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'São Miguel Bus Results Page',
-            ),
-            Text(
-              'No routes found',
+              AppLocalizations.of(context)!.noRoutesFound,
             ),
           ],
         ),
@@ -76,10 +74,10 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  static List _routeToCard(List routes, String origin, String destination) {
+  List _routeToCard(List routes, String origin, String destination) {
     List cardRoutes = [];
     for (var route in routes) {
-      cardRoutes.add(CardRoute(route, origin, destination));
+      cardRoutes.add(CardRoute(route, origin, destination, context));
     }
     return cardRoutes;
   }
