@@ -55,14 +55,19 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 physics: const ScrollPhysics(parent: null),
                 shrinkWrap: true,
                 itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    color: Colors.blue,
-                    child: ListTile(
-                      trailing: _routes[index].trailing,
+                  return ExpansionTile(
+                    iconColor: Colors.blue,
+                    textColor: Colors.black,
+                    title: ListTile(
                       title: _routes[index].title,
                       subtitle: _routes[index].subtitle,
                       leading: _routes[index].leading,
                     ),
+                    children: [
+                      Text(
+                        _routes[index].arrivalStop.toString(),
+                      ),
+                    ],
                   );
                 },
                 itemCount: widget.routesNumber,
