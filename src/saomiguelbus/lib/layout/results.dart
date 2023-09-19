@@ -57,10 +57,11 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                     return ExpansionTile(
                       iconColor: Colors.blue,
                       textColor: Colors.black,
-                      title: Text("Text"),
+                      title: Text(
+                          widget.instructions!.routes[index].legs[0].duration),
                       children: [
                         Text(
-                          "Hello",
+                          widget.instructions!.routes[index].legs[0].arrival,
                         ),
                       ],
                     );
