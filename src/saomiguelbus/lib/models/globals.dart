@@ -10,3 +10,5 @@ String language = 'en';
 
 bool canUseMaps = false;
 String latestVersion = '';
+
+String sessionToken = '';
