@@ -2,6 +2,7 @@
 // Path: lib/layout/map.dart
 
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saomiguelbus/layout/results.dart';
 import 'package:saomiguelbus/models/instruction.dart';
@@ -38,17 +39,7 @@ class _MapPageBodyState extends State<MapPageBody> {
         children: [
           Autocomplete<String>(
             optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text == '') {
-                return const Iterable<String>.empty();
-              }
-              List<String> stopMatches = <String>[];
-              stopMatches.addAll(allStops.keys.cast<String>());
-
-              stopMatches.retainWhere((stop) {
-                return removeDiacritics(stop.toLowerCase()).contains(
-                    removeDiacritics(textEditingValue.text.toLowerCase()));
-              });
-              return stopMatches;
+              return onChangeText(textEditingValue.text);
             },
             onSelected: (String selection) {
               widget.onChangeOrigin(selection);
@@ -57,17 +48,7 @@ class _MapPageBodyState extends State<MapPageBody> {
           const SizedBox(height: 16.0),
           Autocomplete<String>(
             optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text == '') {
-                return const Iterable<String>.empty();
-              }
-              List<String> stopMatches = <String>[];
-              stopMatches.addAll(allStops.keys.cast<String>());
-
-              stopMatches.retainWhere((stop) {
-                return removeDiacritics(stop.toLowerCase()).contains(
-                    removeDiacritics(textEditingValue.text.toLowerCase()));
-              });
-              return stopMatches;
+              return onChangeText(textEditingValue.text);
             },
             onSelected: (String selection) {
               widget.onChangeDestination(selection);
@@ -112,5 +93,26 @@ class _MapPageBodyState extends State<MapPageBody> {
         ],
       ),
     );
+  }
+
+  Future<Iterable<String>> onChangeText(String text) async {
+    return placesAutocomplete(text, context).then((value) {
+      List<String> placesSuggestions = [];
+      placesSuggestions = value;
+      if (placesSuggestions.isNotEmpty) {
+        return placesSuggestions;
+      }
+      if (text == '') {
+        return const Iterable<String>.empty();
+      }
+      List<String> stopMatches = <String>[];
+      stopMatches.addAll(allStops.keys.cast<String>());
+
+      stopMatches.retainWhere((stop) {
+        return removeDiacritics(stop.toLowerCase())
+            .contains(removeDiacritics(text.toLowerCase()));
+      });
+      return stopMatches;
+    });
   }
 }
