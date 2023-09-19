@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saomiguelbus/layout/results.dart';
+import 'package:saomiguelbus/models/stop.dart';
 
 import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/index.dart';
@@ -19,7 +20,7 @@ class HomePageBody extends StatefulWidget {
   final Function onChangeOrigin;
   final Function onChangeDestination;
 
-  String _routes = '';
+  List _routes = [];
 
   @override
   _HomePageBodyState createState() => _HomePageBodyState();
@@ -72,10 +73,20 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
           ElevatedButton(
             onPressed: () {
+              Stop fixedOrigin = getStop(origin);
+              Stop fixedDestination = getStop(destination);
+              //TODO: Change the Type Of Day
+              widget._routes =
+                  findRoutes(fixedOrigin, fixedDestination, TypeOfDay.weekday);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const ResultsPageBody()),
+                    builder: (context) => ResultsPageBody(
+                          origin: fixedOrigin.name,
+                          destination: fixedDestination.name,
+                          routesNumber: widget._routes.length,
+                          routes: widget._routes,
+                        )),
               );
               // setState(() {
               //   widget._routes = findRoutes(getStop(origin),
@@ -84,9 +95,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               // });
             },
             child: Text(AppLocalizations.of(context)!.search),
-
           ),
-          Text(widget._routes)
         ],
       ),
     );

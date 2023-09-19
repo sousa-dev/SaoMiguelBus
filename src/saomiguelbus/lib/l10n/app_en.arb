@@ -2,10 +2,15 @@
   "destination": "Destination",
   "find": "Find",
   "home": "Home",
+  "hour": "hour",
+  "hours": "hours",
   "info": "Info",
   "language": "English",
   "languageCode": "en",
   "map": "Map",
+  "minute": "minute",
+  "minutes": "minutes",
+  "noRoutesFound": "No Routes Found",
   "origin": "Origin",
   "search": "Search"
 }

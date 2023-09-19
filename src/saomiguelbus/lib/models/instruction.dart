@@ -4,6 +4,13 @@ import 'package:saomiguelbus/models/index.dart';
 
 class Instruction {
   List<StepRoute> routes = [];
+  String? warning;
+
+  Instruction initWarning(String problem) {
+    warning = problem;
+    routes = [];
+    return this;
+  }
 
   Instruction initInstructions(List<dynamic> routesJson) {
     for (var routeJson in routesJson) {

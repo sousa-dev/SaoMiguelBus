@@ -2,10 +2,15 @@
   "destination": "Destino",
   "find": "Buscar",
   "home": "Home",
+  "hour": "hora",
+  "hours": "horas",
   "info": "Info",
   "language": "Spanish",
   "languageCode": "es",
   "map": "Mapa",
+  "minute": "minuto",
+  "minutes": "minutos",
+  "noRoutesFound": "No se encontraron rutas",
   "origin": "Origen",
   "search": "Buscar"
 }

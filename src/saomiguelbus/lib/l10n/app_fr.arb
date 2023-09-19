@@ -2,10 +2,15 @@
   "destination": "Destination",
   "find": "Trouver",
   "home": "Home",
+  "hour": "heure",
+  "hours": "heures",
   "info": "Info",
   "language": "French",
   "languageCode": "fr",
   "map": "Carte",
+  "minute": "minute",
+  "minutes": "minutes",
+  "noRoutesFound": "Aucune voie trouvée",
   "origin": "Origine",
   "search": "Recherche"
 }
