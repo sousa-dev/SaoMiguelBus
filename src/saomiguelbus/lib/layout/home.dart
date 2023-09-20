@@ -32,8 +32,10 @@ class HomePageBody extends StatefulWidget {
 
 class _HomePageBodyState extends State<HomePageBody> {
   var _selectedStop = '';
+  DateTime date = DateTime.now().toUtc();
 
   Widget build(BuildContext context) {
+    var time = TimeOfDay.fromDateTime(date);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -53,6 +55,28 @@ class _HomePageBodyState extends State<HomePageBody> {
             },
             onSelected: (String selection) {
               widget.onChangeDestination(selection);
+            },
+          ),
+          ElevatedButton(
+            child: Text('${date.day}/${date.month}/${date.year}'),
+            onPressed: () async {
+              final chosenDate = await pickDate(date);
+              if (chosenDate == null) return;
+              setState(() {
+                date = DateTime(chosenDate.year, chosenDate.month,
+                    chosenDate.day, date.hour, date.minute);
+              });
+            },
+          ),
+          ElevatedButton(
+            child: Text('${time.hour}:${time.minute}'),
+            onPressed: () async {
+              final chosenTime = await pickTime(date);
+              if (chosenTime == null) return;
+              setState(() {
+                date = DateTime(date.year, date.month, date.day,
+                    chosenTime.hour, chosenTime.minute);
+              });
             },
           ),
           ElevatedButton(
@@ -135,4 +159,16 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
     return stopMatches;
   }
+
+  pickDate(DateTime date) => showDatePicker(
+        context: context,
+        initialDate: date,
+        firstDate: date,
+        lastDate: DateTime(date.year + 1),
+      );
+
+  pickTime(DateTime date) => showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(date),
+      );
 }
