@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:saomiguelbus/models/card_route.dart';
+import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 
 class ResultsPageBody extends StatefulWidget {
@@ -54,17 +55,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                   physics: const ScrollPhysics(parent: null),
                   shrinkWrap: true,
                   itemBuilder: (BuildContext context, int index) {
-                    return ExpansionTile(
-                      iconColor: Colors.blue,
-                      textColor: Colors.black,
-                      title: Text(
-                          widget.instructions!.routes[index].legs[0].duration),
-                      children: [
-                        Text(
-                          widget.instructions!.routes[index].legs[0].arrival,
-                        ),
-                      ],
-                    );
+                    return CardInstruction().getInstructionWidget(
+                        widget.instructions!.routes[index]);
                   },
                   itemCount: widget.routesNumber,
                 ),
