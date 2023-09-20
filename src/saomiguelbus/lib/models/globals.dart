@@ -9,6 +9,7 @@ String destination = '';
 String language = 'en';
 
 bool canUseMaps = false;
+bool internetConnection = false;
 String latestVersion = '';
 
 String sessionToken = '';

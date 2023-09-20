@@ -96,23 +96,30 @@ class _MapPageBodyState extends State<MapPageBody> {
   }
 
   Future<Iterable<String>> onChangeText(String text) async {
-    return placesAutocomplete(text, context).then((value) {
-      List<String> placesSuggestions = [];
-      placesSuggestions = value;
-      if (placesSuggestions.isNotEmpty) {
-        return placesSuggestions;
-      }
-      if (text == '') {
-        return const Iterable<String>.empty();
-      }
-      List<String> stopMatches = <String>[];
-      stopMatches.addAll(allStops.keys.cast<String>());
-
-      stopMatches.retainWhere((stop) {
-        return removeDiacritics(stop.toLowerCase())
-            .contains(removeDiacritics(text.toLowerCase()));
+    if (internetConnection) {
+      return placesAutocomplete(text, context).then((value) {
+        List<String> placesSuggestions = [];
+        placesSuggestions = value;
+        if (placesSuggestions.isNotEmpty) {
+          return placesSuggestions;
+        }
+        return defaultSuggestions(text);
       });
-      return stopMatches;
+    }
+    return defaultSuggestions(text);
+  }
+
+  Iterable<String> defaultSuggestions(String text) {
+    if (text == '') {
+      return const Iterable<String>.empty();
+    }
+    List<String> stopMatches = <String>[];
+    stopMatches.addAll(allStops.keys.cast<String>());
+
+    stopMatches.retainWhere((stop) {
+      return removeDiacritics(stop.toLowerCase())
+          .contains(removeDiacritics(text.toLowerCase()));
     });
+    return stopMatches;
   }
 }

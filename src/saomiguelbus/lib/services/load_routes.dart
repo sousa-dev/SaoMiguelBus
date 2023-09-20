@@ -101,7 +101,10 @@ void createLocalDB(List data, List stops) {
 void retrieveData(kDebugMode) async {
   final packageInfo = await PackageInfo.fromPlatform();
   final version = packageInfo.version;
-  Map information = {'version': version, 'maps': true}; //TODO: Change default to false on production
+  Map information = {
+    'version': version,
+    'maps': true
+  }; //TODO: Change default to false on production
   List data = [];
   List stopsJSON = [];
   //SharedPreferences.setMockInitialValues({});
@@ -123,6 +126,8 @@ void retrieveData(kDebugMode) async {
         prefs.commit();
         developer.log("Storing new routes API Response on cache...");
         stopsJSON = jsonDecode(jsonString);
+
+        internetConnection = true;
       } else {
         developer
             .log('Request failed with status: ${responseStops.statusCode}.');
@@ -147,9 +152,9 @@ void retrieveData(kDebugMode) async {
         developer.log("data: $data");
         information = data[0];
         data = data.sublist(1);
+        internetConnection = true;
       } else {
         developer.log('Request failed with status: ${response.statusCode}.');
-
         data = localLoad(prefs);
       }
     } catch (e) {
