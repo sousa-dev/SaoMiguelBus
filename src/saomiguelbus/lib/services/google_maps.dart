@@ -10,7 +10,7 @@ import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/network_utility.dart';
 
-Future<Instruction> getGoogleRoutes(Stop origin, Stop destination,
+Future<Instruction> getGoogleRoutes(String origin, String destination,
     TypeOfDay typeOfDay, String languageCode) async {
   if (!canUseMaps) {
     return Instruction().initWarning('Maps monthly limit reached');
@@ -18,7 +18,7 @@ Future<Instruction> getGoogleRoutes(Stop origin, Stop destination,
   // TODO: Add date and time to the API request
   // Load Possible Routes from GMAPS API
   var mapsURL =
-      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.name}&destination=${destination.name}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
+      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
   try {
     final responseStops = await http.get(Uri.parse(mapsURL));
     if (responseStops.statusCode == 200) {
