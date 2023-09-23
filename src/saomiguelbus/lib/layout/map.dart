@@ -58,13 +58,8 @@ class _MapPageBodyState extends State<MapPageBody> {
             onPressed: () {
               setState(() {
                 //instructions.routes.length
-                Stop fixedOrigin = getStop(origin);
-                Stop fixedDestination = getStop(destination);
                 //TODO: Change type of day
-                getGoogleRoutes(
-                        getStop(origin),
-                        getStop(destination),
-                        TypeOfDay.weekday,
+                getGoogleRoutes(origin, destination, DateTime.now(),
                         AppLocalizations.of(context)!.languageCode)
                     .then((value) {
                   widget._instructions = value;
@@ -75,16 +70,16 @@ class _MapPageBodyState extends State<MapPageBody> {
                     return;
                   }
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ResultsPageBody(
-                              origin: fixedOrigin.name,
-                              destination: fixedDestination.name,
-                              routesNumber: widget._instructions.routes.length,
-                              instructions: widget._instructions,
-                            )),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => ResultsPageBody(
+                  //             origin: origin,
+                  //             destination: destination,
+                  //             routesNumber: widget._instructions.routes.length,
+                  //             instructions: widget._instructions,
+                  //           )),
+                  // );
                 });
               });
             },

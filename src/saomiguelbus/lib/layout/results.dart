@@ -3,71 +3,173 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:saomiguelbus/main.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
-import 'package:saomiguelbus/models/card_route.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
+import 'package:saomiguelbus/utils/main_layout.dart';
 
 class ResultsPageBody extends StatefulWidget {
-  const ResultsPageBody(
-      {Key? key,
-      required this.origin,
-      required this.destination,
-      required this.routesNumber,
-      this.routes,
-      this.instructions})
+  const ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
       : super(key: key);
 
-  final String origin;
-  final String destination;
-  final int routesNumber;
-  final List? routes;
-  final Instruction? instructions;
+  final Map gMaps;
+  final Map bdSmb;
 
   @override
   _ResultsPageBodyState createState() => _ResultsPageBodyState();
 }
 
 class _ResultsPageBodyState extends State<ResultsPageBody> {
+  int _currentPageIndex = 0;
+  final PageController _pageController = PageController(initialPage: 0);
+
+  void _goToPage(int pageIndex) {
+    setState(() {
+      _currentPageIndex = pageIndex;
+    });
+    _pageController.jumpToPage(pageIndex);
+  }
+
+  void _onPageChanged(int pageIndex) {
+    setState(() {
+      _currentPageIndex = pageIndex;
+    });
+  }
+
+  void _updateBody(int index) {
+    setState(() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                MyHomePage(title: 'São Miguel Bus', currentIndex: index)),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.routesNumber == 0) {
-      return Material(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              AppLocalizations.of(context)!.noRoutesFound,
-            ),
-          ],
-        ),
-      );
-    }
+    final String originGmaps = widget.gMaps['origin'];
+    final String destinationGmaps = widget.gMaps['destination'];
+    final String originBdsmb = widget.bdSmb['origin'];
+    final String destinationBdsmb = widget.bdSmb['destination'];
+    final int routesnumberGmaps = widget.gMaps['routesNumber'];
+    final int routesnumberBdsmb = widget.bdSmb['routesNumber'];
+    final List routes = widget.bdSmb['routes'];
+    final Instruction instructions = widget.gMaps['instructions'];
 
-    if (widget.instructions != null) {
-      return Material(
+    Widget gMapsWidget = _getGMapsWidget(
+        originGmaps, destinationGmaps, routesnumberGmaps, instructions);
+
+    Widget bdSmbWidget = _getBdSmbWidget(
+        originBdsmb, destinationBdsmb, routesnumberBdsmb, routes);
+
+    return Scaffold(
+      appBar: getTopBar(),
+      body: Material(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: ListView.builder(
-                  physics: const ScrollPhysics(parent: null),
-                  shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    return CardInstruction().getInstructionWidget(
-                        widget.instructions!.routes[index]);
-                  },
-                  itemCount: widget.routesNumber,
+            Text(originGmaps),
+            Text(destinationGmaps),
+            _getPageRow(),
+            Container(
+              height: 5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _currentPageIndex == 0
+                        ? const Color(0xFF218732)
+                        : Colors.grey,
+                    _currentPageIndex == 1
+                        ? const Color(0xFF218732)
+                        : Colors.grey,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
+              ),
+            ),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                children: [
+                  Container(
+                    key: const Key('gMapsResults'),
+                    child: gMapsWidget,
+                  ),
+                  Container(
+                    key: const Key('bdSmbResults'),
+                    child: bdSmbWidget,
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      );
+      ),
+      bottomNavigationBar: getNavBar(0, _updateBody),
+    );
+  }
+
+  List _routeToCard(List routes, String origin, String destination) {
+    List cardRoutes = [];
+    for (var route in routes) {
+      cardRoutes.add(CardRoute(route, origin, destination, context));
     }
-    List _routes =
-        _routeToCard(widget.routes ?? [], widget.origin, widget.destination);
+    return cardRoutes;
+  }
+
+  Widget _getGMapsWidget(String origin, String destination, int routesNumber,
+      Instruction instructions) {
+    if (routesNumber == 0) {
+      return _getNoRoutesWidget();
+    }
+
+    return Material(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: ListView.builder(
+                physics: const ScrollPhysics(parent: null),
+                shrinkWrap: true,
+                itemBuilder: (BuildContext context, int index) {
+                  return CardInstruction()
+                      .getInstructionWidget(instructions.routes[index]);
+                },
+                itemCount: routesNumber,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getNoRoutesWidget() {
+    return Material(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            AppLocalizations.of(context)!.noRoutesFound,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getBdSmbWidget(
+      String origin, String destination, int routesNumber, List routes) {
+    if (routesNumber == 0) {
+      return _getNoRoutesWidget();
+    }
+
+    List _routes = _routeToCard(routes ?? [], origin, destination);
     return Material(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -93,7 +195,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                     ],
                   );
                 },
-                itemCount: widget.routesNumber,
+                itemCount: routesNumber,
               ),
             ),
           ),
@@ -102,11 +204,51 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  List _routeToCard(List routes, String origin, String destination) {
-    List cardRoutes = [];
-    for (var route in routes) {
-      cardRoutes.add(CardRoute(route, origin, destination, context));
-    }
-    return cardRoutes;
+  _getPageRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _goToPage(0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: _currentPageIndex == 0
+                  ? const Color(0xFF218732)
+                  : Colors.black,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              textStyle: const TextStyle(
+                decoration: TextDecoration.none,
+              ),
+              padding: EdgeInsets.zero,
+            ),
+            child: const Text('Page 1', style: TextStyle(fontSize: 20)),
+          ),
+        ),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _goToPage(1),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: _currentPageIndex == 1
+                  ? const Color(0xFF218732)
+                  : Colors.black,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              textStyle: const TextStyle(
+                decoration: TextDecoration.none,
+              ),
+              padding: EdgeInsets.zero,
+            ),
+            child: const Text('Page 2', style: TextStyle(fontSize: 20)),
+          ),
+        ),
+      ],
+    );
   }
 }

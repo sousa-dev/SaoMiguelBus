@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
+import 'package:saomiguelbus/utils/haversine_distance.dart';
 import 'package:saomiguelbus/utils/levenshtein_distance.dart';
 
 List<Route> findRoutes(Stop origin, Stop destination, TypeOfDay typeOfDay) {
@@ -16,6 +17,19 @@ List<Route> findRoutes(Stop origin, Stop destination, TypeOfDay typeOfDay) {
     }
   }
   return routes;
+}
+
+Stop getClosestStop(Location location) {
+  Stop? closestStop;
+  double smallestDistance = double.infinity;
+  for (var stop in allStops.values) {
+    double distance = haversineDistance(location, stop.location);
+    if (distance < smallestDistance) {
+      smallestDistance = distance;
+      closestStop = stop;
+    }
+  }
+  return closestStop!;
 }
 
 Stop getStop(String name) {
