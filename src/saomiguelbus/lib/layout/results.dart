@@ -11,7 +11,7 @@ import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
 
 class ResultsPageBody extends StatefulWidget {
-  ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
+  const ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
       : super(key: key);
 
   final Map gMaps;
@@ -51,28 +51,28 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
 
   @override
   Widget build(BuildContext context) {
-    final String origin_gMaps = widget.gMaps['origin'];
-    final String destination_gMaps = widget.gMaps['destination'];
-    final String origin_bdSmb = widget.bdSmb['origin'];
-    final String destination_bdSmb = widget.bdSmb['destination'];
-    final int routesNumber_gMaps = widget.gMaps['routesNumber'];
-    final int routesNumber_bdSmb = widget.bdSmb['routesNumber'];
+    final String originGmaps = widget.gMaps['origin'];
+    final String destinationGmaps = widget.gMaps['destination'];
+    final String originBdsmb = widget.bdSmb['origin'];
+    final String destinationBdsmb = widget.bdSmb['destination'];
+    final int routesnumberGmaps = widget.gMaps['routesNumber'];
+    final int routesnumberBdsmb = widget.bdSmb['routesNumber'];
     final List routes = widget.bdSmb['routes'];
     final Instruction instructions = widget.gMaps['instructions'];
 
-    Widget _gMapsWidget = _getGMapsWidget(
-        origin_gMaps, destination_gMaps, routesNumber_gMaps, instructions);
+    Widget gMapsWidget = _getGMapsWidget(
+        originGmaps, destinationGmaps, routesnumberGmaps, instructions);
 
-    Widget _bdSmbWidget = _getBdSmbWidget(
-        origin_bdSmb, destination_bdSmb, routesNumber_bdSmb, routes);
+    Widget bdSmbWidget = _getBdSmbWidget(
+        originBdsmb, destinationBdsmb, routesnumberBdsmb, routes);
 
     return Scaffold(
       appBar: getTopBar(),
       body: Material(
         child: Column(
           children: [
-            Text(origin_gMaps),
-            Text(destination_gMaps),
+            Text(originGmaps),
+            Text(destinationGmaps),
             _getPageRow(),
             Container(
               height: 5,
@@ -98,11 +98,11 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 children: [
                   Container(
                     key: const Key('gMapsResults'),
-                    child: _gMapsWidget,
+                    child: gMapsWidget,
                   ),
                   Container(
                     key: const Key('bdSmbResults'),
-                    child: _bdSmbWidget,
+                    child: bdSmbWidget,
                   ),
                 ],
               ),
@@ -225,7 +225,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
               ),
               padding: EdgeInsets.zero,
             ),
-            child: Text('Page 1', style: TextStyle(fontSize: 20)),
+            child: const Text('Page 1', style: TextStyle(fontSize: 20)),
           ),
         ),
         Expanded(
@@ -245,7 +245,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
               ),
               padding: EdgeInsets.zero,
             ),
-            child: Text('Page 2', style: TextStyle(fontSize: 20)),
+            child: const Text('Page 2', style: TextStyle(fontSize: 20)),
           ),
         ),
       ],
