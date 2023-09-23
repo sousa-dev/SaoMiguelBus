@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import 'package:saomiguelbus/models/card_route.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 
@@ -20,6 +19,22 @@ class ResultsPageBody extends StatefulWidget {
 }
 
 class _ResultsPageBodyState extends State<ResultsPageBody> {
+  int _currentPageIndex = 0;
+  final PageController _pageController = PageController(initialPage: 0);
+
+  void _goToPage(int pageIndex) {
+    setState(() {
+      _currentPageIndex = pageIndex;
+    });
+    _pageController.jumpToPage(pageIndex);
+  }
+
+  void _onPageChanged(int pageIndex) {
+    setState(() {
+      _currentPageIndex = pageIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final String origin_gMaps = widget.gMaps['origin'];
@@ -37,11 +52,47 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     Widget _bdSmbWidget = _getBdSmbWidget(
         origin_bdSmb, destination_bdSmb, routesNumber_bdSmb, routes);
 
-    return PageView(
-      children: [
-        _gMapsWidget,
-        _bdSmbWidget,
-      ],
+    return Material(
+      child: Column(
+        children: [
+          Text(origin_gMaps),
+          Text(destination_gMaps),
+          _getPageRow(),
+          Container(
+            height: 5,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _currentPageIndex == 0
+                      ? const Color(0xFF218732)
+                      : Colors.grey,
+                  _currentPageIndex == 1
+                      ? const Color(0xFF218732)
+                      : Colors.grey,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              children: [
+                Container(
+                  key: const Key('gMapsResults'),
+                  child: _gMapsWidget,
+                ),
+                Container(
+                  key: const Key('bdSmbResults'),
+                  child: _bdSmbWidget,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -132,6 +183,54 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
           ),
         ],
       ),
+    );
+  }
+
+  _getPageRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _goToPage(0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: _currentPageIndex == 0
+                  ? const Color(0xFF218732)
+                  : Colors.black,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              textStyle: const TextStyle(
+                decoration: TextDecoration.none,
+              ),
+              padding: EdgeInsets.zero,
+            ),
+            child: Text('Page 1', style: TextStyle(fontSize: 20)),
+          ),
+        ),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _goToPage(1),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: _currentPageIndex == 1
+                  ? const Color(0xFF218732)
+                  : Colors.black,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              textStyle: const TextStyle(
+                decoration: TextDecoration.none,
+              ),
+              padding: EdgeInsets.zero,
+            ),
+            child: Text('Page 2', style: TextStyle(fontSize: 20)),
+          ),
+        ),
+      ],
     );
   }
 }
