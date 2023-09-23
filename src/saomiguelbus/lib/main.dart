@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+import 'dart:developer' as developer;
 import 'package:saomiguelbus/l10n/l10n.dart';
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/utils/index.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,30 +43,16 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title, this.currentIndex = 0});
 
-  final List<StatefulWidget> _pages = [
-    HomePageBody(
-      key: UniqueKey(),
-      onChangeOrigin: onChangeOriginHome,
-      onChangeDestination: onChangeDestinationHome,
-    ),
-    const FindPageBody(),
-    MapPageBody(
-      key: UniqueKey(),
-      onChangeOrigin: onChangeOriginHome,
-      onChangeDestination: onChangeDestinationHome,
-    ),
-    const InfoPageBody(),
-  ];
   final String title;
-  int _currentIndex = 0;
+  int currentIndex;
 
   void onNavBarItemSelected(int index) {
-    _currentIndex = index;
+    currentIndex = index;
   }
 
-  Widget getBody() => _pages[_currentIndex];
+  Widget getBody() => pages[currentIndex];
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -80,14 +68,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: getTopBar(title: widget.title),
       body: widget.getBody(),
-      bottomNavigationBar: NavBar(
-          key: UniqueKey(),
-          currentIndex: widget._currentIndex,
-          onItemSelected: _updateBody),
+      bottomNavigationBar: getNavBar(widget.currentIndex, _updateBody),
     );
   }
 }

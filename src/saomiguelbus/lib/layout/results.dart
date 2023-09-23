@@ -3,12 +3,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:saomiguelbus/main.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
+import 'package:saomiguelbus/utils/main_layout.dart';
 
 class ResultsPageBody extends StatefulWidget {
-  const ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
+  ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
       : super(key: key);
 
   final Map gMaps;
@@ -35,6 +38,17 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     });
   }
 
+  void _updateBody(int index) {
+    setState(() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                MyHomePage(title: 'São Miguel Bus', currentIndex: index)),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final String origin_gMaps = widget.gMaps['origin'];
@@ -52,47 +66,51 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     Widget _bdSmbWidget = _getBdSmbWidget(
         origin_bdSmb, destination_bdSmb, routesNumber_bdSmb, routes);
 
-    return Material(
-      child: Column(
-        children: [
-          Text(origin_gMaps),
-          Text(destination_gMaps),
-          _getPageRow(),
-          Container(
-            height: 5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _currentPageIndex == 0
-                      ? const Color(0xFF218732)
-                      : Colors.grey,
-                  _currentPageIndex == 1
-                      ? const Color(0xFF218732)
-                      : Colors.grey,
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+    return Scaffold(
+      appBar: getTopBar(),
+      body: Material(
+        child: Column(
+          children: [
+            Text(origin_gMaps),
+            Text(destination_gMaps),
+            _getPageRow(),
+            Container(
+              height: 5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _currentPageIndex == 0
+                        ? const Color(0xFF218732)
+                        : Colors.grey,
+                    _currentPageIndex == 1
+                        ? const Color(0xFF218732)
+                        : Colors.grey,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: _onPageChanged,
-              children: [
-                Container(
-                  key: const Key('gMapsResults'),
-                  child: _gMapsWidget,
-                ),
-                Container(
-                  key: const Key('bdSmbResults'),
-                  child: _bdSmbWidget,
-                ),
-              ],
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                children: [
+                  Container(
+                    key: const Key('gMapsResults'),
+                    child: _gMapsWidget,
+                  ),
+                  Container(
+                    key: const Key('bdSmbResults'),
+                    child: _bdSmbWidget,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+      bottomNavigationBar: getNavBar(0, _updateBody),
     );
   }
 
