@@ -59,7 +59,7 @@ class _MapPageBodyState extends State<MapPageBody> {
               setState(() {
                 //instructions.routes.length
                 //TODO: Change type of day
-                getGoogleRoutes(origin, destination,
+                getGoogleRoutes(origin, destination, DateTime.now(),
                         AppLocalizations.of(context)!.languageCode)
                     .then((value) {
                   widget._instructions = value;
@@ -70,16 +70,16 @@ class _MapPageBodyState extends State<MapPageBody> {
                     return;
                   }
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ResultsPageBody(
-                              origin: origin,
-                              destination: destination,
-                              routesNumber: widget._instructions.routes.length,
-                              instructions: widget._instructions,
-                            )),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => ResultsPageBody(
+                  //             origin: origin,
+                  //             destination: destination,
+                  //             routesNumber: widget._instructions.routes.length,
+                  //             instructions: widget._instructions,
+                  //           )),
+                  // );
                 });
               });
             },

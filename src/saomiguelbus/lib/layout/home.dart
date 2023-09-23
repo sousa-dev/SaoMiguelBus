@@ -100,7 +100,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               setState(() {
                 //instructions.routes.length
                 //TODO: Change type of day
-                getGoogleRoutes(origin, destination,
+                getGoogleRoutes(origin, destination, date,
                         AppLocalizations.of(context)!.languageCode)
                     .then((value) {
                   widget._instructions = value;
@@ -111,29 +111,31 @@ class _HomePageBodyState extends State<HomePageBody> {
                     return;
                   }
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ResultsPageBody(
-                              origin: origin,
-                              destination: destination,
-                              routesNumber: widget._instructions.routes.length,
-                              instructions: widget._instructions,
-                            )),
-                  );
+                  Map gMapsResults = {
+                    'origin': origin,
+                    'destination': destination,
+                    'routesNumber': widget._instructions.routes.length,
+                    'instructions': widget._instructions,
+                  };
 
                   Stop fixedOrigin = getStop(origin);
                   Stop fixedDestination = getStop(destination);
                   widget._routes = findRoutes(fixedOrigin, fixedDestination,
                       _getDayOfWeekString(date.weekday));
+
+                  Map routesResults = {
+                    'origin': fixedOrigin.name,
+                    'destination': fixedDestination.name,
+                    'routesNumber': widget._routes.length,
+                    'routes': widget._routes,
+                  };
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => ResultsPageBody(
-                              origin: fixedOrigin.name,
-                              destination: fixedDestination.name,
-                              routesNumber: widget._routes.length,
-                              routes: widget._routes,
+                              gMaps: gMapsResults,
+                              bdSmb: routesResults,
                             )),
                   );
                 });
