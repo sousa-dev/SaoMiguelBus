@@ -32,6 +32,7 @@ class HomePageBody extends StatefulWidget {
 
 class _HomePageBodyState extends State<HomePageBody> {
   var _selectedStop = '';
+  var _selectedOption = '';
   DateTime date = DateTime.now().toUtc();
 
   Widget build(BuildContext context) {
@@ -68,6 +69,21 @@ class _HomePageBodyState extends State<HomePageBody> {
               });
             },
           ),
+          // DropdownButton<String>(
+          //   value: _selectedOption,
+          //   onChanged: (String? newValue) {
+          //     setState(() {
+          //       _selectedOption = newValue ?? 'Option 1';
+          //     });
+          //   },
+          //   items: <String>['Option 1', 'Option 2', 'Option 3']
+          //       .map<DropdownMenuItem<String>>((String value) {
+          //     return DropdownMenuItem<String>(
+          //       value: value,
+          //       child: Text(value),
+          //     );
+          //   }).toList(),
+          // ),
           ElevatedButton(
             child: Text('${time.hour}:${time.minute}'),
             onPressed: () async {
@@ -84,7 +100,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               setState(() {
                 //instructions.routes.length
                 //TODO: Change type of day
-                getGoogleRoutes(origin, destination, TypeOfDay.weekday,
+                getGoogleRoutes(origin, destination,
                         AppLocalizations.of(context)!.languageCode)
                     .then((value) {
                   widget._instructions = value;
@@ -105,22 +121,21 @@ class _HomePageBodyState extends State<HomePageBody> {
                               instructions: widget._instructions,
                             )),
                   );
-                  if (false) {
-                    Stop fixedOrigin = getStop(origin);
-                    Stop fixedDestination = getStop(destination);
-                    widget._routes = findRoutes(
-                        fixedOrigin, fixedDestination, TypeOfDay.weekday);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ResultsPageBody(
-                                origin: fixedOrigin.name,
-                                destination: fixedDestination.name,
-                                routesNumber: widget._routes.length,
-                                routes: widget._routes,
-                              )),
-                    );
-                  }
+
+                  Stop fixedOrigin = getStop(origin);
+                  Stop fixedDestination = getStop(destination);
+                  widget._routes = findRoutes(fixedOrigin, fixedDestination,
+                      _getDayOfWeekString(date.weekday));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ResultsPageBody(
+                              origin: fixedOrigin.name,
+                              destination: fixedDestination.name,
+                              routesNumber: widget._routes.length,
+                              routes: widget._routes,
+                            )),
+                  );
                 });
               });
             },
@@ -171,4 +186,15 @@ class _HomePageBodyState extends State<HomePageBody> {
         context: context,
         initialTime: TimeOfDay.fromDateTime(date),
       );
+
+  TypeOfDay _getDayOfWeekString(int weekday) {
+    switch (weekday) {
+      case 1:
+        return TypeOfDay.sunday;
+      case 7:
+        return TypeOfDay.saturday;
+      default:
+        return TypeOfDay.weekday;
+    }
+  }
 }

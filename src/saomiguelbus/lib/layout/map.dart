@@ -59,7 +59,7 @@ class _MapPageBodyState extends State<MapPageBody> {
               setState(() {
                 //instructions.routes.length
                 //TODO: Change type of day
-                getGoogleRoutes(origin, destination, TypeOfDay.weekday,
+                getGoogleRoutes(origin, destination,
                         AppLocalizations.of(context)!.languageCode)
                     .then((value) {
                   widget._instructions = value;

@@ -10,8 +10,8 @@ import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/network_utility.dart';
 
-Future<Instruction> getGoogleRoutes(String origin, String destination,
-    TypeOfDay typeOfDay, String languageCode) async {
+Future<Instruction> getGoogleRoutes(
+    String origin, String destination, String languageCode) async {
   if (!canUseMaps) {
     return Instruction().initWarning('Maps monthly limit reached');
   }
