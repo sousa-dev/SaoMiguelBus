@@ -2,6 +2,7 @@
   "arrive": "Arriver",
   "depart": "Départ",
   "destination": "Destination",
+  "directionsPageLabel": "Pas à pas",
   "find": "Trouver",
   "home": "Home",
   "hour": "heure",
@@ -14,5 +15,6 @@
   "minutes": "minutes",
   "noRoutesFound": "Aucune voie trouvée",
   "origin": "Origine",
+  "routesPageLabel": "Itinéraires",
   "search": "Recherche"
 }

@@ -2,6 +2,7 @@
   "arrive": "Arrive",
   "depart": "Depart",
   "destination": "Destination",
+  "directionsPageLabel": "Step by Step",
   "find": "Find",
   "home": "Home",
   "hour": "hour",
@@ -14,5 +15,6 @@
   "minutes": "minutes",
   "noRoutesFound": "No Routes Found",
   "origin": "Origin",
+  "routesPageLabel": "Routes",
   "search": "Search"
 }

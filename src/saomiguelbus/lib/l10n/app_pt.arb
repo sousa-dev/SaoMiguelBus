@@ -5,6 +5,7 @@
   "@destination": {
     "description": "Label for destination text fields"
   },
+  "directionsPageLabel": "Passo a passo",
   "find": "Ver",
   "@find": {
     "description": "Label for find button"
@@ -41,6 +42,7 @@
   "@origin": {
     "description": "Label for origin text fields"
   },
+  "routesPageLabel": "Rotas",
   "search": "Pesquisar",
   "@search": {
     "description": "Label for search button"
