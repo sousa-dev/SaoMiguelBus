@@ -2,13 +2,11 @@
 // Path: lib/layout/home.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
+
 import 'package:saomiguelbus/layout/results.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
-import 'package:saomiguelbus/models/stop.dart';
-import 'dart:developer' as developer;
-
-import 'package:saomiguelbus/models/type_of_day.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
 import 'package:saomiguelbus/services/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
@@ -38,6 +36,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   var _departureType = "depart";
   DateTime date = DateTime.now().toUtc();
 
+  @override
   Widget build(BuildContext context) {
     var time = TimeOfDay.fromDateTime(date);
     return Padding(
@@ -81,7 +80,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                   child: SizedBox(
                     height: 200.0,
                     child: ListView.builder(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       itemCount: options.length,
                       itemBuilder: (BuildContext context, int index) {
                         final option = options.elementAt(index);
@@ -158,7 +157,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                   child: SizedBox(
                     height: 200.0,
                     child: ListView.builder(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       itemCount: options.length,
                       itemBuilder: (BuildContext context, int index) {
                         final option = options.elementAt(index);
@@ -166,10 +165,6 @@ class _HomePageBodyState extends State<HomePageBody> {
                             autoComplete.containsKey(option)
                                 ? autoComplete[option]
                                 : null;
-
-                        if (autocompletePlace == null) {
-                          return const ListTile();
-                        }
 
                         return ListTile(
                           title: Text(autocompletePlace != null
