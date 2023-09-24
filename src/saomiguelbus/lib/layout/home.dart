@@ -144,11 +144,11 @@ class _HomePageBodyState extends State<HomePageBody> {
                 items: [
                   DropdownMenuItem(
                     value: "depart",
-                    child: Text('Depart'),
+                    child: Text(AppLocalizations.of(context)!.depart),
                   ),
                   DropdownMenuItem(
                     value: "arrive",
-                    child: Text('Arrive'),
+                    child: Text(AppLocalizations.of(context)!.arrive),
                   ),
                 ],
               ),

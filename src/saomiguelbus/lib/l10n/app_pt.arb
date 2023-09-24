@@ -1,4 +1,6 @@
 {
+  "arrive": "Chegar",
+  "depart": "Partir",
   "destination": "Destino",
   "@destination": {
     "description": "Label for destination text fields"

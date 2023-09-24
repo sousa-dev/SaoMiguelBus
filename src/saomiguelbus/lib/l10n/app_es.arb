@@ -1,4 +1,6 @@
 {
+  "arrive": "Llegar",
+  "depart": "Salir",
   "destination": "Destino",
   "find": "Buscar",
   "home": "Home",
