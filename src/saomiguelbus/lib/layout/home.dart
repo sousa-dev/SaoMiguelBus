@@ -56,6 +56,27 @@ class _HomePageBodyState extends State<HomePageBody> {
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.origin,
                   border: const OutlineInputBorder(),
+                  suffixIcon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) {
+                      return ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      );
+                    },
+                    child: origin.isNotEmpty
+                        ? IconButton(
+                            key: const ValueKey('originClearIcon'),
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              textEditingController.clear();
+                              setState(() {
+                                origin = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -133,6 +154,27 @@ class _HomePageBodyState extends State<HomePageBody> {
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.destination,
                   border: const OutlineInputBorder(),
+                  suffixIcon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) {
+                      return ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      );
+                    },
+                    child: destination.isNotEmpty
+                        ? IconButton(
+                            key: const ValueKey('destinationClearIcon'),
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              textEditingController.clear();
+                              setState(() {
+                                destination = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -233,7 +275,6 @@ class _HomePageBodyState extends State<HomePageBody> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                //instructions.routes.length
                 getGoogleRoutes(origin, destination, date,
                         AppLocalizations.of(context)!.languageCode,
                         arrival_departure: _departureType)
@@ -299,9 +340,6 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Iterable<String> defaultSuggestions(String text) {
-    if (text == '') {
-      return const Iterable<String>.empty();
-    }
     List<String> stopMatches = <String>[];
     stopMatches.addAll(allStops.keys.cast<String>());
 
