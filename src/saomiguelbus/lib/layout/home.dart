@@ -33,6 +33,7 @@ class HomePageBody extends StatefulWidget {
 class _HomePageBodyState extends State<HomePageBody> {
   var _selectedStop = '';
   var _selectedOption = '';
+  var _departureType = "depart";
   DateTime date = DateTime.now().toUtc();
 
   Widget build(BuildContext context) {
@@ -69,23 +70,32 @@ class _HomePageBodyState extends State<HomePageBody> {
               });
             },
           ),
-          // DropdownButton<String>(
-          //   value: _selectedOption,
-          //   onChanged: (String? newValue) {
-          //     setState(() {
-          //       _selectedOption = newValue ?? 'Option 1';
-          //     });
-          //   },
-          //   items: <String>['Option 1', 'Option 2', 'Option 3']
-          //       .map<DropdownMenuItem<String>>((String value) {
-          //     return DropdownMenuItem<String>(
-          //       value: value,
-          //       child: Text(value),
-          //     );
-          //   }).toList(),
-          // ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DropdownButton<String>(
+                value: _departureType,
+                onChanged: (value) {
+                  setState(() {
+                    _departureType = value!;
+                  });
+                },
+                items: [
+                  DropdownMenuItem(
+                    value: "depart",
+                    child: Text('Depart'),
+                  ),
+                  DropdownMenuItem(
+                    value: "arrive",
+                    child: Text('Arrive'),
+                  ),
+                ],
+              ),
+            ],
+          ),
           ElevatedButton(
-            child: Text('${time.hour}:${time.minute}'),
+            child: Text(
+                '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'),
             onPressed: () async {
               final chosenTime = await pickTime(date);
               if (chosenTime == null) return;
@@ -99,9 +109,9 @@ class _HomePageBodyState extends State<HomePageBody> {
             onPressed: () {
               setState(() {
                 //instructions.routes.length
-                //TODO: Change type of day
                 getGoogleRoutes(origin, destination, date,
-                        AppLocalizations.of(context)!.languageCode)
+                        AppLocalizations.of(context)!.languageCode,
+                        arrival_departure: _departureType)
                     .then((value) {
                   widget._instructions = value;
                   if (widget._instructions.runtimeType == String) {
