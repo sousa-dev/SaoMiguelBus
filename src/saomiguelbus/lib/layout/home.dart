@@ -46,9 +46,45 @@ class _HomePageBodyState extends State<HomePageBody> {
             optionsBuilder: (TextEditingValue textEditingValue) {
               return onChangeText(textEditingValue.text);
             },
+            fieldViewBuilder:
+                (context, textEditingController, focusNode, onFieldSubmitted) {
+              textEditingController.text = origin;
+              return TextFormField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.origin,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    origin = value;
+                  });
+                },
+                onFieldSubmitted: (value) {
+                  setState(() {
+                    origin = value;
+                  });
+                  onFieldSubmitted();
+                },
+              );
+            },
             onSelected: (String selection) {
               widget.onChangeOrigin(selection);
             },
+          ),
+          const SizedBox(height: 16.0),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                final temp = origin;
+                origin = destination;
+                destination = temp;
+                widget.onChangeOrigin(origin);
+                widget.onChangeDestination(destination);
+              });
+            },
+            child: const Icon(Icons.swap_vert),
           ),
           const SizedBox(height: 16.0),
           Autocomplete<String>(
@@ -57,6 +93,31 @@ class _HomePageBodyState extends State<HomePageBody> {
             },
             onSelected: (String selection) {
               widget.onChangeDestination(selection);
+            },
+            fieldViewBuilder: (BuildContext context,
+                TextEditingController textEditingController,
+                FocusNode focusNode,
+                VoidCallback onFieldSubmitted) {
+              textEditingController.text = destination;
+              return TextFormField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.destination,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    destination = value;
+                  });
+                },
+                onFieldSubmitted: (value) {
+                  setState(() {
+                    destination = value;
+                  });
+                  onFieldSubmitted();
+                },
+              );
             },
           ),
           ElevatedButton(
@@ -159,7 +220,6 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<Iterable<String>> onChangeText(String text) async {
-    developer.log("onChangeText: $internetConnection");
     if (internetConnection) {
       return placesAutocomplete(text, context).then((value) {
         List<String> placesSuggestions = [];
