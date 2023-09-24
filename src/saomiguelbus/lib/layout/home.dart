@@ -53,6 +53,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               return TextFormField(
                 controller: textEditingController,
                 focusNode: focusNode,
+                onTapOutside: (event) => focusNode.unfocus(),
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.origin,
                   border: const OutlineInputBorder(),
@@ -73,6 +74,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                               setState(() {
                                 origin = '';
                               });
+                              focusNode.unfocus();
                             },
                           )
                         : null,
@@ -88,6 +90,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     origin = value;
                   });
                   onFieldSubmitted();
+                  focusNode.unfocus();
                 },
               );
             },
@@ -151,6 +154,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               return TextFormField(
                 controller: textEditingController,
                 focusNode: focusNode,
+                onTapOutside: (event) => focusNode.unfocus(),
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.destination,
                   border: const OutlineInputBorder(),
@@ -171,6 +175,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                               setState(() {
                                 destination = '';
                               });
+                              focusNode.unfocus();
                             },
                           )
                         : null,
@@ -186,6 +191,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     destination = value;
                   });
                   onFieldSubmitted();
+                  focusNode.unfocus();
                 },
               );
             },
