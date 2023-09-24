@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saomiguelbus/layout/results.dart';
+import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/models/stop.dart';
 import 'dart:developer' as developer;
@@ -33,6 +34,7 @@ class HomePageBody extends StatefulWidget {
 class _HomePageBodyState extends State<HomePageBody> {
   var _selectedStop = '';
   var _selectedOption = '';
+  Map<String, AutocompletePlace> autoComplete = {};
   var _departureType = "depart";
   DateTime date = DateTime.now().toUtc();
 
@@ -67,6 +69,33 @@ class _HomePageBodyState extends State<HomePageBody> {
                   });
                   onFieldSubmitted();
                 },
+              );
+            },
+            optionsViewBuilder: (BuildContext context,
+                AutocompleteOnSelected<String> onSelected,
+                Iterable<String> options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4.0,
+                  child: SizedBox(
+                    height: 200.0,
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(8.0),
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final option = options.elementAt(index);
+                        return ListTile(
+                          title: Text(autoComplete[option]!.name),
+                          leading: autoComplete[option]!.icon,
+                          onTap: () {
+                            onSelected(option);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
               );
             },
             onSelected: (String selection) {
@@ -117,6 +146,33 @@ class _HomePageBodyState extends State<HomePageBody> {
                   });
                   onFieldSubmitted();
                 },
+              );
+            },
+            optionsViewBuilder: (BuildContext context,
+                AutocompleteOnSelected<String> onSelected,
+                Iterable<String> options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4.0,
+                  child: SizedBox(
+                    height: 200.0,
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(8.0),
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final option = options.elementAt(index);
+                        return ListTile(
+                          title: Text(autoComplete[option]!.name),
+                          leading: autoComplete[option]!.icon,
+                          onTap: () {
+                            onSelected(option);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
               );
             },
           ),
@@ -223,7 +279,8 @@ class _HomePageBodyState extends State<HomePageBody> {
     if (internetConnection) {
       return placesAutocomplete(text, context).then((value) {
         List<String> placesSuggestions = [];
-        placesSuggestions = value;
+        placesSuggestions = value[0];
+        autoComplete = value[1];
         if (placesSuggestions.isNotEmpty) {
           return placesSuggestions;
         }
@@ -239,6 +296,15 @@ class _HomePageBodyState extends State<HomePageBody> {
     }
     List<String> stopMatches = <String>[];
     stopMatches.addAll(allStops.keys.cast<String>());
+
+    autoComplete = {};
+    for (var stop in allStops.keys) {
+      autoComplete[stop] = AutocompletePlace(
+        name: stop,
+        placeID: stop,
+        type: 'bus_station',
+      );
+    }
 
     stopMatches.retainWhere((stop) {
       return removeDiacritics(stop.toLowerCase())

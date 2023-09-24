@@ -41,11 +41,11 @@ Future<Instruction> getGoogleRoutes(
   }
 }
 
-Future<List<String>> placesAutocomplete(
+Future<List<dynamic>> placesAutocomplete(
     String place, BuildContext context) async {
-  List<String> suggestions = [];
+  List<AutocompletePlace> suggestions = [];
   if (!canUseMaps) {
-    return ["Maps monthly limit reached"];
+    return [];
   }
 
   Uri uri =
@@ -63,9 +63,24 @@ Future<List<String>> placesAutocomplete(
     var decoded = jsonDecode(response);
     if (decoded['status'] == 'OK') {
       for (var prediction in decoded['predictions']) {
-        suggestions.add(prediction['description']);
+        var placeName = prediction['structured_formatting']['main_text'];
+        var types = prediction['types'];
+        var iD = prediction['place_id'];
+        suggestions.add(AutocompletePlace(
+          name: placeName,
+          placeID: iD,
+          type: types.length > 0 ? types[0] : null,
+        ));
       }
     }
   }
-  return suggestions;
+  Map<String, AutocompletePlace> placesMap = {};
+  for (var suggestion in suggestions) {
+    placesMap[suggestion.name] = suggestion;
+  }
+  List<String> placesNames = [];
+  for (var suggestion in suggestions) {
+    placesNames.add(suggestion.name);
+  }
+  return [placesNames, placesMap];
 }

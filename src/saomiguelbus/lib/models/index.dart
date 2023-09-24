@@ -5,3 +5,4 @@ export 'location.dart';
 export 'company.dart';
 export 'card_route.dart';
 export 'card_instruction.dart';
+export 'autocomplete_place.dart';
