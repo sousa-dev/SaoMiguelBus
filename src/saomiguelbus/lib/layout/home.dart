@@ -162,9 +162,22 @@ class _HomePageBodyState extends State<HomePageBody> {
                       itemCount: options.length,
                       itemBuilder: (BuildContext context, int index) {
                         final option = options.elementAt(index);
+                        AutocompletePlace? autocompletePlace =
+                            autoComplete.containsKey(option)
+                                ? autoComplete[option]
+                                : null;
+
+                        if (autocompletePlace == null) {
+                          return const ListTile();
+                        }
+
                         return ListTile(
-                          title: Text(autoComplete[option]!.name),
-                          leading: autoComplete[option]!.icon,
+                          title: Text(autocompletePlace != null
+                              ? autocompletePlace.name
+                              : option),
+                          leading: autocompletePlace != null
+                              ? autocompletePlace.icon
+                              : const Icon(Icons.location_on),
                           onTap: () {
                             onSelected(option);
                           },
