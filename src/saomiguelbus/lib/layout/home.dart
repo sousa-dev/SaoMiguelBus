@@ -43,88 +43,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              return onChangeText(textEditingValue.text);
-            },
-            fieldViewBuilder:
-                (context, textEditingController, focusNode, onFieldSubmitted) {
-              textEditingController.text = origin;
-              return TextFormField(
-                controller: textEditingController,
-                focusNode: focusNode,
-                onTapOutside: (event) => focusNode.unfocus(),
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.origin,
-                  border: const OutlineInputBorder(),
-                  suffixIcon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, animation) {
-                      return ScaleTransition(
-                        scale: animation,
-                        child: child,
-                      );
-                    },
-                    child: origin.isNotEmpty
-                        ? IconButton(
-                            key: const ValueKey('originClearIcon'),
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              textEditingController.clear();
-                              setState(() {
-                                origin = '';
-                              });
-                              focusNode.unfocus();
-                            },
-                          )
-                        : null,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    origin = value;
-                  });
-                },
-                onFieldSubmitted: (value) {
-                  setState(() {
-                    origin = value;
-                  });
-                  onFieldSubmitted();
-                  focusNode.unfocus();
-                },
-              );
-            },
-            optionsViewBuilder: (BuildContext context,
-                AutocompleteOnSelected<String> onSelected,
-                Iterable<String> options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4.0,
-                  child: SizedBox(
-                    height: 200.0,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final option = options.elementAt(index);
-                        return ListTile(
-                          title: Text(autoComplete[option]!.name),
-                          leading: autoComplete[option]!.icon,
-                          onTap: () {
-                            onSelected(option);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-            onSelected: (String selection) {
-              widget.onChangeOrigin(selection);
-            },
-          ),
+          _getAutocompleteField('origin'),
           const SizedBox(height: 16.0),
           ElevatedButton(
             onPressed: () {
@@ -139,99 +58,7 @@ class _HomePageBodyState extends State<HomePageBody> {
             child: const Icon(Icons.swap_vert),
           ),
           const SizedBox(height: 16.0),
-          Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              return onChangeText(textEditingValue.text);
-            },
-            onSelected: (String selection) {
-              widget.onChangeDestination(selection);
-            },
-            fieldViewBuilder: (BuildContext context,
-                TextEditingController textEditingController,
-                FocusNode focusNode,
-                VoidCallback onFieldSubmitted) {
-              textEditingController.text = destination;
-              return TextFormField(
-                controller: textEditingController,
-                focusNode: focusNode,
-                onTapOutside: (event) => focusNode.unfocus(),
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.destination,
-                  border: const OutlineInputBorder(),
-                  suffixIcon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, animation) {
-                      return ScaleTransition(
-                        scale: animation,
-                        child: child,
-                      );
-                    },
-                    child: destination.isNotEmpty
-                        ? IconButton(
-                            key: const ValueKey('destinationClearIcon'),
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              textEditingController.clear();
-                              setState(() {
-                                destination = '';
-                              });
-                              focusNode.unfocus();
-                            },
-                          )
-                        : null,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    destination = value;
-                  });
-                },
-                onFieldSubmitted: (value) {
-                  setState(() {
-                    destination = value;
-                  });
-                  onFieldSubmitted();
-                  focusNode.unfocus();
-                },
-              );
-            },
-            optionsViewBuilder: (BuildContext context,
-                AutocompleteOnSelected<String> onSelected,
-                Iterable<String> options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4.0,
-                  child: SizedBox(
-                    height: 200.0,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final option = options.elementAt(index);
-                        AutocompletePlace? autocompletePlace =
-                            autoComplete.containsKey(option)
-                                ? autoComplete[option]
-                                : null;
-
-                        return ListTile(
-                          title: Text(autocompletePlace != null
-                              ? autocompletePlace.name
-                              : option),
-                          leading: autocompletePlace != null
-                              ? autocompletePlace.icon
-                              : const Icon(Icons.location_on),
-                          onTap: () {
-                            onSelected(option);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          _getAutocompleteField('destination'),
           ElevatedButton(
             child: Text('${date.day}/${date.month}/${date.year}'),
             onPressed: () async {
@@ -386,5 +213,114 @@ class _HomePageBodyState extends State<HomePageBody> {
       default:
         return TypeOfDay.weekday;
     }
+  }
+
+  _getAutocompleteField(String targetLabel) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        return onChangeText(textEditingValue.text);
+      },
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+        textEditingController.text =
+            targetLabel == 'origin' ? origin : destination;
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          onTapOutside: (event) => focusNode.unfocus(),
+          decoration: InputDecoration(
+            labelText: targetLabel == 'origin'
+                ? AppLocalizations.of(context)!.origin
+                : AppLocalizations.of(context)!.destination,
+            border: const OutlineInputBorder(),
+            suffixIcon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) {
+                return ScaleTransition(
+                  scale: animation,
+                  child: child,
+                );
+              },
+              child: (targetLabel == 'origin' ? origin : destination).isNotEmpty
+                  ? IconButton(
+                      key: targetLabel == 'origin'
+                          ? const ValueKey('originClearIcon')
+                          : const ValueKey('destinationClearIcon'),
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        textEditingController.clear();
+                        setState(() {
+                          if (targetLabel == 'origin') {
+                            origin = '';
+                          } else {
+                            destination = '';
+                          }
+                        });
+                        focusNode.unfocus();
+                      },
+                    )
+                  : null,
+            ),
+          ),
+          onChanged: (value) {
+            setState(() {
+              if (targetLabel == 'origin') {
+                origin = value;
+              } else {
+                destination = value;
+              }
+            });
+          },
+          onFieldSubmitted: (value) {
+            setState(() {
+              if (targetLabel == 'origin') {
+                origin = value;
+              } else {
+                destination = value;
+              }
+            });
+            onFieldSubmitted();
+            focusNode.unfocus();
+          },
+        );
+      },
+      optionsViewBuilder: (BuildContext context,
+          AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            child: SizedBox(
+              height: 200.0,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final option = options.elementAt(index);
+                  AutocompletePlace? autocompletePlace =
+                      autoComplete.containsKey(option)
+                          ? autoComplete[option]
+                          : null;
+                  return ListTile(
+                    title: Text(autocompletePlace != null
+                        ? autocompletePlace.name
+                        : option),
+                    leading: autocompletePlace != null
+                        ? autocompletePlace.icon
+                        : const Icon(Icons.location_on),
+                    onTap: () {
+                      onSelected(option);
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+      onSelected: (String selection) => targetLabel == 'origin'
+          ? widget.onChangeOrigin(selection)
+          : widget.onChangeDestination(selection),
+    );
   }
 }
