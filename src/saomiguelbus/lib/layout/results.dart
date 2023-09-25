@@ -60,8 +60,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   Widget build(BuildContext context) {
     final String originGmaps = widget.gMaps['origin'];
     final String destinationGmaps = widget.gMaps['destination'];
-    final String originBdsmb = widget.bdSmb['origin'];
-    final String destinationBdsmb = widget.bdSmb['destination'];
+    final List<String> originBdsmb = widget.bdSmb['origin'];
+    final List<String> destinationBdsmb = widget.bdSmb['destination'];
     final int routesnumberGmaps = widget.gMaps['routesNumber'];
     final int routesnumberBdsmb = widget.bdSmb['routesNumber'];
     final List routes = widget.bdSmb['routes'];
@@ -121,7 +121,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  List _routeToCard(List routes, String origin, String destination) {
+  List _routeToCard(List routes, List<String> origin, List<String> destination) {
     List cardRoutes = [];
     for (var route in routes) {
       cardRoutes.add(CardRoute(route, origin, destination, context));
@@ -171,12 +171,12 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   }
 
   Widget _getBdSmbWidget(
-      String origin, String destination, int routesNumber, List routes) {
+      List<String> origin, List<String> destination, int routesNumber, List routes) {
     if (routesNumber == 0) {
       return _getNoRoutesWidget();
     }
 
-    List _routes = _routeToCard(routes ?? [], origin, destination);
+    List _routes = _routeToCard(routes, origin, destination);
     return Material(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

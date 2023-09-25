@@ -31,6 +31,19 @@ Stop getClosestStop(Location location) {
   }
   return closestStop!;
 }
+List<Stop> getClosestStops(Location location, [int n = 3]) {
+  List<Stop> closestStops = [];
+  Map<double, Stop> distances = {};
+  for (var stop in allStops.values) {
+    double distance = haversineDistance(location, stop.location);
+    distances[distance] = stop;
+  }
+  List<double> sortedDistances = distances.keys.toList()..sort();
+  for (int i = 0; i < n && i < sortedDistances.length; i++) {
+    closestStops.add(distances[sortedDistances[i]]!);
+  }
+  return closestStops;
+}
 
 Stop getStop(String name) {
   if (allStops[name] == null) {

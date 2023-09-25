@@ -143,15 +143,33 @@ class _HomePageBodyState extends State<HomePageBody> {
                       'instructions': widget._instructions,
                     };
 
-                    Stop fixedOrigin = getClosestStop(originLocation);
-                    Stop fixedDestination = getClosestStop(destinationLocation);
-                    
-                    widget._routes = findRoutes(fixedOrigin, fixedDestination,
-                        _getDayOfWeekString(date.weekday));
+                    List<Stop> originClosestStops =
+                        getClosestStops(originLocation);
+                    List<Stop> destinationClosestStops =
+                        getClosestStops(destinationLocation);
+                    widget._routes = [];
+                    for (var originStop in originClosestStops) {
+                      for (var destinationStop in destinationClosestStops) {
+                        widget._routes.addAll(findRoutes(
+                            originStop,
+                            destinationStop,
+                            _getDayOfWeekString(date.weekday)));
+                      }
+                    }
+                    widget._routes = widget._routes.toSet().toList();
+
+                    developer.log(widget._routes.toString());
+                    developer.log(originClosestStops.toString());
+                    developer.log(destinationClosestStops.toString());
+                    Stop fixedOrigin = originClosestStops[0];
+                    Stop fixedDestination = destinationClosestStops[0];
 
                     Map routesResults = {
-                      'origin': fixedOrigin.name,
-                      'destination': fixedDestination.name,
+                      'origin':
+                          originClosestStops.map((stop) => stop.name).toList(),
+                      'destination': destinationClosestStops
+                          .map((stop) => stop.name)
+                          .toList(),
                       'routesNumber': widget._routes.length,
                       'routes': widget._routes,
                     };
