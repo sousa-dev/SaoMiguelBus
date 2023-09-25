@@ -9,6 +9,7 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
 import 'package:saomiguelbus/services/index.dart';
+import 'package:saomiguelbus/models/route.dart' as my_route;
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 
@@ -150,17 +151,22 @@ class _HomePageBodyState extends State<HomePageBody> {
                     widget._routes = [];
                     for (var originStop in originClosestStops) {
                       for (var destinationStop in destinationClosestStops) {
+                        developer.log(originStop.name);
+                        developer.log(destinationStop.name);
+                        developer.log(widget._routes.toString());
                         widget._routes.addAll(findRoutes(
                             originStop,
                             destinationStop,
                             _getDayOfWeekString(date.weekday)));
                       }
                     }
+                    developer.log(widget._routes
+                        .map((route) => route.uniqueId)
+                        .toList()
+                        .toString());
+
                     widget._routes = widget._routes.toSet().toList();
 
-                    developer.log(widget._routes.toString());
-                    developer.log(originClosestStops.toString());
-                    developer.log(destinationClosestStops.toString());
                     Stop fixedOrigin = originClosestStops[0];
                     Stop fixedDestination = destinationClosestStops[0];
 
@@ -242,11 +248,12 @@ class _HomePageBodyState extends State<HomePageBody> {
       );
 
   TypeOfDay _getDayOfWeekString(int weekday) {
+    developer.log(weekday.toString(), name: 'weekday');
     switch (weekday) {
-      case 1:
-        return TypeOfDay.sunday;
-      case 7:
+      case 6:
         return TypeOfDay.saturday;
+      case 7:
+        return TypeOfDay.sunday;
       default:
         return TypeOfDay.weekday;
     }

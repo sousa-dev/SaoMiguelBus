@@ -31,6 +31,7 @@ Stop getClosestStop(Location location) {
   }
   return closestStop!;
 }
+
 List<Stop> getClosestStops(Location location, [int n = 3]) {
   List<Stop> closestStops = [];
   Map<double, Stop> distances = {};
