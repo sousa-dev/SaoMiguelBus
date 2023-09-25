@@ -2,9 +2,9 @@ import 'index.dart';
 
 class Stop {
   String name;
-  Location coordinates;
+  Location location;
 
-  Stop(this.name, this.coordinates) {
+  Stop(this.name, this.location) {
     // if (!Datasource().getStops().contains(this)) {
     //   Datasource().addStop(this);
     // }
@@ -12,6 +12,6 @@ class Stop {
 
   @override
   String toString() {
-    return "$name, loc: $coordinates";
+    return "$name, loc: $location";
   }
 }

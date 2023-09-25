@@ -107,46 +107,66 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
           ElevatedButton(
             onPressed: () {
+              if (origin.isEmpty || destination.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("AppLocalizations.of(context)!.fillFields"),
+                ));
+                return;
+              }
+
               setState(() {
-                getGoogleRoutes(origin, destination, date,
-                        AppLocalizations.of(context)!.languageCode,
-                        arrival_departure: _departureType)
+                getLatLngFromPlaceID(autoComplete[origin]!.placeID,
+                        autoComplete[destination]!.placeID)
                     .then((value) {
-                  widget._instructions = value;
-                  if (widget._instructions.runtimeType == String) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(widget._instructions.toString()),
-                    ));
-                    return;
-                  }
+                  Location originLocation = value[0];
+                  Location destinationLocation = value[1];
 
-                  Map gMapsResults = {
-                    'origin': origin,
-                    'destination': destination,
-                    'routesNumber': widget._instructions.routes.length,
-                    'instructions': widget._instructions,
-                  };
+                  getGoogleRoutes(
+                          originLocation.toString(),
+                          destinationLocation.toString(),
+                          date,
+                          AppLocalizations.of(context)!.languageCode,
+                          arrival_departure: _departureType)
+                      .then((value) {
+                    widget._instructions = value;
+                    if (widget._instructions.runtimeType == String) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(widget._instructions.toString()),
+                      ));
+                      return;
+                    }
 
-                  Stop fixedOrigin = getStop(origin);
-                  Stop fixedDestination = getStop(destination);
-                  widget._routes = findRoutes(fixedOrigin, fixedDestination,
-                      _getDayOfWeekString(date.weekday));
+                    Map gMapsResults = {
+                      'origin': origin,
+                      'destination': destination,
+                      'routesNumber': widget._instructions.routes.length,
+                      'instructions': widget._instructions,
+                    };
 
-                  Map routesResults = {
-                    'origin': fixedOrigin.name,
-                    'destination': fixedDestination.name,
-                    'routesNumber': widget._routes.length,
-                    'routes': widget._routes,
-                  };
+                    Stop fixedOrigin = getClosestStop(originLocation);
+                    Stop fixedDestination = getClosestStop(destinationLocation);
+                    
+                    widget._routes = findRoutes(fixedOrigin, fixedDestination,
+                        _getDayOfWeekString(date.weekday));
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ResultsPageBody(
-                              gMaps: gMapsResults,
-                              bdSmb: routesResults,
-                            )),
-                  );
+                    Map routesResults = {
+                      'origin': fixedOrigin.name,
+                      'destination': fixedDestination.name,
+                      'routesNumber': widget._routes.length,
+                      'routes': widget._routes,
+                    };
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ResultsPageBody(
+                                gMaps: gMapsResults,
+                                bdSmb: routesResults,
+                                origin: autoComplete[origin]!,
+                                destination: autoComplete[destination]!,
+                              )),
+                    );
+                  });
                 });
               });
             },
@@ -162,7 +182,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       return placesAutocomplete(text, context).then((value) {
         List<String> placesSuggestions = [];
         placesSuggestions = value[0];
-        autoComplete = value[1];
+        autoComplete.addAll(value[1]);
         if (placesSuggestions.isNotEmpty) {
           return placesSuggestions;
         }
@@ -176,11 +196,10 @@ class _HomePageBodyState extends State<HomePageBody> {
     List<String> stopMatches = <String>[];
     stopMatches.addAll(allStops.keys.cast<String>());
 
-    autoComplete = {};
     for (var stop in allStops.keys) {
       autoComplete[stop] = AutocompletePlace(
         name: stop,
-        placeID: stop,
+        placeID: 'na',
         type: 'bus_station',
       );
     }

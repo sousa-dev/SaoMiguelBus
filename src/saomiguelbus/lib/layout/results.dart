@@ -11,11 +11,18 @@ import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
 
 class ResultsPageBody extends StatefulWidget {
-  const ResultsPageBody({Key? key, required this.gMaps, required this.bdSmb})
+  const ResultsPageBody(
+      {Key? key,
+      required this.gMaps,
+      required this.bdSmb,
+      required this.origin,
+      required this.destination})
       : super(key: key);
 
   final Map gMaps;
   final Map bdSmb;
+  final AutocompletePlace origin;
+  final AutocompletePlace destination;
 
   @override
   _ResultsPageBodyState createState() => _ResultsPageBodyState();
