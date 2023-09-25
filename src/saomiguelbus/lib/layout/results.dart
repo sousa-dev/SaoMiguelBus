@@ -121,7 +121,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  List _routeToCard(List routes, List<String> origin, List<String> destination) {
+  List _routeToCard(
+      List routes, List<String> origin, List<String> destination) {
     List cardRoutes = [];
     for (var route in routes) {
       cardRoutes.add(CardRoute(route, origin, destination, context));
@@ -170,8 +171,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  Widget _getBdSmbWidget(
-      List<String> origin, List<String> destination, int routesNumber, List routes) {
+  Widget _getBdSmbWidget(List<String> origin, List<String> destination,
+      int routesNumber, List routes) {
     if (routesNumber == 0) {
       return _getNoRoutesWidget();
     }
@@ -196,9 +197,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                       leading: _routes[index].leading,
                     ),
                     children: [
-                      Text(
-                        _routes[index].arrivalStop.toString(),
-                      ),
+                      for (var stop in _routes[index].stops.keys)
+                        Text('${_routes[index].stops[stop]} - ${stop.name}'),
                     ],
                   );
                 },

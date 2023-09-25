@@ -49,7 +49,7 @@ class CardRoute {
 
     title = Text(route.id + ': ' + durationText(duration, context));
 
-    subtitle = Text(catchStop.name + ' - ' + arrivalStop.name);
+    subtitle = Text('${catchStop.name} - ${arrivalStop.name}');
   }
 
   String durationText(duration, context) {
