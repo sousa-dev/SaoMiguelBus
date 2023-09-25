@@ -23,13 +23,23 @@ class CardRoute {
     routeId = route.id;
     stops = route.stops;
 
-    var (originStop, originTime) = route.getStopTime(origin);
-    catchStop = originStop;
-    catchTime = originTime;
+    for (String stop in origin) {
+      var (originStop, originTime) = route.getStopTime(stop);
+      if (originStop != null) {
+        catchStop = originStop;
+        catchTime = originTime;
+        break;
+      }
+    }
 
-    var (destinationStop, destinationTime) = route.getStopTime(destination);
-    arrivalStop = destinationStop;
-    arrivalTime = destinationTime;
+    for (String stop in destination) {
+      var (destinationStop, destinationTime) = route.getStopTime(stop);
+      if (destinationStop != null) {
+        arrivalStop = destinationStop;
+        arrivalTime = destinationTime;
+        break;
+      }
+    }
 
     DateTime startTimeDateTime = DateTime.parse(
         '2001-05-08 ${catchTime.split("h")[0]}:${catchTime.split("h")[1]}:00');
@@ -39,7 +49,7 @@ class CardRoute {
 
     title = Text(route.id + ': ' + durationText(duration, context));
 
-    subtitle = Text(origin + ' - ' + destination);
+    subtitle = Text(catchStop.name + ' - ' + arrivalStop.name);
   }
 
   String durationText(duration, context) {

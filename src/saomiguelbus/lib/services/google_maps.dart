@@ -41,6 +41,39 @@ Future<Instruction> getGoogleRoutes(
   }
 }
 
+Future<List<Location>> getLatLngFromPlaceID(
+    String originPlaceID, String destinationPlaceID) async {
+  Location originLocation = Location(0, 0);
+  Location destinationLocation = Location(0, 0);
+  if (!canUseMaps) {
+    return [originLocation, destinationLocation];
+  }
+  for (String target in ['origin', 'destination']) {
+    Uri uri = Uri.https("maps.googleapis.com", "/maps/api/place/details/json", {
+      "place_id": target == 'origin' ? originPlaceID : destinationPlaceID,
+      "fields": "name,formatted_address,geometry",
+      "key": Env.googleMapsApiKey,
+    });
+
+    String? response = await NetworkUtility.fetchURL(uri);
+
+    if (response != null) {
+      var decoded = jsonDecode(response);
+      if (decoded['status'] == 'OK') {
+        Location temp = Location(
+            decoded['result']['geometry']['location']['lat'],
+            decoded['result']['geometry']['location']['lng']);
+        if (target == 'origin') {
+          originLocation = temp;
+        } else {
+          destinationLocation = temp;
+        }
+      }
+    }
+  }
+  return [originLocation, destinationLocation];
+}
+
 Future<List<dynamic>> placesAutocomplete(
     String place, BuildContext context) async {
   List<AutocompletePlace> suggestions = [];

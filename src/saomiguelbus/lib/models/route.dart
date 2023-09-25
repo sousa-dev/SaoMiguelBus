@@ -71,6 +71,16 @@ class Route {
   }
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Route &&
+          runtimeType == other.runtimeType &&
+          uniqueId == other.uniqueId;
+
+  @override
+  int get hashCode => uniqueId.hashCode;
+
+  @override
   String toString() {
     return '$id | $stops';
   }
