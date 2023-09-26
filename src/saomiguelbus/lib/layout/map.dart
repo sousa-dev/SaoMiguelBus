@@ -4,18 +4,10 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:saomiguelbus/layout/results.dart';
-import 'package:saomiguelbus/models/instruction.dart';
-import 'package:saomiguelbus/models/stop.dart';
-
-import 'package:saomiguelbus/models/type_of_day.dart';
-import 'package:saomiguelbus/services/index.dart';
-import 'package:saomiguelbus/models/globals.dart';
-import 'package:saomiguelbus/utils/remove_diacritics.dart';
-import 'package:saomiguelbus/services/google_maps.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 
 class MapPageBody extends StatefulWidget {
-  MapPageBody(
+  const MapPageBody(
       {Key? key,
       required this.onChangeOrigin,
       required this.onChangeDestination})
@@ -24,24 +16,59 @@ class MapPageBody extends StatefulWidget {
   final Function onChangeOrigin;
   final Function onChangeDestination;
 
-  Instruction _instructions = Instruction().initWarning('');
-
   @override
   _MapPageBodyState createState() => _MapPageBodyState();
 }
 
 class _MapPageBodyState extends State<MapPageBody> {
+  final _mapController = MapController(
+      initPosition: GeoPoint(latitude: 37.7804, longitude: -25.4970));
+
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'São Miguel Bus Map Page',
+    return OSMFlutter(
+      controller: _mapController,
+      mapIsLoading: const Center(child: CircularProgressIndicator.adaptive()),
+      onMapIsReady: (isReady) async {
+        if (isReady) {
+          await Future.delayed(const Duration(seconds: 1), () async {
+            await _mapController.currentLocation();
+          });
+        }
+      },
+      osmOption: OSMOption(
+          userLocationMarker: UserLocationMaker(
+            personMarker: const MarkerIcon(
+                icon: Icon(
+              Icons.person_pin_circle,
+              color: Color(0xFF218732),
+              size: 48,
+            )),
+            directionArrowMarker: const MarkerIcon(
+                icon: Icon(
+              Icons.location_on,
+              color: Colors.black,
+              size: 48,
+            )),
           ),
-        ],
-      ),
+          roadConfiguration: const RoadOption(
+            roadColor: Colors.blueGrey,
+            roadWidth: 8,
+          ),
+          markerOption: MarkerOption(
+            defaultMarker: const MarkerIcon(
+                icon: Icon(
+              Icons.person_pin_circle,
+              color: Colors.black,
+              size: 48,
+            )),
+          ),
+          zoomOption: const ZoomOption(
+            initZoom: 9.4,
+            minZoomLevel: 8,
+            maxZoomLevel: 18,
+            stepZoom: 1.8,
+          )),
     );
   }
 }

@@ -18,7 +18,7 @@ Future<Instruction> getGoogleRoutes(
   }
   // Load Possible Routes from GMAPS API
   var mapsURL =
-      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
+      "https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=transit&key=${Env.googleMapsApiKey}&language=$languageCode&alternatives=true";
   if (arrival_departure == 'arrival') {
     mapsURL =
         "$mapsURL&arrival_time=${datetime.millisecondsSinceEpoch ~/ 1000}";
