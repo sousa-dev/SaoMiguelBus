@@ -110,34 +110,58 @@ class _HomePageBodyState extends State<HomePageBody> {
             onPressed: () {
               if (origin.isEmpty || destination.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("AppLocalizations.of(context)!.fillFields"),
+                  content: Text(AppLocalizations.of(context)!.fillFields),
                 ));
                 return;
               }
 
               setState(() {
+                if (!autoComplete.keys.contains(origin)) {
+                  autoComplete[origin] = AutocompletePlace(
+                    name: origin,
+                    placeID: 'custom',
+                    type: 'custom',
+                  );
+                }
+                if (!autoComplete.keys.contains(destination)) {
+                  autoComplete[destination] = AutocompletePlace(
+                    name: destination,
+                    placeID: 'custom',
+                    type: 'custom',
+                  );
+                }
+
                 getLatLngFromPlaceID(autoComplete[origin]!.placeID,
-                        autoComplete[destination]!.placeID)
+                        autoComplete[destination]!.placeID, origin, destination)
                     .then((value) {
                   Location originLocation = value[0];
                   Location destinationLocation = value[1];
 
-                  if (originLocation.latitude == 0 &&
-                      originLocation.longitude == 0) {
-                    originLocation =
-                        getStop(autoComplete[origin]!.name).location;
+                  String originQuery = originLocation.toString();
+                  String destinationQuery = destinationLocation.toString();
+
+                  if (originQuery == '0.0,0.0') {
+                    if (autoComplete[origin]!.placeID == 'custom') {
+                      originQuery = origin;
+                    } else {
+                      originQuery = getStop(autoComplete[origin]!.name)
+                          .location
+                          .toString();
+                    }
                   }
 
-                  if (destinationLocation.latitude == 0 &&
-                      destinationLocation.longitude == 0) {
-                    destinationLocation =
-                        getStop(autoComplete[destination]!.name).location;
+                  if (destinationQuery == '0.0,0.0') {
+                    if (autoComplete[destination]!.placeID == 'custom') {
+                      destinationQuery = destination;
+                    } else {
+                      destinationQuery =
+                          getStop(autoComplete[destination]!.name)
+                              .location
+                              .toString();
+                    }
                   }
 
-                  getGoogleRoutes(
-                          originLocation.toString(),
-                          destinationLocation.toString(),
-                          date,
+                  getGoogleRoutes(originQuery, destinationQuery, date,
                           AppLocalizations.of(context)!.languageCode,
                           arrival_departure: _departureType)
                       .then((value) {
@@ -172,10 +196,6 @@ class _HomePageBodyState extends State<HomePageBody> {
                             _getDayOfWeekString(date.weekday)));
                       }
                     }
-                    developer.log(widget._routes
-                        .map((route) => route.uniqueId)
-                        .toList()
-                        .toString());
 
                     widget._routes = widget._routes.toSet().toList();
 

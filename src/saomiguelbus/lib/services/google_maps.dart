@@ -19,6 +19,7 @@ Future<Instruction> getGoogleRoutes(
   // Load Possible Routes from GMAPS API
   var mapsURL =
       "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
+  developer.log(mapsURL, name: 'getGoogleRoutes');
   if (arrival_departure == 'arrival') {
     mapsURL =
         "$mapsURL&arrival_time=${datetime.millisecondsSinceEpoch ~/ 1000}";
@@ -41,14 +42,50 @@ Future<Instruction> getGoogleRoutes(
   }
 }
 
-Future<List<Location>> getLatLngFromPlaceID(
-    String originPlaceID, String destinationPlaceID) async {
+Future<List<Location>> getLatLngFromPlaceID(String originPlaceID,
+    String destinationPlaceID, String origin, String destination) async {
   Location originLocation = Location(0, 0);
   Location destinationLocation = Location(0, 0);
   if (!canUseMaps) {
     return [originLocation, destinationLocation];
   }
   for (String target in ['origin', 'destination']) {
+    if (target == 'origin' && originPlaceID == 'na') {
+      continue;
+    } else if (target == 'destination' && destinationPlaceID == 'na') {
+      continue;
+    }
+
+    if ((target == 'origin' && originPlaceID == 'custom') ||
+        (target == 'destination' && destinationPlaceID == 'custom')) {
+      Uri uri = Uri.https(
+          "maps.googleapis.com", "/maps/api/place/findplacefromtext/json", {
+        "input": target == 'origin' ? origin : destination,
+        "fields": 'name,formatted_address,geometry',
+        "inputtype": 'textquery',
+        "locationbias": "circle:50000@37.7804,-25.4970",
+        "key": Env.googleMapsApiKey,
+      });
+
+      String? response = await NetworkUtility.fetchURL(uri);
+
+      if (response != null) {
+        var decoded = jsonDecode(response);
+        if (decoded['status'] == 'OK') {
+          Location temp = Location(
+              decoded['candidates'][0]['geometry']['location']['lat'],
+              decoded['candidates'][0]['geometry']['location']['lng']);
+          if (target == 'origin') {
+            originLocation = temp;
+          } else {
+            destinationLocation = temp;
+          }
+        }
+      }
+
+      continue;
+    }
+
     Uri uri = Uri.https("maps.googleapis.com", "/maps/api/place/details/json", {
       "place_id": target == 'origin' ? originPlaceID : destinationPlaceID,
       "fields": "name,formatted_address,geometry",
