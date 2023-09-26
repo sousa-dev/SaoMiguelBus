@@ -3,6 +3,7 @@
   "depart": "Abfahrt",
   "destination": "Ziel",
   "directionsPageLabel": "Schritt für Schritt",
+  "fillFields": "Ursprung und Ziel dürfen nicht leer sein",
   "find": "Finden",
   "home": "Home",
   "hour": "Stunde",

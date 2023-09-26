@@ -6,6 +6,7 @@
     "description": "Label for destination text fields"
   },
   "directionsPageLabel": "Passo a passo",
+  "fillFields": "Preencha a Origem e o Destino",
   "find": "Ver",
   "@find": {
     "description": "Label for find button"

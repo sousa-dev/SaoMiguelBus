@@ -3,6 +3,7 @@
   "depart": "Départ",
   "destination": "Destination",
   "directionsPageLabel": "Pas à pas",
+  "fillFields": "L'origine et la destination ne peuvent pas être vides",
   "find": "Trouver",
   "home": "Home",
   "hour": "heure",
