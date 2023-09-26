@@ -122,6 +122,18 @@ class _HomePageBodyState extends State<HomePageBody> {
                   Location originLocation = value[0];
                   Location destinationLocation = value[1];
 
+                  if (originLocation.latitude == 0 &&
+                      originLocation.longitude == 0) {
+                    originLocation =
+                        getStop(autoComplete[origin]!.name).location;
+                  }
+
+                  if (destinationLocation.latitude == 0 &&
+                      destinationLocation.longitude == 0) {
+                    destinationLocation =
+                        getStop(autoComplete[destination]!.name).location;
+                  }
+
                   getGoogleRoutes(
                           originLocation.toString(),
                           destinationLocation.toString(),
