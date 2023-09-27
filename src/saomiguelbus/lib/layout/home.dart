@@ -143,21 +143,22 @@ class _HomePageBodyState extends State<HomePageBody> {
                   if (originQuery == '0.0,0.0') {
                     if (autoComplete[origin]!.placeID == 'custom') {
                       originQuery = origin;
+                      originLocation = getStop(origin).location;
                     } else {
-                      originQuery = getStop(autoComplete[origin]!.name)
-                          .location
-                          .toString();
+                      originLocation =
+                          getStop(autoComplete[origin]!.name).location;
+                      originQuery = originLocation.toString();
                     }
                   }
 
                   if (destinationQuery == '0.0,0.0') {
                     if (autoComplete[destination]!.placeID == 'custom') {
                       destinationQuery = destination;
+                      destinationLocation = getStop(destination).location;
                     } else {
-                      destinationQuery =
-                          getStop(autoComplete[destination]!.name)
-                              .location
-                              .toString();
+                      destinationLocation =
+                          getStop(autoComplete[destination]!.name).location;
+                      destinationQuery = destinationLocation.toString();
                     }
                   }
 
