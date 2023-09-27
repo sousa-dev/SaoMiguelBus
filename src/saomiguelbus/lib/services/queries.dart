@@ -1,12 +1,16 @@
 import 'dart:developer' as developer;
 
+import 'package:flutter/material.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:saomiguelbus/models/index.dart';
+import 'package:saomiguelbus/models/route.dart' as route;
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/utils/haversine_distance.dart';
 import 'package:saomiguelbus/utils/levenshtein_distance.dart';
 
-List<Route> findRoutes(Stop origin, Stop destination, TypeOfDay typeOfDay) {
-  List<Route> routes = [];
+List<route.Route> findRoutes(
+    Stop origin, Stop destination, TypeOfDay typeOfDay) {
+  List<route.Route> routes = [];
   for (var route in allRoutes) {
     if (route.stops.containsKey(origin) &&
         route.stops.containsKey(destination) &&
@@ -32,9 +36,30 @@ Stop getClosestStop(Location location) {
   return closestStop!;
 }
 
+List<Stop> getStopList(var stops) {
+  List<Stop> stopList = [];
+  for (var stop in stops.keys) {
+    stopList.add(stops[stop]!);
+  }
+  return stopList;
+}
+
+List<StaticPositionGeoPoint> getStopPoints(List<Stop> stops) {
+  List<StaticPositionGeoPoint> points = [];
+  for (var stop in stops) {
+    points.add(StaticPositionGeoPoint(
+        stop.name, const MarkerIcon(icon: Icon(Icons.location_on)), [
+      GeoPoint(
+          latitude: stop.location.latitude, longitude: stop.location.longitude)
+    ]));
+  }
+  return points;
+}
+
 List<Stop> getClosestStops(Location location, [int n = 3]) {
   List<Stop> closestStops = [];
   Map<double, Stop> distances = {};
+  developer.log("Getting closest stops: $location", name: "getClosestStops");
   for (var stop in allStops.values) {
     double distance = haversineDistance(location, stop.location);
     distances[distance] = stop;
