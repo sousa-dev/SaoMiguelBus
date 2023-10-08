@@ -10,6 +10,9 @@ var allStops = {};
 String origin = '';
 String destination = '';
 
+Map gMapsResultsCached = {};
+Map routesResultsCached = {};
+
 String language = 'en';
 
 bool canUseMaps = false;

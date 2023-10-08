@@ -108,6 +108,25 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
           ElevatedButton(
             onPressed: () {
+              String key =
+                  '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
+
+              if (gMapsResultsCached.containsKey(key) &&
+                  routesResultsCached.containsKey(key)) {
+                developer.log("Getting Results from cache...", name: 'cache');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ResultsPageBody(
+                            gMaps: gMapsResultsCached[key],
+                            bdSmb: routesResultsCached[key],
+                            origin: autoComplete[origin]!,
+                            destination: autoComplete[destination]!,
+                          )),
+                );
+                return;
+              }
+
               if (origin.isEmpty || destination.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(AppLocalizations.of(context)!.fillFields),
@@ -200,9 +219,6 @@ class _HomePageBodyState extends State<HomePageBody> {
 
                     widget._routes = widget._routes.toSet().toList();
 
-                    Stop fixedOrigin = originClosestStops[0];
-                    Stop fixedDestination = destinationClosestStops[0];
-
                     Map routesResults = {
                       'origin':
                           originClosestStops.map((stop) => stop.name).toList(),
@@ -212,6 +228,11 @@ class _HomePageBodyState extends State<HomePageBody> {
                       'routesNumber': widget._routes.length,
                       'routes': widget._routes,
                     };
+
+                    // Store the results in the global variables
+                    developer.log("Storing Results in cache...", name: 'cache');
+                    gMapsResultsCached[key] = gMapsResults;
+                    routesResultsCached[key] = routesResults;
 
                     Navigator.push(
                       context,
