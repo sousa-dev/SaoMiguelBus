@@ -103,7 +103,7 @@ void retrieveData(kDebugMode) async {
   final version = packageInfo.version;
   Map information = {
     'version': version,
-    'maps': true
+    'maps': false
   }; //TODO: Change default to false on production
   List data = [];
   List stopsJSON = [];
@@ -112,9 +112,13 @@ void retrieveData(kDebugMode) async {
   if (kDebugMode &&
       prefs.containsKey('routes_api_response') &&
       prefs.containsKey('stops_api_response')) {
-    final response =
-        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
-    if (response.statusCode == 200) internetConnection = true;
+    try {
+      final response = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+      if (response.statusCode == 200) internetConnection = true;
+    } catch (e) {
+      developer.log(e.toString());
+    }
     data = localLoad(prefs);
     stopsJSON = localStops(prefs);
   } else {

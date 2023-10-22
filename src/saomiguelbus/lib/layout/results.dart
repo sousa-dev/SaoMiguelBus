@@ -3,9 +3,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
+
 import 'package:saomiguelbus/main.dart';
 import 'package:saomiguelbus/models/globals.dart';
-
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
@@ -29,8 +30,15 @@ class ResultsPageBody extends StatefulWidget {
 }
 
 class _ResultsPageBodyState extends State<ResultsPageBody> {
-  int _currentPageIndex = 0;
-  final PageController _pageController = PageController(initialPage: 0);
+  late int _currentPageIndex;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPageIndex = ((widget.gMaps['routesNumber'] == 0 && widget.bdSmb['routesNumber'] > 0) || !internetConnection) ? 1 : 0;
+    _pageController = PageController(initialPage: _currentPageIndex);
+  }
 
   void _goToPage(int pageIndex) {
     setState(() {
