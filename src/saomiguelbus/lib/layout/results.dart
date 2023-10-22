@@ -200,19 +200,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 physics: const ScrollPhysics(parent: null),
                 shrinkWrap: true,
                 itemBuilder: (BuildContext context, int index) {
-                  return ExpansionTile(
-                    iconColor: Colors.blue,
-                    textColor: Colors.black,
-                    title: ListTile(
-                      title: _routes[index].title,
-                      subtitle: _routes[index].subtitle,
-                      leading: _routes[index].leading,
-                    ),
-                    children: [
-                      for (var stop in _routes[index].stops.keys)
-                        Text('${_routes[index].stops[stop]} - ${stop.name}'),
-                    ],
-                  );
+                  return _routes[index].getCardRouteWidget();
                 },
                 itemCount: routesNumber,
               ),

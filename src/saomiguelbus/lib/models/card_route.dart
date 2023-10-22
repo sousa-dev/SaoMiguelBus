@@ -11,6 +11,7 @@ class CardRoute {
   late Text title;
   late Text subtitle;
   late Duration duration;
+  late String durationStr;
   late String catchTime;
   late Stop catchStop;
   late String arrivalTime;
@@ -46,10 +47,98 @@ class CardRoute {
     DateTime endTimeDateTime = DateTime.parse(
         '2001-05-08 ${arrivalTime.split("h")[0]}:${arrivalTime.split("h")[1]}:00');
     duration = endTimeDateTime.difference(startTimeDateTime);
+    durationStr = durationText(duration, context);
 
-    title = Text(route.id + ': ' + durationText(duration, context));
+    title = Text(route.id + ': ' + durationStr);
 
     subtitle = Text('${catchStop.name} - ${arrivalStop.name}');
+  }
+
+  Card getCardRouteWidget() {
+    return Card(
+      elevation: 2.0,
+      child: ExpansionTile(
+        iconColor: Colors.blue,
+        textColor: Colors.black,
+        title: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.directions_bus,
+                      color: Color(0xFF218732),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      routeId,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  durationStr,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    catchTime,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.right,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    catchStop.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF218732),
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_right_alt,
+              size: 40.0,
+              color: Color(0xFF218732),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    arrivalTime,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.right,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    arrivalStop.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF218732),
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        children: [
+          for (var stop in stops.keys) Text('${stops[stop]} - ${stop.name}'),
+        ],
+      ),
+    );
   }
 
   String durationText(duration, context) {
