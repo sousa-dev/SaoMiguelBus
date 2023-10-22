@@ -36,7 +36,11 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   @override
   void initState() {
     super.initState();
-    _currentPageIndex = ((widget.gMaps['routesNumber'] == 0 && widget.bdSmb['routesNumber'] > 0) || !internetConnection) ? 1 : 0;
+    _currentPageIndex = ((widget.gMaps['routesNumber'] == 0 &&
+                widget.bdSmb['routesNumber'] > 0) ||
+            !internetConnection)
+        ? 1
+        : 0;
     _pageController = PageController(initialPage: _currentPageIndex);
   }
 
@@ -154,8 +158,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 physics: const ScrollPhysics(parent: null),
                 shrinkWrap: true,
                 itemBuilder: (BuildContext context, int index) {
-                  return CardInstruction()
-                      .getInstructionWidget(instructions.routes[index]);
+                  return CardInstruction().getInstructionWidget(
+                      instructions.routes[index], origin, destination);
                 },
                 itemCount: routesNumber,
               ),
