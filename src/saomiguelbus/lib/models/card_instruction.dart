@@ -9,9 +9,8 @@ class CardInstruction {
     String time = instructions.legs[0].duration;
     String duration = _getDurationText(time);
 
-    //TODO: Get how many meters to walk
-
-    //TODO: Get how many buses to take
+    String walkDistance = _getWalkDistance(instructions);
+    String numberOfBuses = _getNumberOfBuses(instructions);
 
     //TODO: Get Leave the bus at X step
     return Card(
@@ -77,6 +76,36 @@ class CardInstruction {
             ),
           ],
         ),
+        subtitle: Row(
+          children: [
+            const Icon(
+              Icons.directions_walk,
+              color: Color(0xFF218732),
+            ),
+            const SizedBox(width: 4.0),
+            Text(
+              walkDistance,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF218732),
+              ),
+              textAlign: TextAlign.right,
+            ),
+            const Spacer(),
+            Text(
+              numberOfBuses,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF218732),
+              ),
+            ),
+            const SizedBox(width: 4.0),
+            const Icon(
+              Icons.directions_bus,
+              color: Color(0xFF218732),
+            ),
+          ],
+        ),
         children: [
           ListView.builder(
             physics: const ScrollPhysics(parent: null),
@@ -124,5 +153,36 @@ class CardInstruction {
       duration = '${hours}h${minutes.length == 1 ? '0$minutes' : minutes}';
     }
     return duration;
+  }
+
+  String _getNumberOfBuses(StepRoute instructions) {
+    int numberOfBuses = 0;
+    for (int i = 0; i < instructions.legs[0].steps.length; i++) {
+      if (instructions.legs[0].steps[i].travelMode == 'TRANSIT') {
+        numberOfBuses++;
+      }
+    }
+    return numberOfBuses.toString();
+  }
+
+  String _getWalkDistance(StepRoute instructions) {
+    String walkDistance = '';
+    double distance = 0;
+    for (int i = 0; i < instructions.legs[0].steps.length; i++) {
+      if (instructions.legs[0].steps[i].travelMode == 'WALKING') {
+        var dist = instructions.legs[0].steps[i].distance
+            .replaceAll(RegExp(r'[^0-9,]'), '');
+        dist = dist.replaceAll(',', '.');
+        distance += double.parse(dist);
+      }
+    }
+    // distance should have a maximum of 2 decimal places or be in m if lower than 1
+    if (distance < 1) {
+      walkDistance = '${(distance * 1000).toInt()} m';
+      return walkDistance;
+    }
+
+    walkDistance = '${double.parse(distance.toStringAsFixed(2))} km';
+    return walkDistance;
   }
 }
