@@ -103,7 +103,7 @@ void retrieveData(kDebugMode) async {
   final version = packageInfo.version;
   Map information = {
     'version': version,
-    'maps': false
+    'maps': true
   }; //TODO: Change default to false on production
   List data = [];
   List stopsJSON = [];
