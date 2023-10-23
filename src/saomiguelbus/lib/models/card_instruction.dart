@@ -173,16 +173,17 @@ class CardInstruction {
         var dist = instructions.legs[0].steps[i].distance
             .replaceAll(RegExp(r'[^0-9,]'), '');
         dist = dist.replaceAll(',', '.');
-        distance += double.parse(dist);
+        distance +=
+            dist.contains('.') ? double.parse(dist) : double.parse(dist) / 1000;
       }
     }
+
     // distance should have a maximum of 2 decimal places or be in m if lower than 1
     if (distance < 1) {
-      walkDistance = '${(distance * 1000).toInt()} m';
+      walkDistance = '${(distance * 1000).toInt()}m';
       return walkDistance;
     }
-
-    walkDistance = '${double.parse(distance.toStringAsFixed(2))} km';
+    walkDistance = '${double.parse(distance.toStringAsFixed(2))}km';
     return walkDistance;
   }
 }
