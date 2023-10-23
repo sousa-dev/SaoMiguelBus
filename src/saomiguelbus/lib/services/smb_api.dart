@@ -1,5 +1,5 @@
 import 'package:saomiguelbus/utils/network_utility.dart';
-import 'dart:developer' as developer;
+import 'package:saomiguelbus/models/globals.dart';
 
 Future<String?> fetchAdBanner(
     {String on = 'home', String platform = 'android'}) async {
@@ -8,5 +8,25 @@ Future<String?> fetchAdBanner(
     'platform': platform,
   });
   String? response = await NetworkUtility.fetchURL(uri);
+  return response;
+}
+
+Future<String?> postStat(String requestType,
+    {String origin = 'NA',
+    String destination = 'NA',
+    String time = 'NA',
+    String day = 'NA'}) async {
+//Get current language
+
+  Uri uri = Uri.https("saomiguelbus-api.herokuapp.com", "api/v1/stat", {
+    'request': requestType,
+    'origin': origin,
+    'destination': destination,
+    'time': time,
+    'day': day,
+    'language': language,
+    'platform': platform,
+  });
+  String? response = await NetworkUtility.postURL(uri);
   return response;
 }

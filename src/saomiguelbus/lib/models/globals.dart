@@ -14,6 +14,7 @@ Map gMapsResultsCached = {};
 Map routesResultsCached = {};
 
 String language = 'en';
+String platform = 'unknown';
 
 bool canUseMaps = false;
 bool internetConnection = false;

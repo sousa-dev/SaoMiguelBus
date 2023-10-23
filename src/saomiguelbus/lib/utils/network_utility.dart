@@ -19,4 +19,19 @@ class NetworkUtility {
     }
     return null;
   }
+  static Future<String?> postURL(Uri uri,
+      {Map<String, String>? headers, Map<String, String>? body}) async {
+    try {
+      final response = await http.post(uri, headers: headers, body: body);
+      if (response.statusCode == 200) {
+        internetConnection = true;
+        return response.body;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: 'NetworkUtility');
+    }
+    return null;
+  }
 }
