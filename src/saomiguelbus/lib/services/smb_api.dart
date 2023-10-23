@@ -11,6 +11,16 @@ Future<String?> fetchAdBanner(
   return response;
 }
 
+//var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/ad/click?id=$id"
+
+Future<String?> clickAdBanner(String id) async {
+  Uri uri = Uri.https("saomiguelbus-api.herokuapp.com", "api/v1/ad/click", {
+    'id': id,
+  });
+  String? response = await NetworkUtility.postURL(uri);
+  return response;
+}
+
 Future<String?> postStat(String requestType,
     {String origin = 'NA',
     String destination = 'NA',
