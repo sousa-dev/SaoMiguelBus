@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 
@@ -19,6 +21,7 @@ class NetworkUtility {
     }
     return null;
   }
+
   static Future<String?> postURL(Uri uri,
       {Map<String, String>? headers, Map<String, String>? body}) async {
     try {
@@ -33,5 +36,10 @@ class NetworkUtility {
       developer.log(e.toString(), name: 'NetworkUtility');
     }
     return null;
+  }
+
+  //fetchImage
+  static Image fetchImage(String url) {
+    return Image.network(url);
   }
 }
