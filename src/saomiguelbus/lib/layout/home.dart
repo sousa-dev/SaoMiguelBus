@@ -46,15 +46,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          if (!internetConnection)
-            IconButton(
-                icon: const Icon(Icons.wifi_off),
-                onPressed: () {
-                  showDialogWindow(
-                      context,
-                      AppLocalizations.of(context)!.noWifiTitle,
-                      AppLocalizations.of(context)!.noWifiContent);
-                }),
+          _getTopSection(),
           _getAutocompleteField('origin'),
           const SizedBox(height: 16.0),
           ElevatedButton(
@@ -430,6 +422,59 @@ class _HomePageBodyState extends State<HomePageBody> {
       onSelected: (String selection) => targetLabel == 'origin'
           ? widget.onChangeOrigin(selection)
           : widget.onChangeDestination(selection),
+    );
+  }
+
+  Widget _getTopSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if (!internetConnection)
+          IconButton(
+            icon: const Icon(Icons.wifi_off),
+            onPressed: () {
+              showDialogWindow(
+                  context,
+                  AppLocalizations.of(context)!.noWifiTitle,
+                  AppLocalizations.of(context)!.noWifiContent);
+            },
+          ),
+        const Spacer(),
+        Stack(
+          children: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.warning),
+              onPressed: () {
+                // Handle the alert icon press here
+                showDialogWindow(context, "TODO", "Need to implement");
+              },
+            ),
+            Positioned(
+              right: 7,
+              top: 5,
+              child: Container(
+                padding: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 12,
+                  minHeight: 12,
+                ),
+                child: const Text(
+                  '5', // Replace with your dynamic value
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
