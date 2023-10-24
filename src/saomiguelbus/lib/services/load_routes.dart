@@ -98,7 +98,7 @@ void createLocalDB(List data, List stops) {
   loadRoutes(data);
 }
 
-void retrieveData(kDebugMode) async {
+Future<bool> retrieveData(kDebugMode) async {
   final packageInfo = await PackageInfo.fromPlatform();
   final version = packageInfo.version;
   Map information = {
@@ -178,4 +178,5 @@ void retrieveData(kDebugMode) async {
   developer.log("internetConnection: $internetConnection");
 
   createLocalDB(data, stopsJSON);
+  return true;
 }

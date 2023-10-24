@@ -5,7 +5,7 @@ import 'package:saomiguelbus/services/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'dart:io' show Platform;
 
-bool start(kDebugMode) {
+Future<bool> start(kDebugMode) async {
   sessionToken = const Uuid().v4();
   if (Platform.isAndroid) {
     platform = 'android';
@@ -20,7 +20,7 @@ bool start(kDebugMode) {
   } else {
     platform = 'unknown';
   }
-  retrieveData(kDebugMode);
+  await retrieveData(kDebugMode);
   kDebugMode ? init_debug_mode() : init_release_mode();
   return true;
 }

@@ -4,6 +4,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'dart:developer' as developer;
 import 'package:saomiguelbus/l10n/l10n.dart';
+import 'package:saomiguelbus/utils/show_dialog.dart';
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/utils/index.dart';
@@ -12,15 +13,16 @@ import 'package:saomiguelbus/models/globals.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  initialization();
+  //initialization();
 
   runApp(const MyApp());
 }
 
-initialization() {
-  start(kDebugMode);
+Future<bool> initialization() async {
+  await start(kDebugMode);
 
   FlutterNativeSplash.remove();
+  return true;
 }
 
 class MyApp extends StatelessWidget {
@@ -69,7 +71,22 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: getTopBar(title: widget.title),
-      body: widget.getBody(),
+      body: FutureBuilder<bool>(
+        future: initialization(),
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(); // Show a loading spinner while waiting
+          } else {
+            if (snapshot.error != null) {
+              // If there's an error, return an error widget
+              return const Center(child: Text('An error occurred!'));
+            } else {
+              // If the future completed without error, build your widget
+              return widget.getBody();
+            }
+          }
+        },
+      ),
       bottomNavigationBar: getNavBar(widget.currentIndex, _updateBody),
     );
   }
