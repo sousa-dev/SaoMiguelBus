@@ -24,7 +24,7 @@ class BlurryDialog extends StatelessWidget {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text("Ok"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

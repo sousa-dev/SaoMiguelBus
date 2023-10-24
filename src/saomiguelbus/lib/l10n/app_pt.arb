@@ -39,6 +39,8 @@
   "@noRoutesFound": {
     "description": "Text for when there were no routes found"
   },
+  "noWifiContent": "noWifiContent",
+  "noWifiTitle": "noWifiTitle",
   "origin": "Origem",
   "@origin": {
     "description": "Label for origin text fields"

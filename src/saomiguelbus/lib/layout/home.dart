@@ -50,9 +50,11 @@ class _HomePageBodyState extends State<HomePageBody> {
             IconButton(
                 icon: const Icon(Icons.wifi_off),
                 onPressed: () {
-                   showDialogWindow(context, "title", "content");
+                  showDialogWindow(
+                      context,
+                      AppLocalizations.of(context)!.noWifiTitle,
+                      AppLocalizations.of(context)!.noWifiContent);
                 }),
-                
           _getAutocompleteField('origin'),
           const SizedBox(height: 16.0),
           ElevatedButton(

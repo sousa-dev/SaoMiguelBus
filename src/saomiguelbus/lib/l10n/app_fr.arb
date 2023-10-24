@@ -15,6 +15,8 @@
   "minute": "minute",
   "minutes": "minutes",
   "noRoutesFound": "Aucune voie trouvée",
+  "noWifiContent": "noWifiContent",
+  "noWifiTitle": "noWifiTitle",
   "origin": "Origine",
   "routesPageLabel": "Itinéraires",
   "search": "Recherche"
