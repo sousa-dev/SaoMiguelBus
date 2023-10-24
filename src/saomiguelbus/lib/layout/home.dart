@@ -13,6 +13,7 @@ import 'package:saomiguelbus/models/route.dart' as my_route;
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
+import 'package:saomiguelbus/utils/show_dialog.dart';
 
 class HomePageBody extends StatefulWidget {
   HomePageBody(
@@ -45,6 +46,13 @@ class _HomePageBodyState extends State<HomePageBody> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
+          if (!internetConnection)
+            IconButton(
+                icon: const Icon(Icons.wifi_off),
+                onPressed: () {
+                   showDialogWindow(context, "title", "content");
+                }),
+                
           _getAutocompleteField('origin'),
           const SizedBox(height: 16.0),
           ElevatedButton(
