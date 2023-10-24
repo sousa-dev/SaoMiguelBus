@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:saomiguelbus/models/ad.dart';
 import 'package:saomiguelbus/utils/network_utility.dart';
 import 'package:saomiguelbus/models/globals.dart';
 
@@ -13,12 +16,13 @@ Future<String?> fetchAdBanner(
 
 //var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/ad/click?id=$id"
 
-Future<String?> clickAdBanner(String id) async {
+Future<BannerAd?> clickAdBanner(String id) async {
   Uri uri = Uri.https("saomiguelbus-api.herokuapp.com", "api/v1/ad/click", {
     'id': id,
   });
   String? response = await NetworkUtility.postURL(uri);
-  return response;
+  BannerAd bannerAd = BannerAd.fromJson(jsonDecode(response!));
+  return bannerAd;
 }
 
 Future<String?> postStat(String requestType,
