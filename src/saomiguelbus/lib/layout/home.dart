@@ -39,6 +39,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   DateTime date = DateTime.now().toUtc();
   int currentIndex = 0;
   int trackingCount = 5;
+  int favouriteCount = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +58,7 @@ class _HomePageBodyState extends State<HomePageBody> {
     );
   }
 
-  _getTopSection() {
+  Widget _getTopSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -110,7 +111,7 @@ class _HomePageBodyState extends State<HomePageBody> {
     );
   }
 
-  _getSearchSection() {
+  Widget _getSearchSection() {
     var time = TimeOfDay.fromDateTime(date);
 
     return Column(
@@ -400,12 +401,46 @@ class _HomePageBodyState extends State<HomePageBody> {
     );
   }
 
-  _getFavouriteSection() {
-    //TODO: Implement this section
-    return const Column();
+  Widget _getFavouriteSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        const Text(
+          'Favourite Routes',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 200, // Adjust this value as needed
+          child: ListView.builder(
+            itemCount: favouriteCount, // Replace with your dynamic item count
+            itemBuilder: (BuildContext context, int index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8.0), // Add vertical padding
+                child: Card(
+                  elevation: 5, // This gives the card an elevation
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                        10), // This gives the card rounded corners
+                  ),
+                  child: SizedBox(
+                    height: 100, // Adjust this value as needed
+                    child: Center(
+                        child: Text(
+                            'Item $index')), // Replace with your card content
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
-  _getAutocompleteField(String targetLabel) {
+  Widget _getAutocompleteField(String targetLabel) {
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         return onChangeText(textEditingValue.text);
