@@ -90,42 +90,10 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
       body: Material(
         child: Column(
           children: [
-            Text(originGmaps),
-            Text(destinationGmaps),
-            _getPageRow(),
-            Container(
-              height: 5,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _currentPageIndex == 0
-                        ? const Color(0xFF218732)
-                        : Colors.grey,
-                    _currentPageIndex == 1
-                        ? const Color(0xFF218732)
-                        : Colors.grey,
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                children: [
-                  Container(
-                    key: const Key('gMapsResults'),
-                    child: gMapsWidget,
-                  ),
-                  Container(
-                    key: const Key('bdSmbResults'),
-                    child: bdSmbWidget,
-                  ),
-                ],
-              ),
-            ),
+            _getTopSection(originGmaps, destinationGmaps),
+            _getPageSelection(),
+            _getSelectionIndicator(),
+            _getCenterWidgets(gMapsWidget, bdSmbWidget),
           ],
         ),
       ),
@@ -140,6 +108,19 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
       cardRoutes.add(CardRoute(route, origin, destination, context));
     }
     return cardRoutes;
+  }
+
+  Widget _getNoRoutesWidget() {
+    return Material(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            AppLocalizations.of(context)!.noRoutesFound,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _getGMapsWidget(String origin, String destination, int routesNumber,
@@ -164,19 +145,6 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 itemCount: routesNumber,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _getNoRoutesWidget() {
-    return Material(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            AppLocalizations.of(context)!.noRoutesFound,
           ),
         ],
       ),
@@ -211,7 +179,17 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  _getPageRow() {
+  _getTopSection(String originGmaps, String destinationGmaps) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(originGmaps),
+        Text(destinationGmaps),
+      ],
+    );
+  }
+
+  _getPageSelection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -258,6 +236,41 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
           ),
         ),
       ],
+    );
+  }
+
+  _getSelectionIndicator() {
+    return Container(
+      height: 5,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _currentPageIndex == 0 ? const Color(0xFF218732) : Colors.grey,
+            _currentPageIndex == 1 ? const Color(0xFF218732) : Colors.grey,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
+    );
+  }
+
+  _getCenterWidgets(Widget gMapsWidget, Widget bdSmbWidget) {
+    return Expanded(
+      child: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: [
+          Container(
+            key: const Key('gMapsResults'),
+            child: gMapsWidget,
+          ),
+          Container(
+            key: const Key('bdSmbResults'),
+            child: bdSmbWidget,
+          ),
+        ],
+      ),
     );
   }
 }
