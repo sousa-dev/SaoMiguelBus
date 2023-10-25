@@ -38,6 +38,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   var _departureType = "depart";
   DateTime date = DateTime.now().toUtc();
   int currentIndex = 0;
+  int alertCount = 10;
   int trackingCount = 5;
   int favouriteCount = 3;
 
@@ -73,40 +74,44 @@ class _HomePageBodyState extends State<HomePageBody> {
             },
           ),
         const Spacer(),
-        Stack(
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.warning),
-              onPressed: () {
-                // Handle the alert icon press here
-                showDialogWindow(context, "TODO", "Need to implement");
-              },
-            ),
-            Positioned(
-              right: 7,
-              top: 5,
-              child: Container(
-                padding: const EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 12,
-                  minHeight: 12,
-                ),
-                child: const Text(
-                  '5', // Replace with your dynamic value
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 8,
+        if (alertCount > 0)
+          Stack(
+            children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.warning),
+                onPressed: () {
+                  // Handle the alert icon press here
+                  showDialogWindow(context, "TODO", "Need to implement");
+                },
+              ),
+              Positioned(
+                right: 7,
+                top: 5,
+                child: Container(
+                  padding: const EdgeInsets.all(1),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  textAlign: TextAlign.center,
+                  constraints: const BoxConstraints(
+                    minWidth: 12,
+                    minHeight: 12,
+                  ),
+                  child: Text(
+                    alertCount >= 10
+                        ? '9+'
+                        : alertCount
+                            .toString(), // Replace with your dynamic value
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ],
     );
   }
