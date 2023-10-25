@@ -179,7 +179,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  _getTopSection(String originGmaps, String destinationGmaps) {
+  Widget _getTopSection(String originGmaps, String destinationGmaps) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -189,7 +189,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  _getPageSelection() {
+  Widget _getPageSelection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -239,7 +239,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  _getSelectionIndicator() {
+  Widget _getSelectionIndicator() {
     return Container(
       height: 5,
       decoration: BoxDecoration(
@@ -255,7 +255,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     );
   }
 
-  _getCenterWidgets(Widget gMapsWidget, Widget bdSmbWidget) {
+  Widget _getCenterWidgets(Widget gMapsWidget, Widget bdSmbWidget) {
     return Expanded(
       child: PageView(
         controller: _pageController,
