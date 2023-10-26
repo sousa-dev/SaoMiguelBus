@@ -3,6 +3,7 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/layout/results.dart';
@@ -119,215 +120,253 @@ class _HomePageBodyState extends State<HomePageBody> {
   Widget _getSearchSection() {
     var time = TimeOfDay.fromDateTime(date);
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _getAutocompleteField('origin'),
-        const SizedBox(height: 16.0),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              final temp = origin;
-              origin = destination;
-              destination = temp;
-              widget.onChangeOrigin(origin);
-              widget.onChangeDestination(destination);
-            });
-          },
-          child: const Icon(Icons.swap_vert),
+    return Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF218732).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(
+              10), // This gives the container rounded corners
         ),
-        const SizedBox(height: 16.0),
-        _getAutocompleteField('destination'),
-        ElevatedButton(
-          child: Text('${date.day}/${date.month}/${date.year}'),
-          onPressed: () async {
-            final chosenDate = await pickDate(date);
-            if (chosenDate == null) return;
-            setState(() {
-              date = DateTime(chosenDate.year, chosenDate.month, chosenDate.day,
-                  date.hour, date.minute);
-            });
-          },
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DropdownButton<String>(
-              value: _departureType,
-              onChanged: (value) {
-                setState(() {
-                  _departureType = value!;
-                });
-              },
-              items: [
-                DropdownMenuItem(
-                  value: "depart",
-                  child: Text(AppLocalizations.of(context)!.depart),
+        child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _getAutocompleteField('origin'),
+                const SizedBox(height: 8.0),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      final temp = origin;
+                      origin = destination;
+                      destination = temp;
+                      widget.onChangeOrigin(origin);
+                      widget.onChangeDestination(destination);
+                    });
+                  },
+                  child: const Icon(Icons.swap_vert),
                 ),
-                DropdownMenuItem(
-                  value: "arrive",
-                  child: Text(AppLocalizations.of(context)!.arrive),
-                ),
+                const SizedBox(height: 8.0),
+                _getAutocompleteField('destination'),
+                Row(children: [
+                  // Date picker button
+                  ElevatedButton(
+                    child: Text(DateFormat('yyyy-MM-dd').format(date)),
+                    onPressed: () async {
+                      final chosenDate = await showDatePicker(
+                        context: context,
+                        initialDate: date,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(DateTime.now().year + 1),
+                      );
+                      if (chosenDate != null) {
+                        setState(() {
+                          date = DateTime(chosenDate.year, chosenDate.month,
+                              chosenDate.day, date.hour, date.minute);
+                        });
+                      }
+                    },
+                  ),
+                  Spacer(), // This will push the following widgets to the right
+
+                  // Departure type selector
+                  DropdownButton<String>(
+                    value: _departureType,
+                    onChanged: (value) {
+                      setState(() {
+                        _departureType = value!;
+                      });
+                    },
+                    items: [
+                      DropdownMenuItem(
+                        value: "depart",
+                        child: Text(AppLocalizations.of(context)!.depart),
+                      ),
+                      DropdownMenuItem(
+                        value: "arrive",
+                        child: Text(AppLocalizations.of(context)!.arrive),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    child: Text(
+                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'),
+                    onPressed: () async {
+                      final chosenTime = await pickTime(date);
+                      if (chosenTime == null) return;
+                      setState(() {
+                        date = DateTime(date.year, date.month, date.day,
+                            chosenTime.hour, chosenTime.minute);
+                      });
+                    },
+                  )
+                ]),
+                SizedBox(
+                    width: MediaQuery.of(context).size.width *
+                        0.8, // This will make the container (and the button) take up the full width
+                    child: ElevatedButton(
+                      onPressed: () {
+                        String key =
+                            '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
+
+                        if (gMapsResultsCached.containsKey(key) &&
+                            routesResultsCached.containsKey(key)) {
+                          developer.log("Getting Results from cache...",
+                              name: 'cache');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ResultsPageBody(
+                                      gMaps: gMapsResultsCached[key],
+                                      bdSmb: routesResultsCached[key],
+                                      origin: autoComplete[origin]!,
+                                      destination: autoComplete[destination]!,
+                                    )),
+                          );
+                          return;
+                        }
+
+                        if (origin.isEmpty || destination.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content:
+                                Text(AppLocalizations.of(context)!.fillFields),
+                          ));
+                          return;
+                        }
+
+                        setState(() {
+                          if (!autoComplete.keys.contains(origin)) {
+                            autoComplete[origin] = AutocompletePlace(
+                              name: origin,
+                              placeID: 'custom',
+                              type: 'custom',
+                            );
+                          }
+                          if (!autoComplete.keys.contains(destination)) {
+                            autoComplete[destination] = AutocompletePlace(
+                              name: destination,
+                              placeID: 'custom',
+                              type: 'custom',
+                            );
+                          }
+
+                          getLatLngFromPlaceID(
+                                  autoComplete[origin]!.placeID,
+                                  autoComplete[destination]!.placeID,
+                                  origin,
+                                  destination)
+                              .then((value) {
+                            Location originLocation = value[0];
+                            Location destinationLocation = value[1];
+
+                            String originQuery = originLocation.toString();
+                            String destinationQuery =
+                                destinationLocation.toString();
+
+                            if (originQuery == '0.0,0.0') {
+                              if (autoComplete[origin]!.placeID == 'custom') {
+                                originQuery = origin;
+                                originLocation = getStop(origin).location;
+                              } else {
+                                originLocation =
+                                    getStop(autoComplete[origin]!.name)
+                                        .location;
+                                originQuery = originLocation.toString();
+                              }
+                            }
+
+                            if (destinationQuery == '0.0,0.0') {
+                              if (autoComplete[destination]!.placeID ==
+                                  'custom') {
+                                destinationQuery = destination;
+                                destinationLocation =
+                                    getStop(destination).location;
+                              } else {
+                                destinationLocation =
+                                    getStop(autoComplete[destination]!.name)
+                                        .location;
+                                destinationQuery =
+                                    destinationLocation.toString();
+                              }
+                            }
+
+                            getGoogleRoutes(originQuery, destinationQuery, date,
+                                    AppLocalizations.of(context)!.languageCode,
+                                    arrival_departure: _departureType)
+                                .then((value) {
+                              widget._instructions = value;
+                              if (widget._instructions.runtimeType == String) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      Text(widget._instructions.toString()),
+                                ));
+                                return;
+                              }
+
+                              Map gMapsResults = {
+                                'origin': origin,
+                                'destination': destination,
+                                'routesNumber':
+                                    widget._instructions.routes.length,
+                                'instructions': widget._instructions,
+                              };
+
+                              List<Stop> originClosestStops =
+                                  getClosestStops(originLocation);
+                              List<Stop> destinationClosestStops =
+                                  getClosestStops(destinationLocation);
+                              widget._routes = [];
+                              for (var originStop in originClosestStops) {
+                                for (var destinationStop
+                                    in destinationClosestStops) {
+                                  developer.log(originStop.name);
+                                  developer.log(destinationStop.name);
+                                  developer.log(widget._routes.toString());
+                                  widget._routes.addAll(findRoutes(
+                                      originStop,
+                                      destinationStop,
+                                      _getDayOfWeekString(date.weekday)));
+                                }
+                              }
+
+                              widget._routes = widget._routes.toSet().toList();
+
+                              Map routesResults = {
+                                'origin': originClosestStops
+                                    .map((stop) => stop.name)
+                                    .toList(),
+                                'destination': destinationClosestStops
+                                    .map((stop) => stop.name)
+                                    .toList(),
+                                'routesNumber': widget._routes.length,
+                                'routes': widget._routes,
+                              };
+
+                              // Store the results in the global variables
+                              developer.log("Storing Results in cache...",
+                                  name: 'cache');
+                              gMapsResultsCached[key] = gMapsResults;
+                              routesResultsCached[key] = routesResults;
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ResultsPageBody(
+                                          gMaps: gMapsResults,
+                                          bdSmb: routesResults,
+                                          origin: autoComplete[origin]!,
+                                          destination:
+                                              autoComplete[destination]!,
+                                        )),
+                              );
+                            });
+                          });
+                        });
+                      },
+                      child: Text(AppLocalizations.of(context)!.search),
+                    )),
               ],
-            ),
-          ],
-        ),
-        ElevatedButton(
-          child: Text(
-              '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'),
-          onPressed: () async {
-            final chosenTime = await pickTime(date);
-            if (chosenTime == null) return;
-            setState(() {
-              date = DateTime(date.year, date.month, date.day, chosenTime.hour,
-                  chosenTime.minute);
-            });
-          },
-        ),
-        ElevatedButton(
-          onPressed: () {
-            String key =
-                '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
-
-            if (gMapsResultsCached.containsKey(key) &&
-                routesResultsCached.containsKey(key)) {
-              developer.log("Getting Results from cache...", name: 'cache');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ResultsPageBody(
-                          gMaps: gMapsResultsCached[key],
-                          bdSmb: routesResultsCached[key],
-                          origin: autoComplete[origin]!,
-                          destination: autoComplete[destination]!,
-                        )),
-              );
-              return;
-            }
-
-            if (origin.isEmpty || destination.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!.fillFields),
-              ));
-              return;
-            }
-
-            setState(() {
-              if (!autoComplete.keys.contains(origin)) {
-                autoComplete[origin] = AutocompletePlace(
-                  name: origin,
-                  placeID: 'custom',
-                  type: 'custom',
-                );
-              }
-              if (!autoComplete.keys.contains(destination)) {
-                autoComplete[destination] = AutocompletePlace(
-                  name: destination,
-                  placeID: 'custom',
-                  type: 'custom',
-                );
-              }
-
-              getLatLngFromPlaceID(autoComplete[origin]!.placeID,
-                      autoComplete[destination]!.placeID, origin, destination)
-                  .then((value) {
-                Location originLocation = value[0];
-                Location destinationLocation = value[1];
-
-                String originQuery = originLocation.toString();
-                String destinationQuery = destinationLocation.toString();
-
-                if (originQuery == '0.0,0.0') {
-                  if (autoComplete[origin]!.placeID == 'custom') {
-                    originQuery = origin;
-                    originLocation = getStop(origin).location;
-                  } else {
-                    originLocation =
-                        getStop(autoComplete[origin]!.name).location;
-                    originQuery = originLocation.toString();
-                  }
-                }
-
-                if (destinationQuery == '0.0,0.0') {
-                  if (autoComplete[destination]!.placeID == 'custom') {
-                    destinationQuery = destination;
-                    destinationLocation = getStop(destination).location;
-                  } else {
-                    destinationLocation =
-                        getStop(autoComplete[destination]!.name).location;
-                    destinationQuery = destinationLocation.toString();
-                  }
-                }
-
-                getGoogleRoutes(originQuery, destinationQuery, date,
-                        AppLocalizations.of(context)!.languageCode,
-                        arrival_departure: _departureType)
-                    .then((value) {
-                  widget._instructions = value;
-                  if (widget._instructions.runtimeType == String) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(widget._instructions.toString()),
-                    ));
-                    return;
-                  }
-
-                  Map gMapsResults = {
-                    'origin': origin,
-                    'destination': destination,
-                    'routesNumber': widget._instructions.routes.length,
-                    'instructions': widget._instructions,
-                  };
-
-                  List<Stop> originClosestStops =
-                      getClosestStops(originLocation);
-                  List<Stop> destinationClosestStops =
-                      getClosestStops(destinationLocation);
-                  widget._routes = [];
-                  for (var originStop in originClosestStops) {
-                    for (var destinationStop in destinationClosestStops) {
-                      developer.log(originStop.name);
-                      developer.log(destinationStop.name);
-                      developer.log(widget._routes.toString());
-                      widget._routes.addAll(findRoutes(originStop,
-                          destinationStop, _getDayOfWeekString(date.weekday)));
-                    }
-                  }
-
-                  widget._routes = widget._routes.toSet().toList();
-
-                  Map routesResults = {
-                    'origin':
-                        originClosestStops.map((stop) => stop.name).toList(),
-                    'destination': destinationClosestStops
-                        .map((stop) => stop.name)
-                        .toList(),
-                    'routesNumber': widget._routes.length,
-                    'routes': widget._routes,
-                  };
-
-                  // Store the results in the global variables
-                  developer.log("Storing Results in cache...", name: 'cache');
-                  gMapsResultsCached[key] = gMapsResults;
-                  routesResultsCached[key] = routesResults;
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ResultsPageBody(
-                              gMaps: gMapsResults,
-                              bdSmb: routesResults,
-                              origin: autoComplete[origin]!,
-                              destination: autoComplete[destination]!,
-                            )),
-                  );
-                });
-              });
-            });
-          },
-          child: Text(AppLocalizations.of(context)!.search),
-        ),
-      ],
-    );
+            )));
   }
 
   Widget _getTrackSection() {
