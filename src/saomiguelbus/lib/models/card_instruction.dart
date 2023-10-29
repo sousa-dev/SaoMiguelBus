@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 
 class CardInstruction {
@@ -16,7 +17,7 @@ class CardInstruction {
     return Card(
       elevation: 2.0,
       child: ExpansionTile(
-        iconColor: const Color(0xFF218732),
+        iconColor: primaryColor,
         textColor: Colors.black,
         title: Row(
           children: [

@@ -124,7 +124,7 @@ class _HomePageBodyState extends State<HomePageBody> {
 
     return Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF218732).withOpacity(0.2),
+          color: primaryColor.withOpacity(0.2),
           borderRadius: BorderRadius.circular(
               10), // This gives the container rounded corners
         ),
@@ -450,9 +450,6 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Widget _getFavouriteSection() {
-    List<Favourite> favourites = [
-      Favourite(origin: 'Ribeira Grande', destination: 'Ponta Delgada'),
-    ];
     int favouriteCount = favourites.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
