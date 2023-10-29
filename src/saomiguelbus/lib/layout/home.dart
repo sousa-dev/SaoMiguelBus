@@ -42,7 +42,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   final ScrollController _scrollController = ScrollController();
   int currentIndex = 0;
   int alertCount = 10;
-  int trackingCount = 5;
+  int trackingCount = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -386,61 +386,63 @@ class _HomePageBodyState extends State<HomePageBody> {
         const SizedBox(height: 10),
         Column(
           children: [
-            SizedBox(
-              height: 100, // Adjust this value as needed
-              child: PageView.builder(
-                controller: PageController(viewportFraction: 1),
-                itemCount:
-                    trackingCount, // Replace with your dynamic item count
-                onPageChanged: (int index) {
-                  setState(() {
-                    currentIndex =
-                        index; // Update the current page index when the page changes
-                  });
-                },
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0), // Add horizontal padding
-                    child: Card(
-                      elevation: 5, // This gives the card an elevation
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                            10), // This gives the card rounded corners
+            if (trackingCount != 0)
+              SizedBox(
+                height: 100, // Adjust this value as needed
+                child: PageView.builder(
+                  controller: PageController(viewportFraction: 1),
+                  itemCount:
+                      trackingCount, // Replace with your dynamic item count
+                  onPageChanged: (int index) {
+                    setState(() {
+                      currentIndex =
+                          index; // Update the current page index when the page changes
+                    });
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0), // Add horizontal padding
+                      child: Card(
+                        elevation: 5, // This gives the card an elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              10), // This gives the card rounded corners
+                        ),
+                        child: Center(child: Text('Item $index')),
                       ),
-                      child: Center(child: Text('Item $index')),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
             const SizedBox(height: 10),
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(145, 114, 181, 123),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 1,
-                    blurRadius: 7,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: DotsIndicator(
-                  dotsCount: trackingCount > 10 ? 10 : trackingCount,
-                  position: currentIndex >= 10
-                      ? 9.toDouble()
-                      : currentIndex.toDouble(),
-                  decorator: const DotsDecorator(
-                    activeColor: Color(0xFF218732),
+            if (trackingCount > 1)
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(145, 114, 181, 123),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 7,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: DotsIndicator(
+                    dotsCount: trackingCount > 10 ? 10 : trackingCount,
+                    position: currentIndex >= 10
+                        ? 9.toDouble()
+                        : currentIndex.toDouble(),
+                    decorator: const DotsDecorator(
+                      activeColor: Color(0xFF218732),
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ],
