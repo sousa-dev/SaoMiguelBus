@@ -9,6 +9,7 @@ import 'package:saomiguelbus/main.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
+import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
 
 class ResultsPageBody extends StatefulWidget {
@@ -180,10 +181,28 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
   }
 
   Widget _getTopSection(String originGmaps, String destinationGmaps) {
+    bool isFavourite = checkIfFavourite(originGmaps, destinationGmaps);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(originGmaps),
+        IconButton(
+          icon: Icon(
+            Icons.favorite,
+            color: isFavourite ? primaryColor : Colors.grey,
+          ),
+          onPressed: () {
+            setState(() {
+              if (isFavourite) {
+                removeFavourite(originGmaps, destinationGmaps);
+              } else {
+                addFavourite(originGmaps, destinationGmaps);
+              }
+              isFavourite = !isFavourite;
+            });
+          },
+        ),
         Text(destinationGmaps),
       ],
     );
@@ -198,9 +217,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
             onPressed: () => _goToPage(0),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: _currentPageIndex == 0
-                  ? const Color(0xFF218732)
-                  : Colors.black,
+              foregroundColor:
+                  _currentPageIndex == 0 ? primaryColor : Colors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7),
@@ -219,9 +237,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
             onPressed: () => _goToPage(1),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: _currentPageIndex == 1
-                  ? const Color(0xFF218732)
-                  : Colors.black,
+              foregroundColor:
+                  _currentPageIndex == 1 ? primaryColor : Colors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7),
@@ -245,8 +262,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _currentPageIndex == 0 ? const Color(0xFF218732) : Colors.grey,
-            _currentPageIndex == 1 ? const Color(0xFF218732) : Colors.grey,
+            _currentPageIndex == 0 ? primaryColor : Colors.grey,
+            _currentPageIndex == 1 ? primaryColor : Colors.grey,
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,

@@ -10,6 +10,7 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/android_load_v2.dart';
 import 'package:saomiguelbus/services/get_stops_v1.dart';
+import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List localLoad(SharedPreferences prefs) {
@@ -101,6 +102,7 @@ void createLocalDB(List data, List stops) {
 Future<bool> retrieveData(kDebugMode) async {
   final packageInfo = await PackageInfo.fromPlatform();
   final version = packageInfo.version;
+  loadFavouritesToGlobals();
   Map information = {
     'version': version,
     'maps': true
