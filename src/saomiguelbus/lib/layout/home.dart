@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/layout/results.dart';
+import 'package:saomiguelbus/models/favourite.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
@@ -38,16 +39,17 @@ class _HomePageBodyState extends State<HomePageBody> {
   Map<String, AutocompletePlace> autoComplete = {};
   var _departureType = "depart";
   DateTime date = DateTime.now().toUtc();
+  final ScrollController _scrollController = ScrollController();
   int currentIndex = 0;
   int alertCount = 10;
   int trackingCount = 5;
-  int favouriteCount = 3;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           children: [
             _getTopSection(),
@@ -166,7 +168,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                       }
                     },
                   ),
-                  Spacer(), // This will push the following widgets to the right
+                  const Spacer(), // This will push the following widgets to the right
 
                   // Departure type selector
                   DropdownButton<String>(
@@ -446,6 +448,10 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Widget _getFavouriteSection() {
+    List<Favourite> favourites = [
+      Favourite(origin: 'Ribeira Grande', destination: 'Ponta Delgada'),
+    ];
+    int favouriteCount = favourites.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -463,17 +469,53 @@ class _HomePageBodyState extends State<HomePageBody> {
               return Padding(
                 padding: const EdgeInsets.symmetric(
                     vertical: 8.0), // Add vertical padding
-                child: Card(
-                  elevation: 5, // This gives the card an elevation
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                        10), // This gives the card rounded corners
-                  ),
-                  child: SizedBox(
-                    height: 100, // Adjust this value as needed
-                    child: Center(
-                        child: Text(
-                            'Item $index')), // Replace with your card content
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      widget.onChangeOrigin(favourites[index].origin);
+                      widget.onChangeDestination(favourites[index].destination);
+                      _scrollController.animateTo(
+                        0.0,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                      );
+                    });
+                  },
+                  child: Card(
+                    elevation: 5, // This gives the card an elevation
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          10), // This gives the card rounded corners
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              favourites[index]
+                                  .origin, // Replace with your origin value
+                              softWrap:
+                                  true, // This will make the text continue to another line if it's too long
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.0), // Add horizontal padding
+                            child: Icon(Icons.arrow_forward),
+                          ),
+                          Flexible(
+                            child: Text(
+                              favourites[index]
+                                  .destination, // Replace with your destination value
+                              softWrap:
+                                  true, // This will make the text continue to another line if it's too long
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );
