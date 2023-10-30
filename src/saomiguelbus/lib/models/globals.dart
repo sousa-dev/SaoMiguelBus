@@ -23,6 +23,8 @@ bool canUseMaps = false;
 bool internetConnection = false;
 String latestVersion = '';
 
+String currentAdOn = 'home';
+
 String sessionToken = '';
 
 List<Favourite> favourites = [];

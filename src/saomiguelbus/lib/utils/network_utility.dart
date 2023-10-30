@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:saomiguelbus/utils/ad_utility.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
@@ -39,7 +41,28 @@ class NetworkUtility {
   }
 
   //fetchImage
-  static Image fetchImage(String url) {
-    return Image.network(url);
+  static GestureDetector fetchImage(String id, String url,
+      {String targetUrl = 'https://ad.saomiguelbus.com', String action = ''}) {
+    return GestureDetector(
+      onTap: () {
+        String warningMsg = onTapBanner(id, url, targetUrl, action);
+        developer.log(warningMsg, name: 'fetchImage');
+        if (warningMsg.isNotEmpty) {
+          //TODO: Figure why this is not showing
+          Fluttertoast.showToast(
+            msg: warningMsg,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      },
+      child: Image.network(
+        url,
+        errorBuilder: (context, error, stackTrace) {
+          developer.log('Error occurred: $error');
+          return Text('Failed to load image');
+        },
+      ),
+    );
   }
 }

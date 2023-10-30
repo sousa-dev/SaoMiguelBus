@@ -3,6 +3,7 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 
@@ -228,10 +229,11 @@ class _HomePageBodyState extends State<HomePageBody> {
                         }
 
                         if (origin.isEmpty || destination.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content:
-                                Text(AppLocalizations.of(context)!.fillFields),
-                          ));
+                          Fluttertoast.showToast(
+                            msg: AppLocalizations.of(context)!.fillFields,
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                          );
                           return;
                         }
 
