@@ -67,12 +67,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  late Future<bool> _initializationFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializationFuture = initialization();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: getTopBar(title: widget.title, context: context),
       body: FutureBuilder<bool>(
-        future: initialization(),
+        future: _initializationFuture,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator(); // Show a loading spinner while waiting
