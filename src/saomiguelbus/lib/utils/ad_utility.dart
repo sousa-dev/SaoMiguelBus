@@ -12,8 +12,10 @@ String onTapBanner(String id, String url, String targetUrl, String action) {
   Uri? uri;
 
   switch (action) {
+    //TODO: change this to i18n string
     case 'open':
       uri = Uri.parse(targetUrl);
+      toastMsg = 'Opening external link...';
       break;
     case 'directions':
       uri = Uri.parse('google.navigation:q=$targetUrl&mode=transit');
