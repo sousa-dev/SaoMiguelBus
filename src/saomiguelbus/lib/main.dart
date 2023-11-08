@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: getTopBar(title: widget.title),
+      appBar: getTopBar(title: widget.title, context: context),
       body: FutureBuilder<bool>(
         future: initialization(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {

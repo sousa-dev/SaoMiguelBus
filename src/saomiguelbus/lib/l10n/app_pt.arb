@@ -5,7 +5,10 @@
   "@destination": {
     "description": "Label for destination text fields"
   },
+  "dialing": "Ligar para",
   "directionsPageLabel": "Passo a passo",
+  "directionsTo": "A obter direções para",
+  "errorOpeningAd": "Ocorreu um error inesperado ao abrir o anúncio",
   "fillFields": "Preencha a Origem e o Destino",
   "find": "Ver",
   "@find": {
@@ -41,6 +44,7 @@
   },
   "noWifiContent": "noWifiContent",
   "noWifiTitle": "noWifiTitle",
+  "openExternalLink": "A abrir link externo...",
   "origin": "Origem",
   "@origin": {
     "description": "Label for origin text fields"
@@ -49,5 +53,7 @@
   "search": "Pesquisar",
   "@search": {
     "description": "Label for search button"
-  }
+  },
+  "sendEmailTo": "Enviar email para",
+  "sendMessageTo": "Enviar mensagem para"
 }

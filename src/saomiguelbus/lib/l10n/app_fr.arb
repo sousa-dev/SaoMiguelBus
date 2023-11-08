@@ -2,7 +2,10 @@
   "arrive": "Arriver",
   "depart": "Départ",
   "destination": "Destination",
+  "dialing": "Numérotation",
   "directionsPageLabel": "Pas à pas",
+  "directionsTo": "Directions pour",
+  "errorOpeningAd": "Un problème inattendu est survenu lors de l'ouverture de l'annonce",
   "fillFields": "L'origine et la destination ne peuvent pas être vides",
   "find": "Trouver",
   "home": "Home",
@@ -17,7 +20,10 @@
   "noRoutesFound": "Aucune voie trouvée",
   "noWifiContent": "noWifiContent",
   "noWifiTitle": "noWifiTitle",
+  "openExternalLink": "Ouverture du lien externe...",
   "origin": "Origine",
   "routesPageLabel": "Itinéraires",
-  "search": "Recherche"
+  "search": "Recherche",
+  "sendEmailTo": "Envoyer un e-mail à",
+  "sendMessageTo": "Envoi d'un message à"
 }

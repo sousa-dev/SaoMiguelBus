@@ -42,10 +42,13 @@ class NetworkUtility {
 
   //fetchImage
   static GestureDetector fetchImage(String id, String url,
-      {String targetUrl = 'https://ad.saomiguelbus.com', String action = ''}) {
+      {String targetUrl = 'https://ad.saomiguelbus.com',
+      String action = '',
+      required BuildContext context}) {
     return GestureDetector(
       onTap: () {
-        String warningMsg = onTapBanner(id, url, targetUrl, action);
+        String warningMsg =
+            onTapBanner(id, url, targetUrl, action, context: context);
         developer.log(warningMsg, name: 'fetchImage');
         if (warningMsg.isNotEmpty) {
           //TODO: Figure why this is not showing

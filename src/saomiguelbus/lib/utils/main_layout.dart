@@ -7,7 +7,7 @@ import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/widgets/navBar.dart';
 import 'package:saomiguelbus/utils/network_utility.dart';
 
-PreferredSizeWidget getTopBar({title = "São Miguel Bus"}) {
+PreferredSizeWidget getTopBar({title = "São Miguel Bus", required context}) {
   return AppBar(
     title: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -23,7 +23,7 @@ PreferredSizeWidget getTopBar({title = "São Miguel Bus"}) {
             String targetUrl = valueMap['target'];
             String action = valueMap['action'];
             return NetworkUtility.fetchImage(id, url,
-                targetUrl: targetUrl, action: action);
+                targetUrl: targetUrl, action: action, context: context);
           }),
           builder:
               (BuildContext context, AsyncSnapshot<GestureDetector> snapshot) {

@@ -2,7 +2,10 @@
   "arrive": "Llegar",
   "depart": "Salir",
   "destination": "Destino",
+  "dialing": "Composer le",
   "directionsPageLabel": "Paso a paso",
+  "directionsTo": "Direcciones a",
+  "errorOpeningAd": "Hubo un problema inesperado al abrir el anuncio.",
   "fillFields": "El origen y el destino no pueden estar en blanco",
   "find": "Buscar",
   "home": "Home",
@@ -17,7 +20,10 @@
   "noRoutesFound": "No se encontraron rutas",
   "noWifiContent": "noWifiContent",
   "noWifiTitle": "noWifiTitle",
+  "openExternalLink": "Abriendo enlace externo...",
   "origin": "Origen",
   "routesPageLabel": "Rutas",
-  "search": "Buscar"
+  "search": "Buscar",
+  "sendEmailTo": "Enviar el email a",
+  "sendMessageTo": "Enviando mensaje a"
 }

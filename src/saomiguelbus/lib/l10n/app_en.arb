@@ -2,7 +2,10 @@
   "arrive": "Arrive",
   "depart": "Depart",
   "destination": "Destination",
+  "dialing": "Dialing",
   "directionsPageLabel": "Step by Step",
+  "directionsTo": "Getting directions to",
+  "errorOpeningAd": "There was a unexpected problem opening the ad",
   "fillFields": "Origin and Destination cannot be blank",
   "find": "Find",
   "home": "Home",
@@ -17,7 +20,10 @@
   "noRoutesFound": "No Routes Found",
   "noWifiContent": "noWifiContent",
   "noWifiTitle": "noWifiTitle",
+  "openExternalLink": "Opening external link...",
   "origin": "Origin",
   "routesPageLabel": "Routes",
-  "search": "Search"
+  "search": "Search",
+  "sendEmailTo": "Send email to",
+  "sendMessageTo": "Send message to"
 }

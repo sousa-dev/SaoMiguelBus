@@ -87,7 +87,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
         originBdsmb, destinationBdsmb, routesnumberBdsmb, routes);
 
     return Scaffold(
-      appBar: getTopBar(),
+      appBar: getTopBar(context: context),
       body: Material(
         child: Column(
           children: [
