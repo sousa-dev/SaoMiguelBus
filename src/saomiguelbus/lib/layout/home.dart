@@ -1,5 +1,7 @@
 // Home Page Body Widget
 // Path: lib/layout/home.dart
+import 'dart:convert';
+
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -42,11 +44,20 @@ class _HomePageBodyState extends State<HomePageBody> {
   DateTime date = DateTime.now().toUtc();
   final ScrollController _scrollController = ScrollController();
   int currentIndex = 0;
-  int alertCount = 10;
+  List<dynamic> infoAlerts = [];
+  int alertCount = 0;
   int trackingCount = 2;
 
   @override
   Widget build(BuildContext context) {
+    if (alertCount == 0) {
+      fetchInfos().then((value) {
+        setState(() {
+          infoAlerts = jsonDecode(value!);
+          alertCount = infoAlerts.length;
+        });
+      });
+    }
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(

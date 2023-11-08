@@ -14,7 +14,16 @@ Future<String?> fetchAdBanner(
   return response;
 }
 
-//var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/ad/click?id=$id"
+//var URL = "https://saomiguelbus-api.herokuapp.com/api/v1/infos"
+
+Future<String?> fetchInfos() async {
+  Uri uri = Uri.https("saomiguelbus-api.herokuapp.com", "api/v1/infos");
+  String? response = await NetworkUtility.fetchURL(uri);
+  if (response != null) {
+    response = utf8.decode(response.runes.toList());
+  }
+  return response;
+}
 
 Future<BannerAd?> clickAdBanner(String id) async {
   Uri uri = Uri.https("saomiguelbus-api.herokuapp.com", "api/v1/ad/click", {
