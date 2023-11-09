@@ -498,8 +498,8 @@ class _HomePageBodyState extends State<HomePageBody> {
                           BorderRadius.circular(10.0), // Add this line
                     ),
                     alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20.0),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 20.0),
                       child: Icon(Icons.delete, color: Colors.white),
                     ),
                   ),
