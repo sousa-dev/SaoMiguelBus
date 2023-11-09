@@ -18,6 +18,7 @@ import 'package:saomiguelbus/services/index.dart';
 import 'package:saomiguelbus/models/route.dart' as my_route;
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/smb_api.dart';
+import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
 
@@ -475,56 +476,80 @@ class _HomePageBodyState extends State<HomePageBody> {
         SizedBox(
           height: 200, // Adjust this value as needed
           child: ListView.builder(
-            itemCount: favouriteCount, // Replace with your dynamic item count
+            itemCount: favouriteCount,
             itemBuilder: (BuildContext context, int index) {
               return Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8.0), // Add vertical padding
-                child: GestureDetector(
-                  onTap: () {
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Dismissible(
+                  key: Key(
+                      '${favourites[index].origin}-${favourites[index].destination}'), // Replace with the unique id of the favourite
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (direction) {
+                    // Handle the deletion of the favourite
                     setState(() {
-                      widget.onChangeOrigin(favourites[index].origin);
-                      widget.onChangeDestination(favourites[index].destination);
-                      _scrollController.animateTo(
-                        0.0,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeOut,
-                      );
+                      removeFavourite(favourites[index].origin,
+                          favourites[index].destination);
                     });
                   },
-                  child: Card(
-                    elevation: 5, // This gives the card an elevation
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          10), // This gives the card rounded corners
+                  background: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius:
+                          BorderRadius.circular(10.0), // Add this line
                     ),
+                    alignment: Alignment.centerRight,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              favourites[index]
-                                  .origin, // Replace with your origin value
-                              softWrap:
-                                  true, // This will make the text continue to another line if it's too long
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Icon(Icons.delete, color: Colors.white),
+                    ),
+                  ),
+
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        widget.onChangeOrigin(favourites[index].origin);
+                        widget
+                            .onChangeDestination(favourites[index].destination);
+                        _scrollController.animateTo(
+                          0.0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeOut,
+                        );
+                      });
+                    },
+                    child: Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                favourites[index]
+                                    .origin, // Replace with your origin value
+                                softWrap:
+                                    true, // This will make the text continue to another line if it's too long
+                              ),
                             ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.0), // Add horizontal padding
-                            child: Icon(Icons.arrow_forward),
-                          ),
-                          Flexible(
-                            child: Text(
-                              favourites[index]
-                                  .destination, // Replace with your destination value
-                              softWrap:
-                                  true, // This will make the text continue to another line if it's too long
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.0), // Add horizontal padding
+                              child: Icon(Icons.arrow_forward),
                             ),
-                          ),
-                        ],
+                            Flexible(
+                              child: Text(
+                                favourites[index]
+                                    .destination, // Replace with your destination value
+                                softWrap:
+                                    true, // This will make the text continue to another line if it's too long
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
