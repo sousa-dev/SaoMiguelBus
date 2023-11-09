@@ -95,8 +95,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               IconButton(
                 icon: const Icon(Icons.warning),
                 onPressed: () {
-                  // Handle the alert icon press here
-                  showDialogWindow(context, "TODO", "Need to implement");
+                  showInfosDialog(context, infoAlerts);
                 },
               ),
               Positioned(
