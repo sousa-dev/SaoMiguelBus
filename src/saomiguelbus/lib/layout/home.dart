@@ -20,6 +20,7 @@ import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
+import 'package:saomiguelbus/utils/search_route.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
 
 class HomePageBody extends StatefulWidget {
@@ -219,26 +220,6 @@ class _HomePageBodyState extends State<HomePageBody> {
                         0.8, // This will make the container (and the button) take up the full width
                     child: ElevatedButton(
                       onPressed: () {
-                        String key =
-                            '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
-
-                        if (gMapsResultsCached.containsKey(key) &&
-                            routesResultsCached.containsKey(key)) {
-                          developer.log("Getting Results from cache...",
-                              name: 'cache');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ResultsPageBody(
-                                      gMaps: gMapsResultsCached[key],
-                                      bdSmb: routesResultsCached[key],
-                                      origin: autoComplete[origin]!,
-                                      destination: autoComplete[destination]!,
-                                    )),
-                          );
-                          return;
-                        }
-
                         if (origin.isEmpty || destination.isEmpty) {
                           Fluttertoast.showToast(
                             msg: AppLocalizations.of(context)!.fillFields,
@@ -248,133 +229,33 @@ class _HomePageBodyState extends State<HomePageBody> {
                           return;
                         }
 
-                        setState(() {
-                          if (!autoComplete.keys.contains(origin)) {
-                            autoComplete[origin] = AutocompletePlace(
-                              name: origin,
-                              placeID: 'custom',
-                              type: 'custom',
-                            );
-                          }
-                          if (!autoComplete.keys.contains(destination)) {
-                            autoComplete[destination] = AutocompletePlace(
-                              name: destination,
-                              placeID: 'custom',
-                              type: 'custom',
-                            );
-                          }
+                        String key =
+                            '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
 
-                          getLatLngFromPlaceID(
-                                  autoComplete[origin]!.placeID,
-                                  autoComplete[destination]!.placeID,
-                                  origin,
-                                  destination)
-                              .then((value) {
-                            Location originLocation = value[0];
-                            Location destinationLocation = value[1];
-
-                            String originQuery = originLocation.toString();
-                            String destinationQuery =
-                                destinationLocation.toString();
-
-                            if (originQuery == '0.0,0.0') {
-                              if (autoComplete[origin]!.placeID == 'custom') {
-                                originQuery = origin;
-                                originLocation = getStop(origin).location;
-                              } else {
-                                originLocation =
-                                    getStop(autoComplete[origin]!.name)
-                                        .location;
-                                originQuery = originLocation.toString();
-                              }
-                            }
-
-                            if (destinationQuery == '0.0,0.0') {
-                              if (autoComplete[destination]!.placeID ==
-                                  'custom') {
-                                destinationQuery = destination;
-                                destinationLocation =
-                                    getStop(destination).location;
-                              } else {
-                                destinationLocation =
-                                    getStop(autoComplete[destination]!.name)
-                                        .location;
-                                destinationQuery =
-                                    destinationLocation.toString();
-                              }
-                            }
-
-                            getGoogleRoutes(originQuery, destinationQuery, date,
-                                    AppLocalizations.of(context)!.languageCode,
-                                    arrival_departure: _departureType)
-                                .then((value) {
-                              widget._instructions = value;
-                              if (widget._instructions.runtimeType == String) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content:
-                                      Text(widget._instructions.toString()),
-                                ));
-                                return;
-                              }
-
-                              Map gMapsResults = {
-                                'origin': origin,
-                                'destination': destination,
-                                'routesNumber':
-                                    widget._instructions.routes.length,
-                                'instructions': widget._instructions,
-                              };
-
-                              List<Stop> originClosestStops =
-                                  getClosestStops(originLocation);
-                              List<Stop> destinationClosestStops =
-                                  getClosestStops(destinationLocation);
-                              widget._routes = [];
-                              for (var originStop in originClosestStops) {
-                                for (var destinationStop
-                                    in destinationClosestStops) {
-                                  developer.log(originStop.name);
-                                  developer.log(destinationStop.name);
-                                  developer.log(widget._routes.toString());
-                                  widget._routes.addAll(findRoutes(
-                                      originStop,
-                                      destinationStop,
-                                      _getDayOfWeekString(date.weekday)));
-                                }
-                              }
-
-                              widget._routes = widget._routes.toSet().toList();
-
-                              Map routesResults = {
-                                'origin': originClosestStops
-                                    .map((stop) => stop.name)
-                                    .toList(),
-                                'destination': destinationClosestStops
-                                    .map((stop) => stop.name)
-                                    .toList(),
-                                'routesNumber': widget._routes.length,
-                                'routes': widget._routes,
-                              };
-
-                              // Store the results in the global variables
-                              developer.log("Storing Results in cache...",
-                                  name: 'cache');
-                              gMapsResultsCached[key] = gMapsResults;
-                              routesResultsCached[key] = routesResults;
-
-                              Navigator.push(
+                        fetchRoutes(
+                                origin,
+                                destination,
+                                date,
+                                _departureType,
+                                autoComplete,
+                                widget._routes,
                                 context,
-                                MaterialPageRoute(
-                                    builder: (context) => ResultsPageBody(
-                                          gMaps: gMapsResults,
-                                          bdSmb: routesResults,
-                                          origin: autoComplete[origin]!,
-                                          destination:
-                                              autoComplete[destination]!,
-                                        )),
-                              );
-                            });
+                                key,
+                                widget._instructions)
+                            .then((results) {
+                          setState(() {
+                            // widget._routes = results['routes'];
+                            // widget._instructions = results['instructions'];
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ResultsPageBody(
+                                        gMaps: gMapsResultsCached[key],
+                                        bdSmb: routesResultsCached[key],
+                                        origin: autoComplete[origin]!,
+                                        destination: autoComplete[destination]!,
+                                      )),
+                            );
                           });
                         });
                       },
@@ -716,16 +597,4 @@ class _HomePageBodyState extends State<HomePageBody> {
         context: context,
         initialTime: TimeOfDay.fromDateTime(date),
       );
-
-  TypeOfDay _getDayOfWeekString(int weekday) {
-    developer.log(weekday.toString(), name: 'weekday');
-    switch (weekday) {
-      case 6:
-        return TypeOfDay.saturday;
-      case 7:
-        return TypeOfDay.sunday;
-      default:
-        return TypeOfDay.weekday;
-    }
-  }
 }
