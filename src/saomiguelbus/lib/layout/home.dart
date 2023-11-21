@@ -231,6 +231,8 @@ class _HomePageBodyState extends State<HomePageBody> {
 
                         String key =
                             '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
+                        String languageCode =
+                            AppLocalizations.of(context)!.languageCode;
 
                         fetchRoutes(
                                 origin,
@@ -241,22 +243,21 @@ class _HomePageBodyState extends State<HomePageBody> {
                                 widget._routes,
                                 context,
                                 key,
-                                widget._instructions)
+                                widget._instructions,
+                                languageCode)
                             .then((results) {
-                          setState(() {
-                            // widget._routes = results['routes'];
-                            // widget._instructions = results['instructions'];
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ResultsPageBody(
-                                        gMaps: gMapsResultsCached[key],
-                                        bdSmb: routesResultsCached[key],
-                                        origin: autoComplete[origin]!,
-                                        destination: autoComplete[destination]!,
-                                      )),
-                            );
-                          });
+                          widget._routes = results['routes'];
+                          widget._instructions = results['instructions'];
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ResultsPageBody(
+                                      gMaps: gMapsResultsCached[key],
+                                      bdSmb: routesResultsCached[key],
+                                      origin: autoComplete[origin]!,
+                                      destination: autoComplete[destination]!,
+                                    )),
+                          );
                         });
                       },
                       child: Text(AppLocalizations.of(context)!.search),

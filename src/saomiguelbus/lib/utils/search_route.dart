@@ -13,15 +13,17 @@ import 'dart:developer' as developer;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<Map<String, dynamic>> fetchRoutes(
-    String origin,
-    String destination,
-    DateTime date,
-    String departureType,
-    Map<String, AutocompletePlace> autoComplete,
-    List<dynamic> routes,
-    BuildContext context,
-    String key,
-    Instruction instructions) async {
+  String origin,
+  String destination,
+  DateTime date,
+  String departureType,
+  Map<String, AutocompletePlace> autoComplete,
+  List<dynamic> routes,
+  BuildContext context,
+  String key,
+  Instruction instructions,
+  String languageCode,
+) async {
   developer.log("Fetching Routes...", name: 'fetchRoutes');
   Map<String, dynamic> result = {};
 
@@ -50,89 +52,101 @@ Future<Map<String, dynamic>> fetchRoutes(
       type: 'custom',
     );
   }
-  getLatLngFromPlaceID(autoComplete[origin]!.placeID,
-          autoComplete[destination]!.placeID, origin, destination)
-      .then((value) {
-    Location originLocation = value[0];
-    Location destinationLocation = value[1];
 
-    String originQuery = originLocation.toString();
-    String destinationQuery = destinationLocation.toString();
+  final value = await getLatLngFromPlaceID(
+    autoComplete[origin]!.placeID,
+    autoComplete[destination]!.placeID,
+    origin,
+    destination,
+  );
 
-    if (originQuery == '0.0,0.0') {
-      if (autoComplete[origin]!.placeID == 'custom') {
-        originQuery = origin;
-        originLocation = getStop(origin).location;
-      } else {
-        originLocation = getStop(autoComplete[origin]!.name).location;
-        originQuery = originLocation.toString();
-      }
+  Location originLocation = value[0];
+  Location destinationLocation = value[1];
+
+  String originQuery = originLocation.toString();
+  String destinationQuery = destinationLocation.toString();
+
+  if (originQuery == '0.0,0.0') {
+    if (autoComplete[origin]!.placeID == 'custom') {
+      originQuery = origin;
+      originLocation = getStop(origin).location;
+    } else {
+      originLocation = getStop(autoComplete[origin]!.name).location;
+      originQuery = originLocation.toString();
     }
+  }
 
-    if (destinationQuery == '0.0,0.0') {
-      if (autoComplete[destination]!.placeID == 'custom') {
-        destinationQuery = destination;
-        destinationLocation = getStop(destination).location;
-      } else {
-        destinationLocation = getStop(autoComplete[destination]!.name).location;
-        destinationQuery = destinationLocation.toString();
-      }
+  if (destinationQuery == '0.0,0.0') {
+    if (autoComplete[destination]!.placeID == 'custom') {
+      destinationQuery = destination;
+      destinationLocation = getStop(destination).location;
+    } else {
+      destinationLocation = getStop(autoComplete[destination]!.name).location;
+      destinationQuery = destinationLocation.toString();
     }
+  }
 
-    getGoogleRoutes(originQuery, destinationQuery, date,
-            AppLocalizations.of(context)!.languageCode,
-            arrival_departure: departureType)
-        .then((value) {
-      instructions = value;
-      if (instructions.runtimeType == String) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(instructions.toString()),
-        ));
-        return null;
-      }
 
-      Map gMapsResults = {
-        'origin': origin,
-        'destination': destination,
-        'routesNumber': instructions.routes.length,
-        'instructions': instructions,
-      };
+  final routesValue = await getGoogleRoutes(
+    originQuery,
+    destinationQuery,
+    date,
+    languageCode,
+    arrival_departure: departureType,
+  );
 
-      List<Stop> originClosestStops = getClosestStops(originLocation);
-      List<Stop> destinationClosestStops = getClosestStops(destinationLocation);
+  instructions = routesValue;
 
-      routes = [];
-      for (var originStop in originClosestStops) {
-        for (var destinationStop in destinationClosestStops) {
-          developer.log(originStop.name);
-          developer.log(destinationStop.name);
-          developer.log(routes.toString());
-          routes.addAll(findRoutes(
-              originStop, destinationStop, _getDayOfWeekString(date.weekday)));
-        }
-      }
+  // if (instructions.runtimeType == String) {
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     content: Text(instructions.toString()),
+  //   ));
+  //   return null;
+  // }
 
-      routes = routes.toSet().toList();
+  Map gMapsResults = {
+    'origin': origin,
+    'destination': destination,
+    'routesNumber': instructions.routes.length,
+    'instructions': instructions,
+  };
 
-      Map routesResults = {
-        'origin': originClosestStops.map((stop) => stop.name).toList(),
-        'destination':
-            destinationClosestStops.map((stop) => stop.name).toList(),
-        'routesNumber': routes.length,
-        'routes': routes,
-      };
-      // Store the results in the global variables
-      developer.log("Storing Results in cache...", name: 'cache');
-      gMapsResultsCached[key] = gMapsResults;
-      routesResultsCached[key] = routesResults;
+  List<Stop> originClosestStops = getClosestStops(originLocation);
+  List<Stop> destinationClosestStops = getClosestStops(destinationLocation);
 
-      result['gMaps'] = gMapsResults;
-      result['bdSmb'] = routesResults;
-      result['routes'] = routes;
-      result['instructions'] = instructions;
-      developer.log(result.toString(), name: 'fetchRoutes');
-    });
-  });
+  routes = [];
+  for (var originStop in originClosestStops) {
+    for (var destinationStop in destinationClosestStops) {
+      developer.log(originStop.name);
+      developer.log(destinationStop.name);
+      developer.log(routes.toString());
+      routes.addAll(findRoutes(
+        originStop,
+        destinationStop,
+        _getDayOfWeekString(date.weekday),
+      ));
+    }
+  }
+
+  routes = routes.toSet().toList();
+
+  Map routesResults = {
+    'origin': originClosestStops.map((stop) => stop.name).toList(),
+    'destination': destinationClosestStops.map((stop) => stop.name).toList(),
+    'routesNumber': routes.length,
+    'routes': routes,
+  };
+
+  // Store the results in the global variables
+  developer.log("Storing Results in cache...", name: 'cache');
+  gMapsResultsCached[key] = gMapsResults;
+  routesResultsCached[key] = routesResults;
+
+  result['gMaps'] = gMapsResults;
+  result['bdSmb'] = routesResults;
+  result['routes'] = routes;
+  result['instructions'] = instructions;
+  developer.log(result.toString(), name: 'fetchRoutes');
   return result;
 }
 
