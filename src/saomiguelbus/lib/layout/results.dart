@@ -11,20 +11,31 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
+import 'package:saomiguelbus/utils/search_route.dart';
 
 class ResultsPageBody extends StatefulWidget {
-  const ResultsPageBody(
-      {Key? key,
-      required this.gMaps,
-      required this.bdSmb,
-      required this.origin,
-      required this.destination})
-      : super(key: key);
+  ResultsPageBody({
+    Key? key,
+    required this.gMaps,
+    required this.bdSmb,
+    required this.origin,
+    required this.destination,
+    required this.date,
+    required this.departureType,
+    required this.autoComplete,
+    required this.routes,
+    required this.instructions,
+  }) : super(key: key);
 
   final Map gMaps;
   final Map bdSmb;
   final AutocompletePlace origin;
   final AutocompletePlace destination;
+  final DateTime date;
+  final String departureType;
+  final Map<String, AutocompletePlace> autoComplete;
+  final List<dynamic> routes;
+  final Instruction instructions;
 
   @override
   _ResultsPageBodyState createState() => _ResultsPageBodyState();
@@ -79,6 +90,12 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     final int routesnumberBdsmb = widget.bdSmb['routesNumber'];
     final List routes = widget.bdSmb['routes'];
     final Instruction instructions = widget.gMaps['instructions'];
+
+    developer.log("origin: $origin // destination: $destination");
+    developer.log(
+        "originGmaps: $originGmaps // destinationGmaps: $destinationGmaps");
+    developer.log(
+        "originBdsmb: $originBdsmb // destinationBdsmb: $destinationBdsmb");
 
     Widget gMapsWidget = _getGMapsWidget(
         originGmaps, destinationGmaps, routesnumberGmaps, instructions);
@@ -186,7 +203,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(originGmaps),
+        Text(origin),
         IconButton(
           icon: Icon(
             Icons.favorite,
@@ -203,7 +220,54 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
             });
           },
         ),
-        Text(destinationGmaps),
+        Text(destination),
+        IconButton(
+          icon: const Icon(Icons.swap_horiz),
+          onPressed: () {
+            String key =
+                '$destination->$origin:${widget.date.day}/${widget.date.month}/${widget.date.year}-${widget.date.hour}h${widget.date.minute}';
+            String languageCode = AppLocalizations.of(context)!.languageCode;
+            fetchRoutes(
+                    destinationGmaps,
+                    originGmaps,
+                    widget.date,
+                    widget.departureType,
+                    widget.autoComplete,
+                    widget.routes,
+                    context,
+                    key,
+                    widget.instructions,
+                    languageCode)
+                .then((results) {
+              // setState(() {
+              //   widget.routes = results['routes'];
+              //   widget.instructions = results['instructions'];
+              //   widget.origin = widget.autoComplete[destinationGmaps]!;
+              //   widget.destination = widget.autoComplete[originGmaps]!;
+              //   widget.gMaps = gMapsResultsCached[key];
+              //   widget.bdSmb = routesResultsCached[key];
+              // });
+              final temp = origin;
+              origin = destination;
+              destination = temp;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ResultsPageBody(
+                          gMaps: gMapsResultsCached[key],
+                          bdSmb: routesResultsCached[key],
+                          origin: widget.autoComplete[destinationGmaps]!,
+                          destination: widget.autoComplete[originGmaps]!,
+                          date: widget.date,
+                          departureType: widget.departureType,
+                          autoComplete: widget.autoComplete,
+                          routes: widget.routes,
+                          instructions: widget.instructions,
+                        )),
+              );
+            });
+          },
+        ),
       ],
     );
   }

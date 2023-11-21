@@ -256,6 +256,11 @@ class _HomePageBodyState extends State<HomePageBody> {
                                       bdSmb: routesResultsCached[key],
                                       origin: autoComplete[origin]!,
                                       destination: autoComplete[destination]!,
+                                      date: date,
+                                      departureType: _departureType,
+                                      autoComplete: autoComplete,
+                                      routes: widget._routes,
+                                      instructions: widget._instructions,
                                     )),
                           );
                         });

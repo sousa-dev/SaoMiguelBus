@@ -26,6 +26,7 @@ Future<Map<String, dynamic>> fetchRoutes(
 ) async {
   developer.log("Fetching Routes...", name: 'fetchRoutes');
   Map<String, dynamic> result = {};
+  developer.log('origin: $origin \n destination: $destination');
 
   if (gMapsResultsCached.containsKey(key) &&
       routesResultsCached.containsKey(key)) {
@@ -85,7 +86,6 @@ Future<Map<String, dynamic>> fetchRoutes(
       destinationQuery = destinationLocation.toString();
     }
   }
-
 
   final routesValue = await getGoogleRoutes(
     originQuery,
