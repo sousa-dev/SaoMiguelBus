@@ -239,14 +239,6 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                     widget.instructions,
                     languageCode)
                 .then((results) {
-              // setState(() {
-              //   widget.routes = results['routes'];
-              //   widget.instructions = results['instructions'];
-              //   widget.origin = widget.autoComplete[destinationGmaps]!;
-              //   widget.destination = widget.autoComplete[originGmaps]!;
-              //   widget.gMaps = gMapsResultsCached[key];
-              //   widget.bdSmb = routesResultsCached[key];
-              // });
               final temp = origin;
               origin = destination;
               destination = temp;
