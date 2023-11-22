@@ -62,8 +62,8 @@ class NetworkUtility {
       child: Image.network(
         url,
         errorBuilder: (context, error, stackTrace) {
-          developer.log('Error occurred: $error');
-          return Text('Failed to load image');
+          if (url != '') developer.log('Error occurred: $error');
+          return Container();
         },
       ),
     );

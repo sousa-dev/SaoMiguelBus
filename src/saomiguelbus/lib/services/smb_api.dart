@@ -11,6 +11,7 @@ Future<String?> fetchAdBanner(
     'platform': platform,
   });
   String? response = await NetworkUtility.fetchURL(uri);
+
   return response;
 }
 

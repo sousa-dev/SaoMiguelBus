@@ -16,6 +16,10 @@ PreferredSizeWidget getTopBar({title = "São Miguel Bus", required context}) {
         FutureBuilder<GestureDetector>(
           future:
               fetchAdBanner(on: currentAdOn, platform: platform).then((value) {
+            if (value == null) {
+              return NetworkUtility.fetchImage("", "",
+                  targetUrl: "", action: "", context: context);
+            }
             Map<String, dynamic> valueMap = jsonDecode(value.toString());
             developer.log(valueMap.toString(), name: 'getTopBar');
             String id = valueMap['id'].toString();
