@@ -20,6 +20,9 @@ List<route.Route> findRoutes(
       routes.add(route);
     }
   }
+  //Sort route by depart time
+  routes.sort((a, b) =>
+      (a.getStopTime(a.getOrigin()!.name).$2)!.compareTo((b.getStopTime(b.getOrigin()!.name).$2).toString()));
   return routes;
 }
 

@@ -59,13 +59,15 @@ class NetworkUtility {
           );
         }
       },
-      child: Image.network(
-        url,
-        errorBuilder: (context, error, stackTrace) {
-          if (url != '') developer.log('Error occurred: $error');
-          return Container();
-        },
-      ),
+      child: url.isNotEmpty
+          ? Image.network(
+              url,
+              errorBuilder: (context, error, stackTrace) {
+                developer.log('Error occurred: $error');
+                return Container();
+              },
+            )
+          : Container(),
     );
   }
 }
