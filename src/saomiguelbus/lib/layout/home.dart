@@ -50,6 +50,18 @@ class _HomePageBodyState extends State<HomePageBody> {
   int alertCount = 0;
   int trackingCount = 2;
 
+  int previousFavouritesCount = favourites.length;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (favourites.length != previousFavouritesCount) {
+      setState(() {
+        previousFavouritesCount = favourites.length;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (alertCount == 0) {
