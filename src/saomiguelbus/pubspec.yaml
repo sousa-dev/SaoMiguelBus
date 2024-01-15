@@ -46,6 +46,7 @@ dependencies:
   uuid: ^3.0.7
   flutter_osm_plugin: ^0.60.5
   url_launcher: ^6.2.1
+  timezone: ^0.8.0
 
 dev_dependencies:
   flutter_test:

@@ -186,7 +186,7 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
                 physics: const ScrollPhysics(parent: null),
                 shrinkWrap: true,
                 itemBuilder: (BuildContext context, int index) {
-                  return _routes[index].getCardRouteWidget();
+                  return _routes[index].getCardRouteWidget(_routes[index]);
                 },
                 itemCount: routesNumber,
               ),

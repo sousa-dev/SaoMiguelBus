@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:saomiguelbus/models/stop.dart';
+import 'package:saomiguelbus/models/globals.dart';
+import 'package:saomiguelbus/services/track_bus.dart';
 
 class CardRoute {
   final Icon trailing;
@@ -54,88 +56,108 @@ class CardRoute {
     subtitle = Text('${catchStop.name} - ${arrivalStop.name}');
   }
 
-  Card getCardRouteWidget() {
+  Card getCardRouteWidget(CardRoute route) {
     return Card(
       elevation: 2.0,
-      child: ExpansionTile(
-        iconColor: Colors.blue,
-        textColor: Colors.black,
-        title: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        children: [
+          ExpansionTile(
+            iconColor: Colors.blue,
+            textColor: Colors.black,
+            title: Row(
               children: [
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.directions_bus,
-                      color: Color(0xFF218732),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.directions_bus,
+                          color: Color(0xFF218732),
+                        ),
+                        const SizedBox(
+                            width:
+                                8.0), // Fixed to width for horizontal spacing
+                        Text(
+                          routeId,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8.0),
                     Text(
-                      routeId,
+                      durationStr,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8.0),
-                Text(
-                  durationStr,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        catchTime,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        catchStop.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF218732),
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_right_alt,
+                  size: 40.0,
+                  color: Color(0xFF218732),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        arrivalTime,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        arrivalStop.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF218732),
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    catchTime,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    catchStop.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF218732),
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ],
+            children: [
+              for (var stop in stops.keys)
+                Text('${stops[stop]} - ${stop.name}'),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                TrackBus(route).track();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor, // Button color
+                foregroundColor: Colors.white, // Text color
               ),
+              child: const Text('Track'), //TODO: Change to localized string
             ),
-            const Icon(
-              Icons.arrow_right_alt,
-              size: 40.0,
-              color: Color(0xFF218732),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    arrivalTime,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    arrivalStop.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF218732),
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        children: [
-          for (var stop in stops.keys) Text('${stops[stop]} - ${stop.name}'),
+          ),
         ],
       ),
     );
