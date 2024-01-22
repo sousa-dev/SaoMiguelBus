@@ -4,6 +4,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'dart:developer' as developer;
 import 'package:saomiguelbus/l10n/l10n.dart';
+import 'package:saomiguelbus/services/notifications.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
@@ -13,7 +14,7 @@ import 'package:saomiguelbus/models/globals.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  //initialization();
+  NotificationService().initNotification();
 
   runApp(const MyApp());
 }

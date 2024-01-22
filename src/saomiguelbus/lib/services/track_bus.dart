@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/models/card_route.dart';
 import 'package:saomiguelbus/models/stop.dart';
+import 'package:saomiguelbus/services/notifications.dart';
 
 class TrackBus {
   late CardRoute cardRoute;
@@ -13,7 +14,7 @@ class TrackBus {
 
   TrackBus(
     this.cardRoute, {
-    Duration alertTimeThreshold = const Duration(minutes: 10),
+    Duration alertTimeThreshold = const Duration(minutes: 70),
   }) {
     // Initialize the timezone data
     tz.initializeTimeZones();
@@ -27,32 +28,33 @@ class TrackBus {
 
     // Get the current date
     var now = DateTime.now();
+    developer.log('Now: $now', name: 'TrackBus');
 
     // Create a DateTime object for catchTime in Azores Timezone
     var azoresTimeZone = tz.getLocation('Atlantic/Azores');
     var catchTimeInAzores = tz.TZDateTime(azoresTimeZone, now.year, now.month,
         now.day, catchTime.hour, catchTime.minute);
 
-    // log current time on device
-    developer.log('Current Time: ${now.hour}:${now.minute}', name: 'TrackBus');
-
-    // Calculate the offset difference between Azores Timezone and local timezone
-    var localTimeZoneOffset = tz.TZDateTime.now(tz.local).timeZoneOffset;
-    var azoresTimeZoneOffset = tz.TZDateTime.now(azoresTimeZone).timeZoneOffset;
-    var offsetDifference = localTimeZoneOffset - azoresTimeZoneOffset;
-
-    // Log times and difference
-    developer.log('Local Timezone: $localTimeZoneOffset');
-    developer.log('Azores Timezone: $azoresTimeZoneOffset');
-    developer.log('Local Timezone Offset: $offsetDifference');
-
     // Adjust catchTime by the time difference and the threshold
-    var alertTime =
-        catchTimeInAzores.add(offsetDifference).subtract(alertTimeThreshold);
+    var alertTime = catchTimeInAzores.subtract(alertTimeThreshold);
 
-    // Log the alertTime
+    // Log the alertTime TODO: Make sure the alert is being calculated right
     developer.log('Alert Time: ${alertTime.hour}:${alertTime.minute}',
         name: 'TrackBus');
+
+    NotificationService().scheduleNotification(
+      id: int.parse(cardRoute.routeId +
+          now.day.toString() +
+          now.hour.toString() +
+          now.minute.toString()),
+      title: 'Bus ${cardRoute.routeId} is coming!',
+      body: 'Alerted at ${alertTime.hour}:${alertTime.minute}',
+      year: now.year,
+      month: now.month,
+      day: now.day, //TODO: Change to search values
+      hour: catchTimeInAzores.hour,
+      minute: catchTimeInAzores.minute,
+    );
   }
 
   void track() {
@@ -61,6 +63,4 @@ class TrackBus {
         'Tracking bus ${cardRoute.routeId}: $cardRoute -> Catch Time: ${cardRoute.catchTime} - Arrival Time: ${cardRoute.arrivalTime}');
     // Implement your tracking logic here
   }
-
-  // Add more methods or properties if needed
 }
