@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:developer' as developer;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -48,6 +51,17 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+      var sdkInt = androidInfo.version.sdkInt;
+      if (sdkInt < 26) {
+        developer.log(
+            'NotificationService.scheduleNotification: Android version is lower than 26',
+            name: 'NotificationService');
+        return;
+      }
+    }
+
     var details = await notificationDetails();
 
     // Define the Azores timezone
@@ -58,11 +72,12 @@ class NotificationService {
         tz.TZDateTime(azoresTimeZone, year, month, day, hour, minute);
 
     // TODO: If the scheduled time is already passed, you might want to handle it (e.g., schedule for next year)
-    // var nowInAzoresTimeZone = tz.TZDateTime.now(azoresTimeZone);
-    // if (scheduledDateInAzoresTimeZone.isBefore(nowInAzoresTimeZone)) {
-    //   // Handle past time - Example: Add one year if the time has already passed
-    //   scheduledDateInAzoresTimeZone = scheduledDateInAzoresTimeZone.add(Duration(days: 365));
-    // }
+    var nowInAzoresTimeZone = tz.TZDateTime.now(azoresTimeZone);
+    if (scheduledDateInAzoresTimeZone.isBefore(nowInAzoresTimeZone)) {
+      // Handle past time - Example: Add one year if the time has already passed
+      scheduledDateInAzoresTimeZone =
+          scheduledDateInAzoresTimeZone.add(Duration(days: 1));
+    }
 
     developer.log(
         'Notification scheduled for: ${scheduledDateInAzoresTimeZone.hour}:${scheduledDateInAzoresTimeZone.minute} (Azores Timezone)',
