@@ -54,9 +54,9 @@ class NotificationService {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
       var sdkInt = androidInfo.version.sdkInt;
-      if (sdkInt < 26) {
+      if (sdkInt < 24) {
         developer.log(
-            'NotificationService.scheduleNotification: Android version is lower than 26',
+            'NotificationService.scheduleNotification: Android version is lower than 24',
             name: 'NotificationService');
         return;
       }
