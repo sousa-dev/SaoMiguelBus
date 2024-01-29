@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_latest;
 import 'dart:developer' as developer;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -64,6 +64,9 @@ class NotificationService {
 
     var details = await notificationDetails();
 
+    // Initialize time zone data
+    tz_latest.initializeTimeZones();
+
     // Define the Azores timezone
     var azoresTimeZone = tz.getLocation('Atlantic/Azores');
 
@@ -71,28 +74,50 @@ class NotificationService {
     var scheduledDateInAzoresTimeZone =
         tz.TZDateTime(azoresTimeZone, year, month, day, hour, minute);
 
-    // TODO: If the scheduled time is already passed, you might want to handle it (e.g., schedule for next year)
-    var nowInAzoresTimeZone = tz.TZDateTime.now(azoresTimeZone);
-    if (scheduledDateInAzoresTimeZone.isBefore(nowInAzoresTimeZone)) {
-      // Handle past time - Example: Add one year if the time has already passed
-      scheduledDateInAzoresTimeZone =
-          scheduledDateInAzoresTimeZone.add(Duration(days: 1));
+    // Convert the Azores time to the local timezone
+    var scheduledDateInLocalTimeZone =
+        tz.TZDateTime.from(scheduledDateInAzoresTimeZone, tz.local);
+
+    // Check if the time has already passed in local timezone
+    var nowInLocalTimeZone = tz.TZDateTime.now(tz.local);
+    if (scheduledDateInLocalTimeZone.isBefore(nowInLocalTimeZone)) {
+      developer.log(
+          'NotificationService.scheduleNotification: Scheduled time has already passed',
+          name: 'NotificationService');
+      scheduledDateInLocalTimeZone =
+          scheduledDateInLocalTimeZone.add(Duration(days: 1));
     }
 
     developer.log(
-        'Notification scheduled for: ${scheduledDateInAzoresTimeZone.hour}:${scheduledDateInAzoresTimeZone.minute} (Azores Timezone)',
+        'Notification scheduled for: ${scheduledDateInLocalTimeZone.toLocal()} (Local Timezone)',
         name: 'NotificationService');
 
     await notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
-      scheduledDateInAzoresTimeZone,
+      scheduledDateInLocalTimeZone,
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
+    await checkScheduledNotifications();
+  }
+
+  Future<void> checkScheduledNotifications() async {
+    List<PendingNotificationRequest> pendingNotificationRequests =
+        await notificationsPlugin.pendingNotificationRequests();
+
+    for (var notificationRequest in pendingNotificationRequests) {
+      // Get the scheduled time in the local time zone
+
+      // Display the notification details along with the local time
+      developer.log('Notification ID: ${notificationRequest.id}');
+      developer.log('Title: ${notificationRequest.title}');
+      developer.log('Body: ${notificationRequest.body}');
+      developer.log('Scheduled Time (Local): ${notificationRequest.payload}');
+    }
   }
 }
 

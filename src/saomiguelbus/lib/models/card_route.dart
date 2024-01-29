@@ -149,7 +149,8 @@ class CardRoute {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                TrackBus(route).track();
+                // TODO: Change this to be the time the user searched
+                TrackBus(route, DateTime.now()).track();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor, // Button color

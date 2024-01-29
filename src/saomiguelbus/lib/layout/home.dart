@@ -48,7 +48,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   int currentIndex = 0;
   List<dynamic> infoAlerts = [];
   int alertCount = 0;
-  int trackingCount = 2;
+  int trackingCount = trackBuses.length;
 
   int previousFavouritesCount = favourites.length;
 
@@ -295,6 +295,12 @@ class _HomePageBodyState extends State<HomePageBody> {
           'All scheduling is estimated',
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
+        IconButton(
+          icon: Icon(Icons.refresh), // Icon for the refresh button
+          onPressed: () {
+            _updateAllTrackBuses();
+          },
+        ),
         const SizedBox(height: 10),
         Column(
           children: [
@@ -321,7 +327,9 @@ class _HomePageBodyState extends State<HomePageBody> {
                           borderRadius: BorderRadius.circular(
                               10), // This gives the card rounded corners
                         ),
-                        child: Center(child: Text('Item $index')),
+                        child: Center(
+                            child:
+                                Text('Item ${trackBuses[index].toString()}')),
                       ),
                     );
                   },
@@ -615,4 +623,14 @@ class _HomePageBodyState extends State<HomePageBody> {
         context: context,
         initialTime: TimeOfDay.fromDateTime(date),
       );
+
+  _updateAllTrackBuses() {
+    for (var bus in trackBuses) {
+      bus.updateStatus();
+    }
+    setState(() {
+      trackingCount = trackBuses.length;
+      developer.log('Tracking Count: $trackingCount');
+    });
+  }
 }

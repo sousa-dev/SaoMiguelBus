@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'dart:developer' as developer;
 import 'package:saomiguelbus/l10n/l10n.dart';
@@ -23,6 +24,9 @@ Future<bool> initialization() async {
   await start(kDebugMode);
 
   FlutterNativeSplash.remove();
+
+  tz.initializeTimeZones();
+
   return true;
 }
 
