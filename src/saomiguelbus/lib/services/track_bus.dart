@@ -178,9 +178,9 @@ class TrackBus {
   String toString() {
     return 'TrackBus: {'
         'status: $status, '
-        'currentStop: $currentStop, '
-        'catchStop: $catchStop, '
-        'arrivalStop: $arrivalStop, '
+        'currentStop: ${currentStop?.name}, '
+        'catchStop: ${catchStop.name}, '
+        'arrivalStop: ${arrivalStop.name}, '
         'catchTime: $catchTime, '
         'arrivalTime: $arrivalTime, '
         '}';
