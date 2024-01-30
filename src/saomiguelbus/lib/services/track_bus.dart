@@ -59,7 +59,7 @@ class TrackBus {
     var currentTime =
         normalizeDateTime(tz.TZDateTime.from(now, azoresTimeZone));
 
-    developer.log("Current Time in Azores: $currentTime");
+    // developer.log("Current Time in Azores: $currentTime");
 
     String formattedSearchDay =
         "${searchDay.year}-${searchDay.month.toString().padLeft(2, '0')}-${searchDay.day.toString().padLeft(2, '0')}";
@@ -73,10 +73,10 @@ class TrackBus {
         DateTime.parse('$formattedSearchDay $routeFinish'.replaceAll('h', ':'));
 
     // Determine the status of the bus
-    developer.log('Catch Time: $catchDateTime');
-    developer.log('Arrival Time: $arrivalDateTime');
-    developer.log('Route Start Time: $routeStartDateTime');
-    developer.log('Route Finish Time: $routeFinishDateTime');
+    // developer.log('Catch Time: $catchDateTime');
+    // developer.log('Arrival Time: $arrivalDateTime');
+    // developer.log('Route Start Time: $routeStartDateTime');
+    // developer.log('Route Finish Time: $routeFinishDateTime');
 
     if (currentTime.isAfter(routeStartDateTime) &&
         currentTime.isBefore(catchDateTime)) {
@@ -88,7 +88,7 @@ class TrackBus {
         currentTime.isBefore(routeFinishDateTime)) {
       status = Status.finished;
     } else if (currentTime
-        .isAfter(routeFinishDateTime.add(const Duration(minutes: 10)))) {
+        .isAfter(routeFinishDateTime.add(const Duration(minutes: 2)))) {
       if (trackBuses.contains(this)) {
         trackBuses.remove(this);
       }

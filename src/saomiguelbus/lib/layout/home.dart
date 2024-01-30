@@ -72,6 +72,11 @@ class _HomePageBodyState extends State<HomePageBody> {
         });
       });
     }
+
+    if (trackBuses.length != trackingCount) {
+      _updateAllTrackBuses();
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -296,7 +301,7 @@ class _HomePageBodyState extends State<HomePageBody> {
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
         IconButton(
-          icon: Icon(Icons.refresh), // Icon for the refresh button
+          icon: const Icon(Icons.refresh), // Icon for the refresh button
           onPressed: () {
             _updateAllTrackBuses();
           },
@@ -309,27 +314,62 @@ class _HomePageBodyState extends State<HomePageBody> {
                 height: 100, // Adjust this value as needed
                 child: PageView.builder(
                   controller: PageController(viewportFraction: 1),
-                  itemCount:
-                      trackingCount, // Replace with your dynamic item count
+                  itemCount: trackingCount,
                   onPageChanged: (int index) {
                     setState(() {
-                      currentIndex =
-                          index; // Update the current page index when the page changes
+                      currentIndex = index;
                     });
                   },
                   itemBuilder: (BuildContext context, int index) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0), // Add horizontal padding
-                      child: Card(
-                        elevation: 5, // This gives the card an elevation
-                        shape: RoundedRectangleBorder(
+                      child: Dismissible(
+                        key: Key(trackBuses[index]
+                            .toString()), // Unique key for Dismissible
+                        direction: DismissDirection
+                            .up, // Only allow swipe up to dismiss
+                        onDismissed: (direction) {
+                          // Handle the dismissal
+                          setState(() {
+                            // Remove the dismissed item from the list
+                            trackBuses.removeAt(index);
+
+                            // Adjust trackingCount after removal
+                            trackingCount = trackBuses.length;
+
+                            if (currentIndex >= trackingCount) {
+                              currentIndex = trackingCount -
+                                  1; // Adjust currentIndex if it's now out of range
+                            }
+
+                            // You might also need to handle the case where trackingCount becomes 0
+                            if (trackingCount == 0) {
+                              currentIndex =
+                                  0; // or any appropriate handling for empty state
+                            }
+                          });
+                        },
+                        background: ClipRRect(
                           borderRadius: BorderRadius.circular(
-                              10), // This gives the card rounded corners
+                              10), // Match the Card's border radius
+                          child: Container(
+                            color: Colors.red,
+                            alignment: Alignment.bottomCenter,
+                            child: const Icon(Icons.delete,
+                                color: Colors.white, size: 40),
+                          ),
                         ),
-                        child: Center(
-                            child:
-                                Text('Item ${trackBuses[index].toString()}')),
+                        child: Card(
+                          elevation: 5, // This gives the card an elevation
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                10), // This gives the card rounded corners
+                          ),
+                          child: Center(
+                            child: Text('Item ${trackBuses[index].toString()}'),
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -389,7 +429,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Dismissible(
                   key: Key(
-                      '${favourites[index].origin}-${favourites[index].destination}'), // Replace with the unique id of the favourite
+                      '${favourites[index].origin}-${favourites[index].destination}'),
                   direction: DismissDirection.endToStart,
                   onDismissed: (direction) {
                     // Handle the deletion of the favourite
@@ -410,7 +450,6 @@ class _HomePageBodyState extends State<HomePageBody> {
                       child: Icon(Icons.delete, color: Colors.white),
                     ),
                   ),
-
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
@@ -628,9 +667,14 @@ class _HomePageBodyState extends State<HomePageBody> {
     for (var bus in trackBuses) {
       bus.updateStatus();
     }
+
     setState(() {
       trackingCount = trackBuses.length;
-      developer.log('Tracking Count: $trackingCount');
+      if (currentIndex >= trackingCount) {
+        currentIndex = trackingCount > 0 ? trackingCount - 1 : 0;
+      }
     });
+
+    developer.log("Bus Tracking Updated");
   }
 }
