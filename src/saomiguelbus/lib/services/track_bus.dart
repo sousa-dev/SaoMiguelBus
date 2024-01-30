@@ -27,6 +27,9 @@ class TrackBus {
   late String routeFinish;
 
   late DateTime alertTime;
+  Duration? timeToArrival;
+  Duration? timeToCatch;
+  Duration? timeToNextStop;
 
   TrackBus(
     cardRoute, {
@@ -102,12 +105,6 @@ class TrackBus {
   }
 
   void updateStops(DateTime currentTime, DateTime searchDay) {
-    if (status == Status.off) {
-      currentStop = null;
-      nextStop = null;
-      return;
-    }
-
     if (status == Status.finished) {
       currentStop = arrivalStop;
       nextStop = null;
@@ -115,15 +112,40 @@ class TrackBus {
     }
 
     Stop? lastStop;
+    bool shouldBreak = false;
     for (var stop in stops.entries) {
       var stopTime = DateTime.parse(
           '${DateFormat('yyyy-MM-dd').format(searchDay)} ${stop.value.replaceAll('h', ':')}');
-      if (currentTime.isBefore(stopTime)) {
+
+      if (currentTime.isBefore(stopTime) && !shouldBreak) {
         currentStop = lastStop ?? catchStop;
         nextStop = stop.key;
-        break;
+
+        // Calculate time to next stop
+        timeToNextStop = stopTime.difference(currentTime);
+
+        // Calculate time to catch
+        if (currentStop == catchStop) {
+          timeToCatch = timeToNextStop;
+        }
+
+        shouldBreak = true;
       }
+
       lastStop = stop.key;
+
+      // Calculate time to arrival
+      if (lastStop == arrivalStop) {
+        timeToArrival = stopTime.difference(currentTime);
+        if (shouldBreak) {
+          break;
+        }
+      }
+    }
+
+    if (status == Status.off) {
+      currentStop = null;
+      nextStop = stops.keys.first;
     }
   }
 
@@ -178,10 +200,14 @@ class TrackBus {
     return 'TrackBus: {'
         'status: $status, '
         'currentStop: ${currentStop?.name}, '
+        'nextStop: ${nextStop?.name}, '
         'catchStop: ${catchStop.name}, '
         'arrivalStop: ${arrivalStop.name}, '
         'catchTime: $catchTime, '
         'arrivalTime: $arrivalTime, '
+        'timeToArrival: ${timeToArrival?.inMinutes} minutes, '
+        'timeToNextStop: ${timeToNextStop?.inMinutes} minutes, '
+        'timeToCatch: ${timeToCatch?.inMinutes} minutes'
         '}';
   }
 
