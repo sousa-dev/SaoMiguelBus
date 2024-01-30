@@ -123,7 +123,8 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
       List routes, List<String> origin, List<String> destination) {
     List cardRoutes = [];
     for (var route in routes) {
-      cardRoutes.add(CardRoute(route, origin, destination, context));
+      cardRoutes
+          .add(CardRoute(route, origin, destination, context, widget.date));
     }
     return cardRoutes;
   }

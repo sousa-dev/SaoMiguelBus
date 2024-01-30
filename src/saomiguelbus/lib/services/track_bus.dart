@@ -29,11 +29,10 @@ class TrackBus {
   late DateTime alertTime;
 
   TrackBus(
-    cardRoute,
-    searchDay, {
+    cardRoute, {
     Duration alertTimeThreshold = const Duration(minutes: 10),
   }) {
-    init(cardRoute, searchDay);
+    init(cardRoute, cardRoute.date);
     updateStatus();
     //scheduleNotification(alertTimeThreshold);
     trackBuses.add(this);
@@ -159,9 +158,9 @@ class TrackBus {
           now.minute.toString()),
       title: 'Bus $routeId is coming!',
       body: 'Alerted at ${alertTime.hour}:${alertTime.minute}',
-      year: now.year,
-      month: now.month,
-      day: now.day, //TODO: Change to search values
+      year: searchDay.year,
+      month: searchDay.month,
+      day: searchDay.day,
       hour: catchTimeInAzores.hour,
       minute: catchTimeInAzores.minute,
     );

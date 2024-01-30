@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/models/stop.dart';
 import 'package:saomiguelbus/models/globals.dart';
@@ -20,11 +21,15 @@ class CardRoute {
   late Stop arrivalStop;
   late Map<Stop, String> stops;
 
-  CardRoute(route, origin, destination, context)
+  late DateTime date;
+
+  CardRoute(route, origin, destination, context, this.date)
       : trailing = const Icon(Icons.arrow_forward_ios),
         leading = const Icon(Icons.directions_bus) {
     routeId = route.id;
     stops = route.stops;
+
+    developer.log('Date: $date', name: 'CardRoute');
 
     for (String stop in origin) {
       var (originStop, originTime) = route.getStopTime(stop);
@@ -149,8 +154,7 @@ class CardRoute {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Change this to be the time the user searched
-                TrackBus(route, DateTime.now()).track();
+                TrackBus(route).track();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor, // Button color
