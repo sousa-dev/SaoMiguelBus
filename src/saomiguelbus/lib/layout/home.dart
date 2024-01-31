@@ -674,5 +674,6 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
 
     developer.log("Bus Tracking Updated");
+    developer.log(trackBuses.toString());
   }
 }

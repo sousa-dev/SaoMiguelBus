@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:intl/intl.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
@@ -27,7 +29,7 @@ class TrackBus {
   late String routeStart;
   late String routeFinish;
 
-  late DateTime alertTime;
+  DateTime? alertTime;
   Duration? timeToArrival;
   Duration? timeToCatch;
   Duration? timeToNextStop;
@@ -236,35 +238,52 @@ class TrackBus {
   }
 
   TrackBus.fromJson(Map<String, dynamic> json)
-      : searchDay = DateTime.parse(json['searchDay']),
-        status = Status.values[json['status']],
-        currentStop = Stop.fromJson(json['currentStop']),
+      : stops = (json['stops'] as Map<String, dynamic>).map(
+            (key, value) => MapEntry(Stop.fromJson(jsonDecode(key)), value)),
+        catchTime = json['catchTime'],
         catchStop = Stop.fromJson(json['catchStop']),
+        arrivalTime = json['arrivalTime'],
         arrivalStop = Stop.fromJson(json['arrivalStop']),
+        routeDuration = Duration(minutes: json['routeDuration']),
+        routeId = json['routeId'],
+        searchDay = DateTime.parse(json['searchDay']),
+        status = Status.values[json['status']],
+        currentStop = json['currentStop'] != null
+            ? Stop.fromJson(json['currentStop'])
+            : null,
         nextStop =
             json['nextStop'] != null ? Stop.fromJson(json['nextStop']) : null,
-        catchTime = json['catchTime'],
-        arrivalTime = json['arrivalTime'],
+        routeStart = json['routeStart'],
+        routeFinish = json['routeFinish'],
+        alertTime = json['alertTime'] != null ? DateTime.parse(json['alertTime']) : null,
         timeToArrival = json['timeToArrival'] != null
             ? Duration(minutes: json['timeToArrival'])
             : null,
-        timeToNextStop = json['timeToNextStop'] != null
-            ? Duration(minutes: json['timeToNextStop'])
-            : null,
         timeToCatch = json['timeToCatch'] != null
             ? Duration(minutes: json['timeToCatch'])
+            : null,
+        timeToNextStop = json['timeToNextStop'] != null
+            ? Duration(minutes: json['timeToNextStop'])
             : null;
 
   Map<String, dynamic> toJson() => {
+        'stops': stops
+            .map((key, value) => MapEntry(jsonEncode(key.toJson()), value)),
+        'catchTime': catchTime,
+        'catchStop': catchStop.toJson(),
+        'arrivalTime': arrivalTime,
+        'arrivalStop': arrivalStop.toJson(),
+        'routeDuration': routeDuration.inMinutes,
+        'routeId': routeId,
         'searchDay': searchDay.toIso8601String(),
         'status': status.index,
         'currentStop': currentStop?.toJson(),
-        'catchStop': catchStop.toJson(),
-        'arrivalStop': arrivalStop.toJson(),
-        'catchTime': catchTime,
-        'arrivalTime': arrivalTime,
+        'nextStop': nextStop?.toJson(),
+        'routeStart': routeStart,
+        'routeFinish': routeFinish,
+        'alertTime': alertTime?.toIso8601String(),
         'timeToArrival': timeToArrival?.inMinutes,
-        'timeToNextStop': timeToNextStop?.inMinutes,
         'timeToCatch': timeToCatch?.inMinutes,
+        'timeToNextStop': timeToNextStop?.inMinutes,
       };
 }
