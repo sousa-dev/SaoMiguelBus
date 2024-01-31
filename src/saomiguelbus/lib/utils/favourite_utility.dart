@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:saomiguelbus/models/favourite.dart';
 import 'package:saomiguelbus/models/globals.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:saomiguelbus/utils/preferences_utility.dart';
 
 bool checkIfFavourite(String origin, String destination) {
   for (var favourite in favourites) {
@@ -29,16 +27,9 @@ void removeFavourite(String origin, String destination) {
 }
 
 void _saveFavouritesOnCache() async {
-  final prefs = await SharedPreferences.getInstance();
-  final favouritesJsonString = jsonEncode(favourites.map((favourite) => favourite.toJson()).toList());
-  prefs.setString('favourites', favouritesJsonString);
+  saveOnSharedPreferences(favourites, 'favourites');
 }
 
 void loadFavouritesToGlobals() async {
-  final prefs = await SharedPreferences.getInstance();
-  final favouritesJsonString = prefs.getString('favourites');
-  if (favouritesJsonString != null) {
-    final favouritesJson = jsonDecode(favouritesJsonString);
-    favourites = favouritesJson.map<Favourite>((favouriteJson) => Favourite.fromJson(favouriteJson)).toList();
-  }
+  loadFromSharedPreferences('favourites');
 }

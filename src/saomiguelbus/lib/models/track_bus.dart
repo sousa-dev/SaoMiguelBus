@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:saomiguelbus/models/globals.dart';
+import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:developer' as developer;
 
@@ -20,7 +21,7 @@ class TrackBus {
 
   late DateTime searchDay;
 
-  late Status status;
+  Status status = Status.off;
   late Stop? currentStop;
   late Stop? nextStop;
   late String routeStart;
@@ -38,7 +39,7 @@ class TrackBus {
     init(cardRoute, cardRoute.date);
     updateStatus();
     //scheduleNotification(alertTimeThreshold);
-    trackBuses.add(this);
+    _save();
   }
 
   void init(CardRoute cardRoute, DateTime searchDay) {
@@ -93,7 +94,7 @@ class TrackBus {
     } else if (currentTime
         .isAfter(routeFinishDateTime.add(const Duration(minutes: 2)))) {
       if (trackBuses.contains(this)) {
-        trackBuses.remove(this);
+        _remove();
       }
       return;
     } else {
@@ -195,6 +196,24 @@ class TrackBus {
     // Implement your tracking logic here
   }
 
+  void _save() {
+    trackBuses.add(this);
+    _saveTrackBusOnPrefs();
+  }
+
+  void _remove() {
+    trackBuses.remove(this);
+    _saveTrackBusOnPrefs();
+  }
+
+  void _saveTrackBusOnPrefs() async {
+    saveOnSharedPreferences(trackBuses, 'track_buses');
+  }
+
+  void loadTrackBusToGlobals() async {
+    loadFromSharedPreferences('track_buses');
+  }
+
   @override
   String toString() {
     return 'TrackBus: {'
@@ -215,4 +234,37 @@ class TrackBus {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour,
         dateTime.minute, dateTime.second);
   }
+
+  TrackBus.fromJson(Map<String, dynamic> json)
+      : searchDay = DateTime.parse(json['searchDay']),
+        status = Status.values[json['status']],
+        currentStop = Stop.fromJson(json['currentStop']),
+        catchStop = Stop.fromJson(json['catchStop']),
+        arrivalStop = Stop.fromJson(json['arrivalStop']),
+        nextStop =
+            json['nextStop'] != null ? Stop.fromJson(json['nextStop']) : null,
+        catchTime = json['catchTime'],
+        arrivalTime = json['arrivalTime'],
+        timeToArrival = json['timeToArrival'] != null
+            ? Duration(minutes: json['timeToArrival'])
+            : null,
+        timeToNextStop = json['timeToNextStop'] != null
+            ? Duration(minutes: json['timeToNextStop'])
+            : null,
+        timeToCatch = json['timeToCatch'] != null
+            ? Duration(minutes: json['timeToCatch'])
+            : null;
+
+  Map<String, dynamic> toJson() => {
+        'searchDay': searchDay.toIso8601String(),
+        'status': status.index,
+        'currentStop': currentStop?.toJson(),
+        'catchStop': catchStop.toJson(),
+        'arrivalStop': arrivalStop.toJson(),
+        'catchTime': catchTime,
+        'arrivalTime': arrivalTime,
+        'timeToArrival': timeToArrival?.inMinutes,
+        'timeToNextStop': timeToNextStop?.inMinutes,
+        'timeToCatch': timeToCatch?.inMinutes,
+      };
 }

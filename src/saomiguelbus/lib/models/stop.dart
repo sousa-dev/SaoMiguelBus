@@ -14,4 +14,13 @@ class Stop {
   String toString() {
     return "$name, loc: $location";
   }
+
+  Stop.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        location = Location.fromJson(json['location']);
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'location': location.toJson(),
+      };
 }

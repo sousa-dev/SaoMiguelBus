@@ -10,15 +10,13 @@ import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/layout/results.dart';
-import 'package:saomiguelbus/models/favourite.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
-import 'package:saomiguelbus/services/index.dart';
-import 'package:saomiguelbus/models/route.dart' as my_route;
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
+import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
@@ -334,7 +332,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                           setState(() {
                             // Remove the dismissed item from the list
                             trackBuses.removeAt(index);
-
+                            saveOnSharedPreferences(trackBuses, 'track_buses');
                             // Adjust trackingCount after removal
                             trackingCount = trackBuses.length;
 

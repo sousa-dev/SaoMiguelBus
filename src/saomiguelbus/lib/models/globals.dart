@@ -3,7 +3,7 @@ library my_project.globals;
 import 'package:flutter/material.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/models/favourite.dart';
-import 'package:saomiguelbus/services/track_bus.dart';
+import 'package:saomiguelbus/models/track_bus.dart';
 import 'package:saomiguelbus/utils/on_change.dart';
 
 Color primaryColor = const Color(0xFF218732);

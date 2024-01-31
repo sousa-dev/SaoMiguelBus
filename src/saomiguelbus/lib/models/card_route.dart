@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 
 import 'package:saomiguelbus/models/stop.dart';
 import 'package:saomiguelbus/models/globals.dart';
-import 'package:saomiguelbus/services/track_bus.dart';
+import 'package:saomiguelbus/models/track_bus.dart';
 
 class CardRoute {
   final Icon trailing;
