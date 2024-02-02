@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:developer' as developer;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'package:saomiguelbus/models/stop.dart';
 import 'package:saomiguelbus/models/globals.dart';
@@ -28,8 +32,6 @@ class CardRoute {
         leading = const Icon(Icons.directions_bus) {
     routeId = route.id;
     stops = route.stops;
-
-    developer.log('Date: $date', name: 'CardRoute');
 
     for (String stop in origin) {
       var (originStop, originTime) = route.getStopTime(stop);
@@ -62,6 +64,23 @@ class CardRoute {
   }
 
   Card getCardRouteWidget(CardRoute route) {
+    //Check if card is trackable
+    // Get current date and time in Azores
+    var now = DateTime.now();
+    var azoresTimeZone = tz.getLocation('Atlantic/Azores');
+    var currentTime =
+        normalizeDateTime(tz.TZDateTime.from(now, azoresTimeZone));
+
+    var routeFinishTime = DateTime(
+        route.date.year,
+        route.date.month,
+        route.date.day,
+        int.parse(route.arrivalTime.split("h")[0]),
+        int.parse(route.arrivalTime.split("h")[1]),
+        0);
+    bool isRouteDatePast = routeFinishTime.isBefore(currentTime);
+    Color buttonColor = isRouteDatePast ? Colors.grey : primaryColor;
+
     return Card(
       elevation: 2.0,
       child: Column(
@@ -153,14 +172,29 @@ class CardRoute {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
-              onPressed: () {
-                TrackBus(route).track();
-              },
+              onPressed: isRouteDatePast
+                  ? () {
+                      // Use FlutterToast to show a toast message
+                      Fluttertoast.showToast(
+                          msg:
+                              "This route is no longer available.", //TODO: Change to localized string
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                    }
+                  : () {
+                      // Your tracking logic
+                      TrackBus(route).track();
+                    },
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor, // Button color
+                backgroundColor:
+                    buttonColor, // Button color based on date comparison
                 foregroundColor: Colors.white, // Text color
               ),
-              child: const Text('Track'), //TODO: Change to localized string
+              child: Text('Track'), //TODO: Change to localized string
             ),
           ),
         ],
@@ -183,5 +217,10 @@ class CardRoute {
       text += ' $minutes ${AppLocalizations.of(context)!.minutes}';
     }
     return text.trim();
+  }
+
+  normalizeDateTime(tz.TZDateTime tzDateTime) {
+    return DateTime(tzDateTime.year, tzDateTime.month, tzDateTime.day,
+        tzDateTime.hour, tzDateTime.minute, tzDateTime.second);
   }
 }
