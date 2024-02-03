@@ -9,6 +9,7 @@
 .history
 .svn/
 migrate_working_dir/
+.vscode/
 
 # IntelliJ related
 *.iml
@@ -42,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+google_maps_api.xml
+.env
+lib/env.g.dart

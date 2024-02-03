@@ -1,13 +1,36 @@
-import '../services/index.dart';
-import '../utils/index.dart';
+import 'dart:developer' as developer;
+import 'package:uuid/uuid.dart';
 
-void start(kDebugMode) {
-  retrieveData(kDebugMode);
-  kDebugMode ? init_debug_mode() : init_release_mode();
+import 'package:saomiguelbus/services/index.dart';
+import 'package:saomiguelbus/models/globals.dart';
+import 'dart:io' show Platform;
+
+Future<bool> start(kDebugMode) async {
+  if (firstTime) {
+    firstTime = false;
+
+    sessionToken = const Uuid().v4(); //TODO: Use this on the statistics
+    if (Platform.isAndroid) {
+      platform = 'android';
+    } else if (Platform.isIOS) {
+      platform = 'ios';
+    } else if (Platform.isLinux) {
+      platform = 'linux';
+    } else if (Platform.isMacOS) {
+      platform = 'macos';
+    } else if (Platform.isWindows) {
+      platform = 'windows';
+    } else {
+      platform = 'unknown';
+    }
+    await retrieveData(kDebugMode);
+    kDebugMode ? init_debug_mode() : init_release_mode();
+  }
+  return true;
 }
 
 void init_debug_mode() {
-  print("Running in debug mode...");
+  developer.log("Running in debug mode...");
 }
 
 void init_release_mode() {}

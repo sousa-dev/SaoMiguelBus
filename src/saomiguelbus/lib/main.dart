@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
+import 'dart:developer' as developer;
+import 'package:saomiguelbus/l10n/l10n.dart';
+import 'package:saomiguelbus/services/notifications.dart';
+import 'package:saomiguelbus/utils/show_dialog.dart';
 import 'package:saomiguelbus/widgets/index.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/utils/index.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
-void main() => runApp(const MyApp());
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  NotificationService().initNotification();
+
+  runApp(const MyApp());
+}
+
+Future<bool> initialization() async {
+  await start(kDebugMode);
+
+  FlutterNativeSplash.remove();
+
+  tz.initializeTimeZones();
+
+  return true;
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,35 +38,28 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'São Miguel Bus',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF218732)),
+        colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
         useMaterial3: true,
       ),
+      supportedLocales: L10n.all,
+      localeResolutionCallback: L10n.localeFallback,
+      localizationsDelegates: L10n.localizationsDelegates,
       home: MyHomePage(title: 'São Miguel Bus'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title, this.currentIndex = 0});
 
-  final List<StatefulWidget> _pages = [
-    HomePageBody(
-      key: UniqueKey(),
-      onChangeOrigin: onChangeOriginHome,
-      onChangeDestination: onChangeDestinationHome,
-    ),
-    const FindPageBody(),
-    const MapPageBody(),
-    const InfoPageBody(),
-  ];
   final String title;
-  int _currentIndex = 0;
+  int currentIndex;
 
   void onNavBarItemSelected(int index) {
-    _currentIndex = index;
+    currentIndex = index;
   }
 
-  Widget getBody() => _pages[_currentIndex]!;
+  Widget getBody() => pages[currentIndex];
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -59,18 +72,35 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  late Future<bool> _initializationFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializationFuture = initialization();
+  }
+
   @override
   Widget build(BuildContext context) {
-    start(kDebugMode);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      appBar: getTopBar(title: widget.title, context: context),
+      body: FutureBuilder<bool>(
+        future: _initializationFuture,
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(); // Show a loading spinner while waiting
+          } else {
+            if (snapshot.error != null) {
+              // If there's an error, return an error widget
+              return const Center(child: Text('An error occurred!'));
+            } else {
+              // If the future completed without error, build your widget
+              return widget.getBody();
+            }
+          }
+        },
       ),
-      body: widget.getBody(),
-      bottomNavigationBar: NavBar(
-          key: UniqueKey(),
-          currentIndex: widget._currentIndex,
-          onItemSelected: _updateBody),
+      bottomNavigationBar: getNavBar(widget.currentIndex, _updateBody),
     );
   }
 }
