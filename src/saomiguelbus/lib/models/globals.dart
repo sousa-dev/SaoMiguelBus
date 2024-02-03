@@ -7,6 +7,7 @@ import 'package:saomiguelbus/models/track_bus.dart';
 import 'package:saomiguelbus/utils/on_change.dart';
 
 Color primaryColor = const Color(0xFF218732);
+bool firstTime = true;
 
 List allRoutes = [];
 var allStops = {};

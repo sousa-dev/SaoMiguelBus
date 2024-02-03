@@ -1,7 +1,6 @@
 // Home Page Body Widget
 // Path: lib/layout/home.dart
 import 'dart:async';
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:dots_indicator/dots_indicator.dart';
@@ -305,17 +304,17 @@ class _HomePageBodyState extends State<HomePageBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Bus Tracking',
+          'Bus Tracking', //TODO: intl8
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const Text(
-          'All scheduling is estimated',
+          'All scheduling is estimated', //TODO: intl8
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
         const SizedBox(height: 10),
         Column(
           children: [
-            if (trackingCount != 0)
+            if (trackingCount > 0) ...[
               SizedBox(
                 height: 100, // Adjust this value as needed
                 child: PageView.builder(
@@ -404,6 +403,25 @@ class _HomePageBodyState extends State<HomePageBody> {
                       ),
                     );
                   },
+                ),
+              )
+            ] else
+              Card(
+                elevation: 5, // This gives the card an elevation
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      10), // This gives the card rounded corners
+                ),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 20.0),
+                child: const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Center(
+                    child: Text(
+                      'No tracking buses', //TODO: intl8
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ),
                 ),
               ),
             const SizedBox(height: 10),

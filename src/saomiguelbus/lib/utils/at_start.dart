@@ -6,22 +6,26 @@ import 'package:saomiguelbus/models/globals.dart';
 import 'dart:io' show Platform;
 
 Future<bool> start(kDebugMode) async {
-  sessionToken = const Uuid().v4();
-  if (Platform.isAndroid) {
-    platform = 'android';
-  } else if (Platform.isIOS) {
-    platform = 'ios';
-  } else if (Platform.isLinux) {
-    platform = 'linux';
-  } else if (Platform.isMacOS) {
-    platform = 'macos';
-  } else if (Platform.isWindows) {
-    platform = 'windows';
-  } else {
-    platform = 'unknown';
+  if (firstTime) {
+    firstTime = false;
+
+    sessionToken = const Uuid().v4(); //TODO: Use this on the statistics
+    if (Platform.isAndroid) {
+      platform = 'android';
+    } else if (Platform.isIOS) {
+      platform = 'ios';
+    } else if (Platform.isLinux) {
+      platform = 'linux';
+    } else if (Platform.isMacOS) {
+      platform = 'macos';
+    } else if (Platform.isWindows) {
+      platform = 'windows';
+    } else {
+      platform = 'unknown';
+    }
+    await retrieveData(kDebugMode);
+    kDebugMode ? init_debug_mode() : init_release_mode();
   }
-  await retrieveData(kDebugMode);
-  kDebugMode ? init_debug_mode() : init_release_mode();
   return true;
 }
 
