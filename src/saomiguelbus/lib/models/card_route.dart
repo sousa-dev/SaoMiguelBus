@@ -188,6 +188,15 @@ class CardRoute {
                   : () {
                       // Your tracking logic
                       TrackBus(route).track();
+                      Fluttertoast.showToast(
+                          msg:
+                              "Tracking Route. You can check it on the Home Page", //TODO: Change to localized string
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: primaryColor,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor:
