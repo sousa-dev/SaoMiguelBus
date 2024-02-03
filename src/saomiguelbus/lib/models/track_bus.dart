@@ -199,6 +199,8 @@ class TrackBus {
 
   void _save() {
     trackBuses.add(this);
+    // Sort trackBuses based on timeToCatch
+    trackBuses.sort((a, b) => a.timeToCatch!.compareTo(b.timeToCatch!));
     _saveTrackBusOnPrefs();
   }
 
@@ -254,7 +256,9 @@ class TrackBus {
             json['nextStop'] != null ? Stop.fromJson(json['nextStop']) : null,
         routeStart = json['routeStart'],
         routeFinish = json['routeFinish'],
-        alertTime = json['alertTime'] != null ? DateTime.parse(json['alertTime']) : null,
+        alertTime = json['alertTime'] != null
+            ? DateTime.parse(json['alertTime'])
+            : null,
         timeToArrival = json['timeToArrival'] != null
             ? Duration(minutes: json['timeToArrival'])
             : null,
