@@ -105,10 +105,7 @@ Future<bool> retrieveData(kDebugMode) async {
   loadFromSharedPreferences('favourites');
   loadFromSharedPreferences('track_buses');
 
-  Map information = {
-    'version': version,
-    'maps': true
-  }; //TODO: Change default to false on production
+  Map information = {'version': version, 'maps': false};
   List data = [];
   List stopsJSON = [];
   //SharedPreferences.setMockInitialValues({});
@@ -125,6 +122,7 @@ Future<bool> retrieveData(kDebugMode) async {
     }
     data = localLoad(prefs);
     stopsJSON = localStops(prefs);
+    information['maps'] = true;
   } else {
     try {
       // Load Stops from API
