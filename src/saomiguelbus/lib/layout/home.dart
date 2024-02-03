@@ -1,5 +1,7 @@
 // Home Page Body Widget
 // Path: lib/layout/home.dart
+import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dots_indicator/dots_indicator.dart';
@@ -47,8 +49,24 @@ class _HomePageBodyState extends State<HomePageBody> {
   List<dynamic> infoAlerts = [];
   int alertCount = 0;
   int trackingCount = trackBuses.length;
-
   int previousFavouritesCount = favourites.length;
+
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateAllTrackBuses();
+    _timer = Timer.periodic(
+        const Duration(minutes: 1), (Timer t) => _updateAllTrackBuses());
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -69,10 +87,6 @@ class _HomePageBodyState extends State<HomePageBody> {
           alertCount = infoAlerts.length;
         });
       });
-    }
-
-    if (trackBuses.length != trackingCount) {
-      _updateAllTrackBuses();
     }
 
     return Padding(
@@ -673,7 +687,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       }
     });
 
-    developer.log("Bus Tracking Updated");
+    developer.log("Bus Tracking Updated", name: 'update');
     developer.log(trackBuses.toString());
   }
 }
