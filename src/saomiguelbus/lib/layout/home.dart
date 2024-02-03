@@ -397,8 +397,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                               borderRadius: BorderRadius.circular(
                                   20.0), // Rounded corners
                             ),
-                            color: Colors.greenAccent[
-                                100], // Replace with your exact color
+                            color: primaryColor, // Replace with your exact color
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Column(
