@@ -330,77 +330,98 @@ class _HomePageBodyState extends State<HomePageBody> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0), // Add horizontal padding
                       child: Dismissible(
-                        key: Key(trackBuses[index]
-                            .toString()), // Unique key for Dismissible
-                        direction: DismissDirection
-                            .up, // Only allow swipe up to dismiss
-                        confirmDismiss: (direction) async {
-                          // Show a confirmation dialog
-                          return await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("Confirm"), //TODO: intl8
-                                content: const Text(
-                                    "Are you sure you wish to delete this item?"), //TODO: intl8
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context)
-                                        .pop(false), // Do not dismiss the item
-                                    child: const Text("CANCEL"), //TODO: intl8
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context)
-                                        .pop(true), // Dismiss the item
-                                    child: const Text("DELETE"), //TODO: intl8
+                          key: Key(trackBuses[index]
+                              .toString()), // Unique key for Dismissible
+                          direction: DismissDirection
+                              .up, // Only allow swipe up to dismiss
+                          confirmDismiss: (direction) async {
+                            // Show a confirmation dialog
+                            return await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Confirm"), //TODO: intl8
+                                  content: const Text(
+                                      "Are you sure you wish to delete this item?"), //TODO: intl8
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context)
+                                          .pop(
+                                              false), // Do not dismiss the item
+                                      child: const Text("CANCEL"), //TODO: intl8
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context)
+                                          .pop(true), // Dismiss the item
+                                      child: const Text("DELETE"), //TODO: intl8
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          onDismissed: (direction) {
+                            // Handle the dismissal
+                            setState(() {
+                              // Remove the dismissed item from the list
+                              trackBuses.removeAt(index);
+                              saveOnSharedPreferences(
+                                  trackBuses, 'track_buses');
+                              // Adjust trackingCount after removal
+                              trackingCount = trackBuses.length;
+
+                              if (currentIndex >= trackingCount) {
+                                currentIndex = trackingCount -
+                                    1; // Adjust currentIndex if it's now out of range
+                              }
+
+                              // You might also need to handle the case where trackingCount becomes 0
+                              if (trackingCount == 0) {
+                                currentIndex =
+                                    0; // or any appropriate handling for empty state
+                              }
+                            });
+                          },
+                          background: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                10), // Match the Card's border radius
+                            child: Container(
+                              color: Colors.red,
+                              alignment: Alignment.bottomCenter,
+                              child: const Icon(Icons.delete,
+                                  color: Colors.white, size: 40),
+                            ),
+                          ),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  20.0), // Rounded corners
+                            ),
+                            color: Colors.greenAccent[
+                                100], // Replace with your exact color
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      const Icon(Icons.directions_bus,
+                                          size: 50,
+                                          color: Colors.black), // Bus icon
+                                      Expanded(
+                                        child: Text(
+                                          'Bus will arrive in ${trackBuses[index].catchStop.name} at ${trackBuses[index].arrivalTime}.', //TODO: intl8
+                                          style: const TextStyle(
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
-                              );
-                            },
-                          );
-                        },
-                        onDismissed: (direction) {
-                          // Handle the dismissal
-                          setState(() {
-                            // Remove the dismissed item from the list
-                            trackBuses.removeAt(index);
-                            saveOnSharedPreferences(trackBuses, 'track_buses');
-                            // Adjust trackingCount after removal
-                            trackingCount = trackBuses.length;
-
-                            if (currentIndex >= trackingCount) {
-                              currentIndex = trackingCount -
-                                  1; // Adjust currentIndex if it's now out of range
-                            }
-
-                            // You might also need to handle the case where trackingCount becomes 0
-                            if (trackingCount == 0) {
-                              currentIndex =
-                                  0; // or any appropriate handling for empty state
-                            }
-                          });
-                        },
-                        background: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                              10), // Match the Card's border radius
-                          child: Container(
-                            color: Colors.red,
-                            alignment: Alignment.bottomCenter,
-                            child: const Icon(Icons.delete,
-                                color: Colors.white, size: 40),
-                          ),
-                        ),
-                        child: Card(
-                          elevation: 5, // This gives the card an elevation
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                10), // This gives the card rounded corners
-                          ),
-                          child: Center(
-                            child: Text('Item ${trackBuses[index].toString()}'),
-                          ),
-                        ),
-                      ),
+                              ),
+                            ),
+                          )),
                     );
                   },
                 ),
