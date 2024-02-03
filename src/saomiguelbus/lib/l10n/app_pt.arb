@@ -1,0 +1,59 @@
+{
+  "arrive": "Chegar",
+  "depart": "Partir",
+  "destination": "Destino",
+  "@destination": {
+    "description": "Label for destination text fields"
+  },
+  "dialing": "Ligar para",
+  "directionsPageLabel": "Passo a passo",
+  "directionsTo": "A obter direções para",
+  "errorOpeningAd": "Ocorreu um error inesperado ao abrir o anúncio",
+  "fillFields": "Preencha a Origem e o Destino",
+  "find": "Ver",
+  "@find": {
+    "description": "Label for find button"
+  },
+  "home": "Início",
+  "@home": {
+    "description": "Label for home button"
+  },
+  "hour": "hora",
+  "hours": "horas",
+  "info": "Info",
+  "@info": {
+    "description": "Label for info button"
+  },
+  "language": "Portuguese",
+  "@language": {
+    "description": "The current language of the application"
+  },
+  "languageCode": "pt_PT",
+  "@languageCode": {
+    "description": "The current language code of the application"
+  },
+  "map": "Mapa",
+  "@map": {
+    "description": "Label for map button"
+  },
+  "minute": "minuto",
+  "minutes": "minutos",
+  "noRoutesFound": "Não Foram Encontradas Rotas",
+  "@noRoutesFound": {
+    "description": "Text for when there were no routes found"
+  },
+  "noWifiContent": "noWifiContent",
+  "noWifiTitle": "noWifiTitle",
+  "openExternalLink": "A abrir link externo...",
+  "origin": "Origem",
+  "@origin": {
+    "description": "Label for origin text fields"
+  },
+  "routesPageLabel": "Rotas",
+  "search": "Pesquisar",
+  "@search": {
+    "description": "Label for search button"
+  },
+  "sendEmailTo": "Enviar email para",
+  "sendMessageTo": "Enviar mensagem para"
+}

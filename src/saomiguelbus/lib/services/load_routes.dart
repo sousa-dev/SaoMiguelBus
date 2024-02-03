@@ -1,19 +1,42 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 import 'package:package_info/package_info.dart';
 
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/android_load_v2.dart';
 import 'package:saomiguelbus/services/get_stops_v1.dart';
+import 'package:saomiguelbus/utils/preferences_utility.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-List localLoad() {
-  return androidLoadV2();
+List localLoad(SharedPreferences prefs) {
+  var data = androidLoadV2();
+  developer.log("localload: ${prefs.getKeys()}");
+
+  if (prefs.containsKey('routes_api_response')) {
+    final jsonString = prefs.getString('routes_api_response');
+    developer.log("Loading Stored API Response...");
+    data = jsonDecode(jsonString!);
+    //information = data[0];
+    data = data.sublist(1);
+  }
+  return data;
 }
 
-List localStops() {
-  return getStopsV1();
+List localStops(SharedPreferences prefs) {
+  var stopsJSON = getStopsV1();
+
+  if (prefs.containsKey('stops_api_response')) {
+    final jsonString = prefs.getString('stops_api_response');
+    developer.log("Loading Stored API Response...");
+    developer.log(jsonString!);
+    stopsJSON = jsonDecode(jsonString);
+  }
+  return stopsJSON;
 }
 
 void loadStops(List stopsJSON) {
@@ -22,7 +45,7 @@ void loadStops(List stopsJSON) {
     allStops[stop['name']] =
         Stop(stop['name'], Location(stop['latitude'], stop['longitude']));
   }
-  print("Loaded ${allStops.length} stops");
+  developer.log("Loaded ${allStops.length} stops");
 }
 
 void loadRoutes(List data) {
@@ -47,7 +70,7 @@ void loadRoutes(List data) {
       company = Company.varela;
     } else {
       if (kDebugMode) {
-        print("Invalid Route Number: $route");
+        developer.log("Invalid Route Number: $route");
         Error();
       }
     }
@@ -65,17 +88,6 @@ void loadRoutes(List data) {
       stopsMap[stopObj] = time;
     }
 
-    if (i < 0 && kDebugMode) {
-      print(data[i]);
-      print(id);
-      print(route);
-      print(stops);
-      print(times);
-      print(stopsMap);
-      print(weekday);
-      print(info);
-      print(company);
-    }
     Route routeObj =
         Route(route, id.toString(), stopsMap, weekday, company, info: info);
     allRoutes.add(routeObj);
@@ -87,41 +99,86 @@ void createLocalDB(List data, List stops) {
   loadRoutes(data);
 }
 
-void retrieveData(kDebugMode) async {
+Future<bool> retrieveData(kDebugMode) async {
   final packageInfo = await PackageInfo.fromPlatform();
   final version = packageInfo.version;
+  loadFromSharedPreferences('favourites');
+  loadFromSharedPreferences('track_buses');
+
   Map information = {'version': version, 'maps': false};
   List data = [];
   List stopsJSON = [];
-  if (kDebugMode) {
-    data = localLoad();
-    stopsJSON = localStops();
+  //SharedPreferences.setMockInitialValues({});
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (kDebugMode &&
+      prefs.containsKey('routes_api_response') &&
+      prefs.containsKey('stops_api_response')) {
+    try {
+      final response = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+      if (response.statusCode == 200) internetConnection = true;
+    } catch (e) {
+      developer.log(e.toString());
+    }
+    data = localLoad(prefs);
+    stopsJSON = localStops(prefs);
+    information['maps'] = true;
   } else {
-    // Load Stops from API
-    final responseStops =
-        await http.get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
-    if (responseStops.statusCode == 200) {
-      final jsonString = utf8.decode(responseStops.bodyBytes);
-      print(jsonString);
-      stopsJSON = jsonDecode(jsonString);
-    } else {
-      print('Request failed with status: ${responseStops.statusCode}.');
-      stopsJSON = localStops();
+    try {
+      // Load Stops from API
+      final responseStops = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v1/stops'));
+      if (responseStops.statusCode == 200) {
+        final jsonString = utf8.decode(responseStops.bodyBytes);
+        developer.log(jsonString);
+        prefs.setString('stops_api_response', jsonString);
+        prefs.commit();
+        developer.log("Storing new routes API Response on cache...");
+        stopsJSON = jsonDecode(jsonString);
+
+        internetConnection = true;
+      } else {
+        developer
+            .log('Request failed with status: ${responseStops.statusCode}.');
+
+        stopsJSON = localStops(prefs);
+      }
+    } catch (e) {
+      developer.log(e.toString());
+      stopsJSON = localStops(prefs);
     }
 
-    // Load Routes from API
-    final response = await http
-        .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
-    if (response.statusCode == 200) {
-      final jsonString = utf8.decode(response.bodyBytes);
-      data = jsonDecode(jsonString);
-      information = data[0];
-      data = data.sublist(1);
-    } else {
-      print('Request failed with status: ${response.statusCode}.');
-      data = localLoad();
+    try {
+      // Load Routes from API
+      final response = await http
+          .get(Uri.parse('https://api.saomiguelbus.com/api/v2/android/load'));
+      if (response.statusCode == 200) {
+        final jsonString = utf8.decode(response.bodyBytes);
+        data = jsonDecode(jsonString);
+        prefs.setString('routes_api_response', jsonString);
+        prefs.commit();
+        developer.log("Storing new routes API Response on cache...");
+        developer.log("data: $data");
+        information = data[0];
+        data = data.sublist(1);
+        internetConnection = true;
+      } else {
+        developer.log('Request failed with status: ${response.statusCode}.');
+        data = localLoad(prefs);
+      }
+    } catch (e) {
+      developer.log(e.toString());
+      data = localLoad(prefs);
     }
   }
+  developer.log("fisrt: ${prefs.getKeys()}");
+  canUseMaps = information['maps'];
+  latestVersion = information['version'];
+
+  developer.log("canUseMaps: $canUseMaps");
+  developer.log("latestVersion: $latestVersion");
+  developer.log("internetConnection: $internetConnection");
 
   createLocalDB(data, stopsJSON);
+  return true;
 }

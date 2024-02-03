@@ -1,3 +1,4 @@
+.DS_Store
 # Built application files
 *.apk
 *.aar
@@ -87,3 +88,5 @@ lint/tmp/
 # Custom
 doc/private_key.pepk
 src/app/src/main/res/values/secrets.xml
+
+.DS_Store
