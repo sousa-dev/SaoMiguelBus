@@ -312,12 +312,6 @@ class _HomePageBodyState extends State<HomePageBody> {
           'All scheduling is estimated',
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
-        IconButton(
-          icon: const Icon(Icons.refresh), // Icon for the refresh button
-          onPressed: () {
-            _updateAllTrackBuses();
-          },
-        ),
         const SizedBox(height: 10),
         Column(
           children: [
@@ -341,6 +335,31 @@ class _HomePageBodyState extends State<HomePageBody> {
                             .toString()), // Unique key for Dismissible
                         direction: DismissDirection
                             .up, // Only allow swipe up to dismiss
+                        confirmDismiss: (direction) async {
+                          // Show a confirmation dialog
+                          return await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Confirm"), //TODO: intl8
+                                content: const Text(
+                                    "Are you sure you wish to delete this item?"), //TODO: intl8
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context)
+                                        .pop(false), // Do not dismiss the item
+                                    child: const Text("CANCEL"), //TODO: intl8
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context)
+                                        .pop(true), // Dismiss the item
+                                    child: const Text("DELETE"), //TODO: intl8
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                         onDismissed: (direction) {
                           // Handle the dismissal
                           setState(() {
