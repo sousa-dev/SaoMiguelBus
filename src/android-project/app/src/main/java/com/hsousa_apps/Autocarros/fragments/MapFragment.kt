@@ -23,6 +23,7 @@ import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.textfield.TextInputEditText
+import com.hsousa_apps.Autocarros.BuildConfig
 import com.hsousa_apps.Autocarros.R
 import com.hsousa_apps.Autocarros.data.*
 import com.hsousa_apps.Autocarros.models.StepCardAdapter
@@ -563,13 +564,16 @@ class MapFragment(private var redirected_origin: String? = null, private var red
         val value = ai?.metaData?.get("com.google.android.geo.API_KEY")
         val key = value.toString()
 
-
-        var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?" +
+        //      "https://api.saomiguelbus.com/api/v1/gmaps?
+        //      origin=$origin&destination=$destination&languageCode=$languageCode
+        //      &arrival_departure=$arrival_departure";
+        var mapsURL = "https://api.saomiguelbus.com/api/v1/gmaps?" +
                 "origin=" + origin_url +
                 "&destination=" + destination_url +
-                "&mode=transit" +
                 "&key=" + key +
-                "&language=" + lang
+                "&languageCode=" + lang +
+                "&platform=android" +
+                "&version=5"
 
         if (selected == getString(R.string.depart)) mapsURL += "&departure_time=$time"
         else if (selected == getString(R.string.arrive)) mapsURL += "&arrival_time=$time"
