@@ -6,7 +6,8 @@
 *.aab
 *.env
 *.lock
-
+env.dart
+env.g.dart
 # Files for the ART/Dalvik VM
 *.dex
 
