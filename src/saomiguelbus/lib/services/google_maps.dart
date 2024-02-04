@@ -28,8 +28,6 @@ Future<Instruction> getGoogleRoutes(
   mapsURL =
       "$mapsURL&platform=$platform&version=$latestVersion&debug=$debug&sessionToken=$sessionToken&key=${Env.googleMapsApiKey}";
 
-  developer.log(mapsURL, name: 'getGoogleRoutes');
-
   try {
     final responseStops = await http.get(Uri.parse(mapsURL));
     if (responseStops.statusCode == 200) {
@@ -45,24 +43,6 @@ Future<Instruction> getGoogleRoutes(
     developer.log(e.toString(), name: 'getGoogleRoutes');
     return Instruction().initWarning('NA');
   }
-  //  // // Load Possible Routes from GMAPS API
-  // var mapsURL =
-  //     "?origin=${origin}&destination=${destination}&language=${languageCode}";
-  // developer.log(mapsURL, name: 'getGoogleRoutes');
-  // }
-  // try {
-  //   final responseStops = await http.get(Uri.parse(mapsURL));
-  //   if (responseStops.statusCode == 200) {
-  //     var instructions = Instruction()
-  //         .initInstructions(jsonDecode(responseStops.body)['routes']);
-  //     developer.log("Routes Length: ${instructions.routes.length}");
-  //     return instructions;
-  //   } else {
-  //     return Instruction().initWarning('NA');
-  //   }
-  // } catch (e) {
-  //   return Instruction().initWarning('NA');
-  // }
 }
 
 Future<List<Location>> getLatLngFromPlaceID(String originPlaceID,
