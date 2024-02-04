@@ -16,10 +16,8 @@ Future<Instruction> getGoogleRoutes(
   if (!canUseMaps) {
     return Instruction().initWarning('Maps monthly limit reached');
   }
-  // Load Possible Routes from GMAPS API
   var mapsURL =
-      "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=transit&key=${Env.googleMapsApiKey}&language=${languageCode}&alternatives=true";
-  developer.log(mapsURL, name: 'getGoogleRoutes');
+      "https://api.saomiguelbus.com/api/v1/gmaps?origin=$origin&destination=$destination&languageCode=$languageCode&arrival_departure=$arrival_departure";
   if (arrival_departure == 'arrival') {
     mapsURL =
         "$mapsURL&arrival_time=${datetime.millisecondsSinceEpoch ~/ 1000}";
@@ -27,19 +25,44 @@ Future<Instruction> getGoogleRoutes(
     mapsURL =
         "$mapsURL&departure_time=${datetime.millisecondsSinceEpoch ~/ 1000}";
   }
+  mapsURL =
+      "$mapsURL&platform=$platform&version=$latestVersion&debug=$debug&sessionToken=$sessionToken&key=${Env.googleMapsApiKey}";
+
+  developer.log(mapsURL, name: 'getGoogleRoutes');
+
   try {
     final responseStops = await http.get(Uri.parse(mapsURL));
     if (responseStops.statusCode == 200) {
       var instructions = Instruction()
           .initInstructions(jsonDecode(responseStops.body)['routes']);
-      developer.log("Routes Length: ${instructions.routes.length}");
+      developer.log("Routes Length: ${instructions.routes.length}",
+          name: 'getGoogleRoutes');
       return instructions;
     } else {
       return Instruction().initWarning('NA');
     }
   } catch (e) {
+    developer.log(e.toString(), name: 'getGoogleRoutes');
     return Instruction().initWarning('NA');
   }
+  //  // // Load Possible Routes from GMAPS API
+  // var mapsURL =
+  //     "?origin=${origin}&destination=${destination}&language=${languageCode}";
+  // developer.log(mapsURL, name: 'getGoogleRoutes');
+  // }
+  // try {
+  //   final responseStops = await http.get(Uri.parse(mapsURL));
+  //   if (responseStops.statusCode == 200) {
+  //     var instructions = Instruction()
+  //         .initInstructions(jsonDecode(responseStops.body)['routes']);
+  //     developer.log("Routes Length: ${instructions.routes.length}");
+  //     return instructions;
+  //   } else {
+  //     return Instruction().initWarning('NA');
+  //   }
+  // } catch (e) {
+  //   return Instruction().initWarning('NA');
+  // }
 }
 
 Future<List<Location>> getLatLngFromPlaceID(String originPlaceID,

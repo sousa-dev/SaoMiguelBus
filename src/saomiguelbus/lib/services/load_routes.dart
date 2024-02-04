@@ -69,7 +69,7 @@ void loadRoutes(List data) {
     } else if (route[0] == '3') {
       company = Company.varela;
     } else {
-      if (kDebugMode) {
+      if (debug) {
         developer.log("Invalid Route Number: $route");
         Error();
       }
@@ -99,9 +99,9 @@ void createLocalDB(List data, List stops) {
   loadRoutes(data);
 }
 
-Future<bool> retrieveData(kDebugMode) async {
+Future<bool> retrieveData() async {
   final packageInfo = await PackageInfo.fromPlatform();
-  final version = packageInfo.version;
+  version = packageInfo.version;
   loadFromSharedPreferences('favourites');
   loadFromSharedPreferences('track_buses');
 
@@ -110,7 +110,7 @@ Future<bool> retrieveData(kDebugMode) async {
   List stopsJSON = [];
   //SharedPreferences.setMockInitialValues({});
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (kDebugMode &&
+  if (debug &&
       prefs.containsKey('routes_api_response') &&
       prefs.containsKey('stops_api_response')) {
     try {
@@ -174,6 +174,8 @@ Future<bool> retrieveData(kDebugMode) async {
   developer.log("fisrt: ${prefs.getKeys()}");
   canUseMaps = information['maps'];
   latestVersion = information['version'];
+
+  //TODO: Check if the user has the latest version
 
   developer.log("canUseMaps: $canUseMaps");
   developer.log("latestVersion: $latestVersion");

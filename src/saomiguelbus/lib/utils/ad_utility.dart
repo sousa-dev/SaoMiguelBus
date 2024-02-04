@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'package:flutter/foundation.dart';
 import 'dart:developer' as developer;
 import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:saomiguelbus/models/globals.dart';
 
 String onTapBanner(String id, String url, String targetUrl, String action,
     {required BuildContext context}) {
-  if (!kDebugMode) {
+  if (!debug) {
     clickAdBanner(id);
   }
 

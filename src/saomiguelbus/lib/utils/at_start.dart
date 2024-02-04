@@ -8,6 +8,7 @@ import 'dart:io' show Platform;
 Future<bool> start(kDebugMode) async {
   if (firstTime) {
     firstTime = false;
+    debug = kDebugMode;
 
     sessionToken = const Uuid().v4(); //TODO: Use this on the statistics
     if (Platform.isAndroid) {
@@ -23,8 +24,8 @@ Future<bool> start(kDebugMode) async {
     } else {
       platform = 'unknown';
     }
-    await retrieveData(kDebugMode);
-    kDebugMode ? init_debug_mode() : init_release_mode();
+    await retrieveData();
+    debug ? init_debug_mode() : init_release_mode();
   }
   return true;
 }

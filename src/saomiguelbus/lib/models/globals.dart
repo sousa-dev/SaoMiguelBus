@@ -23,7 +23,9 @@ String platform = 'unknown';
 
 bool canUseMaps = false;
 bool internetConnection = false;
+bool debug = false;
 String latestVersion = '';
+String version = '';
 
 String currentAdOn = 'home';
 
