@@ -246,7 +246,8 @@ class TrackBus {
   }
 
   TrackBus.fromJson(Map<String, dynamic> json)
-      : stops = (json['stops'] as Map<String, dynamic>).map(
+      : id = json['id'],
+        stops = (json['stops'] as Map<String, dynamic>).map(
             (key, value) => MapEntry(Stop.fromJson(jsonDecode(key)), value)),
         catchTime = json['catchTime'],
         catchStop = Stop.fromJson(json['catchStop']),
@@ -277,6 +278,7 @@ class TrackBus {
             : null;
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'stops': stops
             .map((key, value) => MapEntry(jsonEncode(key.toJson()), value)),
         'catchTime': catchTime,

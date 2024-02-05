@@ -49,13 +49,14 @@ class _HomePageBodyState extends State<HomePageBody> {
   int alertCount = 0;
   int trackingCount = trackBuses.length;
   int previousFavouritesCount = favourites.length;
+  bool _isLoading = false;
 
   Timer? _timer;
 
   @override
   void initState() {
-    super.initState();
     _updateAllTrackBuses();
+    super.initState();
     _timer = Timer.periodic(
         const Duration(minutes: 1), (Timer t) => _updateAllTrackBuses());
   }
@@ -257,6 +258,8 @@ class _HomePageBodyState extends State<HomePageBody> {
                           return;
                         }
 
+                        setState(() => _isLoading = true); // Start loading
+
                         String key =
                             '$origin->$destination:${date.day}/${date.month}/${date.year}-${date.hour}h${date.minute}';
                         String languageCode =
@@ -276,6 +279,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                             .then((results) {
                           widget._routes = results['routes'];
                           widget._instructions = results['instructions'];
+                          setState(() => _isLoading = false); // Stop Loading
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -293,7 +297,12 @@ class _HomePageBodyState extends State<HomePageBody> {
                           );
                         });
                       },
-                      child: Text(AppLocalizations.of(context)!.search),
+                      child: _isLoading
+                          ? CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  primaryColor), // Match the spinner color with your button's text color
+                            )
+                          : Text(AppLocalizations.of(context)!.search),
                     )),
               ],
             )));
