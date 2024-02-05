@@ -13,6 +13,8 @@ import 'package:saomiguelbus/services/notifications.dart';
 enum Status { off, waiting, running, finished, delayed, paused }
 
 class TrackBus {
+  late String id;
+
   late Map<Stop, String> stops;
   late String catchTime;
   late Stop catchStop;
@@ -45,6 +47,11 @@ class TrackBus {
   }
 
   void init(CardRoute cardRoute, DateTime searchDay) {
+    id = cardRoute.routeId +
+        searchDay.millisecondsSinceEpoch.toString() +
+        cardRoute.catchTime +
+        cardRoute.arrivalTime;
+
     stops = cardRoute.stops;
     catchTime = cardRoute.catchTime;
     catchStop = cardRoute.catchStop;
@@ -194,7 +201,6 @@ class TrackBus {
   void track() {
     developer.log(
         'Tracking bus $routeId: $this -> Catch Time: $catchTime - Arrival Time: $arrivalTime');
-    // Implement your tracking logic here
   }
 
   void _save() {
@@ -220,6 +226,7 @@ class TrackBus {
   @override
   String toString() {
     return 'TrackBus: {'
+        'id: $id, '
         'status: $status, '
         'currentStop: ${currentStop?.name}, '
         'nextStop: ${nextStop?.name}, '
