@@ -151,7 +151,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
             var dialog = Dialog(getString(R.string.page_dialog_title) + "$id?", getString(R.string.page_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
                 val intent = Intent(
                     Intent.ACTION_SENDTO, Uri.fromParts(
-                        "mailto", "sousadev@yahoo.com", null
+                        "mailto", "info@saomiguelbus.com", null
                     )
                 )
                 intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: Route $id")
@@ -166,7 +166,7 @@ class RoutePageFragment(private val id: String? = null, private val origin: Stri
         var dialog = Dialog(getString(R.string.route_dialog_title) + info, getString(R.string.route_dialog_message), getString(R.string.route_dialog_positive), DialogInterface.OnClickListener { dialog, which ->
             val intent = Intent(
                 Intent.ACTION_SENDTO, Uri.fromParts(
-                    "mailto", "sousadev@yahoo.com", null
+                    "mailto", "info@saomiguelbus.com", null
                 )
             )
             intent.putExtra(Intent.EXTRA_SUBJECT, "São Miguel Bus: Route $id")
