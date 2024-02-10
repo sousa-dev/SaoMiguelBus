@@ -21,6 +21,8 @@ import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
+import 'package:saomiguelbus/widgets/track_card.dart';
+import 'package:saomiguelbus/widgets/track_card.dart';
 
 class HomePageBody extends StatefulWidget {
   HomePageBody(
@@ -325,7 +327,7 @@ class _HomePageBodyState extends State<HomePageBody> {
           children: [
             if (trackingCount > 0) ...[
               SizedBox(
-                height: 100, // Adjust this value as needed
+                height: 100,
                 child: PageView.builder(
                   controller: PageController(viewportFraction: 1),
                   itemCount: trackingCount,
@@ -401,36 +403,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                   color: Colors.white, size: 40),
                             ),
                           ),
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  20.0), // Rounded corners
-                            ),
-                            color:
-                                primaryColor, // Replace with your exact color
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      const Icon(Icons.directions_bus,
-                                          size: 50,
-                                          color: Colors.black), // Bus icon
-                                      Expanded(
-                                        child: Text(
-                                          'Bus will arrive in ${trackBuses[index].catchStop.name} at ${trackBuses[index].arrivalTime}.', //TODO: intl8
-                                          style: const TextStyle(
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
+                          child: TrackCard(index: index)),
                     );
                   },
                 ),
