@@ -86,7 +86,7 @@ class _TrackCardState extends State<TrackCard>
               child: Align(
                 alignment: Alignment.topRight,
                 child: Text(
-                  'Currently in ${trackBuses[widget.index].currentStop?.name}',
+                  'Currently in ${trackBuses[widget.index].currentStop?.name} // Next: ${trackBuses[widget.index].nextStop?.name}',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
@@ -122,7 +122,7 @@ class _TrackCardState extends State<TrackCard>
                       Align(
                         alignment: Alignment.center,
                         child: Text(
-                          '${trackBuses[widget.index].timeToCatch?.inMinutes} min to catch the bus',
+                          '${trackBuses[widget.index].timeToCatch?.inMinutes} min to catch the bus // ${trackBuses[widget.index].timeToArrival?.inMinutes} arrival',
                           style: const TextStyle(color: Colors.black),
                         ),
                       ),

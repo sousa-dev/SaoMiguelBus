@@ -91,6 +91,10 @@ class TrackBus {
     // developer.log('Arrival Time: $arrivalDateTime');
     // developer.log('Route Start Time: $routeStartDateTime');
     // developer.log('Route Finish Time: $routeFinishDateTime');
+    timeToArrival =
+        arrivalDateTime.add(const Duration(minutes: 1)).difference(currentTime);
+    timeToCatch =
+        catchDateTime.add(const Duration(minutes: 1)).difference(currentTime);
 
     if (currentTime.isAfter(routeStartDateTime) &&
         currentTime.isBefore(catchDateTime)) {
@@ -123,35 +127,20 @@ class TrackBus {
     }
 
     Stop? lastStop;
-    bool shouldBreak = false;
     for (var stop in stops.entries) {
       var stopTime = DateTime.parse(
           '${DateFormat('yyyy-MM-dd').format(searchDay)} ${stop.value.replaceAll('h', ':')}');
 
-      if (currentTime.isBefore(stopTime) && !shouldBreak) {
-        currentStop = lastStop ?? catchStop;
+      if (currentTime.isBefore(stopTime)) {
+        currentStop = lastStop ?? catchStop; //TODO: Fix this stop
         nextStop = stop.key;
 
         // Calculate time to next stop
-        timeToNextStop = stopTime.difference(currentTime);
-
-        // Calculate time to catch
-        if (currentStop == catchStop) {
-          timeToCatch = timeToNextStop;
-        }
-
-        shouldBreak = true;
+        timeToNextStop =
+            stopTime.add(const Duration(minutes: 1)).difference(currentTime);
       }
 
       lastStop = stop.key;
-
-      // Calculate time to arrival
-      if (lastStop == arrivalStop) {
-        timeToArrival = stopTime.difference(currentTime);
-        if (shouldBreak) {
-          break;
-        }
-      }
     }
 
     if (status == Status.off) {
