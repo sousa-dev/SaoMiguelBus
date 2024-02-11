@@ -11,6 +11,7 @@ bool firstTime = true;
 
 List allRoutes = [];
 var allStops = {};
+List<dynamic> infoAlerts = [];
 
 String origin = '';
 String destination = '';

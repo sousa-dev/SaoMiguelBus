@@ -47,8 +47,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   DateTime date = DateTime.now().toUtc();
   final ScrollController _scrollController = ScrollController();
   int currentIndex = 0;
-  List<dynamic> infoAlerts = [];
-  int alertCount = 0;
+  int alertCount = infoAlerts.length;
   int trackingCount = trackBuses.length;
   int previousFavouritesCount = favourites.length;
   bool _isLoading = false;
@@ -82,15 +81,6 @@ class _HomePageBodyState extends State<HomePageBody> {
 
   @override
   Widget build(BuildContext context) {
-    if (alertCount == 0) {
-      fetchInfos().then((value) {
-        setState(() {
-          infoAlerts = jsonDecode(value!);
-          alertCount = infoAlerts.length;
-        });
-      });
-    }
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(

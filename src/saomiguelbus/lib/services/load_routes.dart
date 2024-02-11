@@ -10,6 +10,7 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/android_load_v2.dart';
 import 'package:saomiguelbus/services/get_stops_v1.dart';
+import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,6 +105,10 @@ Future<bool> retrieveData() async {
   version = packageInfo.version;
   loadFromSharedPreferences('favourites');
   loadFromSharedPreferences('track_buses');
+
+  fetchInfos().then((value) {
+    infoAlerts = jsonDecode(value!);
+  });
 
   Map information = {'version': version, 'maps': false};
   List data = [];
