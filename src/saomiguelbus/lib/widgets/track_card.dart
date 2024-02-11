@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/track_bus.dart';
+import 'package:saomiguelbus/utils/general_utility.dart';
 
 class TrackCard extends StatefulWidget {
   final int index; // Assuming you're passing the index or any other data needed
@@ -86,7 +87,7 @@ class _TrackCardState extends State<TrackCard>
               child: Align(
                 alignment: Alignment.topRight,
                 child: Text(
-                  'Currently in ${trackBuses[widget.index].currentStop?.name} // Next: ${trackBuses[widget.index].nextStop?.name}',
+                  getTopRightText(trackBuses[widget.index]),
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
@@ -108,8 +109,7 @@ class _TrackCardState extends State<TrackCard>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              'Bus will arrive in ${trackBuses[widget.index].catchStop.name} at ${trackBuses[widget.index].catchTime} ${trackBuses[widget.index].searchDay.day}/${trackBuses[widget.index].searchDay.month}/${trackBuses[widget.index].searchDay.year}',
-                              // Replace with your actual data
+                              getCenterText(trackBuses[widget.index]),
                               style: const TextStyle(color: Colors.black),
                             ),
                           ],
@@ -122,7 +122,7 @@ class _TrackCardState extends State<TrackCard>
                       Align(
                         alignment: Alignment.center,
                         child: Text(
-                          '${trackBuses[widget.index].timeToCatch?.inMinutes} min to catch the bus // ${trackBuses[widget.index].timeToArrival?.inMinutes} arrival',
+                          getBottomText(trackBuses[widget.index]),
                           style: const TextStyle(color: Colors.black),
                         ),
                       ),
@@ -147,6 +147,51 @@ class _TrackCardState extends State<TrackCard>
         return Colors.red.withOpacity(0.5);
       default:
         return Colors.grey.withOpacity(0.5);
+    }
+  }
+
+  String getTopRightText(TrackBus trackBus) {
+    //TODO: Change to intl
+    if (trackBus.status == Status.running ||
+        trackBus.status == Status.waiting) {
+      return 'Currently in ${trackBus.currentStop?.name}';
+    } else if (trackBus.status == Status.delayed) {
+      return '';
+    } else {
+      var now = DateTime.now();
+      if (trackBus.searchDay.day == now.day &&
+          trackBus.searchDay.month == now.month &&
+          trackBus.searchDay.year == now.year) {
+        return 'Today';
+      } else {
+        return '${trackBus.searchDay.day}/${trackBus.searchDay.month}/${trackBus.searchDay.year}';
+      }
+    }
+  }
+
+  String getCenterText(TrackBus trackBus) {
+    //TODO: Change to intl
+    if (trackBus.status == Status.running) {
+      return 'Bus will arrive in ${trackBus.arrivalStop.name} at ${trackBus.arrivalTime}';
+    } else if (trackBus.status == Status.waiting) {
+      return 'Bus will arrive in ${trackBus.catchStop.name} at ${trackBus.catchTime}';
+    } else if (trackBus.status == Status.delayed) {
+      return "The bus is delayed. Its location can't be tracked.";
+    } else {
+      return 'Route will start at ${trackBus.routeStart}';
+    }
+  }
+
+  String getBottomText(TrackBus trackBus) {
+    //TODO: Change to intl
+    if (trackBus.status == Status.running) {
+      return '${formatDurationToReadableText(trackBus.timeToArrival)} left to arrive';
+    } else if (trackBus.status == Status.waiting) {
+      return '${formatDurationToReadableText(trackBus.timeToCatch)} to catch bus';
+    } else if (trackBus.status == Status.delayed) {
+      return '';
+    } else {
+      return '${formatDurationToReadableText(trackBus.timeToCatch)} to catch bus';
     }
   }
 }
