@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/smb_api.dart';
-import 'package:saomiguelbus/widgets/navBar.dart';
+import 'package:saomiguelbus/widgets/nav_bar.dart';
 import 'package:saomiguelbus/utils/network_utility.dart';
 
 PreferredSizeWidget getTopBar({title = "São Miguel Bus", required context}) {
