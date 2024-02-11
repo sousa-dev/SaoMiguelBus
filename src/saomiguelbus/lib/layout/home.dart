@@ -1,7 +1,6 @@
 // Home Page Body Widget
 // Path: lib/layout/home.dart
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +14,11 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
 import 'package:saomiguelbus/models/globals.dart';
-import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
-import 'package:saomiguelbus/widgets/track_card.dart';
 import 'package:saomiguelbus/widgets/track_card.dart';
 
 class HomePageBody extends StatefulWidget {

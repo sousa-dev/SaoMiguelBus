@@ -163,6 +163,10 @@ class _TrackCardState extends State<TrackCard>
           trackBus.searchDay.month == now.month &&
           trackBus.searchDay.year == now.year) {
         return 'Today';
+      } else if (trackBus.searchDay.day == now.day + 1 &&
+          trackBus.searchDay.month == now.month &&
+          trackBus.searchDay.year == now.year) {
+        return 'Tomorrow';
       } else {
         return '${trackBus.searchDay.day}/${trackBus.searchDay.month}/${trackBus.searchDay.year}';
       }
