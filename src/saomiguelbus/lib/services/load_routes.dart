@@ -113,7 +113,7 @@ Future<bool> retrieveData() async {
   Map information = {'version': version, 'maps': false};
   List data = [];
   List stopsJSON = [];
-  //SharedPreferences.setMockInitialValues({});
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (debug &&
       prefs.containsKey('routes_api_response') &&
@@ -165,7 +165,17 @@ Future<bool> retrieveData() async {
         developer.log("Storing new routes API Response on cache...");
         developer.log("data: $data");
         information = data[0];
+
         data = data.sublist(1);
+        var holidays = information['holidays'];
+        allHolidays = {};
+        for (var holiday in holidays) {
+          allHolidays[holiday['date']
+              .split('-')
+              .sublist(1)
+              .reversed
+              .join('-')] = holiday['name'];
+        }
         internetConnection = true;
       } else {
         developer.log('Request failed with status: ${response.statusCode}.');

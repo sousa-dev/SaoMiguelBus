@@ -123,7 +123,7 @@ Future<Map<String, dynamic>> fetchRoutes(
       routes.addAll(findRoutes(
         originStop,
         destinationStop,
-        _getDayOfWeekString(date.weekday),
+        _getDayOfWeekString(date),
       ));
     }
   }
@@ -150,8 +150,15 @@ Future<Map<String, dynamic>> fetchRoutes(
   return result;
 }
 
-TypeOfDay _getDayOfWeekString(int weekday) {
-  developer.log(weekday.toString(), name: 'weekday');
+TypeOfDay _getDayOfWeekString(DateTime date) {
+  String dayMonth =
+      '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}';
+  if (allHolidays.containsKey(dayMonth)) {
+    developer.log('Holiday: ${allHolidays[dayMonth]}', name: 'weekday');
+    return TypeOfDay.sunday;
+  }
+
+  int weekday = date.weekday;
   switch (weekday) {
     case 6:
       return TypeOfDay.saturday;
