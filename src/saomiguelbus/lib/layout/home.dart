@@ -168,6 +168,13 @@ class _HomePageBodyState extends State<HomePageBody> {
                 _getAutocompleteField('origin'),
                 const SizedBox(height: 8.0),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor
+                        .withOpacity(0.75), // Ensure primaryColor is defined
+                    padding: const EdgeInsets.all(
+                        2.0), // Removed const due to runtime evaluation
+                    shape: const CircleBorder(), // Makes the button circular
+                  ),
                   onPressed: () {
                     setState(() {
                       final temp = origin;
@@ -177,20 +184,73 @@ class _HomePageBodyState extends State<HomePageBody> {
                       widget.onChangeDestination(destination);
                     });
                   },
-                  child: const Icon(Icons.swap_vert),
+                  child: const Icon(
+                    Icons.swap_vert,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 8.0),
                 _getAutocompleteField('destination'),
+                Row(
+                  children: [
+                    Spacer(), // Keeps the dropdown at the end of the row. Adjust or remove as needed.
+                    DropdownButtonHideUnderline(
+                      // Optional: Hides the underline of the dropdown button
+                      child: ButtonTheme(
+                        // Optional: Use ButtonTheme for more customization
+                        alignedDropdown: true, // Aligns the dropdown menu
+                        child: DropdownButton<String>(
+                          value: _departureType,
+                          icon: Icon(Icons.arrow_downward,
+                              size: 16), // Optional: Custom dropdown icon
+                          elevation: 16,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .primaryColor), // Custom text style
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _departureType = newValue!;
+                            });
+                          },
+                          items: ['depart', 'arrive']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value == 'depart'
+                                  ? AppLocalizations.of(context)!.depart
+                                  : AppLocalizations.of(context)!.arrive),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 Row(children: [
                   // Date picker button
                   ElevatedButton(
-                    child: Text(getDateText(date)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.all(8.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize
+                          .min, // Use min to keep the row as tight as possible around the children
+                      children: [
+                        const Icon(Icons.calendar_month,
+                            color: Colors.black), // Calendar icon
+                        const SizedBox(width: 4), // Space between icon and text
+                        Text(getDateText(date),
+                            style: const TextStyle(
+                                color: Colors.black)), // Your text widget
+                      ],
+                    ),
                     onPressed: () async {
                       final chosenDate = await showDatePicker(
                         context: context,
                         initialDate: date,
                         firstDate: DateTime.now(),
-                        lastDate: DateTime(DateTime.now().year + 1),
+                        lastDate: DateTime.now().add(const Duration(days: 364)),
                       );
                       if (chosenDate != null) {
                         setState(() {
@@ -201,28 +261,24 @@ class _HomePageBodyState extends State<HomePageBody> {
                     },
                   ),
                   const Spacer(), // This will push the following widgets to the right
-
                   // Departure type selector
-                  DropdownButton<String>(
-                    value: _departureType,
-                    onChanged: (value) {
-                      setState(() {
-                        _departureType = value!;
-                      });
-                    },
-                    items: [
-                      DropdownMenuItem(
-                        value: "depart",
-                        child: Text(AppLocalizations.of(context)!.depart),
-                      ),
-                      DropdownMenuItem(
-                        value: "arrive",
-                        child: Text(AppLocalizations.of(context)!.arrive),
-                      ),
-                    ],
-                  ),
                   ElevatedButton(
-                    child: Text(getTimeText(time)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.all(8.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize
+                          .min, // Use min to keep the row as tight as possible around the children
+                      children: [
+                        const Icon(Icons.alarm,
+                            color: Colors.black), // Calendar icon
+                        const SizedBox(width: 4), // Space between icon and text
+                        Text(getTimeText(time),
+                            style: const TextStyle(
+                                color: Colors.black)), // Your text widget
+                      ],
+                    ),
                     onPressed: () async {
                       final chosenTime = await pickTime(date);
                       if (chosenTime == null) return;
@@ -237,6 +293,10 @@ class _HomePageBodyState extends State<HomePageBody> {
                     width: MediaQuery.of(context).size.width *
                         0.8, // This will make the container (and the button) take up the full width
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor.withOpacity(0.75),
+                        padding: const EdgeInsets.all(8.0),
+                      ),
                       onPressed: () {
                         if (origin.isEmpty || destination.isEmpty) {
                           Fluttertoast.showToast(
@@ -287,11 +347,12 @@ class _HomePageBodyState extends State<HomePageBody> {
                         });
                       },
                       child: _isLoading
-                          ? CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  primaryColor), // Match the spinner color with your button's text color
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors
+                                  .white), // Match the spinner color with your button's text color
                             )
-                          : Text(AppLocalizations.of(context)!.search),
+                          : Text(AppLocalizations.of(context)!.search,
+                              style: const TextStyle(color: Colors.white)),
                     )),
               ],
             )));
@@ -529,7 +590,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                         .center, // Centers the text horizontally
                                     softWrap: true, // Allows text wrapping
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         // Your text style here
                                         ),
                                     maxLines: 3,
@@ -593,7 +654,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                           .center, // Centers the text horizontally
                                       softWrap: true, // Allows text wrapping
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           // Your text style here
                                           ),
                                       maxLines: 3,
@@ -628,12 +689,59 @@ class _HomePageBodyState extends State<HomePageBody> {
         return TextFormField(
           controller: textEditingController,
           focusNode: focusNode,
-          onTapOutside: (event) => focusNode.unfocus(),
           decoration: InputDecoration(
             labelText: targetLabel == 'origin'
                 ? AppLocalizations.of(context)!.origin
                 : AppLocalizations.of(context)!.destination,
-            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.white,
+            labelStyle: const TextStyle(
+              backgroundColor: Colors
+                  .white, // This ensures the label has a background when it floats up
+            ),
+            floatingLabelBehavior: FloatingLabelBehavior
+                .auto, // The label will float above the field when focused
+            contentPadding: const EdgeInsets.only(
+                left: 24.0, top: 20.0), // Adjust the value as needed
+            floatingLabelStyle: TextStyle(
+              color: Theme.of(context).primaryColor,
+            ),
+            // Add border if there is text
+            border: (targetLabel == 'origin' ? origin : destination).isNotEmpty
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2.0,
+                    ),
+                  )
+                : OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide.none,
+                  ),
+            enabledBorder:
+                (targetLabel == 'origin' ? origin : destination).isNotEmpty
+                    ? OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: 2.0,
+                        ),
+                      )
+                    : OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide.none,
+                      ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2.0,
+              ),
+            ),
+            prefixIcon: targetLabel == 'origin'
+                ? Icon(Icons.location_on, color: Theme.of(context).primaryColor)
+                : Icon(Icons.flag, color: Theme.of(context).primaryColor),
             suffixIcon: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               transitionBuilder: (child, animation) {
@@ -685,35 +793,48 @@ class _HomePageBodyState extends State<HomePageBody> {
           },
         );
       },
-      optionsViewBuilder: (BuildContext context,
-          AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+      optionsViewBuilder: (
+        BuildContext context,
+        AutocompleteOnSelected<String> onSelected,
+        Iterable<String> options,
+      ) {
         return Align(
           alignment: Alignment.topLeft,
-          child: Material(
+          child: Card(
             elevation: 4.0,
-            child: SizedBox(
-              height: 200.0,
-              child: ListView.builder(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                  8.0), // Adjust radius to your preference
+            ),
+            child: Container(
+              // Set height to size of options or max 200
+              height: options.length * 70.0 > 200 ? 200 : options.length * 70.0,
+              // set width to be equal to the field
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: ListView.separated(
                 padding: const EdgeInsets.all(8.0),
                 itemCount: options.length,
                 itemBuilder: (BuildContext context, int index) {
                   final option = options.elementAt(index);
-                  AutocompletePlace? autocompletePlace =
-                      autoComplete.containsKey(option)
-                          ? autoComplete[option]
-                          : null;
+                  final AutocompletePlace? autocompletePlace =
+                      autoComplete[option];
+
                   return ListTile(
-                    title: Text(autocompletePlace != null
-                        ? autocompletePlace.name
-                        : option),
-                    leading: autocompletePlace != null
-                        ? autocompletePlace.icon
-                        : const Icon(Icons.location_on),
+                    title: Text(
+                      autocompletePlace?.name ?? option,
+                      style: TextStyle(
+                          // Add text styles that fit your app's design
+                          ),
+                    ),
+                    leading: autocompletePlace?.icon ??
+                        const Icon(Icons.location_on),
                     onTap: () {
                       onSelected(option);
                     },
                   );
                 },
+                separatorBuilder: (context, index) =>
+                    Divider(), // Optional divider
               ),
             ),
           ),

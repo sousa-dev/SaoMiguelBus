@@ -15,7 +15,8 @@ String getDateText(DateTime date) {
       date.day == tomorrow.day) {
     return "Tomorrow"; //TODO: intl8
   }
-  return DateFormat('yyyy-MM-dd').format(date);
+  // Get it in the format 'Wed 29 Sep'
+  return DateFormat('E d MMM').format(date);
 }
 
 String getTimeText(TimeOfDay time) {
