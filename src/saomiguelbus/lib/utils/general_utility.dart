@@ -1,5 +1,32 @@
 import 'dart:developer' as developer;
 
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+String getDateText(DateTime date) {
+  // Text to 'Today' and 'Tomorrow'
+  DateTime now = DateTime.now();
+  if (date.year == now.year && date.month == now.month && date.day == now.day) {
+    return "Today"; //TODO: intl8
+  }
+  DateTime tomorrow = now.add(Duration(days: 1));
+  if (date.year == tomorrow.year &&
+      date.month == tomorrow.month &&
+      date.day == tomorrow.day) {
+    return "Tomorrow"; //TODO: intl8
+  }
+  return DateFormat('yyyy-MM-dd').format(date);
+}
+
+String getTimeText(TimeOfDay time) {
+  // 'Now' for current time
+  DateTime now = DateTime.now();
+  if (time.hour == now.hour && time.minute == now.minute) {
+    return "Now"; //TODO: intl8
+  }
+  return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+}
+
 String formatDurationToReadableText(Duration? duration) {
   // Calculate days, hours, and minutes
   if (duration == null) {

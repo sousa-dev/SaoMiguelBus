@@ -15,6 +15,7 @@ import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
+import 'package:saomiguelbus/utils/general_utility.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
@@ -183,7 +184,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 Row(children: [
                   // Date picker button
                   ElevatedButton(
-                    child: Text(DateFormat('yyyy-MM-dd').format(date)),
+                    child: Text(getDateText(date)),
                     onPressed: () async {
                       final chosenDate = await showDatePicker(
                         context: context,
@@ -221,8 +222,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     ],
                   ),
                   ElevatedButton(
-                    child: Text(
-                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'),
+                    child: Text(getTimeText(time)),
                     onPressed: () async {
                       final chosenTime = await pickTime(date);
                       if (chosenTime == null) return;

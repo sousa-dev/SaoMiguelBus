@@ -167,77 +167,77 @@ class CardRoute {
             children: [
               for (var stop in stops.keys)
                 Text('${stops[stop]} - ${stop.name}'),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: isRouteDatePast
-                  ? () {
-                      // Use FlutterToast to show a toast message
-                      Fluttertoast.showToast(
-                          msg:
-                              "This route is no longer available.", //TODO: Change to localized string
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                    }
-                  : () {
-                      // Your tracking logic
-                      var trackId = route.routeId +
-                          route.date.millisecondsSinceEpoch.toString() +
-                          route.catchTime +
-                          route.arrivalTime;
-                      // Check if trackId is already being tracked in trackBuses list
-                      for (var track in trackBuses) {
-                        if (trackId == track.id) {
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  onPressed: isRouteDatePast
+                      ? () {
+                          // Use FlutterToast to show a toast message
                           Fluttertoast.showToast(
                               msg:
-                                  "This route is already being tracked. Check it at the home page", //TODO: Change to localized string
+                                  "This route is no longer available.", //TODO: Change to localized string
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
                               backgroundColor: Colors.red,
                               textColor: Colors.white,
                               fontSize: 16.0);
-                          return;
                         }
-                      }
-                      // Check if there are already 10 buses being tracked
-                      if (trackBuses.length >= 10) {
-                        Fluttertoast.showToast(
-                            msg:
-                                "You can only track 10 buses at a time. Check the Home Page to see the buses you are tracking", //TODO: Change to localized string
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0);
-                        return;
-                      }
+                      : () {
+                          // Your tracking logic
+                          var trackId = route.routeId +
+                              route.date.millisecondsSinceEpoch.toString() +
+                              route.catchTime +
+                              route.arrivalTime;
+                          // Check if trackId is already being tracked in trackBuses list
+                          for (var track in trackBuses) {
+                            if (trackId == track.id) {
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "This route is already being tracked. Check it at the home page", //TODO: Change to localized string
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0);
+                              return;
+                            }
+                          }
+                          // Check if there are already 10 buses being tracked
+                          if (trackBuses.length >= 10) {
+                            Fluttertoast.showToast(
+                                msg:
+                                    "You can only track 10 buses at a time. Check the Home Page to see the buses you are tracking", //TODO: Change to localized string
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                            return;
+                          }
 
-                      TrackBus(route).track();
-                      Fluttertoast.showToast(
-                          msg:
-                              "Tracking Route. You can check it on the Home Page", //TODO: Change to localized string
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: primaryColor,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    buttonColor, // Button color based on date comparison
-                foregroundColor: Colors.white, // Text color
+                          TrackBus(route).track();
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Tracking Route. You can check it on the Home Page", //TODO: Change to localized string
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: primaryColor,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        buttonColor, // Button color based on date comparison
+                    foregroundColor: Colors.white, // Text color
+                  ),
+                  child: Text('Track'), //TODO: Change to localized string
+                ),
               ),
-              child: Text('Track'), //TODO: Change to localized string
-            ),
+            ],
           ),
         ],
       ),
