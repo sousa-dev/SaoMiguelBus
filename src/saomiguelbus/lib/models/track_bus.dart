@@ -40,9 +40,10 @@ class TrackBus {
     cardRoute, {
     Duration alertTimeThreshold = const Duration(minutes: 10),
   }) {
+    developer.log('Creating TrackBus', name: 'TrackBus');
     init(cardRoute, cardRoute.date);
     updateStatus();
-    //scheduleNotification(alertTimeThreshold);
+    scheduleNotification(alertTimeThreshold);
     _save();
   }
 
@@ -90,6 +91,10 @@ class TrackBus {
     // developer.log('Arrival Time: $arrivalDateTime');
     // developer.log('Route Start Time: $routeStartDateTime');
     // developer.log('Route Finish Time: $routeFinishDateTime');
+    timeToArrival =
+        arrivalDateTime.add(const Duration(minutes: 1)).difference(currentTime);
+    timeToCatch =
+        catchDateTime.add(const Duration(minutes: 1)).difference(currentTime);
 
     if (currentTime.isAfter(routeStartDateTime) &&
         currentTime.isBefore(catchDateTime)) {
@@ -122,35 +127,20 @@ class TrackBus {
     }
 
     Stop? lastStop;
-    bool shouldBreak = false;
     for (var stop in stops.entries) {
       var stopTime = DateTime.parse(
           '${DateFormat('yyyy-MM-dd').format(searchDay)} ${stop.value.replaceAll('h', ':')}');
 
-      if (currentTime.isBefore(stopTime) && !shouldBreak) {
-        currentStop = lastStop ?? catchStop;
+      if (currentTime.isBefore(stopTime)) {
+        currentStop = lastStop ?? catchStop; //TODO: Fix this stop
         nextStop = stop.key;
 
         // Calculate time to next stop
-        timeToNextStop = stopTime.difference(currentTime);
-
-        // Calculate time to catch
-        if (currentStop == catchStop) {
-          timeToCatch = timeToNextStop;
-        }
-
-        shouldBreak = true;
+        timeToNextStop =
+            stopTime.add(const Duration(minutes: 1)).difference(currentTime);
       }
 
       lastStop = stop.key;
-
-      // Calculate time to arrival
-      if (lastStop == arrivalStop) {
-        timeToArrival = stopTime.difference(currentTime);
-        if (shouldBreak) {
-          break;
-        }
-      }
     }
 
     if (status == Status.off) {
@@ -160,6 +150,7 @@ class TrackBus {
   }
 
   void scheduleNotification(alertTimeThreshold) {
+    developer.log('Alert Time:', name: 'TrackBus');
     // Replace 'h' with ':' to match the standard time format "HH:mm"
     String formattedCatchTimeStr = this.catchTime.replaceAll('h', ':');
 
@@ -167,34 +158,26 @@ class TrackBus {
     var format = DateFormat("HH:mm");
     var catchTime = format.parse(formattedCatchTimeStr);
 
-    // Get the current date
-    var now = DateTime.now();
-    developer.log('Now: $now', name: 'TrackBus');
-
     // Create a DateTime object for catchTime in Azores Timezone
     var azoresTimeZone = tz.getLocation('Atlantic/Azores');
-    var catchTimeInAzores = tz.TZDateTime(azoresTimeZone, now.year, now.month,
-        now.day, catchTime.hour, catchTime.minute);
+    var catchTimeInAzores = tz.TZDateTime(azoresTimeZone, searchDay.year,
+        searchDay.month, searchDay.day, catchTime.hour, catchTime.minute);
 
-    // Adjust catchTime by the time difference and the threshold
-    var alertTime = catchTimeInAzores.subtract(alertTimeThreshold);
-
-    // Log the alertTime TODO: Make sure the alert is being calculated right
-    developer.log('Alert Time: ${alertTime.hour}:${alertTime.minute}',
-        name: 'TrackBus');
-
-    NotificationService().scheduleNotification(
+    
+    // Schedule the notification
+    notificationService?.scheduleNotification(
       id: int.parse(routeId +
-          now.day.toString() +
-          now.hour.toString() +
-          now.minute.toString()),
+          searchDay.day.toString() +
+          searchDay.hour.toString() +
+          searchDay.minute.toString()),
       title: 'Bus $routeId is coming!',
-      body: 'Alerted at ${alertTime.hour}:${alertTime.minute}',
-      year: searchDay.year,
-      month: searchDay.month,
-      day: searchDay.day,
+      body: 'Alerted at ${catchTimeInAzores.hour}:${catchTimeInAzores.minute}',
+      year: catchTimeInAzores.year,
+      month: catchTimeInAzores.month,
+      day: catchTimeInAzores.day,
       hour: catchTimeInAzores.hour,
       minute: catchTimeInAzores.minute,
+      alertTimeThreshold: alertTimeThreshold,
     );
   }
 
@@ -206,7 +189,13 @@ class TrackBus {
   void _save() {
     trackBuses.add(this);
     // Sort trackBuses based on timeToCatch
-    trackBuses.sort((a, b) => a.timeToCatch!.compareTo(b.timeToCatch!));
+    trackBuses.sort((a, b) {
+      // Assuming timeToCatch can be null and you treat null as "less than" any non-null value
+      if (a.timeToCatch == null && b.timeToCatch == null) return 0;
+      if (a.timeToCatch == null) return -1;
+      if (b.timeToCatch == null) return 1;
+      return a.timeToCatch!.compareTo(b.timeToCatch!);
+    });
     _saveTrackBusOnPrefs();
   }
 

@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz_latest;
 import 'dart:developer' as developer;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -9,9 +10,9 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> initNotification() async {
+  Future<NotificationService> initNotification() async {
     AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings(
+        const AndroidInitializationSettings(
             '@android:drawable/ic_dialog_info'); // Logo for notification
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
@@ -23,21 +24,42 @@ class NotificationService {
         InitializationSettings(
             android: initializationSettingsAndroid,
             iOS: initializationSettingsIOS);
+
+    const AndroidNotificationChannel androidChannel =
+        AndroidNotificationChannel(
+      'smb_alerts',
+      'Bus Alerts',
+      description: 'Notifications for bus alerts',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+    );
+    await notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel);
+
     await notificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveBackgroundNotificationResponse: backgroundNotificationHandler,
     );
+    return this;
   }
 
   notificationDetails() {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
-        'channel id',
-        'channel name',
+        'smb_alerts',
+        'Bus Alerts',
         importance: Importance.max,
         priority: Priority.high,
+        playSound: true,
+        showWhen: true,
+        visibility: NotificationVisibility.public,
       ),
-      iOS: DarwinNotificationDetails(),
+      iOS: DarwinNotificationDetails(
+        sound: 'notification_sound.aiff',
+      ),
     );
   }
 
@@ -50,6 +72,7 @@ class NotificationService {
     required int day,
     required int hour,
     required int minute,
+    Duration alertTimeThreshold = Duration.zero,
   }) async {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
@@ -58,14 +81,20 @@ class NotificationService {
         developer.log(
             'NotificationService.scheduleNotification: Android version is lower than 24',
             name: 'NotificationService');
+        Fluttertoast.showToast(
+            msg:
+                "Your android version is not compatible with alerts. You can still track the bus on the Home Page", //TODO: Change to localized string
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
         return;
       }
     }
 
     var details = await notificationDetails();
-
-    // Initialize time zone data
-    tz_latest.initializeTimeZones();
 
     // Define the Azores timezone
     var azoresTimeZone = tz.getLocation('Atlantic/Azores');
@@ -84,25 +113,24 @@ class NotificationService {
       developer.log(
           'NotificationService.scheduleNotification: Scheduled time has already passed',
           name: 'NotificationService');
-      scheduledDateInLocalTimeZone =
-          scheduledDateInLocalTimeZone.add(Duration(days: 1));
+      return;
     }
 
-    developer.log(
-        'Notification scheduled for: ${scheduledDateInLocalTimeZone.toLocal()} (Local Timezone)',
+    //var alertTime = scheduledDateInLocalTimeZone.subtract(alertTimeThreshold);
+    var alertTime = nowInLocalTimeZone.add(const Duration(seconds: 60));
+    developer.log('Notification scheduled for: $alertTime (Local Timezone)',
         name: 'NotificationService');
-
     await notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
-      scheduledDateInLocalTimeZone,
+      alertTime,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
-    await checkScheduledNotifications();
+    //await checkScheduledNotifications();
   }
 
   Future<void> checkScheduledNotifications() async {

@@ -1,7 +1,6 @@
 // Home Page Body Widget
 // Path: lib/layout/home.dart
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +14,12 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/services/google_maps.dart';
 import 'package:saomiguelbus/models/globals.dart';
-import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:saomiguelbus/utils/remove_diacritics.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
 import 'package:saomiguelbus/utils/show_dialog.dart';
+import 'package:saomiguelbus/widgets/track_card.dart';
 
 class HomePageBody extends StatefulWidget {
   HomePageBody(
@@ -45,8 +44,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   DateTime date = DateTime.now().toUtc();
   final ScrollController _scrollController = ScrollController();
   int currentIndex = 0;
-  List<dynamic> infoAlerts = [];
-  int alertCount = 0;
+  int alertCount = infoAlerts.length;
   int trackingCount = trackBuses.length;
   int previousFavouritesCount = favourites.length;
   bool _isLoading = false;
@@ -80,15 +78,6 @@ class _HomePageBodyState extends State<HomePageBody> {
 
   @override
   Widget build(BuildContext context) {
-    if (alertCount == 0) {
-      fetchInfos().then((value) {
-        setState(() {
-          infoAlerts = jsonDecode(value!);
-          alertCount = infoAlerts.length;
-        });
-      });
-    }
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -325,7 +314,7 @@ class _HomePageBodyState extends State<HomePageBody> {
           children: [
             if (trackingCount > 0) ...[
               SizedBox(
-                height: 100, // Adjust this value as needed
+                height: 100,
                 child: PageView.builder(
                   controller: PageController(viewportFraction: 1),
                   itemCount: trackingCount,
@@ -401,36 +390,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                   color: Colors.white, size: 40),
                             ),
                           ),
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  20.0), // Rounded corners
-                            ),
-                            color:
-                                primaryColor, // Replace with your exact color
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      const Icon(Icons.directions_bus,
-                                          size: 50,
-                                          color: Colors.black), // Bus icon
-                                      Expanded(
-                                        child: Text(
-                                          'Bus will arrive in ${trackBuses[index].catchStop.name} at ${trackBuses[index].arrivalTime}.', //TODO: intl8
-                                          style: const TextStyle(
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
+                          child: TrackCard(index: index)),
                     );
                   },
                 ),

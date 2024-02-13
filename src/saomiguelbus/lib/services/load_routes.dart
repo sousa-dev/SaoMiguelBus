@@ -10,6 +10,7 @@ import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/services/android_load_v2.dart';
 import 'package:saomiguelbus/services/get_stops_v1.dart';
+import 'package:saomiguelbus/services/smb_api.dart';
 import 'package:saomiguelbus/utils/preferences_utility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -105,10 +106,14 @@ Future<bool> retrieveData() async {
   loadFromSharedPreferences('favourites');
   loadFromSharedPreferences('track_buses');
 
+  fetchInfos().then((value) {
+    infoAlerts = jsonDecode(value!);
+  });
+
   Map information = {'version': version, 'maps': false};
   List data = [];
   List stopsJSON = [];
-  //SharedPreferences.setMockInitialValues({});
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (debug &&
       prefs.containsKey('routes_api_response') &&
@@ -160,7 +165,17 @@ Future<bool> retrieveData() async {
         developer.log("Storing new routes API Response on cache...");
         developer.log("data: $data");
         information = data[0];
+
         data = data.sublist(1);
+        var holidays = information['holidays'];
+        allHolidays = {};
+        for (var holiday in holidays) {
+          allHolidays[holiday['date']
+              .split('-')
+              .sublist(1)
+              .reversed
+              .join('-')] = holiday['name'];
+        }
         internetConnection = true;
       } else {
         developer.log('Request failed with status: ${response.statusCode}.');

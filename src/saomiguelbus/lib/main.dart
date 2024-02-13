@@ -15,7 +15,7 @@ import 'package:saomiguelbus/models/globals.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  NotificationService().initNotification();
+  NotificationService().initNotification().then((value) => notificationService = value);
 
   runApp(const MyApp());
 }

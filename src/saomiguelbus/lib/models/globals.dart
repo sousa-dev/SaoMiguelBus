@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/models/favourite.dart';
 import 'package:saomiguelbus/models/track_bus.dart';
+import 'package:saomiguelbus/services/notifications.dart';
 import 'package:saomiguelbus/utils/on_change.dart';
 
 Color primaryColor = const Color(0xFF218732);
@@ -11,6 +12,22 @@ bool firstTime = true;
 
 List allRoutes = [];
 var allStops = {};
+List<dynamic> infoAlerts = [];
+Map<String, String> allHolidays = {
+  '01-01': 'Ano Novo',
+  '07-04': 'Sexta-Feira Santa',
+  '09-04': 'Páscoa',
+  '25-04': 'Dia da Liberdade',
+  '01-05': 'Dia do Trabalhador',
+  '08-06': 'Corpo de Deus',
+  '10-06': 'Dia de Portugal',
+  '15-08': 'Assunção de Nossa Senhora',
+  '25-12': 'Natal',
+  '29-06': 'São Pedro (Ribeira Grande)',
+  '24-06': 'São João (Vila Franca do Campo)',
+  '18-07': 'Elevação a Vila (Nordeste)',
+  '11-04': 'Elevação a Vila (Lagoa)'
+};
 
 String origin = '';
 String destination = '';
@@ -26,6 +43,7 @@ bool internetConnection = false;
 bool debug = false;
 String latestVersion = '';
 String version = '';
+NotificationService? notificationService;
 
 String currentAdOn = 'home';
 

@@ -91,6 +91,10 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     final List routes = widget.bdSmb['routes'];
     final Instruction instructions = widget.gMaps['instructions'];
 
+    //Sort route by depart time
+    routes.sort((a, b) => (a.getStopTime(a.getOrigin()!.name).$2)!
+        .compareTo((b.getStopTime(b.getOrigin()!.name).$2).toString()));
+
     developer.log("origin: $origin // destination: $destination");
     developer.log(
         "originGmaps: $originGmaps // destinationGmaps: $destinationGmaps");
