@@ -10,9 +10,9 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> initNotification() async {
+  Future<NotificationService> initNotification() async {
     AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings(
+        const AndroidInitializationSettings(
             '@android:drawable/ic_dialog_info'); // Logo for notification
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
@@ -24,17 +24,33 @@ class NotificationService {
         InitializationSettings(
             android: initializationSettingsAndroid,
             iOS: initializationSettingsIOS);
+
+    const AndroidNotificationChannel androidChannel =
+        AndroidNotificationChannel(
+      'smb_alerts',
+      'Bus Alerts',
+      description: 'Notifications for bus alerts',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+    );
+    await notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel);
+
     await notificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveBackgroundNotificationResponse: backgroundNotificationHandler,
     );
+    return this;
   }
 
   notificationDetails() {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
         'smb_alerts',
-        'São Miguel Bus Alerts',
+        'Bus Alerts',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
@@ -97,21 +113,20 @@ class NotificationService {
       developer.log(
           'NotificationService.scheduleNotification: Scheduled time has already passed',
           name: 'NotificationService');
-      scheduledDateInLocalTimeZone =
-          scheduledDateInLocalTimeZone.add(const Duration(days: 1));
+      return;
     }
 
-    developer.log(
-        'Notification scheduled for: $scheduledDateInLocalTimeZone (Local Timezone)',
+    //var alertTime = scheduledDateInLocalTimeZone.subtract(alertTimeThreshold);
+    var alertTime = nowInLocalTimeZone.add(const Duration(seconds: 60));
+    developer.log('Notification scheduled for: $alertTime (Local Timezone)',
         name: 'NotificationService');
-
     await notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
-      scheduledDateInLocalTimeZone.subtract(alertTimeThreshold),
+      alertTime,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );

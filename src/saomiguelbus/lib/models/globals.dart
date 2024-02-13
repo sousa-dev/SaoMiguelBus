@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:saomiguelbus/layout/index.dart';
 import 'package:saomiguelbus/models/favourite.dart';
 import 'package:saomiguelbus/models/track_bus.dart';
+import 'package:saomiguelbus/services/notifications.dart';
 import 'package:saomiguelbus/utils/on_change.dart';
 
 Color primaryColor = const Color(0xFF218732);
@@ -42,6 +43,7 @@ bool internetConnection = false;
 bool debug = false;
 String latestVersion = '';
 String version = '';
+NotificationService? notificationService;
 
 String currentAdOn = 'home';
 

@@ -163,7 +163,9 @@ class TrackBus {
     var catchTimeInAzores = tz.TZDateTime(azoresTimeZone, searchDay.year,
         searchDay.month, searchDay.day, catchTime.hour, catchTime.minute);
 
-    NotificationService().scheduleNotification(
+    
+    // Schedule the notification
+    notificationService?.scheduleNotification(
       id: int.parse(routeId +
           searchDay.day.toString() +
           searchDay.hour.toString() +
