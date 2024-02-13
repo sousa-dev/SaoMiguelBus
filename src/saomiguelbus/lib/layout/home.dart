@@ -513,24 +513,93 @@ class _HomePageBodyState extends State<HomePageBody> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Flexible(
-                              child: Text(
-                                favourites[index]
-                                    .origin, // Replace with your origin value
-                                softWrap:
-                                    true, // This will make the text continue to another line if it's too long
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        'Origin', //TODO: intl8
+                                        style: TextStyle(color: Colors.grey),
+                                        softWrap: true,
+                                      )),
+                                  Text(
+                                    origin,
+                                    textAlign: TextAlign
+                                        .center, // Centers the text horizontally
+                                    softWrap: true, // Allows text wrapping
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        // Your text style here
+                                        ),
+                                    maxLines: 3,
+                                  ),
+                                ],
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 8.0), // Add horizontal padding
-                              child: Icon(Icons.arrow_forward),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 2,
+                                    width: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const ShapeDecoration(
+                                      shape: StadiumBorder(
+                                        side: BorderSide(
+                                          color: Colors.grey,
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Now',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 2,
+                                    width:
+                                        20, // Same width as the left spacer for symmetry
+                                    color: Colors.grey,
+                                  ), // Right arrow icon
+                                ],
+                              ),
                             ),
                             Flexible(
-                              child: Text(
-                                favourites[index]
-                                    .destination, // Replace with your destination value
-                                softWrap:
-                                    true, // This will make the text continue to another line if it's too long
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        'Destination', //TODO: intl8
+                                        style: TextStyle(color: Colors.grey),
+                                      )),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      destination,
+                                      textAlign: TextAlign
+                                          .center, // Centers the text horizontally
+                                      softWrap: true, // Allows text wrapping
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          // Your text style here
+                                          ),
+                                      maxLines: 3,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
