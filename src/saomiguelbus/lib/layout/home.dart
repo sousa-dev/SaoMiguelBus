@@ -585,7 +585,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                           children: [
                             Flexible(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const Align(
                                       alignment: Alignment.center,

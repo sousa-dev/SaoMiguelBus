@@ -124,6 +124,7 @@ Future<Map<String, dynamic>> fetchRoutes(
         originStop,
         destinationStop,
         _getDayOfWeekString(date),
+        date
       ));
     }
   }

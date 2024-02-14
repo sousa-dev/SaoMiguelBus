@@ -9,12 +9,14 @@ import 'package:saomiguelbus/utils/haversine_distance.dart';
 import 'package:saomiguelbus/utils/levenshtein_distance.dart';
 
 List<route.Route> findRoutes(
-    Stop origin, Stop destination, TypeOfDay typeOfDay) {
+    Stop origin, Stop destination, TypeOfDay typeOfDay, DateTime time) {
   List<route.Route> routes = [];
   for (var route in allRoutes) {
     if (route.stops.containsKey(origin) &&
         route.stops.containsKey(destination) &&
         route.day == typeOfDay &&
+        int.parse(route.getStopTime(origin.name).$2.split('h')[0]) >=
+            time.hour &&
         route.stops.keys.toList().indexOf(origin) <
             route.stops.keys.toList().indexOf(destination)) {
       routes.add(route);
