@@ -585,7 +585,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                         softWrap: true,
                                       )),
                                   Text(
-                                    origin,
+                                    favourites[index].origin,
                                     textAlign: TextAlign
                                         .center, // Centers the text horizontally
                                     softWrap: true, // Allows text wrapping
@@ -649,7 +649,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                   Align(
                                     alignment: Alignment.center,
                                     child: Text(
-                                      destination,
+                                      favourites[index].destination,
                                       textAlign: TextAlign
                                           .center, // Centers the text horizontally
                                       softWrap: true, // Allows text wrapping
