@@ -10,6 +10,7 @@ import 'package:saomiguelbus/models/globals.dart';
 import 'package:saomiguelbus/models/index.dart';
 import 'package:saomiguelbus/models/instruction.dart';
 import 'package:saomiguelbus/utils/favourite_utility.dart';
+import 'package:saomiguelbus/utils/general_utility.dart';
 import 'package:saomiguelbus/utils/main_layout.dart';
 import 'package:saomiguelbus/utils/search_route.dart';
 
@@ -44,6 +45,7 @@ class ResultsPageBody extends StatefulWidget {
 class _ResultsPageBodyState extends State<ResultsPageBody> {
   late int _currentPageIndex;
   late PageController _pageController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -94,12 +96,6 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
     //Sort route by depart time
     routes.sort((a, b) => (a.getStopTime(a.getOrigin()!.name).$2)!
         .compareTo((b.getStopTime(b.getOrigin()!.name).$2).toString()));
-
-    developer.log("origin: $origin // destination: $destination");
-    developer.log(
-        "originGmaps: $originGmaps // destinationGmaps: $destinationGmaps");
-    developer.log(
-        "originBdsmb: $originBdsmb // destinationBdsmb: $destinationBdsmb");
 
     Widget gMapsWidget = _getGMapsWidget(
         originGmaps, destinationGmaps, routesnumberGmaps, instructions);
@@ -204,66 +200,101 @@ class _ResultsPageBodyState extends State<ResultsPageBody> {
 
   Widget _getTopSection(String originGmaps, String destinationGmaps) {
     bool isFavourite = checkIfFavourite(originGmaps, destinationGmaps);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Text(origin),
-        IconButton(
-          icon: Icon(
-            Icons.favorite,
-            color: isFavourite ? primaryColor : Colors.grey,
-          ),
-          onPressed: () {
-            setState(() {
-              if (isFavourite) {
-                removeFavourite(originGmaps, destinationGmaps);
-              } else {
-                addFavourite(originGmaps, destinationGmaps);
-              }
-              isFavourite = !isFavourite;
-            });
-          },
-        ),
-        Text(destination),
-        IconButton(
-          icon: const Icon(Icons.swap_horiz),
-          onPressed: () {
-            String key =
-                '$destination->$origin:${widget.date.day}/${widget.date.month}/${widget.date.year}-${widget.date.hour}h${widget.date.minute}';
-            String languageCode = AppLocalizations.of(context)!.languageCode;
-            fetchRoutes(
-                    destinationGmaps,
-                    originGmaps,
-                    widget.date,
-                    widget.departureType,
-                    widget.autoComplete,
-                    widget.routes,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Text(origin, textAlign: TextAlign.center)),
+            IconButton(
+              icon: _isLoading
+                  ? const SizedBox(
+                      width:
+                          10, // Specify the width of the CircularProgressIndicator
+                      height:
+                          10, // Specify the height of the CircularProgressIndicator
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Color.fromARGB(255, 66, 66, 66)),
+                      ),
+                    )
+                  : const Icon(Icons.swap_horiz),
+              onPressed: () {
+                String key =
+                    '$destination->$origin:${widget.date.day}/${widget.date.month}/${widget.date.year}-${widget.date.hour}h${widget.date.minute}';
+                String languageCode =
+                    AppLocalizations.of(context)!.languageCode;
+
+                setState(() => _isLoading = true); // Start loading
+
+                fetchRoutes(
+                        destinationGmaps,
+                        originGmaps,
+                        widget.date,
+                        widget.departureType,
+                        widget.autoComplete,
+                        widget.routes,
+                        context,
+                        key,
+                        widget.instructions,
+                        languageCode)
+                    .then((results) {
+                  final temp = origin;
+                  origin = destination;
+                  destination = temp;
+                  Navigator.push(
                     context,
-                    key,
-                    widget.instructions,
-                    languageCode)
-                .then((results) {
-              final temp = origin;
-              origin = destination;
-              destination = temp;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ResultsPageBody(
-                          gMaps: gMapsResultsCached[key],
-                          bdSmb: routesResultsCached[key],
-                          origin: widget.autoComplete[destinationGmaps]!,
-                          destination: widget.autoComplete[originGmaps]!,
-                          date: widget.date,
-                          departureType: widget.departureType,
-                          autoComplete: widget.autoComplete,
-                          routes: widget.routes,
-                          instructions: widget.instructions,
-                        )),
-              );
-            });
-          },
+                    MaterialPageRoute(
+                        builder: (context) => ResultsPageBody(
+                              gMaps: gMapsResultsCached[key],
+                              bdSmb: routesResultsCached[key],
+                              origin: widget.autoComplete[destinationGmaps]!,
+                              destination: widget.autoComplete[originGmaps]!,
+                              date: widget.date,
+                              departureType: widget.departureType,
+                              autoComplete: widget.autoComplete,
+                              routes: widget.routes,
+                              instructions: widget.instructions,
+                            )),
+                  );
+                  setState(() => _isLoading = false); // Start loading
+                });
+              },
+            ),
+            Expanded(child: Text(destination, textAlign: TextAlign.center)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.calendar_today, size: 20),
+            const SizedBox(width: 8),
+            Text(getDateText(widget.date)),
+            const SizedBox(width: 16),
+            const Icon(Icons.access_time, size: 20),
+            const SizedBox(width: 8),
+            Text(getTimeText(
+                TimeOfDay(hour: widget.date.hour, minute: widget.date.minute),
+                widget.date)),
+            IconButton(
+              icon: Icon(
+                Icons.favorite,
+                color: isFavourite ? primaryColor : Colors.grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  if (isFavourite) {
+                    removeFavourite(originGmaps, destinationGmaps);
+                  } else {
+                    addFavourite(originGmaps, destinationGmaps);
+                  }
+                  isFavourite = !isFavourite;
+                });
+              },
+            ),
+          ],
         ),
       ],
     );

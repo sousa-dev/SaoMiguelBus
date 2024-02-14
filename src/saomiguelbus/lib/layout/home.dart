@@ -275,10 +275,10 @@ class _HomePageBodyState extends State<HomePageBody> {
                       mainAxisSize: MainAxisSize
                           .min, // Use min to keep the row as tight as possible around the children
                       children: [
-                        const Icon(Icons.alarm,
+                        const Icon(Icons.schedule,
                             color: Colors.black), // Calendar icon
                         const SizedBox(width: 4), // Space between icon and text
-                        Text(getTimeText(time),
+                        Text(getTimeText(time, date),
                             style: const TextStyle(
                                 color: Colors.black)), // Your text widget
                       ],

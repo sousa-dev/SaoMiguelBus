@@ -19,10 +19,14 @@ String getDateText(DateTime date) {
   return DateFormat('E d MMM').format(date);
 }
 
-String getTimeText(TimeOfDay time) {
+String getTimeText(TimeOfDay time, DateTime date) {
   // 'Now' for current time
   DateTime now = DateTime.now();
-  if ((time.hour <= now.hour && time.minute <= now.minute)) {
+  if ((date.year == now.year &&
+      date.month == now.month &&
+      date.day == now.day &&
+      time.hour <= now.hour &&
+      time.minute <= now.minute)) {
     return "Now"; //TODO: intl8
   }
   return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
