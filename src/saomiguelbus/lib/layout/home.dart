@@ -193,34 +193,38 @@ class _HomePageBodyState extends State<HomePageBody> {
                 _getAutocompleteField('destination'),
                 Row(
                   children: [
-                    Spacer(), // Keeps the dropdown at the end of the row. Adjust or remove as needed.
-                    DropdownButtonHideUnderline(
-                      // Optional: Hides the underline of the dropdown button
-                      child: ButtonTheme(
-                        // Optional: Use ButtonTheme for more customization
-                        alignedDropdown: true, // Aligns the dropdown menu
-                        child: DropdownButton<String>(
-                          value: _departureType,
-                          icon: Icon(Icons.arrow_downward,
-                              size: 16), // Optional: Custom dropdown icon
-                          elevation: 16,
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .primaryColor), // Custom text style
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _departureType = newValue!;
-                            });
-                          },
-                          items: ['depart', 'arrive']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value == 'depart'
-                                  ? AppLocalizations.of(context)!.depart
-                                  : AppLocalizations.of(context)!.arrive),
-                            );
-                          }).toList(),
+                    Spacer(), // Use this to adjust the space as before
+                    Flexible(
+                      child: Container(
+                        alignment: Alignment.bottomRight,
+                        height: 24.0, // Set your desired height
+                        child: DropdownButtonHideUnderline(
+                          child: ButtonTheme(
+                            alignedDropdown: true,
+                            child: DropdownButton<String>(
+                              value: _departureType,
+                              icon: Icon(Icons.arrow_downward, size: 16),
+                              elevation: 16,
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _departureType = newValue!;
+                                });
+                              },
+                              items: [
+                                'depart',
+                                'arrive'
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value == 'depart'
+                                      ? AppLocalizations.of(context)!.depart
+                                      : AppLocalizations.of(context)!.arrive),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -347,9 +351,15 @@ class _HomePageBodyState extends State<HomePageBody> {
                         });
                       },
                       child: _isLoading
-                          ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors
-                                  .white), // Match the spinner color with your button's text color
+                          ? const SizedBox(
+                              width:
+                                  20, // Specify the width of the CircularProgressIndicator
+                              height:
+                                  20, // Specify the height of the CircularProgressIndicator
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
                             )
                           : Text(AppLocalizations.of(context)!.search,
                               style: const TextStyle(color: Colors.white)),

@@ -22,7 +22,7 @@ String getDateText(DateTime date) {
 String getTimeText(TimeOfDay time) {
   // 'Now' for current time
   DateTime now = DateTime.now();
-  if (time.hour == now.hour && time.minute == now.minute) {
+  if ((time.hour <= now.hour && time.minute <= now.minute)) {
     return "Now"; //TODO: intl8
   }
   return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
