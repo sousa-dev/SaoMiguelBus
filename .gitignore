@@ -86,5 +86,5 @@ lint/tmp/
 # lint/reports/
 
 # Custom
-doc/private_key.pepk
-src/app/src/main/res/values/secrets.xml
+legacy/doc/private_key.pepk
+legacy/src/**/secrets.xml
