@@ -1,20 +1,20 @@
-# Sao Miguel Bus
-São Miguel Island Bus Schedule App.
+# São Miguel Bus → Azores Hub (revamp)
 
-### In this app you can ###
-* Access all the São Miguel Island Bus Schedule
-* Check at what time a bus stops at Bus Stops all around the Island                               
-* Add "Trips" to your favorites for quick access
-* Get Multi-Bus Trips Support.
-* Get Step by Step instructions for a trip.
-* Get a Map with the route displayed.
+This repository is being reorganized for the **Azores Hub** platform revamp: one Expo client (Android, iOS, Web) against a modernized multi-tenant backend.
 
+## Layout
 
-###### All the information on this app was found on the bus companies' websites.  
+| Path | Purpose |
+|------|---------|
+| [`legacy/`](./legacy/) | Frozen pre-revamp mobile app, docs, and assets (Kotlin Android, Flutter stub, etc.) |
+| [`SDD/`](./SDD/) | Software design documents for the new platform |
+| [`MIGRATION_PLAN.md`](./MIGRATION_PLAN.md) | Executive migration index and phased plan |
 
-### v4.0 ###
-[![playstore](https://user-images.githubusercontent.com/56836057/133408897-e5d0c2f2-26d3-48cb-8e83-838344b3f02a.png)](https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros&hl=pt)
+## Status
 
-### TODO ###
-* Improve App Visuals
-* Bus Trip price information.
+Planning and architecture are in progress on the `revamp` branch. Application code for the new stack will land at the repo root (`app/`, etc.) as phases are approved — not under `legacy/`.
+
+## Related repos
+
+- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) (`legacy/` holds Django 3.0 backend)
+- **Web PWA:** [SaoMiguelBus-webapp](https://github.com/sousa-dev/SaoMiguelBus-webapp) (unchanged; deprecated after API revamp)
