@@ -1,14 +1,22 @@
 # SDD 05 — Data Migration Strategy (2020+)
 
-Goal: migrate **all** historical data from the legacy Postgres DB into the new tenant-scoped schema without data loss, parsing the fragile legacy formats, and pseudonymizing analytics in flight.
+Goal: migrate **all** historical data from the legacy DB into the new tenant-scoped schema without data loss, parsing fragile legacy formats, and pseudonymizing analytics in flight.
 
-## 1. Sources
+Implementation: idempotent Django management commands in `src/tenancy/management/commands/` (and per-app commands), orchestrated by **`import_legacy`**.
 
-| Source | Contents |
-|--------|----------|
-| Legacy production Postgres | `Route`, `Stop`, `Trip`/`TripStop`/`Data`, `Stat`, `Ad`, `Group`, `Info`, `Holiday`, `Variables`, `Subscription`, `AIFeedback`, `EmailOpen`, likes/dislikes |
-| `SaoMiguelBus-api/src/data.json` | ~2022 fixture dump (cross-check / earliest seed) |
-| `scripts/data/*.txt`, `scripts/csv/*.csv`, `scripts/groups.json` | original operator timetables + geographic groups (source-of-truth fallback) |
+## 1. Sources (concrete paths)
+
+| Source | Path | Contents |
+|--------|------|----------|
+| Legacy production Postgres | `DATABASE_URL` dump / read replica | Full history: `Route`, `Stop`, `Stat`, `Ad`, `Group`, `Info`, `Holiday`, `Variables`, `AIFeedback`, `EmailOpen`, likes/dislikes |
+| Legacy dev SQLite | `legacy/src/db.sqlite3` | Same schema; pre-seeded routes/stops for local ETL dev |
+| Fixture dump | `legacy/src/data.json` | ~2022 cross-check / earliest seed |
+| Operator timetables | `legacy/scripts/csv/*.csv` | `stops.csv`, `crp_routes.csv`, `avm_routes.csv`, `varela_routes.csv` |
+| Geographic groups | `legacy/scripts/groups.json` | Stop groups for ads/stats |
+| Processed outputs | `legacy/scripts/out/*.csv` | Optional fallback if DB parse fails |
+| Subscriptions | `legacy` DB table `subscriptions` | Separate Django app — not in `app_*` tables |
+
+**Dev vs prod:** legacy dev uses SQLite (`legacy/src/db.sqlite3`); production uses Postgres (`dj_database_url` + `DATABASE_URL`). The importer accepts `--database-url` or reads from a mounted legacy SQLite file.
 
 ## 2. The hard part: `Route.stops`
 
@@ -18,81 +26,126 @@ Legacy stores schedules as a **stringified Python dict**, e.g.:
 "{'Ponta Delgada': '08h30', 'Lagoa': '08h45', 'Vila Franca': '09h10'}"
 ```
 
-This is **not JSON** (single quotes, `HhMM` time format). The ETL must:
+ETL (`transit/services/legacy_import.py`):
 
 1. Parse with `ast.literal_eval` (never `json.loads`).
 2. Normalize times `"08h30"` → `time(8, 30)`.
-3. For each `(stop_name, time)` create a `StopTime` with `sequence` from dict insertion order.
-4. Resolve `stop_name` → `Stop` FK via exact match, else `cleaned_name` (accent-stripped, lowercased) trigram match; unmatched names are logged and either auto-created as a `Stop` (if coordinates available from `Stop`/`TripStop`/groups) or flagged for manual review.
-5. Create `Line` from `Route.route`, `Calendar` from `type_of_day`, `Trip` linking them, and `RouteInfo` from `Route.information`.
+3. For each `(stop_name, time)` create `StopTime` with `sequence` from dict insertion order.
+4. Resolve `stop_name` → `Stop` FK via exact match, else `cleaned_name` trigram; backfill coords from `TripStop` / `groups.json` / `stops.csv`; log unmatched for manual review.
+5. Create `Line` from `Route.route`, `Calendar` from `type_of_day`, `Trip` linking them, `RouteInfo` from `Route.information`.
 
-## 3. ETL pipeline
+## 3. Import commands (djast pattern)
 
-Implemented as idempotent Django management commands (`migrate_legacy <model>`), run in dependency order:
+Follow boilerplate conventions: logic in `services.py`, thin `management/commands/`, type hints, Google-style docstrings, idempotent upserts.
 
+### Orchestrator
+
+```bash
+cd SaoMiguelBus-api/src
+
+# Full import (dependency order, writes migration report)
+python manage.py import_legacy \
+  --legacy-db sqlite:///../legacy/src/db.sqlite3 \
+  --island sao-miguel
+
+# Dry-run
+python manage.py import_legacy --dry-run
+
+# Single step (re-runnable)
+python manage.py migrate_legacy stops
 ```
-1. islands         → create Island(key="sao-miguel", center/radius/timezone/theme from legacy constants)
-2. operators       → derive from Line code prefixes (CRP=1*, AVM=2*, Varela=3*) + scripts metadata
-3. stops           → Stop (1:1) ; backfill missing from TripStop + groups.json
-4. stop_groups     → Group → StopGroup
-5. calendars       → 3 fixed rows (WEEKDAY/SATURDAY/SUNDAY)
-6. holidays        → Holiday (1:1)
-7. lines+trips+stoptimes → parse Route.stops dicts (the hard part, §2)
-8. route_info      → Info + Route.information → RouteInfo
-9. ads             → Ad (+island) ; preserve seen/clicked
-10. feedback votes → Route/Trip likes/dislikes → Trip counters
-11. subscriptions  → Subscription → Entitlement(source="legacy_email")
-12. analytics      → Stat → AnalyticsEvent (pseudonymized, §4)
-```
+
+### Step commands (`migrate_legacy <step>`)
+
+| Step | Command | Target models |
+|------|---------|---------------|
+| 1 | `migrate_legacy islands` | `tenancy.Island` from legacy constants + `Variables` |
+| 2 | `migrate_legacy operators` | `transit.Operator` from line prefixes (CRP/AVM/Varela) |
+| 3 | `migrate_legacy stops` | `transit.Stop` (+ CSV backfill) |
+| 4 | `migrate_legacy stop_groups` | `StopGroup` from `Group` / `groups.json` |
+| 5 | `migrate_legacy calendars` | `transit.Calendar` (WEEKDAY/SATURDAY/SUNDAY) |
+| 6 | `migrate_legacy holidays` | `transit.Holiday` |
+| 7 | `migrate_legacy lines_trips` | `Line`, `Trip`, `StopTime` — parse `Route.stops` |
+| 8 | `migrate_legacy route_info` | `RouteInfo` from `Info` + `Route.information` |
+| 9 | `migrate_legacy ads` | `Ad` (+ `island` FK) |
+| 10 | `migrate_legacy votes` | `Trip.likes/dislikes` counters |
+| 11 | `migrate_legacy subscriptions` | `billing.Entitlement` from `subscriptions.Subscription` |
+| 12 | `migrate_legacy analytics` | `analytics.AnalyticsEvent` from `Stat` |
 
 Each command:
-- Is **idempotent** (re-runnable; upserts by natural key).
-- Writes a **migration report** (counts in/out, unmatched stops, parse failures).
-- Tags rows with `legacy_id` (kept in a `legacy_ref` JSON/column) for traceability and dual-read validation.
+
+- **Idempotent** — upsert by natural key + `legacy_ref` JSON (`{"table": "app_route", "id": 123}`).
+- Writes **`migration_reports/<step>_<timestamp>.json`** (counts in/out, errors, unmatched stops).
+- Uses `tenancy.for_island(island)` for all writes.
+
+### Easy one-shot workflow (new empty DB)
+
+```bash
+# 1. Promote boilerplate + run migrations on new backend
+cd SaoMiguelBus-api && python setup.py
+cd src && python manage.py migrate
+
+# 2. Import everything from legacy SQLite (dev) or Postgres URL (prod)
+python manage.py import_legacy --legacy-db sqlite:///$(pwd)/../legacy/src/db.sqlite3
+
+# 3. Validate parity (see §5)
+python manage.py validate_legacy_parity --sample-size 100
+```
+
+### Connecting to legacy Postgres (production)
+
+```bash
+export LEGACY_DATABASE_URL=postgres://readonly:...@host:5432/saomiguelbus
+python manage.py import_legacy --legacy-db "$LEGACY_DATABASE_URL"
+```
+
+Importer uses a secondary DB router (`legacy` alias in settings) or raw SQLAlchemy/psycopg2 read-only connection — **never** writes to legacy.
 
 ## 4. Analytics migration with pseudonymization
 
-`Stat` is high-volume, append-only, and already mostly anonymous (no user/session id). On migration:
+`Stat` is high-volume, append-only, mostly anonymous (no user/session id in legacy).
 
-- `request` → `module`/`event_type`; `origin/destination/time/type_of_day` → `properties`.
-- No IP exists in legacy `Stat`, so nothing to scrub there; we still assign a **synthetic `session_hash = NULL`/`"legacy"`** marker (we cannot reconstruct sessions).
-- Historical events older than the retention window ([`07`](./07-gdpr-data-governance.md)) are migrated **already-anonymized** (aggregated counts retained, row-level detail dropped if beyond retention) to start compliant.
-- `consent_state` for legacy rows = `{"migrated": true}` (pre-CMP; treated as aggregate analytics only).
+- `request` → `module`/`event_type`; dimensions → `properties` JSON.
+- `session_hash = NULL` / `"legacy"` marker (sessions not reconstructable).
+- Rows beyond retention window → aggregate-only or skip row-level detail ([`07`](./07-gdpr-data-governance.md)).
+- `consent_state = {"migrated": true}` for pre-CMP history.
+
+`AIFeedback` / `EmailOpen`: migrate to `AnalyticsEvent` if useful, else export to cold storage JSON under `migration_reports/archive/`.
 
 ## 5. Validation (parity gate)
 
-Before cutover, prove equivalence:
+Before cutover:
 
-1. **Search parity:** for a sampled matrix of `(origin, destination, day, start)`, compare new `/transit/search` (and compat `/api/v2/route`) against recorded legacy responses; require identical result sets.
-2. **Bootstrap parity:** diff new `/api/v2/webapp/load` (compat) vs legacy production payload (stops list, holidays, infos, routes count).
-3. **Counts:** every legacy row accounted for (migrated / intentionally-dropped / flagged), reconciled in the migration report.
-4. **Spot-check unmatched stops** list is empty or manually resolved.
+1. **Search parity:** sample `(origin, destination, day, start)` — compare `transit.services.search_routes()` vs compat `/api/v2/route` vs legacy DB responses.
+2. **Bootstrap parity:** diff compat `/api/v2/webapp/load` vs legacy production payload.
+3. **Counts:** reconciliation table in migration report — every legacy row migrated / dropped / flagged.
+4. **Unmatched stops:** empty or manually resolved.
+
+`validate_legacy_parity` management command automates (1)-(3) and exits non-zero on regression.
 
 ## 6. Cutover (strangler-fig, reversible)
 
 ```
-Stage A  Dual-run: new backend reads from a replica/snapshot of legacy data via ETL.
-         Legacy stack still serves all live traffic.
-Stage B  Flip compat shim to new backend for read endpoints behind Island.is_live.
-         Validate parity in production (shadow traffic / canary).
-Stage C  Point clients' API base URL to new backend (compat shim). Legacy serves as hot fallback.
-Stage D  Migrate clients to /api/v3 module-by-module; watch Deprecation header usage.
-Stage E  Decommission legacy once compat usage → 0.
+Stage A  ETL into new DB from legacy snapshot; legacy still serves live traffic.
+Stage B  compat on new backend behind Island.is_live; shadow/canary parity checks.
+Stage C  Point clients to new API (compat); legacy hot fallback.
+Stage D  Clients move to /api/v3 module-by-module.
+Stage E  Decommission legacy when compat usage → 0.
 ```
 
-**Rollback:** at A–C, repoint to legacy (still deployed). After D, legacy remains a fallback until E.
+**Rollback:** repoint DNS/env to `legacy/` through Stage C.
 
 ## 7. Ongoing sync during dual-run
 
-For the window where both stacks accept writes (mainly `/stat` and likes), the compat shim writes to the **new** DB as the system of record; a one-way backfill job reconciles any writes that still landed on legacy until clients are fully cut over.
+Compat shim writes analytics/likes to **new** DB as system of record; one-way reconcile job for any writes still landing on legacy until full cutover.
 
 ## 8. Data we deliberately drop or fold
 
 | Legacy | Disposition |
 |--------|-------------|
-| `Data` (raw GMaps JSON cache table) | Not migrated; replaced by Redis cache |
+| `Data` (GMaps JSON cache) | Not migrated → Redis |
 | `Route.cleaned_stops` | Recomputed from `StopTime` |
-| `Variables` | Folded into `Island.feature_flags` |
-| `Subscription.verification_count` | Dropped (telemetry only) |
-| `AIFeedback`, `EmailOpen` | Migrated to `AnalyticsEvent` if still useful, else archived to cold storage |
-| `Trip`/`TripStop` 30-day GMaps rows | Not migrated (ephemeral by design) |
+| `Variables` | `Island.feature_flags` |
+| `Subscription.verification_count` | Dropped |
+| `Trip`/`TripStop` GMaps rows (30-day TTL) | Not bulk-migrated |
+| `api/other/fix/stops` | Not applicable — maintenance only |

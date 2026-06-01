@@ -5,9 +5,11 @@
 | Actor | Mechanism |
 |-------|-----------|
 | Anonymous reader | No auth; read-only public endpoints; pseudonymous `session_hash` for analytics/votes |
-| Registered user | djast custom `User` + DRF token/JWT; required for account-bound favorites, reviews, event submissions, DSAR |
-| Admin / operator | Django admin + role-based permissions; schedule/ad/moderation management |
-| Service (Celery, webhooks) | Signed webhook secrets (Stripe/RevenueCat), internal task auth |
+| Registered user | **django-allauth** (email + Google/GitHub OAuth via boilerplate) + **DRF token** auth; required for account-bound favorites, reviews, event submissions, DSAR |
+| Admin / operator | Django admin (`admin_interface` toggle) + role-based permissions |
+| Service (Celery, webhooks) | Signed webhook secrets (Stripe via `stripe_payments`, RevenueCat), internal task auth |
+
+Boilerplate provides: `user_management` (login middleware, OAuth signals), `axes` (brute-force lockout), `rest_framework` token auth. Azores Hub sets `AUTHENTICATION_REQUIRED=False` for public transit read APIs.
 
 Anonymous-first stays true to the legacy public API, but **writes** that affect community trust require either an account or a signed anonymous session token.
 
@@ -19,14 +21,16 @@ Legacy ships secrets to clients:
 - A 128-char subscription-creation secret + a hardcoded `reset/likes` key exist server-side.
 
 Azores Hub:
-- **No third-party keys in the client.** Maps directions stay behind the server proxy; clients call `/transit/directions` with their normal session, not a shared static key.
-- Secrets via environment/secret manager (djast convention), never committed, never shipped.
-- Remove hardcoded admin "magic" keys; replace with proper admin auth + signed/permissioned endpoints.
+- **No third-party keys in the client.** Maps directions stay behind `transit` server proxy; clients call `/api/v3/transit/directions` with session/token, not a shared static key.
+- Secrets in `src/src/.env` (djast convention — see `.env.example`), never committed, never shipped.
+- Remove hardcoded admin "magic" keys (`/api/v2/reset/likes`, etc.); replace with Django admin + permissioned endpoints.
+
+Env vars (new): `GOOGLE_MAPS_API_KEY`, `GMAPS_PROXY_AUTH_KEY` (server-only), `REVENUECAT_WEBHOOK_SECRET`, etc. — add via `/new-env-var` boilerplate workflow.
 
 ## 3. Tenancy isolation
 
 - Active island resolved server-side from `X-Island`/subdomain; **never** trusted from request body.
-- `TenantManager` enforces island filtering at the ORM layer so a bug in a view can't leak another island's data.
+- `tenancy.TenantManager` enforces island filtering at the ORM layer.
 - Cross-tenant access only via explicit admin/Celery `for_island()`.
 
 ## 4. Crowdsourcing trust & abuse (traffic, reviews, events, felt reports)
@@ -37,21 +41,22 @@ Azores Hub:
 | Vote manipulation (likes, confirmations) | One vote per session per target; confirmation decay; reputation weighting |
 | Abusive content (reviews/events) | Moderation queue; profanity/PII filters; report-content flow |
 | Stale/false alerts | Auto-expiry + confirmation-based confidence |
-| Location spoofing | Plausibility checks (within island radius; speed/heading sanity) |
+| Location spoofing | Plausibility checks (within `Island.radius_km`; speed/heading sanity) |
 
 ## 5. Transport & platform security
 
 - HTTPS everywhere; HSTS.
-- CORS scoped to known origins (legacy uses `CORS_ALLOW_ALL_ORIGINS=True` — tighten).
-- CSRF: token auth for API; proper CSRF for any session-cookie surfaces.
-- Input validation via DRF serializers + property-schema registry for analytics.
-- Webhook signature verification (Stripe/RevenueCat).
+- **CORS:** boilerplate uses `CORS_ALLOWED_ORIGINS` from env (not `CORS_ALLOW_ALL_ORIGINS=True` like legacy) — configure per deployment.
+- **Brute-force:** `django-axes` already in boilerplate toggles.
+- CSRF: DRF token auth for API; CSRF for session-cookie surfaces (allauth).
+- Input validation via DRF serializers + analytics property-schema registry.
+- Webhook signature verification: Stripe (`stripe_payments`), RevenueCat (`billing`).
 - Rate limiting + WAF at the edge.
 
 ## 6. Privacy-security overlap
 
-- Pseudonymization secret + rotating salt stored in secret manager ([`07`](./07-gdpr-data-governance.md)).
-- DSAR endpoints require strong identity verification before export/delete.
+- Pseudonymization secret + rotating salt in `src/src/.env` ([`07`](./07-gdpr-data-governance.md)).
+- DSAR endpoints (`consent` app) require strong identity verification before export/delete.
 - Audit logs for admin/DSAR actions (no PII re-introduced).
 
 ## 7. Threat model summary

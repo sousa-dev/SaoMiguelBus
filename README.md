@@ -16,5 +16,5 @@ Planning and architecture are in progress on the `revamp` branch. Application co
 
 ## Related repos
 
-- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) (`legacy/` holds Django 3.0 backend)
+- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) — `legacy/` = Django 3.0; new backend from [`boilerplate/`](https://github.com/sousa-dev/SaoMiguelBus-api/tree/revamp/boilerplate) (djast) promoted to root; `python manage.py import_legacy` for data migration
 - **Web PWA:** [SaoMiguelBus-webapp](https://github.com/sousa-dev/SaoMiguelBus-webapp) (unchanged; deprecated after API revamp)

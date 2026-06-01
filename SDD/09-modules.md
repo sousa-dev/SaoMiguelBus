@@ -1,12 +1,12 @@
 # SDD 09 — Feature Modules
 
-Each module = one Django app (backend) + one Expo feature module (frontend). All tenant-scoped, all instrumented via `AnalyticsEvent`, all consent-aware. This doc specifies behavior and external dependencies; models are summarized in [`03-data-model.md`](./03-data-model.md).
+Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (registered in `src/src/settings.py` `apps` toggle) + one Expo feature module (frontend). All tenant-scoped via `tenancy.TenantScopedModel`, all instrumented via `AnalyticsEvent`, all consent-aware. This doc specifies behavior and external dependencies; models are summarized in [`03-data-model.md`](./03-data-model.md).
 
 ---
 
 ## 1. Transit (migrated core)
 
-**Backend:** `apps/transit` — normalized `Operator/Line/Stop/Trip/StopTime/Calendar` (replaces stringified-dict `Route`).
+**Backend:** `transit` — normalized `Operator/Line/Stop/Trip/StopTime/Calendar` (replaces stringified-dict `Route`). API: `transit/api.py` + `services.py`.
 
 **Features (parity + improvements):**
 - Origin→destination search by day-type and start time (relational query on `StopTime`, fuzzy stop match via `pg_trgm`).
@@ -22,7 +22,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 2. Local News (daily utility)
 
-**Backend:** `apps/news` — `NewsSource(rss_url, language)`, `NewsArticle(title, summary, url, published_at, source, categories, image)`.
+**Backend:** `news` — `NewsSource(rss_url, language)`, `NewsArticle(...)`. Celery RSS tasks in `news/tasks.py`. Optional overlap: boilerplate `blog` can remain disabled or used for marketing SEO only.
 
 **Pipeline:** Celery Beat task per source polls/parses RSS feeds from Azorean journals; dedupes by URL/hash; stores summary + canonical link (respect copyright — link out, don't republish full text); categorizes.
 
@@ -32,7 +32,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 3. Earthquakes (daily utility)
 
-**Backend:** `apps/seismic` — `SeismicEvent(emsc_id, magnitude, depth, lat, lng, occurred_at, region)`, `FeltReport(event, session_hash, lat, lng, intensity)`.
+**Backend:** `seismic` — `SeismicEvent`, `FeltReport`. Celery sync in `seismic/tasks.py`.
 
 **Integration:** EMSC-CSEM API (https://www.emsc-csem.org/). Celery polling task fetches recent events near `Island.center/radius_km`; upserts by `emsc_id`. Respect their rate limits — cache + incremental fetch, not per-request proxy.
 
@@ -42,7 +42,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 4. Marketplace for local services
 
-**Backend:** `apps/marketplace` — `ServiceCategory`, `ServiceProvider(name, category, bio, hourly_rate, phone, geo, is_promoted, rating)`, `Review(provider, session_hash/user, rating, text)`.
+**Backend:** `marketplace` — `ServiceCategory`, `ServiceProvider`, `Review`.
 
 **Model:** directory of local tradespeople. **100% free basic listings.** Monetization is **Pay-to-Promote only** ([`08`](./08-monetization-freemium.md)) — no commissions, no monthly fees.
 
@@ -54,7 +54,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 5. Tourist Guide & Trails (open data)
 
-**Backend:** `apps/trails` — `Trail(name, difficulty, length_km, geojson, source_ref)`, `TrailStage`, `POI(name, type, geo)`.
+**Backend:** `trails` — `Trail`, `TrailStage`, `POI`. dados.gov.pt sync in `trails/tasks.py`.
 
 **Integration:** Portuguese Open Data API (https://dados.gov.pt/pt/) — Celery sync of official Azorean trail datasets → `Trail`/`TrailStage`, keyed by `source_ref` for idempotent updates. Attribute the open-data source per licensing.
 
@@ -68,7 +68,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 6. Crowdsourced Traffic & Navigation (Waze-style)
 
-**Backend:** `apps/traffic` — `TrafficReport(type[radar|accident|hazard|closure], lat, lng, session_hash/user, created_at, expires_at, confirmations, status)`.
+**Backend:** `traffic` — `TrafficReport`. Expiry in `traffic/tasks.py`.
 
 **Features:**
 - User-reported alerts with location.
@@ -81,7 +81,7 @@ Each module = one Django app (backend) + one Expo feature module (frontend). All
 
 ## 7. Crowdsourced Events & Tours
 
-**Backend:** `apps/events` — `CommunityEvent(title, description, start, end, venue, geo, is_promoted, status)`, `ViatorListing`.
+**Backend:** `events` — `CommunityEvent`, `ViatorListing`.
 
 **Features:**
 - Locals submit events → moderation queue → published.

@@ -1,10 +1,33 @@
 # SDD 03 — Data Model & Legacy Mapping
 
-All models inherit `TenantScopedModel` (`island` FK) unless noted. Types are indicative; exact field options finalized during Phase 1. This doc defines **what** we store; migration mechanics are in [`05-data-migration.md`](./05-data-migration.md).
+All models inherit `tenancy.TenantScopedModel` (`island` FK) unless noted. Each module is a flat Django app under `SaoMiguelBus-api/src/<app>/`. Types are indicative; exact field options finalized during Phase 1. Migration mechanics: [`05-data-migration.md`](./05-data-migration.md).
 
-## 1. Design decisions vs legacy
+## 1. Legacy model inventory (complete audit)
 
-The legacy schema (see audit in repo history) is **denormalized and fragile**:
+Source: [`legacy/src/app/models.py`](../../SaoMiguelBus-api/legacy/src/app/models.py), [`legacy/src/subscriptions/models.py`](../../SaoMiguelBus-api/legacy/src/subscriptions/models.py).
+
+| Legacy model | App | New disposition |
+|--------------|-----|-----------------|
+| `Route` | `app` | → `transit.Line` + `Trip` + `StopTime` (parse `stops` str-dict) |
+| `Stop` | `app` | → `transit.Stop` (1:1) |
+| `Trip` | `app` | GMaps-derived schedules → `transit.Trip(source="gmaps")` or ephemeral; not bulk-migrated |
+| `TripStop` | `app` | Coordinates backfill for `Stop`; not kept as separate table |
+| `Data` | `app` | **Not migrated** — raw GMaps JSON cache → Redis |
+| `Stat` | `app` | → `analytics.AnalyticsEvent` (pseudonymized) |
+| `Ad` | `app` | → `transit` or dedicated ads models on `Ad` + `island` FK |
+| `Group` | `app` | → `StopGroup` (ad targeting + analytics rollups) |
+| `Info` | `app` | → `transit.RouteInfo.text` JSON |
+| `Holiday` | `app` | → `transit.Holiday` (1:1) |
+| `Variables` | `app` | → `tenancy.Island.feature_flags` + env config |
+| `AIFeedback` | `app` | → `analytics.AnalyticsEvent` or archive |
+| `EmailOpen` | `app` | → `analytics.AnalyticsEvent(module="comms")` or archive |
+| `ReturnRoute` | `app` | **Not a DB model** — compat serialization helper only |
+| `LoadRoute` | `app` | **Not a DB model** — compat serialization helper only |
+| `Subscription` | **`subscriptions`** (separate app, `db_table='subscriptions'`) | → `billing.Entitlement(source="legacy_email")` |
+
+## 2. Design decisions vs legacy
+
+The legacy schema is **denormalized and fragile**:
 
 - `Route.stops` is a *stringified Python dict* (`{'Stop A': '08h30', ...}`) in a JSONField — not valid JSON, parsed with `ast.literal_eval`.
 - No FK between routes and stops; stop names are free strings reconciled by `cleaned_name` fuzzy match.
@@ -13,7 +36,7 @@ The legacy schema (see audit in repo history) is **denormalized and fragile**:
 
 We normalize transit into a GTFS-inspired relational model, keep multilingual content as structured JSON, and scope everything to `Island`.
 
-## 2. Transit module (`apps/transit`)
+## 3. Transit module (`transit`)
 
 ```
 Operator
@@ -90,10 +113,10 @@ RouteFeedback              # normalized likes/dislikes audit (optional, anti-abu
 | `Variables` (version/maps flags) | `Island.feature_flags` + app config |
 | `Group` (geographic stop groups for ads/stats) | `StopGroup` (kept for ad targeting + analytics rollups) |
 
-## 3. Accounts & consent (`apps/accounts`, `apps/consent`)
+## 4. Accounts & consent (`user_management` + `consent`)
 
 ```
-User (djast custom user)
+User (Django auth via boilerplate user_management / allauth)
   email, auth fields, locale, created_at
   # anonymous usage allowed; account optional except for community features
 
@@ -106,7 +129,7 @@ ConsentRecord
   withdrawn_at    datetime (nullable)
 ```
 
-## 4. Analytics (`apps/analytics`)
+## 5. Analytics (`analytics`)
 
 ```
 AnalyticsEvent              # universal, replaces flat Stat (see SDD 06)
@@ -133,7 +156,7 @@ AnalyticsEvent              # universal, replaces flat Stat (see SDD 06)
 | `Ad.seen`/`clicked` | `AnalyticsEvent(module varies, event_type="impression"/"click")` + counters |
 | `EmailOpen` | `AnalyticsEvent(module="news"/"comms")` or retired |
 
-## 5. Billing (`apps/billing`)
+## 6. Billing (`billing` + boilerplate `stripe_payments`)
 
 ```
 Entitlement                 # unifies Stripe + RevenueCat + legacy allow-list
@@ -155,14 +178,16 @@ Promotion                   # Pay-to-Promote (marketplace/events)
 
 ### Legacy → billing mapping
 
-| Legacy `Subscription` | New `Entitlement` |
-|-----------------------|-------------------|
+| Legacy `subscriptions.Subscription` | New `billing.Entitlement` |
+|---------------------------------------|---------------------------|
 | `email` | `user`/`email` |
 | `is_active` | `status="active"`, `tier="premium"`, `source="legacy_email"` |
 | `verification_count` | dropped (telemetry only) |
 | hardcoded `features` | `features` JSON |
 
-## 6. Other modules (summarized; detail in [`09-modules.md`](./09-modules.md))
+ETL reads `subscriptions` table via legacy DB router or explicit `legacy_subscriptions` import step ([`05`](./05-data-migration.md)).
+
+## 7. Other modules (summarized; detail in [`09-modules.md`](./09-modules.md))
 
 ```
 news/        NewsSource(name,url,rss_url,language)  NewsArticle(title,summary,url,published_at,source,categories)
@@ -176,7 +201,7 @@ ads/         Ad(...)  StopGroup(...)   # first-party ad campaigns, migrated from
 
 `Ad` is migrated largely as-is (it already has platform/status/action/target/seen/clicked) but gains an `island` FK and integrates with the consent/ads purpose.
 
-## 7. Indexing & integrity highlights
+## 8. Indexing & integrity highlights
 
 - All tenant tables: composite index `(island, <lookup>)`.
 - `Stop`: `(island, cleaned_name)` + GIN trigram on `cleaned_name` for fuzzy search (replaces `__contains`).

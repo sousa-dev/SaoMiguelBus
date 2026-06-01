@@ -29,7 +29,7 @@ It expands the product from a single feature (bus schedules) to a multi-module h
 ## 3. Scope
 
 ### In scope
-- New backend (`djast`/Django) with tenant root, normalized schema, modular apps.
+- New backend (Django 5 via **djast** starter at `SaoMiguelBus-api/boilerplate/`, promoted to repo root) with tenant root, normalized schema, modular flat apps.
 - New Expo (React Native + Web) app replacing webapp + native Android + Flutter clients.
 - Migration of all historical data since 2020 (routes, stats, ads, infos, holidays, likes, subscriptions).
 - GDPR consent + analytics governance.
@@ -70,6 +70,8 @@ It expands the product from a single feature (bus schedules) to a multi-module h
 | **CMP** | Consent Management Platform (frontend consent UI + backend record) |
 | **DSAR** | Data Subject Access Request (GDPR export/delete) |
 | **Compat shim** | Adapter exposing new data through legacy `/api/v1` + `/api/v2` shapes |
-| **`djast`** | The team's AI-agentic Django boilerplate used as backend foundation |
+| **`djast`** | Django 5 SaaS boilerplate vendored at [`SaoMiguelBus-api/boilerplate/`](../../SaoMiguelBus-api/boilerplate/); promoted to the API repo root on `revamp`. Provides feature toggles, allauth/OAuth, Stripe, Celery/Beat, DRF, legal/docs apps, and agent conventions (`.cursor/`, `services.py`, `api.py`). |
+| **`boilerplate/`** | Vendored djast copy in the API repo before promotion; reference for layout and conventions |
+| **`legacy/`** | Django 3.0 production API under `SaoMiguelBus-api/legacy/`; source DB + compat contract for migration |
 | **Pay-to-Promote** | Monetization where listings are free; only boosting is paid |
 | **Strangler-fig** | Migration pattern: new system grows around legacy until legacy is removed |

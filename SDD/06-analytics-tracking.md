@@ -11,7 +11,7 @@ No module awareness beyond transit, no consent gating, no normalization.
 
 ## 2. Target: one normalized event spine
 
-Every meaningful interaction across **all 7 modules** emits an `AnalyticsEvent` through one ingestion endpoint. Third-party analytics (GA/Umami) become optional, consent-gated, and secondary — the first-party `AnalyticsEvent` table is the system of record.
+Every meaningful interaction across **all 7 modules** emits an `AnalyticsEvent` through one ingestion endpoint (`analytics` app — `src/analytics/`). Third-party analytics (GA/Umami) become optional, consent-gated, and secondary — the first-party `AnalyticsEvent` table is the system of record. Boilerplate already documents GA event patterns in `documentation/docs/6_customization/event_tracking.md`; SMB extends that taxonomy for module events.
 
 ```
 AnalyticsEvent

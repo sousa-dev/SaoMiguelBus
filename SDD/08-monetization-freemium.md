@@ -23,18 +23,19 @@ Two billing providers because app-store rules require IAP on mobile:
 | Web | **Stripe** (Checkout + Billing Portal) |
 | iOS / Android | **RevenueCat** (wraps App Store / Play Billing IAP) |
 
-Both reconcile into one `Entitlement` model ([`03-data-model.md`](./03-data-model.md) §5):
+Both reconcile into one `Entitlement` model in the `billing` app ([`03-data-model.md`](./03-data-model.md) §5):
 
 ```
-Stripe webhook ─────▶  Entitlement(source="stripe",     external_id=sub_id, ...)
-RevenueCat webhook ─▶  Entitlement(source="revenuecat", external_id=app_user_id, ...)
-Legacy email allow-list ▶ Entitlement(source="legacy_email", status="active")
-                                  │
-        GET /api/v3/billing/entitlement  ◀── single source of truth for "is this user premium?"
+stripe_payments (boilerplate) ──webhook──▶ billing.services.reconcile_stripe(...)
+RevenueCat webhook ──────────────────────▶ billing.services.reconcile_revenuecat(...)
+Legacy email allow-list ───────────────────▶ Entitlement(source="legacy_email", status="active")
+                                                    │
+              GET /api/v3/billing/entitlement  ◀──── single source of truth
 ```
 
+- **Reuse boilerplate `stripe_payments`** for Stripe Checkout, webhooks, and `services.py` payment flow; `billing` adds `Entitlement`, RevenueCat, and legacy allow-list on top.
 - The app asks the backend (not the store) "am I premium?" → consistent across platforms.
-- Webhooks update status; a periodic Celery job reconciles drift.
+- Webhooks update status; a periodic Celery job in `billing/tasks.py` reconciles drift.
 - **Legacy migration:** existing `Subscription(email, is_active)` rows → `Entitlement(source="legacy_email")`, preserving current premium users with no payment data to migrate (legacy never integrated Stripe).
 - Legacy `/api/v1/subscription/verify/` keeps working via the compat shim (returns the same `{hasActiveSubscription, subscriptionType, expiresAt, features, message}` shape).
 

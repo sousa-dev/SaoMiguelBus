@@ -2,7 +2,7 @@
 
 > **Status:** DRAFT — awaiting explicit approval before any implementation begins.
 > **Author:** Architecture (Cursor agent)
-> **Target repo:** `sao-miguel-hub` (first instance of the multi-island **Azores Hub** platform)
+> **Target repos:** [`SaoMiguelBus-api`](https://github.com/sousa-dev/SaoMiguelBus-api) (djast backend, `revamp`) + [`SaoMiguelBus`](https://github.com/sousa-dev/SaoMiguelBus) (Expo client + this SDD)
 > **Source material:** legacy `SaoMiguelBus` (mobile), `SaoMiguelBus-api` (Django/DRF), `SaoMiguelBus-webapp` (vanilla-JS PWA)
 
 This document is the **executive index** for the migration. The detailed design lives in the [`SDD/`](./SDD) directory. Nothing here authorizes writing application code — it defines the architecture and the phased plan we will execute **after sign-off**.
@@ -11,7 +11,7 @@ This document is the **executive index** for the migration. The detailed design 
 
 ## 1. TL;DR
 
-We are turning a single-purpose São Miguel bus-schedule app into **Azores Hub**: a white-labelable "island guide + community hub" that ships from one Expo (React Native + Web) codebase against a modernized, multi-tenant Django backend built on the `djast` boilerplate.
+We are turning a single-purpose São Miguel bus-schedule app into **Azores Hub**: a white-labelable "island guide + community hub" that ships from one Expo (React Native + Web) codebase against a modernized, multi-tenant Django backend built on the **djast** starter vendored at `SaoMiguelBus-api/boilerplate/` (promoted to the API repo root).
 
 The legacy stack is functional but fragile:
 
@@ -19,7 +19,7 @@ The legacy stack is functional but fragile:
 - **Frontend:** a ~2,400-line `index.html` + ~5k lines of global-scoped JS, Tailwind via CDN, no build step, API base URL hardcoded, triple analytics stack (GA + Umami + `/api/v1/stat`).
 - **Mobile:** parallel native-Android (Kotlin) and partial Flutter ports, each with their own embedded copy of the schedule.
 
-Azores Hub consolidates all of this into **two repos** (one backend, one Expo app), introduces an `Island` tenant root that every domain model hangs off, a normalized transit schema, a unified `AnalyticsEvent` pipeline with GDPR-grade governance, and a freemium monetization layer.
+Azores Hub consolidates clients into **one Expo app** (`SaoMiguelBus`) and the API into **`SaoMiguelBus-api`** (flat Django apps under `src/`, feature toggles, legacy in `legacy/`), introduces an `Island` tenant root, a normalized transit schema, `import_legacy` ETL from the legacy DB, a unified `AnalyticsEvent` pipeline, and freemium monetization (reusing boilerplate `stripe_payments`).
 
 See [`SDD/00-overview.md`](./SDD/00-overview.md) for the full vision and scope.
 
@@ -53,7 +53,7 @@ See [`SDD/00-overview.md`](./SDD/00-overview.md) for the full vision and scope.
         │  │transit │ news   │earthquakes│market   │trails  │ traffic   │  │
         │  │        │        │           │place    │        │ events    │  │
         │  └────────┴────────┴───────────┴─────────┴────────┴───────────┘  │
-        │  DRF ViewSets · PostgreSQL (tenant-scoped) · Celery + Redis      │
+        │  DRF (api.py + services.py) · PostgreSQL · Celery + Redis        │
         └───────┬───────────────────────────────────┬──────────────────────┘
                 │                                     │
         ┌───────▼────────┐                   ┌────────▼─────────────────────┐
@@ -74,11 +74,11 @@ Full detail: [`SDD/01-architecture.md`](./SDD/01-architecture.md).
 | Doc | Contents |
 |-----|----------|
 | [`00-overview.md`](./SDD/00-overview.md) | Vision, scope, personas, glossary, success metrics |
-| [`01-architecture.md`](./SDD/01-architecture.md) | System architecture, tech stack, repo layout, `djast` config, environments |
+| [`01-architecture.md`](./SDD/01-architecture.md) | System architecture, tech stack, `SaoMiguelBus-api` + boilerplate layout, environments |
 | [`02-multi-island-whitelabel.md`](./SDD/02-multi-island-whitelabel.md) | `Island`/`Hub` tenant root, request scoping, frontend theming config |
 | [`03-data-model.md`](./SDD/03-data-model.md) | Full target schema per module + legacy→new field mapping |
 | [`04-api-design.md`](./SDD/04-api-design.md) | REST conventions, versioning, auth, legacy compatibility shims |
-| [`05-data-migration.md`](./SDD/05-data-migration.md) | ETL strategy for 2020+ data, `stops`-dict parsing, dual-write cutover |
+| [`05-data-migration.md`](./SDD/05-data-migration.md) | `import_legacy` / `migrate_legacy`, ETL sources, parity validation, cutover |
 | [`06-analytics-tracking.md`](./SDD/06-analytics-tracking.md) | `AnalyticsEvent` normalization, module-wide instrumentation |
 | [`07-gdpr-data-governance.md`](./SDD/07-gdpr-data-governance.md) | CMP, pseudonymization, retention jobs, DSAR runbook |
 | [`08-monetization-freemium.md`](./SDD/08-monetization-freemium.md) | Free/Premium tiers, Stripe + RevenueCat, ads, Pay-to-Promote |
@@ -96,18 +96,18 @@ Each phase has an **objective**, **scope**, **exit criteria**, and **dependencie
 ### Phase 0 — Foundations & sign-off (this document)
 
 - **Objective:** agree the architecture, schema, and governance model.
-- **Scope:** this SDD; provisioning the `sao-miguel-hub` repo; confirming `djast` capabilities; locking the external-API contracts (EMSC, dados.gov.pt, RSS sources).
+- **Scope:** this SDD; promote `SaoMiguelBus-api/boilerplate/` to root; lock external-API contracts (EMSC, dados.gov.pt, RSS). Djast capabilities are documented in [`01-architecture.md`](./SDD/01-architecture.md) (A1 resolved).
 - **Exit criteria:** stakeholder approval of the SDD; open questions in [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md) resolved or accepted.
 
 ### Phase 1 — Architecture, multi-island schema & migration strategy
 
 - **Objective:** stand up the new backend skeleton with the tenant root and a working data-migration path.
 - **Scope:**
-  - Bootstrap `djast` backend; configure PostgreSQL, Celery + Redis, settings per environment ([`01`](./SDD/01-architecture.md)).
+  - Promote `boilerplate/` → `SaoMiguelBus-api` root; add SMB apps via feature toggles; PostgreSQL, Celery + Redis ([`01`](./SDD/01-architecture.md)).
   - Implement the `Island`/`Hub` tenant root + request scoping middleware and `TenantScopedModel` base ([`02`](./SDD/02-multi-island-whitelabel.md)).
   - Define the **normalized transit schema** (`Operator`, `Line`, `Stop`, `Trip`, `StopTime`, `Calendar`) plus `Ad`, `Info`, `Holiday`, `RouteFeedback` ([`03`](./SDD/03-data-model.md)).
-  - Build the **ETL** that parses legacy `Route.stops` stringified dicts, normalizes stop names via `cleaned_name`, and loads everything under `island=sao-miguel`. Dual-read validation against the legacy API ([`05`](./SDD/05-data-migration.md)).
-  - Define the **legacy compatibility shim** mapping new schema → old `/api/v1` + `/api/v2` response shapes so current clients don't break ([`04`](./SDD/04-api-design.md)).
+  - Implement **`import_legacy`** + **`migrate_legacy <step>`** — ETL from `legacy/src/db.sqlite3` or prod Postgres + `scripts/csv/` fallbacks ([`05`](./SDD/05-data-migration.md)).
+  - **`compat`** app: full legacy URL inventory → old `/api/v1` + `/api/v2` shapes ([`04`](./SDD/04-api-design.md) §4).
 - **Exit criteria:** new backend serves São Miguel transit data through both the new API and the compat shim; migrated data byte-diff-validated against production `/api/v2/webapp/load`.
 - **Depends on:** Phase 0.
 
@@ -167,9 +167,9 @@ Details: [`05-data-migration.md`](./SDD/05-data-migration.md).
 
 ## 7. Assumptions
 
-- `djast` provides the Django project scaffold, opinionated settings, DRF wiring, Celery/Redis, and auth primitives. Where its specifics are unknown, the SDD flags assumptions explicitly in [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md).
-- The new code lives in the `sao-miguel-hub` repo. These planning docs are committed to the legacy `SaoMiguelBus` repo only because `sao-miguel-hub` does not yet exist in this workspace; on approval they move into `sao-miguel-hub/SDD/`.
-- External APIs (EMSC-CSEM, dados.gov.pt, Viator, Google Maps) remain available under their current terms; rate limits handled via cached Celery sync, not per-request proxying where avoidable.
+- **Resolved:** djast starter at `SaoMiguelBus-api/boilerplate/` (allauth, Stripe, Celery, DRF, feature toggles). Backend at API repo root; SDD in `SaoMiguelBus/SDD/`. See [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md) §1.
+- **Still open:** legacy prod Postgres for ETL (A3), external feed availability (A4), GA/Umami reuse (A5).
+- External APIs: rate limits handled via cached Celery sync where possible.
 
 ---
 

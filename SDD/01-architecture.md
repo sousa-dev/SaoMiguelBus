@@ -6,7 +6,7 @@ Azores Hub is a **modular monolith backend** + a **single cross-platform client*
 
 ```
 Expo app (RN + Web)  ──HTTPS/JSON──▶  djast Django backend (DRF)  ──▶ PostgreSQL
-   │  Android / iOS / Web                  │  modular apps              (tenant-scoped)
+   │  Android / iOS / Web                  │  flat Django apps in src/   (tenant-scoped)
    │  theme + i18n by ISLAND_KEY           │  Celery workers ──▶ Redis (broker + cache)
    └─ consent (CMP) before any analytics   └─ external integrations (EMSC, dados.gov.pt, RSS, Maps)
 ```
@@ -15,45 +15,112 @@ Expo app (RN + Web)  ──HTTPS/JSON──▶  djast Django backend (DRF)  ─�
 
 | Concern | Choice | Notes |
 |---------|--------|-------|
-| Framework | Django (current LTS) via **`djast`** | Replaces Django 3.0.14 |
-| API | Django REST Framework, **ViewSets + Routers** | Replaces ad-hoc `@api_view` function views |
-| DB | PostgreSQL | Already used in legacy production |
+| Framework | **Django 5** via **djast** starter | Replaces Django 3.0.14 in `legacy/` |
+| Starter | [`SaoMiguelBus-api/boilerplate/`](../../SaoMiguelBus-api/boilerplate/) → promoted to API repo root | See §3 |
+| API | Django REST Framework — `api.py` + `serializers.py` + `urls.py` (generics; ViewSets where useful) | Replaces legacy `@api_view` function views |
+| DB | PostgreSQL (prod); SQLite (dev) | Same pattern as boilerplate + legacy |
 | Async/cron | **Celery + Celery Beat**, Redis broker | News scraping, EMSC/trails sync, retention jobs, push fan-out |
-| Cache | Redis | Bootstrap payloads, external-feed caching, rate-limit counters |
-| Auth | djast auth + DRF token/JWT; anonymous-allowed read paths | See [`11-security-auth.md`](./11-security-auth.md) |
+| Cache | Redis | Bootstrap payloads, GMaps proxy cache, rate-limit counters |
+| Auth | **django-allauth** (Google/GitHub OAuth) + **django-axes** + DRF token; anonymous read paths | Extends boilerplate `user_management`; see [`11-security-auth.md`](./11-security-auth.md) |
 | Storage | Object storage (S3-compatible) + CDN | Provider/event media, offline map tiles |
 | Search/matching | Postgres `pg_trgm` for fuzzy stop/place names | Replaces ad-hoc `cleaned_name` `__contains` |
-| Payments | Stripe (web) + RevenueCat (mobile IAP) | See [`08-monetization-freemium.md`](./08-monetization-freemium.md) |
+| Payments | Boilerplate **`stripe_payments`** + RevenueCat (mobile IAP) | See [`08-monetization-freemium.md`](./08-monetization-freemium.md) |
 | Observability | Structured logging, Sentry, request/Celery metrics | — |
 
-### djast assumptions
+### What the djast boilerplate provides (concrete, not assumed)
 
-`djast` is taken to provide: project scaffold, opinionated settings split (`base`/`dev`/`prod`), DRF + CORS wiring, Celery/Redis, a custom `User` model, environment/secret loading, and agent-friendly conventions. Anything we depend on that `djast` may *not* provide is flagged in [`12-risks-open-questions.md`](./12-risks-open-questions.md).
+The vendored starter at `SaoMiguelBus-api/boilerplate/` already ships:
 
-## 3. Backend project layout (`sao-miguel-hub/backend/`)
+| Capability | Boilerplate location |
+|------------|-------------------|
+| Feature toggles (`apps` list → INSTALLED_APPS/urls) | `src/src/settings.py` |
+| DRF + CORS | `rest_framework`, `corsheaders` toggles |
+| allauth + Google/GitHub OAuth | `user_management`, social providers |
+| Brute-force protection | `axes` |
+| Stripe Checkout + webhooks | `stripe_payments` (`services.py` pattern) |
+| Celery + Beat (DB scheduler) | `src/src/celery.py`, `django_celery_beat` |
+| Redis cache (prod) / in-memory (dev) | `REDIS_URL`, `CELERY_BROKER_URL` |
+| Legal pages (JSON-driven) | `legal/` |
+| Docs engine | `documentation/` |
+| Agent conventions | `.cursor/`, `CLAUDE.md`, `.agentic/`, per-app `AGENT_INSTRUCTIONS.md` |
+| Service layer pattern | `<app>/services.py`; thin `views.py` / `api.py` |
+| Docker Compose (web + worker + beat + postgres + redis) | `docker-compose.yml` |
+
+Azores Hub **adds** flat domain apps (`tenancy`, `transit`, `analytics`, …) via the same toggle mechanism ([boilerplate doc: adding an app](https://github.com/sousa-dev/djast/blob/main/src/documentation/docs/6_customization/2_adding_an_app.md)).
+
+**Default toggles for SMB:** disable boilerplate `app`, `free_tools`, `landing_page`; keep `stripe_payments`, `legal`, `user_management`, `documentation`, `shared`, `theme`; optional `blog` (SEO / news overlap).
+
+## 3. Backend project layout (`SaoMiguelBus-api/` on `revamp`)
+
+New backend is built by **promoting** `boilerplate/` to the repo root. Legacy stays in `legacy/`. SDD lives in `SaoMiguelBus/SDD/`.
 
 ```
-backend/
-├── config/                 # djast settings (base/dev/prod), urls, celery, wsgi/asgi
-├── apps/
-│   ├── tenancy/            # Island/Hub root, scoping middleware, base models
-│   ├── accounts/           # User, profiles, consent links
-│   ├── analytics/          # AnalyticsEvent, ingestion, retention tasks
-│   ├── consent/            # ConsentRecord, CMP support, DSAR commands
-│   ├── billing/            # Entitlement, Stripe + RevenueCat webhooks, Promotion
-│   ├── transit/            # Operator, Line, Stop, Trip, StopTime, Calendar, directions proxy
-│   ├── news/               # NewsSource, NewsArticle, RSS Celery tasks
-│   ├── seismic/            # SeismicEvent, FeltReport, EMSC sync
-│   ├── marketplace/        # ServiceProvider, ServiceCategory, Review
-│   ├── trails/             # Trail, TrailStage, POI; dados.gov.pt sync
-│   ├── traffic/            # TrafficReport, confirmations, push
-│   ├── events/             # CommunityEvent, ViatorListing
-│   └── compat/             # Legacy /api/v1 + /api/v2 shim views
-├── common/                 # shared serializers, pagination, permissions, geo utils
-└── tests/
+SaoMiguelBus-api/                    # revamp branch
+├── legacy/                          # Django 3.0 — frozen, compat reference + ETL source
+│   ├── src/                         # legacy manage.py, db.sqlite3, data.json
+│   └── scripts/                     # csv/, groups.json — operator timetable fallbacks
+├── boilerplate/                     # vendored djast copy (reference until promoted)
+├── src/                             # Django project root (run all manage.py here)
+│   ├── manage.py
+│   ├── run.py                       # dev: Django + Tailwind
+│   ├── requirements.txt
+│   ├── src/                         # settings package (not "config/")
+│   │   ├── settings.py              # feature toggles + env
+│   │   ├── urls.py
+│   │   ├── celery.py
+│   │   └── .env.example
+│   ├── shared/                      # cross-app utilities (from boilerplate)
+│   ├── user_management/             # allauth wrappers (→ accounts)
+│   ├── stripe_payments/             # Stripe (→ billing webhooks)
+│   ├── legal/                       # privacy/terms JSON pages
+│   ├── documentation/               # in-app handbook
+│   ├── theme/                       # Tailwind
+│   ├── tenancy/                     # Island, TenantScopedModel, middleware
+│   ├── transit/                     # Operator, Line, Stop, Trip, StopTime, …
+│   ├── analytics/                   # AnalyticsEvent, ingestion
+│   ├── consent/                     # ConsentRecord, DSAR commands
+│   ├── billing/                     # Entitlement, RevenueCat, Promotion (extends stripe_payments)
+│   ├── news/                        # NewsSource, NewsArticle, RSS tasks
+│   ├── seismic/                     # SeismicEvent, FeltReport
+│   ├── marketplace/
+│   ├── trails/
+│   ├── traffic/
+│   ├── events/
+│   └── compat/                      # Legacy /api/v1 + /api/v2 shim
+├── setup.py
+├── docker-compose.yml
+├── Dockerfile
+├── AGENTS.md
+└── README.md
 ```
 
-Each feature app owns its `models.py`, `serializers.py`, `views.py` (ViewSets), `tasks.py` (Celery), `admin.py`, and `migrations/`.
+Each domain app follows djast conventions:
+
+```
+<app>/
+├── models.py
+├── services.py          # business logic
+├── serializers.py       # if API
+├── api.py               # DRF generics (preferred over fat views.py)
+├── urls.py
+├── tasks.py             # Celery @shared_task
+├── admin.py
+├── migrations/
+├── tests/
+└── management/commands/ # e.g. migrate_legacy_stops
+```
+
+Register new apps in `src/src/settings.py`:
+
+```python
+apps = [
+    # ... boilerplate entries ...
+    ('tenancy', True),
+    ('transit', True),
+    ('analytics', True),
+    # ...
+]
+```
 
 ## 4. Frontend tech stack
 
@@ -73,28 +140,38 @@ Frontend layout and routing: [`10-frontend-architecture.md`](./10-frontend-archi
 
 ## 5. Repository strategy
 
-`sao-miguel-hub` is a **monorepo** with `backend/` and `app/` (Expo) plus `SDD/` and `infra/`. A monorepo keeps the API contract and client types in sync (shared OpenAPI-generated types) and matches "one platform" framing. Per-island instances are **deployments of the same repo**, differentiated by env/config and tenant data — *not* repo forks.
+| Repo | Role |
+|------|------|
+| **`SaoMiguelBus-api`** (`revamp`) | djast-based backend at root; `legacy/` for old API + migration source; `boilerplate/` as starter reference |
+| **`SaoMiguelBus`** | Mobile app (Expo) + **`SDD/`** (this doc set) |
+| **`SaoMiguelBus-webapp`** | Legacy PWA — deprecated after client cutover |
+
+Per-island instances are **deployments of the same API + client repos**, differentiated by env (`EXPO_PUBLIC_ISLAND_KEY`, `X-Island`) and tenant data — not repo forks.
+
+OpenAPI types for the Expo app are generated from the new backend schema (single contract source).
 
 ## 6. Environments & config
 
 | Env | Backend | Frontend |
 |-----|---------|----------|
-| dev | SQLite or local Postgres, Celery eager, fake external feeds | Expo dev client, `EXPO_PUBLIC_API_URL` → localhost |
+| dev | SQLite (`DEBUG=True`), Celery eager optional, fake external feeds | Expo dev client, `EXPO_PUBLIC_API_URL` → `http://127.0.0.1:8000` |
 | staging | Postgres, real Celery, sandbox Stripe/RevenueCat | points at staging API |
-| prod | Postgres, Redis, real feeds & billing | per-island build with island config |
+| prod | Postgres, Redis, real feeds & billing | per-island EAS build |
 
-**Critical fix vs legacy:** the API base URL must be an environment variable (`EXPO_PUBLIC_API_URL`), not hardcoded as `https://api.saomiguelbus.com` the way the legacy webapp does it.
+Secrets and toggles: `src/src/.env` (see `src/src/.env.example`). Run dev with `cd src && python run.py`.
+
+**Critical fix vs legacy:** API base URL is `EXPO_PUBLIC_API_URL`, not hardcoded `https://api.saomiguelbus.com`.
 
 ## 7. Cross-cutting infrastructure
 
-- **Tenancy** ([`02`](./02-multi-island-whitelabel.md)) — middleware resolves the active `Island` from the `X-Island` header / subdomain and scopes all querysets.
-- **Analytics** ([`06`](./06-analytics-tracking.md)) — one ingestion endpoint, one `AnalyticsEvent` table, consent-gated.
-- **Consent & governance** ([`07`](./07-gdpr-data-governance.md)) — CMP, pseudonymization, retention, DSAR.
-- **Billing** ([`08`](./08-monetization-freemium.md)) — entitlement reconciliation across Stripe + RevenueCat.
+- **Tenancy** ([`02`](./02-multi-island-whitelabel.md)) — `tenancy` middleware resolves `Island` from `X-Island` / subdomain.
+- **Analytics** ([`06`](./06-analytics-tracking.md)) — `analytics` app, one ingestion endpoint, consent-gated.
+- **Consent & governance** ([`07`](./07-gdpr-data-governance.md)) — `consent` app + boilerplate `legal` pages.
+- **Billing** ([`08`](./08-monetization-freemium.md)) — `billing` + `stripe_payments`, RevenueCat webhooks.
 
 ## 8. Non-functional requirements
 
-- **Performance:** bootstrap payload (`/bootstrap`) cached in Redis per island; transit search < 200 ms server-side (legacy target).
+- **Performance:** bootstrap payload (`/api/v3/bootstrap`) cached in Redis per island; transit search < 200 ms server-side (legacy target).
 - **Offline:** transit schedule + trails + last-known news cached client-side; offline map tiles for trails.
-- **Availability:** strangler-fig dual-run keeps legacy as fallback during migration.
+- **Availability:** strangler-fig dual-run keeps `legacy/` as fallback during migration.
 - **Portability:** zero island-specific code paths; everything tenant-driven.

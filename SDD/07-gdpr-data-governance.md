@@ -28,13 +28,15 @@ First launch → CMP screen (before GA/Umami/AdMob/AdSense load, before any Anal
   Actions: Accept all · Reject all (non-essential) · Customize
 ```
 
-Backend `ConsentRecord` stores the granular choices, `policy_version`, timestamps. Every `AnalyticsEvent` carries a `consent_state` snapshot. Withdrawal is one tap and propagates immediately (subsequent events respect it; third-party SDKs are torn down).
+Backend `ConsentRecord` (`consent` app — `src/consent/`) stores the granular choices, `policy_version`, timestamps. Every `AnalyticsEvent` carries a `consent_state` snapshot. Withdrawal is one tap and propagates immediately (subsequent events respect it; third-party SDKs are torn down).
+
+**Policy pages:** reuse boilerplate `legal` app (`src/legal/data/privacy_policy.json`, `terms_of_service.json`) — update JSON for Azores Hub; link from CMP and settings.
 
 **Key fix vs legacy:** GA and AdSense currently load unconditionally on page load — that is non-compliant. In Azores Hub, **nothing tracking-related initializes before consent**.
 
 ## 3. Retention policies (automated)
 
-Celery Beat jobs per island (default window **14 months**, configurable per `Island`):
+Celery Beat jobs per island (default window **14 months**, configurable per `Island`), implemented as `@shared_task` in `consent/tasks.py` and `analytics/tasks.py`, scheduled via django-celery-beat admin (boilerplate pattern):
 
 | Job | Cadence | Action |
 |-----|---------|--------|

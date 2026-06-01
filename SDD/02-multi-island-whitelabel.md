@@ -5,7 +5,7 @@ The single most important architectural change. Everything else hangs off it.
 ## 1. The tenant root: `Island`
 
 ```
-Island (apps/tenancy)
+Island (tenancy app — `src/tenancy/`, toggle in `src/src/settings.py`)
   key            slug, unique, immutable   e.g. "sao-miguel"
   name           display name              e.g. "São Miguel"
   archipelago    e.g. "Azores"
@@ -33,7 +33,7 @@ TenantScopedModel (abstract)
   objects = TenantManager()   # filters by active island from request context
 ```
 
-- `TenantManager` reads the active island from a thread-local / contextvar set by middleware.
+- `TenantManager` reads the active island from a contextvar set by `tenancy.middleware.TenantMiddleware` (registered in `src/src/settings.py` MIDDLEWARE).
 - A `for_island(island)` escape hatch exists for Celery tasks and cross-tenant admin.
 - DB indexes are **composite, island-first** (e.g. `(island, cleaned_name)`), so per-island queries stay fast as more islands are added.
 
