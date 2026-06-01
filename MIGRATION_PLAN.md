@@ -1,6 +1,6 @@
 # Azores Hub — Migration Plan & Software Design Document (SDD)
 
-> **Status:** DRAFT — awaiting explicit approval before any implementation begins.
+> **Status:** Phase 1 in progress — backend skeleton, tenancy, transit schema, legacy ETL, and compat shim (v2 stops + webapp/load).
 > **Author:** Architecture (Cursor agent)
 > **Target repos:** [`SaoMiguelBus-api`](https://github.com/sousa-dev/SaoMiguelBus-api) (djast backend, `revamp`) + [`SaoMiguelBus`](https://github.com/sousa-dev/SaoMiguelBus) (Expo client + this SDD)
 > **Source material:** legacy `SaoMiguelBus` (mobile), `SaoMiguelBus-api` (Django/DRF), `SaoMiguelBus-webapp` (vanilla-JS PWA)
@@ -175,4 +175,4 @@ Details: [`05-data-migration.md`](./SDD/05-data-migration.md).
 
 ## 8. Next step
 
-**Review this plan and the [`SDD/`](./SDD) documents and approve (or annotate).** No implementation code, components, or API views will be written until approval is explicit.
+Phase 1 backend work is underway on branch `cursor/sdd-phase-1-38ca` in `SaoMiguelBus-api`. Remaining Phase 1 scope: expand compat shim to full legacy URL inventory (§4), route search parity, and subscription verify endpoint.
