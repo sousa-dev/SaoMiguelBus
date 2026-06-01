@@ -33,6 +33,7 @@ See [`SDD/00-overview.md`](./SDD/00-overview.md) for the full vision and scope.
 4. **Backward-compatible cutover.** Legacy `/api/v1` and `/api/v2` contracts are preserved behind a compatibility shim so existing Play Store / web clients keep working during migration.
 5. **Modular monolith, not microservices.** Each feature (Transit, News, Earthquakes, Marketplace, Trails, Traffic, Events) is a Django app + an Expo feature module sharing common tenant/analytics/consent infra.
 6. **Don't lose history.** All data accumulated since 2020 (routes, stats, ads, subscriptions, likes) is migrated, normalized, and pseudonymized in flight.
+7. **API-first, full CRUD, TDD.** User-generated modules (Events, Marketplace, Traffic) ship full REST CRUD ([`04`](./SDD/04-api-design.md)) usable by the app **and** by third-party partner sites (companies/people posting) via scoped API keys. Every endpoint is built test-first (≥80% service coverage) and documented (OpenAPI + guide + partner API docs) in the same PR.
 
 ---
 
@@ -136,10 +137,12 @@ Each phase has an **objective**, **scope**, **exit criteria**, and **dependencie
 
 - **Objective:** the "hub/community" surface area.
 - **Scope:**
-  - **Marketplace:** tradesperson directory (`ServiceProvider`, `ServiceCategory`, `Review`), free listings, moderation ([`09`](./SDD/09-modules.md)).
-  - **Events:** community submission + moderation (`CommunityEvent`); Viator affiliate page migration for passive commission ([`09`](./SDD/09-modules.md)).
-  - **Traffic (Waze-style):** `TrafficReport` (radar/accident/hazard) with geo + upvote/expiry trust model and GPS push notifications ([`09`](./SDD/09-modules.md), [`11`](./SDD/11-security-auth.md)).
-- **Exit criteria:** users can browse providers, submit events, and post/confirm traffic reports; moderation tooling exists; abuse controls in place.
+  - **Marketplace:** tradesperson directory (`ServiceProvider`, `ServiceCategory`, `Review`), free listings, **full CRUD** + moderation ([`09`](./SDD/09-modules.md)).
+  - **Events:** community submission + moderation (`CommunityEvent`), **full CRUD**; Viator affiliate page migration for passive commission ([`09`](./SDD/09-modules.md)).
+  - **Traffic (Waze-style):** `TrafficReport` (radar/accident/hazard) with geo + **full CRUD** + upvote/expiry trust model and GPS push notifications ([`09`](./SDD/09-modules.md), [`11`](./SDD/11-security-auth.md)).
+  - **Partner write API:** `PartnerApiKey` (scoped, per-island) so external company/people sites can create/edit/withdraw events & listings through the same REST endpoints ([`04`](./SDD/04-api-design.md) §2.3, [`11`](./SDD/11-security-auth.md)).
+  - **TDD + docs:** test-first per [`04`](./SDD/04-api-design.md) §6; ship OpenAPI/Swagger, per-app `AGENT_INSTRUCTIONS.md`, and a Partner API guide ([`04`](./SDD/04-api-design.md) §8).
+- **Exit criteria:** users **and** partner keys can CRUD providers/events/reports through documented REST endpoints; moderation tooling exists; CRUD + permission + tenant-isolation tests green; API docs published; abuse controls in place.
 - **Depends on:** Phases 1–3 (tenant, analytics, auth, push infra).
 
 ### Phase 5 — Monetization

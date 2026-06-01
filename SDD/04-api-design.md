@@ -3,31 +3,65 @@
 ## 1. Conventions (djast)
 
 - **DRF** via `api.py` + `serializers.py` + `urls.py` — thin HTTP layer, logic in `services.py` (see boilerplate `blog/api.py`).
-- ViewSets + Routers where a full CRUD resource fits; **generics** (`ListCreateAPIView`, etc.) for simpler endpoints.
-- **Resource-oriented**, plural nouns: `/api/v3/transit/lines`, `/api/v3/news/articles`.
+- **Full CRUD by default for user-generated content** (events, marketplace listings, reviews, traffic reports): **ModelViewSet + DefaultRouter** exposing the standard REST verbs (see §2.1). Read-only/derived resources (transit, news, seismic, trails) use read ViewSets or generics.
+- **Resource-oriented**, plural nouns: `/api/v3/transit/lines`, `/api/v3/news/articles`, `/api/v3/events`.
 - **Tenant context** via `X-Island` header (or subdomain); never trust client-supplied island in the body.
-- **Auth:** anonymous allowed for read-only public data; DRF token (allauth session) for writes. See [`11-security-auth.md`](./11-security-auth.md).
-- **Pagination:** cursor pagination on list endpoints (analytics, news, reports).
+- **Auth:** anonymous allowed for read-only public data; DRF token / allauth session for user writes; **partner API key** for third-party submission sites (see §2.3). See [`11-security-auth.md`](./11-security-auth.md).
+- **Pagination:** cursor pagination on list endpoints (analytics, news, reports, listings).
 - **Errors:** consistent envelope `{ "error": { "code", "message", "details" } }`.
-- **Types:** OpenAPI schema generated server-side; TypeScript client types for Expo (single source of truth).
+- **Types:** OpenAPI schema generated server-side (`drf-spectacular`); TypeScript client types for Expo + a published, browsable API reference (single source of truth — see §7).
+- **TDD is mandatory** for every endpoint (see §6): write failing `test_services.py` + `test_api.py` first, then implement.
 - Wire v3 routes in `src/src/urls.py` (and per-app `urls.py`), gated by feature toggles like other boilerplate apps.
 
 ## 2. New API surface (`/api/v3`)
 
-| Module | Representative endpoints |
-|--------|--------------------------|
-| Bootstrap | `GET /api/v3/bootstrap` → island config, enabled modules, holidays, active infos (replaces `/api/v2/webapp/load`) |
-| Transit | `GET /transit/stops`, `GET /transit/search?origin=&destination=&day=&start=`, `GET /transit/lines/{id}`, `GET /transit/directions` (Maps proxy), `POST /transit/trips/{id}/vote` |
-| News | `GET /news/articles?category=`, `GET /news/sources` |
-| Seismic | `GET /seismic/events?since=`, `POST /seismic/events/{id}/felt` |
-| Marketplace | `GET /marketplace/providers?category=&q=`, `GET /marketplace/categories`, `POST /marketplace/providers/{id}/reviews` |
-| Trails | `GET /trails`, `GET /trails/{id}`, `GET /trails/pois` |
-| Traffic | `GET /traffic/reports?bbox=`, `POST /traffic/reports`, `POST /traffic/reports/{id}/confirm` |
-| Events | `GET /events?from=&to=`, `POST /events`, `GET /events/tours` (Viator) |
-| Analytics | `POST /analytics/events` (consent-gated ingestion) |
-| Consent | `GET/POST /consent`, `POST /privacy/dsar/export`, `POST /privacy/dsar/delete` |
-| Billing | `GET /billing/entitlement`, `POST /billing/webhooks/stripe`, `POST /billing/webhooks/revenuecat`, `POST /promotions` |
-| Ads | `GET /ads?slot=&platform=` (first-party; compat: `/api/v1/ad`) |
+### 2.1 Standard CRUD contract (UGC resources)
+
+Every user-generated-content resource is a full REST resource via `ModelViewSet`. The same verb set applies uniformly so external sites and the app share one predictable contract:
+
+| Verb | Path | Action | Auth |
+|------|------|--------|------|
+| `GET` | `/{resource}` | list (filter, search, paginate) | public (published only) |
+| `POST` | `/{resource}` | create (→ `status=pending` if moderated) | user token **or** partner key |
+| `GET` | `/{resource}/{id}` | retrieve | public if published; owner/admin otherwise |
+| `PUT` | `/{resource}/{id}` | full update | owner **or** admin |
+| `PATCH` | `/{resource}/{id}` | partial update | owner **or** admin |
+| `DELETE` | `/{resource}/{id}` | delete (soft-delete → `status=deleted`) | owner **or** admin |
+
+Conventions for all CRUD resources:
+- **Ownership:** writes set `created_by` (user) or `created_by_partner` (API key). Update/delete restricted to the owner or staff via a shared `IsOwnerOrReadOnly`/`IsOwnerOrStaff` permission in `common/permissions.py`.
+- **Moderation lifecycle** (events, providers, reviews): `pending → published → rejected`, plus `deleted`. Public list/retrieve only returns `published`; owners also see their own non-published rows. Staff transition via `POST /{resource}/{id}/moderate {action}` or Django admin ([`09`](./09-modules.md), [`11`](./11-security-auth.md)).
+- **Validation** in serializers + `services.py`; tenant `island` injected server-side, never from body.
+- **Idempotency** for partner `POST` via optional `Idempotency-Key` header.
+
+### 2.2 Endpoint surface by module
+
+| Module | CRUD resources (full REST) | Read / action endpoints |
+|--------|----------------------------|-------------------------|
+| Bootstrap | — | `GET /bootstrap` (island config, modules, holidays, infos) |
+| Transit | — (admin-managed via admin/import) | `GET /transit/stops`, `GET /transit/search`, `GET /transit/lines/{id}`, `GET /transit/directions`, `POST /transit/trips/{id}/vote` |
+| News | — (feed-sourced) | `GET /news/articles`, `GET /news/sources` |
+| Seismic | — (feed-sourced) | `GET /seismic/events`, `POST /seismic/events/{id}/felt` |
+| **Marketplace** | `/marketplace/providers` (CRUD), `/marketplace/providers/{id}/reviews` (CRUD) | `GET /marketplace/categories`, `POST /marketplace/providers/{id}/moderate` |
+| Trails | — (open-data sync) | `GET /trails`, `GET /trails/{id}`, `GET /trails/pois` |
+| **Traffic** | `/traffic/reports` (CRUD) | `POST /traffic/reports/{id}/confirm`, `GET /traffic/reports?bbox=` |
+| **Events** | `/events` (CRUD) | `GET /events/tours` (Viator), `POST /events/{id}/moderate`, `POST /events/{id}/promote` |
+| Analytics | — | `POST /analytics/events` (consent-gated ingestion) |
+| Consent | — | `GET/POST /consent`, `POST /privacy/dsar/export`, `POST /privacy/dsar/delete` |
+| Billing | `/promotions` (create/list/cancel) | `GET /billing/entitlement`, `POST /billing/webhooks/stripe`, `POST /billing/webhooks/revenuecat` |
+| Ads | `/ads/campaigns` (CRUD, partner/admin) | `GET /ads?slot=&platform=` (serve; compat `/api/v1/ad`) |
+
+CRUD resources are bold above. Each is registered on a `DefaultRouter` in its app's `urls.py`, yielding the §2.1 verb set automatically.
+
+### 2.3 Third-party / partner write access
+
+External "post your event / list your business / submit a promotion" sites (separate front-ends for companies and people) authenticate as **partners**, not end-user accounts:
+
+- **`PartnerApiKey`** (in `tenancy` or a small `partners` app): per-partner token, scoped to an `island` and a set of permitted resources/actions (e.g. `events:create`, `marketplace:create`). Issued/revoked from admin.
+- Sent as `Authorization: Api-Key <key>` (DRF `HasAPIKey`-style permission). Distinct throttle scope from anonymous/user traffic.
+- Partner-created rows are attributed (`created_by_partner`) and still enter the **moderation queue** before going public.
+- Partner-facing endpoints are exactly the §2.1 CRUD verbs — no special surface — so a partner can `POST` to create, `PATCH` to edit, `DELETE` to withdraw their own submissions.
+- A self-service **partner portal** can be built later on top of these same endpoints; nothing extra server-side is required.
 
 ## 3. Versioning strategy
 
@@ -129,5 +163,27 @@ New design (`transit` app):
 
 ## 6. Rate limiting & abuse
 
-- DRF throttles per `session_hash`/IP-bucket on write endpoints.
-- Crowdsourced writes require account or signed anonymous session token ([`11`](./11-security-auth.md)).
+- DRF throttles per `session_hash`/IP-bucket on write endpoints; **separate, stricter throttle scope for partner API keys**.
+- Crowdsourced writes require account, signed anonymous session token, or partner key ([`11`](./11-security-auth.md)).
+
+## 7. Build discipline — TDD (mandatory)
+
+Every endpoint follows the boilerplate testing convention (`documentation/docs/1_get_started/5_testing.md`) in **test-first** order:
+
+1. Write failing **`<app>/tests/test_services.py`** for the business rule (create/update/delete/moderation/ownership), using `@pytest.mark.django_db`.
+2. Write failing **`<app>/tests/test_api.py`** for each CRUD verb: status codes, ownership/permission denials (403), tenant isolation (no cross-island leakage), moderation gating (pending not public), partner-key path, throttling.
+3. Implement `services.py` → `serializers.py` → `api.py` until green.
+4. Gate: **≥80% coverage on `<app>/services.py`** (`coverage report --fail-under=80`), per the boilerplate coverage policy. External services (Stripe, RevenueCat, Maps, RSS, EMSC) are **mocked**.
+
+Delegate to the `djast-qa-test-engineer` agent for test scaffolding. No endpoint merges without its CRUD + permission tests.
+
+## 8. API documentation (deliverable, not optional)
+
+The API must be easy for third parties to consume. Each module that ships endpoints delivers:
+
+- **OpenAPI schema** via `drf-spectacular` at `GET /api/v3/schema/` + interactive **Swagger UI / ReDoc** at `/api/v3/docs/`.
+- A human guide page under the boilerplate **`documentation`** app: `documentation/docs/3_apps/<module>.md` covering auth (user token vs partner key), the CRUD verb table, request/response examples, filters, moderation states, and rate limits.
+- A per-app **`AGENT_INSTRUCTIONS.md`** (mirroring `blog/AGENT_INSTRUCTIONS.md`) with `curl` + Python service-layer examples for agents/integrators creating content.
+- A dedicated **"Partner API" guide** (`documentation/docs/.../partner_api.md`): how to get a key, scopes, idempotency, and end-to-end create→edit→withdraw examples for events/marketplace.
+
+Docs updates ship **in the same PR** as the endpoint (boilerplate "user-visible changes must update docs" rule).

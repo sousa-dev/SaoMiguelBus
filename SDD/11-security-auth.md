@@ -6,12 +6,20 @@
 |-------|-----------|
 | Anonymous reader | No auth; read-only public endpoints; pseudonymous `session_hash` for analytics/votes |
 | Registered user | **django-allauth** (email + Google/GitHub OAuth via boilerplate) + **DRF token** auth; required for account-bound favorites, reviews, event submissions, DSAR |
-| Admin / operator | Django admin (`admin_interface` toggle) + role-based permissions |
+| **Partner / business** | **`PartnerApiKey`** (`Authorization: Api-Key <key>`), island- and scope-bound (`events:create`, `marketplace:create`, …); for external "post your event / list your business" sites and integrators ([`04`](./04-api-design.md) §2.3) |
+| Admin / operator | Django admin (`admin_interface` toggle) + role-based permissions; moderation transitions |
 | Service (Celery, webhooks) | Signed webhook secrets (Stripe via `stripe_payments`, RevenueCat), internal task auth |
 
 Boilerplate provides: `user_management` (login middleware, OAuth signals), `axes` (brute-force lockout), `rest_framework` token auth. Azores Hub sets `AUTHENTICATION_REQUIRED=False` for public transit read APIs.
 
-Anonymous-first stays true to the legacy public API, but **writes** that affect community trust require either an account or a signed anonymous session token.
+Anonymous-first stays true to the legacy public API, but **writes** that affect community trust require an account, a signed anonymous session token, or a partner key.
+
+### Ownership & CRUD authorization
+
+- Write endpoints stamp `created_by` (user) or `created_by_partner` (API key) on create.
+- **Update/delete** allowed only for the owner or staff — enforced by a shared `IsOwnerOrStaff` permission (`common/permissions.py`), tested per-resource ([`04`](./04-api-design.md) §6).
+- `DELETE` is a **soft-delete** (`status=deleted`) to preserve audit/DSAR traceability; hard purge only via retention jobs ([`07`](./07-gdpr-data-governance.md)).
+- Partner keys are scoped per island; a key for one island can never write to another (tenant isolation §3).
 
 ## 2. Secrets — fixing legacy leaks
 
@@ -37,7 +45,8 @@ Env vars (new): `GOOGLE_MAPS_API_KEY`, `GMAPS_PROXY_AUTH_KEY` (server-only), `RE
 
 | Risk | Control |
 |------|---------|
-| Spam / fake reports | Per-`session_hash`/IP-bucket rate limits (DRF throttles); CAPTCHA/app-attestation on suspicious volume |
+| Spam / fake reports | Per-`session_hash`/IP-bucket rate limits (DRF throttles); **separate stricter throttle for partner keys**; CAPTCHA/app-attestation on suspicious volume |
+| Partner key abuse / leakage | Per-key scopes + island binding; revocable from admin; isolated throttle scope; all partner writes moderated |
 | Vote manipulation (likes, confirmations) | One vote per session per target; confirmation decay; reputation weighting |
 | Abusive content (reviews/events) | Moderation queue; profanity/PII filters; report-content flow |
 | Stale/false alerts | Auto-expiry + confirmation-based confidence |

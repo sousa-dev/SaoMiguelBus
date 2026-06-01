@@ -1,6 +1,8 @@
 # SDD 09 — Feature Modules
 
-Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (registered in `src/src/settings.py` `apps` toggle) + one Expo feature module (frontend). All tenant-scoped via `tenancy.TenantScopedModel`, all instrumented via `AnalyticsEvent`, all consent-aware. This doc specifies behavior and external dependencies; models are summarized in [`03-data-model.md`](./03-data-model.md).
+Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (registered in `src/src/settings.py` `apps` toggle) + one Expo feature module (frontend). All tenant-scoped via `tenancy.TenantScopedModel`, all instrumented via `AnalyticsEvent`, all consent-aware. This doc specifies behavior and external dependencies; models are summarized in [`03-data-model.md`](./03-data-model.md); REST/CRUD contract in [`04-api-design.md`](./04-api-design.md).
+
+**User-generated modules (Events, Marketplace, Traffic) expose full REST CRUD** (`ModelViewSet` + router — [`04`](./04-api-design.md) §2.1) so the app, partner sites, and integrators all create/edit/delete through the same endpoints, with ownership + moderation enforced server-side.
 
 ---
 
@@ -48,7 +50,12 @@ Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (re
 
 **Features:** browse/search by category + location; provider profile (rate, contact, reviews, rating); submit review (rate-limited, moderated); contact via call/whatsapp/email. Promoted providers ranked higher with a transparent label.
 
-**Moderation:** new listings/reviews pass through a moderation queue (admin); abuse controls in [`11`](./11-security-auth.md).
+**CRUD ([`04`](./04-api-design.md) §2.1):**
+- `GET/POST /marketplace/providers`, `GET/PUT/PATCH/DELETE /marketplace/providers/{id}` — a business (user or partner key) creates/edits/withdraws its own listing.
+- `GET/POST /marketplace/providers/{id}/reviews`, `PUT/PATCH/DELETE /marketplace/reviews/{id}` — review owner edits/deletes their own.
+- `created_by`/`created_by_partner` ownership; `IsOwnerOrStaff`.
+
+**Moderation:** new/edited listings + reviews enter `pending`; `POST /marketplace/providers/{id}/moderate` (staff) → `published`/`rejected`. Public list shows `published` only. Abuse controls in [`11`](./11-security-auth.md).
 
 ---
 
@@ -72,7 +79,7 @@ Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (re
 
 **Features:**
 - User-reported alerts with location.
-- `POST /traffic/reports`; `POST /traffic/reports/{id}/confirm` (upvote) extends life; reports auto-expire (Celery).
+- **CRUD ([`04`](./04-api-design.md) §2.1):** `GET/POST /traffic/reports`, `GET/PUT/PATCH/DELETE /traffic/reports/{id}` — reporter edits/removes their own report; `POST /traffic/reports/{id}/confirm` (upvote) extends life; reports auto-expire (Celery).
 - **Trust model:** confirmations raise confidence; unconfirmed reports expire fast; per-session rate limits; reputation weighting ([`11`](./11-security-auth.md)).
 - **Live GPS push** (premium): alerts pushed when a user (with location + personalization consent) approaches an active report on their heading/route, via Expo Notifications.
 - `GET /traffic/reports?bbox=` for map display.
@@ -84,9 +91,10 @@ Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (re
 **Backend:** `events` — `CommunityEvent`, `ViatorListing`.
 
 **Features:**
-- Locals submit events → moderation queue → published.
-- Promoters **Pay-to-Promote** events to the top ([`08`](./08-monetization-freemium.md)).
-- **Viator** affiliate tours surface (passive commission) integrated here.
+- **CRUD ([`04`](./04-api-design.md) §2.1):** `GET/POST /events`, `GET/PUT/PATCH/DELETE /events/{id}` — locals/promoters (user token or partner key from an external "submit your event" site) create, edit, and withdraw their own events.
+- Submissions enter `pending` → `POST /events/{id}/moderate` (staff) → `published`/`rejected`.
+- Promoters **Pay-to-Promote** via `POST /events/{id}/promote` ([`08`](./08-monetization-freemium.md)).
+- **Viator** affiliate tours surface (passive commission) at `GET /events/tours`.
 - Calendar/list/map views; filter by date/category; tracked.
 
 ---
