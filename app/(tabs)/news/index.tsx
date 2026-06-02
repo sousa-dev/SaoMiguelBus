@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { NewsCard } from '@/features/news/components/NewsCard';
@@ -17,6 +17,16 @@ export default function NewsScreen() {
   const [searchQ, setSearchQ] = useState('');
 
   const articles = useNewsArticles({ category: category || undefined, q: searchQ || undefined });
+
+  useFocusEffect(
+    useCallback(() => {
+      void articles.refetch();
+    }, [articles.refetch]),
+  );
+
+  const onRefresh = useCallback(() => {
+    void articles.refetch();
+  }, [articles.refetch]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -37,6 +47,13 @@ export default function NewsScreen() {
       <FlatList
         data={articles.data ?? []}
         keyExtractor={(item) => String(item.id)}
+        refreshControl={
+          <RefreshControl
+            refreshing={articles.isRefetching}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+          />
+        }
         ListEmptyComponent={
           !articles.isLoading ? (
             <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>

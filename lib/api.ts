@@ -10,6 +10,8 @@ import type {
   TransitSearchResult,
   TripDetail,
   NewsArticle,
+  SeismicEvent,
+  FeltReportResponse,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -150,6 +152,41 @@ export async function fetchNewsArticles(params?: {
 
 export async function fetchNewsArticle(articleId: number): Promise<NewsArticle> {
   return apiFetch<NewsArticle>(`/api/v3/news/articles/${articleId}`);
+}
+
+export async function fetchSeismicEvents(params?: {
+  minMagnitude?: number;
+  limit?: number;
+}): Promise<SeismicEvent[]> {
+  const query = new URLSearchParams();
+  if (params?.minMagnitude !== undefined) {
+    query.set('min_magnitude', String(params.minMagnitude));
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  const data = await apiFetch<{ events: SeismicEvent[] }>(`/api/v3/seismic/events${suffix}`);
+  return data.events;
+}
+
+export async function fetchSeismicEvent(eventId: number): Promise<SeismicEvent> {
+  return apiFetch<SeismicEvent>(`/api/v3/seismic/events/${eventId}`);
+}
+
+export async function postSeismicFelt(
+  eventId: number,
+  payload: {
+    session_id: string;
+    intensity: number;
+    latitude?: number;
+    longitude?: number;
+  },
+): Promise<FeltReportResponse> {
+  return apiFetch<FeltReportResponse>(`/api/v3/seismic/events/${eventId}/felt`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function postConsent(sessionId: string, purposes: ConsentPurposes) {

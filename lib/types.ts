@@ -106,3 +106,23 @@ export interface NewsArticle {
     language: string;
   };
 }
+
+export interface SeismicEvent {
+  id: number;
+  emscId: string;
+  magnitude: number;
+  depthKm: number | null;
+  latitude: number;
+  longitude: number;
+  occurredAt: string;
+  region: string;
+  feltCount?: number;
+  feltSummary?: Record<string, number>;
+}
+
+export interface FeltReportResponse {
+  eventId: number;
+  intensity: number;
+  feltCount: number;
+  feltSummary: Record<string, number>;
+}

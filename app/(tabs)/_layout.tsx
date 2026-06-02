@@ -10,6 +10,9 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { data: bootstrap } = useBootstrap();
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
+  const showTransit = modules.includes('transit');
+  const showNews = modules.includes('news');
+  const showSeismic = modules.includes('seismic');
 
   return (
     <Tabs
@@ -20,24 +23,30 @@ export default function TabLayout() {
         headerTintColor: '#fff',
       }}
     >
-      {modules.includes('transit') ? (
-        <Tabs.Screen
-          name="transit"
-          options={{
-            title: t('navBarSearchLabel'),
-            headerShown: false,
-          }}
-        />
-      ) : null}
-      {modules.includes('news') ? (
-        <Tabs.Screen
-          name="news"
-          options={{
-            title: t('navBarNewsLabel'),
-            headerShown: false,
-          }}
-        />
-      ) : null}
+      <Tabs.Screen
+        name="transit"
+        options={{
+          title: t('navBarSearchLabel'),
+          headerShown: false,
+          href: showTransit ? '/transit' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="news"
+        options={{
+          title: t('navBarNewsLabel'),
+          headerShown: false,
+          href: showNews ? '/news' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="earthquakes"
+        options={{
+          title: t('navBarEarthquakesLabel'),
+          headerShown: false,
+          href: showSeismic ? '/earthquakes' : null,
+        }}
+      />
     </Tabs>
   );
 }

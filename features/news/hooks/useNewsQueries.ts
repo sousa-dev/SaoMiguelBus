@@ -11,7 +11,7 @@ export function useNewsArticles(params: {
 }) {
   const { i18n } = useTranslation();
   return useQuery({
-    queryKey: ['news', 'articles', params, i18n.language],
+    queryKey: ['news', 'v2', 'articles', params, i18n.language],
     queryFn: async () => {
       const articles = await fetchNewsArticles({
         category: params.category,
@@ -24,7 +24,8 @@ export function useNewsArticles(params: {
       return articles;
     },
     enabled: params.enabled !== false,
-    networkMode: 'online',
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: 'always',
   });
 }
 
@@ -33,6 +34,6 @@ export function useNewsArticle(articleId: number, enabled = true) {
     queryKey: ['news', 'article', articleId],
     queryFn: () => fetchNewsArticle(articleId),
     enabled: enabled && articleId > 0,
-    networkMode: 'online',
+    staleTime: 1000 * 60 * 5,
   });
 }
