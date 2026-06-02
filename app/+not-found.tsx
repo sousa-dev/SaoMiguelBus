@@ -1,3 +1,4 @@
+import { MapPinOff } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +14,7 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: t('notFoundTitle') }} />
       <Screen>
         <EmptyState
+          icon={MapPinOff}
           title={t('notFoundTitle')}
           description={t('notFoundDescription')}
           actionLabel={t('notFoundCta')}

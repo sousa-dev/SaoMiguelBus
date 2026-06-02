@@ -1,12 +1,16 @@
 import * as Location from 'expo-location';
 import { Plus } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
+import { Store } from 'lucide-react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { Fab } from '@/components/ui/Fab';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
+import { space } from '@/lib/tokens';
 import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
 import {
@@ -69,8 +73,18 @@ export default function MarketplaceScreen() {
         onToggleNearMe={toggleNearMe}
       />
 
-      {providers.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
-      {providers.isError ? <Text style={{ color: theme.muted }}>{t('marketplaceLoadError')}</Text> : null}
+      {providers.isLoading ? (
+        <View style={{ padding: space.lg }}>
+          <CardSkeleton />
+        </View>
+      ) : null}
+      {providers.isError ? (
+        <ErrorState
+          title={t('marketplaceLoadError')}
+          actionLabel={t('searchButton')}
+          onAction={() => void providers.refetch()}
+        />
+      ) : null}
 
       <FlatList
         data={providers.data ?? []}
@@ -84,15 +98,12 @@ export default function MarketplaceScreen() {
         }
         ListEmptyComponent={
           !providers.isLoading ? (
-            <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-              {t('marketplaceEmpty')}
-            </Text>
+            <EmptyState icon={Store} title={t('marketplaceEmpty')} />
           ) : null
         }
         renderItem={({ item }) => (
           <ProviderCard
             provider={item}
-            theme={theme}
             onPress={() =>
               router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: String(item.id) } })
             }

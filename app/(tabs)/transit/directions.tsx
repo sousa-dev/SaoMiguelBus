@@ -1,16 +1,22 @@
-import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ArrowRight, Bus } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Screen } from '@/components/Screen';
 
+import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
 import { useDirections } from '@/features/transit/hooks/useTransitQueries';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function DirectionsScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const params = useLocalSearchParams<{
     origin?: string;
     destination?: string;
@@ -31,18 +37,55 @@ export default function DirectionsScreen() {
     enabled: Boolean(origin && destination),
   });
 
+  const empty =
+    !directions.isLoading &&
+    !directions.isError &&
+    directions.data &&
+    (!directions.data.routes?.length || directions.data.routes.length === 0);
+
   return (
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {origin} → {destination}
-        </Text>
-        {directions.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
+        <Card elevated style={styles.headerCard}>
+          <View style={styles.endpoints}>
+            <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+              {origin}
+            </Text>
+            <ArrowRight size={20} color={theme.muted} style={styles.arrow} />
+            <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+              {destination}
+            </Text>
+          </View>
+        </Card>
+
+        {directions.isLoading ? <LoadingState title={t('searchButton')} /> : null}
+
         {directions.isError ? (
-          <Text style={{ color: theme.muted, marginTop: 12 }}>{t('noRoutesSubtitle')}</Text>
+          <ErrorState
+            icon={Bus}
+            title={t('noRoutesMessage', { origin, destination })}
+            description={t('noRoutesSubtitle')}
+            actionLabel={t('settingsBack')}
+            onAction={() => router.back()}
+          />
         ) : null}
-        {directions.data ? (
+
+        {empty ? (
+          <EmptyState
+            icon={Bus}
+            title={t('noRoutesMessage', { origin, destination })}
+            description={t('noRoutesSubtitle')}
+            actionLabel={t('settingsBack')}
+            onAction={() => router.back()}
+          />
+        ) : null}
+
+        {directions.data && !empty ? (
           <DirectionsResults data={directions.data} origin={origin} destination={destination} />
+        ) : null}
+
+        {!directions.isLoading && (directions.isError || empty) ? (
+          <Button label={t('settingsBack')} variant="outline" onPress={() => router.back()} fullWidth />
         ) : null}
       </ScrollView>
     </Screen>
@@ -50,6 +93,8 @@ export default function DirectionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  headerCard: { marginBottom: space.lg },
+  endpoints: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  arrow: { marginHorizontal: space.xs },
 });

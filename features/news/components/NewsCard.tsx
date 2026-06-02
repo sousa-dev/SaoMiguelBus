@@ -1,56 +1,55 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Clock, Newspaper } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card';
+import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 import type { NewsArticle } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
 export function NewsCard({
   article,
-  theme,
   onPress,
+  featured = false,
 }: {
   article: NewsArticle;
-  theme: AppTheme;
   onPress: () => void;
+  featured?: boolean;
 }) {
+  const theme = useAppTheme();
   const date = new Date(article.publishedAt).toLocaleDateString();
-
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
-    >
-      <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-        {article.title}
-      </Text>
-      {article.summary ? (
-        <Text style={{ color: theme.muted, marginTop: 6 }} numberOfLines={3}>
-          {article.summary}
-        </Text>
-      ) : null}
-      <View style={styles.meta}>
-        <Text style={{ color: theme.muted, fontSize: 12 }}>{article.source.name}</Text>
-        <Text style={{ color: theme.muted, fontSize: 12 }}>{date}</Text>
+    <Card onPress={onPress} elevated style={[styles.card, featured && styles.featured]}>
+      <View style={styles.row}>
+        <View style={styles.textCol}>
+          {article.category ? <Badge label={article.category} tone="primary" /> : null}
+          <Text
+            style={[featured ? typography.title : typography.headline, { color: theme.text, marginTop: space.sm }]}
+            numberOfLines={featured ? 3 : 2}
+          >
+            {article.title}
+          </Text>
+          {article.summary ? (
+            <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]} numberOfLines={featured ? 4 : 2}>
+              {article.summary}
+            </Text>
+          ) : null}
+          <View style={styles.meta}>
+            <Newspaper size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>{article.source.name}</Text>
+            <Clock size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>{date}</Text>
+          </View>
+        </View>
       </View>
-      {article.category ? (
-        <Text style={[styles.badge, { color: theme.secondary }]}>{article.category}</Text>
-      ) : null}
-    </Pressable>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 10,
-  },
-  title: { fontSize: 16, fontWeight: '700' },
-  meta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  badge: { marginTop: 6, fontSize: 12, fontWeight: '600' },
+  card: { marginBottom: space.md },
+  featured: { padding: space.lg },
+  row: { flexDirection: 'row', gap: space.md },
+  textCol: { flex: 1 },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.xs, marginTop: space.md },
 });

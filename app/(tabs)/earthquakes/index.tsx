@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Chip } from '@/components/ui/Chip';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
-import { ErrorState } from '@/components/ui/StateView';
+import { Activity } from 'lucide-react-native';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
 import { EarthquakeCard } from '@/features/earthquakes/components/EarthquakeCard';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
@@ -105,9 +106,13 @@ export default function EarthquakesScreen() {
         ))}
       </View>
 
-      {events.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
+      {events.isLoading && viewMode === 'list' ? <LoadingState /> : null}
       {events.isError ? (
-        <Text style={{ color: theme.muted, padding: 12 }}>{t('seismicLoadError')}</Text>
+        <ErrorState
+          title={t('seismicLoadError')}
+          actionLabel={t('searchButton')}
+          onAction={() => void events.refetch()}
+        />
       ) : null}
 
       <View style={styles.fill}>
@@ -126,17 +131,11 @@ export default function EarthquakesScreen() {
             }
             ListEmptyComponent={
               !events.isLoading ? (
-                <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-                  {t('seismicEmpty')}
-                </Text>
+                <EmptyState icon={Activity} title={t('seismicEmpty')} description={t('seismicMapEmptyHint')} />
               ) : null
             }
             renderItem={({ item }) => (
-              <EarthquakeCard
-                event={item}
-                theme={theme}
-                onPress={() => openDetail(item)}
-              />
+              <EarthquakeCard event={item} onPress={() => openDetail(item)} />
             )}
             contentContainerStyle={styles.list}
           />

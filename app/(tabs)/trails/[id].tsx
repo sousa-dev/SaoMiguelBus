@@ -4,7 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
+import { Badge } from '@/components/ui/Badge';
+import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TrailMap } from '@/features/trails/components/TrailMap';
 import { space } from '@/lib/tokens';
 import { TrailWeather } from '@/features/trails/components/TrailWeather';
@@ -12,14 +16,6 @@ import { useTrail } from '@/features/trails/hooks/useTrailQueries';
 import { trailCentroid } from '@/features/trails/types';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
-
-function Badge({ label, theme }: { label: string; theme: ReturnType<typeof useAppTheme> }) {
-  return (
-    <View style={[styles.badge, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={{ color: theme.text, fontSize: 12, fontWeight: '600' }}>{label}</Text>
-    </View>
-  );
-}
 
 export default function TrailDetailScreen() {
   const theme = useAppTheme();
@@ -39,11 +35,19 @@ export default function TrailDetailScreen() {
   }, [trail.data?.id, trail.data?.difficulty]);
 
   if (trail.isLoading) {
-    return <ActivityIndicator color={theme.primary} style={{ marginTop: 24 }} />;
+    return (
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
+    );
   }
 
   if (!trail.data) {
-    return <Text style={{ color: theme.muted, padding: 16 }}>{t('trailsNotFound')}</Text>;
+    return (
+      <Screen withStackHeader>
+        <ErrorState title={t('trailsNotFound')} />
+      </Screen>
+    );
   }
 
   const data = trail.data;
@@ -71,16 +75,23 @@ export default function TrailDetailScreen() {
   };
 
   return (
+    <Screen withStackHeader>
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.text }]}>{data.name}</Text>
 
       <View style={styles.badges}>
-        <Badge label={t('trailsDifficultyLabel', { difficulty: difficultyLabel })} theme={theme} />
+        <Badge label={t('trailsDifficultyLabel', { difficulty: difficultyLabel })} tone="primary" />
         {data.shape ? (
-          <Badge label={t(`trailsShape_${data.shape}`, { defaultValue: data.shape })} theme={theme} />
+          <Badge label={t(`trailsShape_${data.shape}`, { defaultValue: data.shape })} tone="neutral" />
         ) : null}
         {data.durationMin != null ? (
-          <Badge label={t('trailsDuration', { hours: Math.floor(data.durationMin / 60), minutes: data.durationMin % 60 })} theme={theme} />
+          <Badge
+            label={t('trailsDuration', {
+              hours: Math.floor(data.durationMin / 60),
+              minutes: data.durationMin % 60,
+            })}
+            tone="neutral"
+          />
         ) : null}
       </View>
 
@@ -159,6 +170,7 @@ export default function TrailDetailScreen() {
         <Text style={{ color: theme.muted, fontSize: 11, lineHeight: 16 }}>{data.attribution}</Text>
       ) : null}
     </ScrollView>
+    </Screen>
   );
 }
 

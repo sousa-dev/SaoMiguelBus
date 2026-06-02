@@ -1,11 +1,16 @@
-import React, { useCallback } from 'react';
-import { ActivityIndicator, BackHandler, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback } from 'react';
+import { BackHandler, ScrollView, StyleSheet, Text } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Screen } from '@/components/Screen';
 
+import { Screen } from '@/components/Screen';
+import { Banner } from '@/components/ui/Banner';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TripDetail } from '@/features/transit/components/TripDetail';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
+import { useNetworkStatus } from '@/lib/network-status';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TransitSearchResult } from '@/lib/types';
 
@@ -14,6 +19,7 @@ export default function TripDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
+  const { isOnline } = useNetworkStatus();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
   const id = Number(tripId);
 
@@ -29,21 +35,26 @@ export default function TripDetailScreen() {
       return () => sub.remove();
     }, [navigation, router]),
   );
+
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();
 
   if (tripQuery.isLoading) {
     return (
-      <Screen withStackHeader style={styles.center}>
-        <ActivityIndicator color={theme.primary} />
+      <Screen withStackHeader>
+        <LoadingState />
       </Screen>
     );
   }
 
   if (tripQuery.isError || !tripQuery.data) {
     return (
-      <Screen withStackHeader style={styles.center}>
-        <Text style={{ color: theme.muted }}>{t('noRoutesSubtitle')}</Text>
+      <Screen withStackHeader>
+        <ErrorState
+          title={t('noRoutesSubtitle')}
+          actionLabel={t('settingsBack')}
+          onAction={() => router.back()}
+        />
       </Screen>
     );
   }
@@ -72,13 +83,16 @@ export default function TripDetailScreen() {
   return (
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
+        {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
+
         {infoNotice && typeof infoNotice.text === 'object' ? (
-          <View style={[styles.notice, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Text style={{ color: theme.text }}>
+          <Card style={{ marginBottom: space.md }}>
+            <Text style={[typography.body, { color: theme.text }]}>
               {String((infoNotice.text as Record<string, string>).pt ?? '')}
             </Text>
-          </View>
+          </Card>
         ) : null}
+
         <TripDetail trip={trip} />
       </ScrollView>
     </Screen>
@@ -86,12 +100,5 @@ export default function TripDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  notice: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-  },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
 });

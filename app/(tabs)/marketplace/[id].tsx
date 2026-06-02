@@ -78,7 +78,7 @@ export default function ProviderDetailScreen() {
 
       <Text style={{ color: theme.muted, marginTop: 10 }}>
         {p.reviewCount > 0
-          ? `★ ${p.rating.toFixed(1)} · ${t('marketplaceReviewCount', { count: p.reviewCount })}`
+          ? `${p.rating.toFixed(1)} · ${t('marketplaceReviewCount', { count: p.reviewCount })}`
           : t('marketplaceNoReviews')}
       </Text>
 
@@ -119,7 +119,7 @@ export default function ProviderDetailScreen() {
       ) : (
         (reviews.data ?? []).map((r) => (
           <View key={r.id} style={[styles.review, { borderColor: theme.border }]}>
-            <Text style={{ color: theme.accent }}>{'★'.repeat(r.rating)}</Text>
+            <Text style={{ color: theme.accent, fontWeight: '700' }}>{r.rating}/5</Text>
             {r.text ? <Text style={{ color: theme.text, marginTop: 4 }}>{r.text}</Text> : null}
           </View>
         ))

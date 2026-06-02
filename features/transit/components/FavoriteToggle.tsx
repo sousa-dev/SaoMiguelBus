@@ -1,7 +1,9 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Star } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { IconButton } from '@/components/ui/IconButton';
+import { space, typography } from '@/lib/tokens';
 import { useFavoritesStore } from '@/lib/favorites-store';
 import { useAppTheme } from '@/lib/theme';
 
@@ -21,26 +23,29 @@ export function FavoriteToggle({ origin, destination }: Props) {
   }
 
   return (
-    <Pressable
-      onPress={() => toggleFavorite(origin, destination)}
-      style={[styles.btn, { borderColor: theme.border, backgroundColor: theme.card }]}
-      accessibilityRole="button"
-      accessibilityState={{ selected: isFavorite }}
-    >
-      <Text style={{ color: theme.primary, fontWeight: '600' }}>
-        {isFavorite ? '★' : '☆'} {isFavorite ? t('removeFavorites') : t('addFavorites')}
+    <View style={[styles.row, { borderColor: theme.border, backgroundColor: theme.card }]}>
+      <IconButton
+        icon={Star}
+        accessibilityLabel={isFavorite ? t('removeFavorites') : t('addFavorites')}
+        color={isFavorite ? theme.accent : theme.muted}
+        onPress={() => toggleFavorite(origin, destination)}
+      />
+      <Text style={[typography.label, { color: theme.text }]}>
+        {isFavorite ? t('removeFavorites') : t('addFavorites')}
       </Text>
-    </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  btn: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginTop: space.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.md,
+    gap: space.sm,
   },
 });

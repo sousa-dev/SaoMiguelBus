@@ -1,13 +1,18 @@
-import React, { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
+import { useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { Clock, ExternalLink, Newspaper } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { useNewsArticle } from '@/features/news/hooks/useNewsQueries';
 import { track } from '@/lib/analytics';
-import { space, typography } from '@/lib/tokens';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function NewsArticleScreen() {
@@ -24,29 +29,61 @@ export default function NewsArticleScreen() {
   }, [article.data?.id]);
 
   if (article.isLoading) {
-    return <ActivityIndicator color={theme.primary} style={{ marginTop: space['2xl'] }} />;
+    return (
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
+    );
   }
 
   if (!article.data) {
-    return <Text style={{ color: theme.muted, padding: space.lg }}>{t('newsNotFound')}</Text>;
+    return (
+      <Screen withStackHeader>
+        <ErrorState title={t('newsNotFound')} />
+      </Screen>
+    );
   }
 
   const data = article.data;
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[typography.display, { color: theme.text, fontSize: 22 }]}>{data.title}</Text>
-      <Text style={[typography.caption, { color: theme.muted, marginVertical: space.md }]}>
-        {data.source.name} · {new Date(data.publishedAt).toLocaleString()}
-      </Text>
-      {data.summary ? (
-        <Text style={[typography.body, { color: theme.text, lineHeight: 22, marginBottom: space.lg }]}>{data.summary}</Text>
-      ) : null}
-      <Button label={t('newsReadOriginal')} fullWidth onPress={() => WebBrowser.openBrowserAsync(data.link)} />
-    </ScrollView>
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.container}>
+        {data.category ? <Badge label={data.category} tone="primary" /> : null}
+        <Text style={[typography.title, { color: theme.text, marginTop: space.md }]}>{data.title}</Text>
+        <View style={styles.meta}>
+          <Newspaper size={iconSize.sm} color={theme.muted} />
+          <Text style={[typography.caption, { color: theme.muted }]}>{data.source.name}</Text>
+          <Clock size={iconSize.sm} color={theme.muted} />
+          <Text style={[typography.caption, { color: theme.muted }]}>
+            {new Date(data.publishedAt).toLocaleString()}
+          </Text>
+        </View>
+        {data.summary ? (
+          <Card style={{ marginTop: space.lg }}>
+            <Text style={[typography.body, { color: theme.text, lineHeight: 24 }]}>{data.summary}</Text>
+          </Card>
+        ) : null}
+        <Button
+          label={t('newsReadOriginal')}
+          variant="outline"
+          fullWidth
+          onPress={() => WebBrowser.openBrowserAsync(data.link)}
+          style={{ marginTop: space.xl }}
+        />
+        <View style={styles.external}>
+          <ExternalLink size={14} color={theme.muted} />
+          <Text style={[typography.caption, { color: theme.muted, marginLeft: 4 }]}>
+            {t('newsReadOriginal')}
+          </Text>
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: space.lg },
+  container: { padding: space.lg, paddingBottom: space['4xl'] },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm, marginTop: space.md },
+  external: { flexDirection: 'row', justifyContent: 'center', marginTop: space.sm },
 });
