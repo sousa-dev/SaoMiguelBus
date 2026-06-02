@@ -1,9 +1,10 @@
 import { MapPin } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, UrlTile } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { staticIslandConfig } from '@/config/island';
 import {
   clampCoordinate,
@@ -12,13 +13,13 @@ import {
   isWithinIslandBounds,
   regionNeedsClamp,
 } from '@/lib/island-map';
-import type { AppTheme } from '@/lib/theme';
+import { space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 
 type Coords = { lat: number; lng: number };
 
 type Props = {
   visible: boolean;
-  theme: AppTheme;
   initialCoords?: Coords | null;
   userCoords?: Coords | null;
   onConfirm: (coords: Coords) => void;
@@ -30,17 +31,14 @@ const defaultPin = (): Coords => ({
   lng: staticIslandConfig.mapCenter.lng,
 });
 
-/**
- * Full-screen map to tap or drag a report pin anywhere on São Miguel.
- */
 export function LocationPickerModal({
   visible,
-  theme,
   initialCoords,
   userCoords,
   onConfirm,
   onClose,
 }: Props) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const mapRef = useRef<MapView>(null);
   const [pin, setPin] = useState<Coords>(initialCoords ?? defaultPin());
@@ -56,11 +54,16 @@ export function LocationPickerModal({
     [userCoords],
   );
 
+  const outOfBounds = !isWithinIslandBounds(pin.lat, pin.lng);
+
   const setFromMap = (lat: number, lng: number) => {
     setPin(clampCoordinate(lat, lng));
   };
 
   const confirm = () => {
+    if (outOfBounds) {
+      return;
+    }
     onConfirm(pin);
     onClose();
   };
@@ -73,16 +76,19 @@ export function LocationPickerModal({
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={[styles.root, { backgroundColor: theme.background }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <Pressable onPress={onClose} hitSlop={8}>
-            <Text style={{ color: theme.muted, fontWeight: '600' }}>{t('trafficCancel')}</Text>
-          </Pressable>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>{t('trafficPickLocationTitle')}</Text>
-          <Pressable onPress={confirm} hitSlop={8}>
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('trafficPickLocationConfirm')}</Text>
-          </Pressable>
+          <Button label={t('trafficCancel')} variant="ghost" onPress={onClose} />
+          <Text style={[typography.headline, { color: theme.text }]}>{t('trafficPickLocationTitle')}</Text>
+          <Button label={t('trafficPickLocationConfirm')} onPress={confirm} disabled={outOfBounds} />
         </View>
 
-        <Text style={[styles.hint, { color: theme.muted }]}>{t('trafficPickLocationHint')}</Text>
+        <Text style={[typography.caption, { color: theme.muted, textAlign: 'center', padding: space.md }]}>
+          {t('trafficPickLocationHint')}
+        </Text>
+        {outOfBounds ? (
+          <Text style={[typography.caption, { color: theme.danger, textAlign: 'center', marginBottom: space.sm }]}>
+            {t('trafficLocationNeeded')}
+          </Text>
+        ) : null}
 
         <MapView
           ref={mapRef}
@@ -120,12 +126,13 @@ export function LocationPickerModal({
         </MapView>
 
         {userOnIsland ? (
-          <Pressable
+          <Button
+            label={t('trafficUseMyLocation')}
+            variant="outline"
             onPress={() => userCoords && setPin(clampCoordinate(userCoords.lat, userCoords.lng))}
-            style={[styles.gpsBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
-          >
-            <Text style={{ color: theme.primary, fontWeight: '600' }}>{t('trafficUseMyLocation')}</Text>
-          </Pressable>
+            fullWidth
+            style={styles.gpsBtn}
+          />
         ) : null}
       </View>
     </Modal>
@@ -138,13 +145,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: space.md,
     paddingTop: 56,
-    paddingBottom: 12,
+    paddingBottom: space.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 16, fontWeight: '700' },
-  hint: { fontSize: 13, textAlign: 'center', paddingHorizontal: 16, paddingVertical: 8 },
   map: { flex: 1 },
   pin: {
     width: 36,
@@ -154,12 +159,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
   },
-  gpsBtn: {
-    margin: 16,
-    marginBottom: 28,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
+  gpsBtn: { margin: space.lg, marginBottom: space['2xl'] },
 });

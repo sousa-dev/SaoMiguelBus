@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Star } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Sheet } from '@/components/ui/Sheet';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { ContactRow } from '@/features/marketplace/components/ContactRow';
 import { ReviewSheet } from '@/features/marketplace/components/ReviewSheet';
 import {
@@ -10,13 +18,17 @@ import {
   useProvider,
   useProviderReviews,
 } from '@/features/marketplace/hooks/useMarketplaceQueries';
-import { useMarketplaceStore } from '@/lib/marketplace-store';
+import { coordinateToRegion } from '@/lib/island-map';
+import { useNetworkStatus } from '@/lib/network-status';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { useMarketplaceStore } from '@/lib/marketplace-store';
 
 export default function ProviderDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { isOnline } = useNetworkStatus();
   const params = useLocalSearchParams<{ id: string }>();
   const providerId = Number(params.id);
 
@@ -26,125 +38,197 @@ export default function ProviderDetailScreen() {
   const isMine = useMarketplaceStore((s) => s.isMine(providerId));
 
   const [reviewVisible, setReviewVisible] = useState(false);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
 
-  const confirmDelete = () => {
-    Alert.alert(t('marketplaceDeleteAction'), t('marketplaceDeleteConfirm'), [
-      { text: t('marketplaceReviewCancel'), style: 'cancel' },
-      {
-        text: t('marketplaceDeleteAction'),
-        style: 'destructive',
-        onPress: async () => {
-          await deleteProvider.mutateAsync(providerId);
-          router.back();
-        },
-      },
-    ]);
+  const runDelete = async () => {
+    setDeleteSheetOpen(false);
+    await deleteProvider.mutateAsync(providerId);
+    router.back();
   };
 
   if (provider.isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <ActivityIndicator color={theme.primary} />
-      </View>
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
     );
   }
 
   if (provider.isError || !provider.data) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.muted }}>{t('marketplaceLoadError')}</Text>
-      </View>
+      <Screen withStackHeader>
+        <ErrorState title={t('marketplaceLoadError')} />
+      </Screen>
     );
   }
 
   const p = provider.data;
+  const initial = p.name.trim().charAt(0).toUpperCase() || '?';
+  const hasMap = p.latitude != null && p.longitude != null;
 
   return (
-    <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.name, { color: theme.text }]}>{p.name}</Text>
-        {p.isPromoted ? (
-          <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-            <Text style={[styles.badgeText, { color: theme.text }]}>{t('marketplacePromoted')}</Text>
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.content}>
+        {!isOnline ? (
+          <Card style={{ marginBottom: space.md }}>
+            <Text style={[typography.caption, { color: theme.muted }]}>{t('offlineBanner')}</Text>
+          </Card>
+        ) : null}
+
+        <Card elevated>
+          <View style={styles.header}>
+            <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+              <Text style={[typography.headline, { color: theme.onPrimary }]}>{initial}</Text>
+            </View>
+            <View style={styles.headerText}>
+              <Text style={[typography.title, { color: theme.text }]}>{p.name}</Text>
+              <Badge label={p.category.name} tone="neutral" />
+              {p.isPromoted ? <Badge label={t('marketplacePromoted')} tone="accent" /> : null}
+              {p.status && p.status !== 'published' ? (
+                <Badge label={t('marketplacePendingBadge')} tone="primary" />
+              ) : null}
+            </View>
+          </View>
+
+          <View style={styles.ratingRow}>
+            {p.reviewCount > 0 ? (
+              <>
+                <Star size={iconSize.md} color={theme.accent} fill={theme.accent} />
+                <Text style={[typography.body, { color: theme.muted }]}>
+                  {p.rating.toFixed(1)} · {t('marketplaceReviewCount', { count: p.reviewCount })}
+                </Text>
+              </>
+            ) : (
+              <Text style={[typography.body, { color: theme.muted }]}>{t('marketplaceNoReviews')}</Text>
+            )}
+          </View>
+
+          {p.bio ? (
+            <Text style={[typography.body, { color: theme.text, marginTop: space.md, lineHeight: 22 }]}>
+              {p.bio}
+            </Text>
+          ) : null}
+          {p.hourlyRate != null ? (
+            <Text style={[typography.bodyStrong, { color: theme.text, marginTop: space.sm }]}>
+              {t('marketplaceRateLabel', { rate: p.hourlyRate })}
+            </Text>
+          ) : null}
+        </Card>
+
+        <ContactRow provider={p} />
+
+        {hasMap && Platform.OS !== 'web' ? (
+          <Card elevated style={styles.mapCard}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_DEFAULT}
+              scrollEnabled={false}
+              initialRegion={coordinateToRegion({ lat: p.latitude!, lng: p.longitude! })}
+            >
+              <Marker coordinate={{ latitude: p.latitude!, longitude: p.longitude! }} />
+            </MapView>
+            <Button
+              label={t('marketplaceContactDirections')}
+              variant="outline"
+              fullWidth
+              onPress={() =>
+                Linking.openURL(`https://www.google.com/maps?q=${p.latitude},${p.longitude}`)
+              }
+              style={{ marginTop: space.md }}
+            />
+          </Card>
+        ) : null}
+
+        {isMine ? (
+          <View style={styles.ownerRow}>
+            <Button
+              label={t('marketplaceEditAction')}
+              variant="outline"
+              onPress={() =>
+                router.push({ pathname: '/(tabs)/marketplace/edit/[id]', params: { id: String(providerId) } })
+              }
+              style={{ flex: 1 }}
+            />
+            <Button
+              label={t('marketplaceDeleteAction')}
+              variant="danger"
+              onPress={() => setDeleteSheetOpen(true)}
+              style={{ flex: 1 }}
+            />
           </View>
         ) : null}
-      </View>
-      <Text style={{ color: theme.muted, marginTop: 2 }}>{p.category.name}</Text>
-      {p.status && p.status !== 'published' ? (
-        <View style={[styles.pending, { borderColor: theme.border }]}>
-          <Text style={{ color: theme.muted, fontSize: 12 }}>{t('marketplacePendingBadge')}</Text>
+
+        <View style={styles.reviewsHeader}>
+          <Text style={[typography.headline, { color: theme.text }]}>{t('marketplaceReviews')}</Text>
+          <Button label={t('marketplaceWriteReview')} variant="ghost" onPress={() => setReviewVisible(true)} />
         </View>
-      ) : null}
 
-      <Text style={{ color: theme.muted, marginTop: 10 }}>
-        {p.reviewCount > 0
-          ? `${p.rating.toFixed(1)} · ${t('marketplaceReviewCount', { count: p.reviewCount })}`
-          : t('marketplaceNoReviews')}
-      </Text>
+        {(reviews.data ?? []).length === 0 ? (
+          <EmptyState title={t('marketplaceReviewsEmpty')} description={t('marketplaceNoReviews')} />
+        ) : (
+          (reviews.data ?? []).map((r) => (
+            <Card key={r.id} style={styles.reviewCard}>
+              <View style={styles.reviewStars}>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star
+                    key={i}
+                    size={14}
+                    color={i < r.rating ? theme.accent : theme.muted}
+                    fill={i < r.rating ? theme.accent : 'transparent'}
+                  />
+                ))}
+              </View>
+              {r.text ? (
+                <Text style={[typography.body, { color: theme.text, marginTop: space.sm }]}>{r.text}</Text>
+              ) : null}
+            </Card>
+          ))
+        )}
 
-      {p.bio ? <Text style={{ color: theme.text, marginTop: 12, lineHeight: 20 }}>{p.bio}</Text> : null}
-      {p.hourlyRate != null ? (
-        <Text style={{ color: theme.text, marginTop: 8, fontWeight: '600' }}>
-          {t('marketplaceRateLabel', { rate: p.hourlyRate })}
-        </Text>
-      ) : null}
+        <ReviewSheet visible={reviewVisible} providerId={providerId} onClose={() => setReviewVisible(false)} />
 
-      <ContactRow provider={p} />
-
-      {isMine ? (
-        <View style={styles.ownerRow}>
-          <Pressable
-            onPress={() =>
-              router.push({ pathname: '/(tabs)/marketplace/edit/[id]', params: { id: String(providerId) } })
-            }
-            style={[styles.ownerBtn, { borderColor: theme.border }]}
-          >
-            <Text style={{ color: theme.text, fontWeight: '600' }}>{t('marketplaceEditAction')}</Text>
-          </Pressable>
-          <Pressable onPress={confirmDelete} style={[styles.ownerBtn, { borderColor: theme.danger }]}>
-            <Text style={{ color: theme.danger, fontWeight: '600' }}>{t('marketplaceDeleteAction')}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <View style={styles.reviewsHeader}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('marketplaceReviews')}</Text>
-        <Pressable onPress={() => setReviewVisible(true)}>
-          <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('marketplaceWriteReview')}</Text>
-        </Pressable>
-      </View>
-
-      {(reviews.data ?? []).length === 0 ? (
-        <Text style={{ color: theme.muted, marginTop: 8 }}>{t('marketplaceNoReviews')}</Text>
-      ) : (
-        (reviews.data ?? []).map((r) => (
-          <View key={r.id} style={[styles.review, { borderColor: theme.border }]}>
-            <Text style={{ color: theme.accent, fontWeight: '700' }}>{r.rating}/5</Text>
-            {r.text ? <Text style={{ color: theme.text, marginTop: 4 }}>{r.text}</Text> : null}
+        <Sheet visible={deleteSheetOpen} onClose={() => setDeleteSheetOpen(false)} title={t('marketplaceDeleteAction')}>
+          <Text style={[typography.body, { color: theme.text, paddingHorizontal: space.lg }]}>
+            {t('marketplaceDeleteConfirm')}
+          </Text>
+          <View style={{ padding: space.lg, gap: space.sm }}>
+            <Button
+              label={t('marketplaceDeleteAction')}
+              variant="danger"
+              loading={deleteProvider.isPending}
+              onPress={() => void runDelete()}
+              fullWidth
+            />
+            <Button label={t('marketplaceReviewCancel')} variant="ghost" onPress={() => setDeleteSheetOpen(false)} fullWidth />
           </View>
-        ))
-      )}
-
-      <ReviewSheet
-        visible={reviewVisible}
-        providerId={providerId}
-        onClose={() => setReviewVisible(false)}
-      />
-    </ScrollView>
+        </Sheet>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: 16, paddingBottom: 40 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  name: { fontSize: 22, fontWeight: '800', flexShrink: 1 },
-  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  pending: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginTop: 10, alignSelf: 'flex-start' },
-  ownerRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
-  ownerBtn: { borderWidth: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16, flexGrow: 1, alignItems: 'center' },
-  reviewsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: '700' },
-  review: { borderWidth: 1, borderRadius: 10, padding: 12, marginTop: 10 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  header: { flexDirection: 'row', gap: space.md },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: { flex: 1, gap: space.xs },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.md },
+  mapCard: { marginTop: space.md, overflow: 'hidden' },
+  map: { height: 160, borderRadius: 12 },
+  ownerRow: { flexDirection: 'row', gap: space.sm, marginTop: space.lg },
+  reviewsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: space.xl,
+    marginBottom: space.md,
+  },
+  reviewCard: { marginBottom: space.sm },
+  reviewStars: { flexDirection: 'row', gap: 2 },
 });

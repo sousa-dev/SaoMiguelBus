@@ -493,5 +493,14 @@
     "settingsExportComingSoon": "Data export coming soon.",
     "settingsDeleteComingSoon": "Deletion request coming soon.",
     "settingsDsarOffline": "Offline — export and delete require a connection.",
-    "consentOfflineBanner": "Offline — choices are saved locally and sync when back online."
+    "consentOfflineBanner": "Offline — choices are saved locally and sync when back online.",
+    "marketplaceFormSectionBasics": "Basics",
+    "marketplaceFormSectionContacts": "Contacts",
+    "marketplaceFormSectionDescription": "Description",
+    "marketplaceContactDirections": "Directions",
+    "marketplaceReviewsEmpty": "No reviews yet",
+    "trafficLocationOutOfBounds": "Pin must be within the island.",
+    "trafficCategoryRequired": "Choose a category.",
+    "trafficScheduleStart": "Starts",
+    "trafficScheduleEnd": "Ends"
 }

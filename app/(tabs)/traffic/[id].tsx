@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Clock } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import {
   useConfirmTrafficReport,
   useDeleteTrafficReport,
   useTrafficReport,
 } from '@/features/traffic/hooks/useTrafficQueries';
+import { coordinateToRegion } from '@/lib/island-map';
 import { trafficCategoryIcon } from '@/lib/traffic-icons';
-import { space, typography } from '@/lib/tokens';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
 
@@ -37,79 +43,115 @@ export default function TrafficDetailScreen() {
 
   if (report.isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <ActivityIndicator color={theme.primary} />
-      </View>
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
     );
   }
 
   if (report.isError || !report.data) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.muted }}>{t('trafficLoadError')}</Text>
-      </View>
+      <Screen withStackHeader>
+        <ErrorState title={t('trafficLoadError')} />
+      </Screen>
     );
   }
 
   const r = report.data;
   const Icon = trafficCategoryIcon(r.category.slug);
+  const statusTone = r.status === 'active' ? 'primary' : r.status === 'scheduled' ? 'accent' : 'neutral';
 
   return (
-    <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Icon size={32} color={theme.primary} strokeWidth={2} />
-        <Text style={[typography.display, { color: theme.text, fontSize: 22, flexShrink: 1 }]}>{r.category.name}</Text>
-      </View>
-      {r.status === 'scheduled' ? <Badge label={t('trafficScheduledBadge')} tone="accent" /> : null}
-
-      {r.road ? <Text style={[typography.body, { color: theme.text, marginTop: space.md }]}>{r.road}</Text> : null}
-      {r.description ? (
-        <Text style={[typography.body, { color: theme.text, marginTop: space.sm, lineHeight: 22 }]}>{r.description}</Text>
-      ) : null}
-
-      <Text style={[typography.caption, { color: theme.muted, marginTop: space.lg }]}>
-        {t('trafficConfidence', { confirm: r.confidence.confirm, deny: r.confidence.deny })}
-      </Text>
-
-      <View style={styles.voteRow}>
-        <Button
-          label={t('trafficStillThere')}
-          onPress={() => confirm.mutate('still_there')}
-          disabled={confirm.isPending}
-          style={{ flex: 1 }}
-        />
-        <Button
-          label={t('trafficGone')}
-          variant="outline"
-          onPress={() => confirm.mutate('gone')}
-          disabled={confirm.isPending}
-          style={{ flex: 1 }}
-        />
-      </View>
-
-      {isMine ? (
-        confirmDelete ? (
-          <View style={{ marginTop: space.lg, gap: space.sm }}>
-            <Text style={[typography.body, { color: theme.muted }]}>{t('trafficDeleteConfirm')}</Text>
-            <Button label={t('trafficDeleteAction')} variant="danger" onPress={() => void runDelete()} />
-            <Button label={t('trafficCancel')} variant="ghost" onPress={() => setConfirmDelete(false)} />
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card elevated>
+          <View style={styles.headerRow}>
+            <Icon size={iconSize.xl} color={theme.primary} strokeWidth={2} />
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.headline, { color: theme.text }]}>{r.category.name}</Text>
+              <View style={styles.badges}>
+                <Badge label={r.status} tone={statusTone} />
+                {r.status === 'scheduled' ? <Badge label={t('trafficScheduledBadge')} tone="accent" /> : null}
+              </View>
+            </View>
           </View>
-        ) : (
-          <Button
-            label={t('trafficDeleteAction')}
-            variant="danger"
-            onPress={() => setConfirmDelete(true)}
-            style={{ marginTop: space.lg }}
-          />
-        )
-      ) : null}
-    </ScrollView>
+          <View style={styles.meta}>
+            <Clock size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>
+              {new Date(r.createdAt).toLocaleString()}
+            </Text>
+          </View>
+          {r.road ? <Text style={[typography.body, { color: theme.text, marginTop: space.md }]}>{r.road}</Text> : null}
+          {r.description ? (
+            <Text style={[typography.body, { color: theme.text, marginTop: space.sm, lineHeight: 22 }]}>
+              {r.description}
+            </Text>
+          ) : null}
+        </Card>
+
+        {Platform.OS !== 'web' ? (
+          <Card elevated style={styles.mapCard}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_DEFAULT}
+              scrollEnabled={false}
+              initialRegion={coordinateToRegion({ lat: r.latitude, lng: r.longitude })}
+            >
+              <Marker coordinate={{ latitude: r.latitude, longitude: r.longitude }} />
+            </MapView>
+            <Button
+              label={t('marketplaceContactDirections')}
+              variant="outline"
+              onPress={() => Linking.openURL(`https://www.google.com/maps?q=${r.latitude},${r.longitude}`)}
+              fullWidth
+              style={{ marginTop: space.md }}
+            />
+          </Card>
+        ) : null}
+
+        <Card>
+          <Text style={[typography.caption, { color: theme.muted }]}>
+            {t('trafficConfidence', { confirm: r.confidence.confirm, deny: r.confidence.deny })}
+          </Text>
+          <View style={styles.voteRow}>
+            <Button
+              label={t('trafficStillThere')}
+              onPress={() => confirm.mutate('still_there')}
+              disabled={confirm.isPending}
+              style={{ flex: 1 }}
+            />
+            <Button
+              label={t('trafficGone')}
+              variant="outline"
+              onPress={() => confirm.mutate('gone')}
+              disabled={confirm.isPending}
+              style={{ flex: 1 }}
+            />
+          </View>
+        </Card>
+
+        {isMine ? (
+          confirmDelete ? (
+            <Card>
+              <Text style={[typography.body, { color: theme.muted }]}>{t('trafficDeleteConfirm')}</Text>
+              <Button label={t('trafficDeleteAction')} variant="danger" onPress={() => void runDelete()} fullWidth style={{ marginTop: space.md }} />
+              <Button label={t('trafficCancel')} variant="ghost" onPress={() => setConfirmDelete(false)} fullWidth />
+            </Card>
+          ) : (
+            <Button label={t('trafficDeleteAction')} variant="danger" onPress={() => setConfirmDelete(true)} fullWidth />
+          )
+        ) : null}
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: space.lg, paddingBottom: space['4xl'] },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  content: { padding: space.lg, paddingBottom: space['4xl'], gap: space.md },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, marginTop: space.sm },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.md },
+  mapCard: { overflow: 'hidden' },
+  map: { height: 160, borderRadius: 12 },
   voteRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
 });

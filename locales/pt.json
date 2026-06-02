@@ -600,5 +600,14 @@
     "settingsExportComingSoon": "Exportação de dados disponível em breve.",
     "settingsDeleteComingSoon": "Pedido de eliminação disponível em breve.",
     "settingsDsarOffline": "Sem ligação — exportação e eliminação requerem internet.",
-    "consentOfflineBanner": "Sem ligação — as escolhas são guardadas localmente e sincronizadas depois."
+    "consentOfflineBanner": "Sem ligação — as escolhas são guardadas localmente e sincronizadas depois.",
+    "marketplaceFormSectionBasics": "Informação básica",
+    "marketplaceFormSectionContacts": "Contactos",
+    "marketplaceFormSectionDescription": "Descrição",
+    "marketplaceContactDirections": "Direções",
+    "marketplaceReviewsEmpty": "Ainda sem avaliações",
+    "trafficLocationOutOfBounds": "O pin tem de estar dentro da ilha.",
+    "trafficCategoryRequired": "Escolhe uma categoria.",
+    "trafficScheduleStart": "Início",
+    "trafficScheduleEnd": "Fim"
 }
