@@ -19,7 +19,7 @@ Resolve product open questions **before Phase 1 coding**. Technical assumptions 
 
 ## 3. Open questions (need product/stakeholder decision)
 
-1. **Mobile distribution:** keep Play Store listing (`com.hsousa_apps.Autocarros`) and update to Expo, or new app?
+1. ~~**Mobile distribution:** keep Play Store listing (`com.hsousa_apps.Autocarros`) and update to Expo, or new app?~~ **Resolved:** ship as an **in-place update** — keep Android package `com.hsousa_apps.Autocarros` (pinned in `app.json` → `android.package`); rebrand display name **São Miguel Bus → São Miguel Hub** only.
 2. **Multi-tenant vs single-tenant deploy:** one backend for many islands vs one deployment per island?
 3. **"Real-time GPS alerts":** device-GPS proximity OK for v1 (no operator vehicle feed today)?
 4. **Retention window:** 14 months default — legal sign-off; per-island override?

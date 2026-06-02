@@ -36,7 +36,10 @@ export const staticIslandConfig: IslandConfig = {
   secondaryColor: '#343434',
   accentColor: '#ffc107',
   defaultLocale: 'pt',
-  locales: ['pt', 'en', 'es', 'de', 'fr', 'it', 'uk', 'zh'],
+  // Portuguese-first. Officially supported/maintained core for São Miguel (SDD 02 §7).
+  // Legacy `it`, `uk`, `zh` catalogs still ship (see lib/i18n.ts) and can be promoted
+  // here with no code change.
+  locales: ['pt', 'en', 'de', 'es', 'fr'],
   enabledModules: ['transit'],
   mapCenter: { lat: 37.7822, lng: -25.4998 },
 };

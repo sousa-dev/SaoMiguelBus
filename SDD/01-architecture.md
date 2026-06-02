@@ -131,7 +131,7 @@ apps = [
 | Language | TypeScript |
 | State/data | TanStack Query (server cache) + lightweight client store (Zustand) |
 | Styling/theme | Theme tokens from island config; no hardcoded brand colors |
-| i18n | port the 8 existing locales (`pt,en,es,de,fr,it,uk,zh`) into a typed i18n lib |
+| i18n | typed i18n, **Portuguese-first** (`pt` = default + fallback). Supported core: `pt,en,de,es,fr`; legacy `it,uk,zh` kept as optional. Supported set is data-driven per island (`Island.locales`) — see [`02 §7`](./02-multi-island-whitelabel.md#7-language-strategy-portuguese-first-extensible) |
 | Maps | `react-native-maps` (native) + Leaflet/MapLibre (web); offline tiles via MapLibre + cached MBTiles |
 | Push | Expo Notifications |
 | Payments | Stripe web SDK + RevenueCat SDK (mobile) |

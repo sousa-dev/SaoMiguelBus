@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "São Miguel Bus",
+    "name": "São Miguel Hub",
     "slug": "sao-miguel-bus",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,6 +11,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hsousa_apps.Autocarros",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

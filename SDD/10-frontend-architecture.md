@@ -11,7 +11,7 @@ One Expo (React Native + Web) codebase ships Android, iOS, and Web. Replaces the
 | Server state | TanStack Query (cache, retries, offline) |
 | Client state | Zustand (theme, consent, session, entitlement) |
 | Styling | Theme tokens from island config; no hardcoded brand values |
-| i18n | typed i18n; port the 8 legacy locales (`pt,en,es,de,fr,it,uk,zh`) |
+| i18n | typed i18n, **Portuguese-first** (`pt` default + fallback). Core: `pt,en,de,es,fr`; legacy `it,uk,zh` optional. Per-island set from `Island.locales` — see [`02 §7`](./02-multi-island-whitelabel.md#7-language-strategy-portuguese-first-extensible) |
 | Maps | `react-native-maps` (native) + MapLibre/Leaflet (web); offline tiles via MapLibre |
 | Push | Expo Notifications |
 | Payments | Stripe web SDK + RevenueCat SDK |
@@ -85,4 +85,4 @@ Tabs and routes are **conditionally registered** from `enabledModules` so a tran
 | Hardcoded API URL | `EXPO_PUBLIC_API_URL` |
 | Tailwind CDN, no build | RN styling/theme tokens, EAS builds |
 | Three clients (web/Android/Flutter) | one Expo codebase |
-| 8 JSON locales | ported to typed i18n (keep keys, run `check_locale_keys` equivalent) |
+| 8 JSON locales | typed i18n, **Portuguese-first**; core `pt,en,de,es,fr` maintained, `it,uk,zh` optional (keep keys, run `check_locale_keys` equivalent against `pt`) |
