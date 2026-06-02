@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { markerSizeForMagnitude } from '@/lib/island-map';
+import { onColorFor } from '@/lib/color-utils';
 import { magnitudeColor } from '@/lib/seismic-colors';
 import { elevation } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -16,6 +17,7 @@ type Props = {
 export function SeismicMapMarker({ event, onPress }: Props) {
   const theme = useAppTheme();
   const fill = magnitudeColor(theme, event.magnitude);
+  const onFill = onColorFor(fill);
   const size = markerSizeForMagnitude(event.magnitude);
 
   return (
@@ -36,11 +38,11 @@ export function SeismicMapMarker({ event, onPress }: Props) {
             height: size,
             borderRadius: size / 2,
             backgroundColor: fill,
-            borderColor: theme.onPrimary,
+            borderColor: onFill,
           },
         ]}
       >
-        <Text style={[styles.label, { fontSize: size < 36 ? 11 : 13, color: theme.onPrimary }]}>
+        <Text style={[styles.label, { fontSize: size < 36 ? 11 : 13, color: onFill }]}>
           {event.magnitude.toFixed(1)}
         </Text>
       </View>

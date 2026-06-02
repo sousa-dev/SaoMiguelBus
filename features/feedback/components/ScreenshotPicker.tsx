@@ -5,6 +5,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { onColorFor } from '@/lib/color-utils';
 import { useAppTheme } from '@/lib/theme';
 
 type ScreenshotPickerProps = {
@@ -58,7 +59,7 @@ export function ScreenshotPicker({ uris, onChange, max = 4 }: ScreenshotPickerPr
               accessibilityLabel={t('feedbackRemoveScreenshot')}
               style={[styles.remove, { backgroundColor: theme.scrim }]}
             >
-              <X size={14} color="#fff" strokeWidth={2.5} />
+              <X size={14} color={onColorFor('#000000')} strokeWidth={2.5} />
             </Pressable>
           </View>
         ))}

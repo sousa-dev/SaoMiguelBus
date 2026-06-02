@@ -33,7 +33,7 @@ export function AlertBell() {
       >
         <Bell size={22} color={theme.primary} />
         <View style={[styles.badge, { backgroundColor: theme.danger }]}>
-          <Text style={[typography.caption, { color: theme.onPrimary, fontWeight: '700' }]}>
+          <Text style={[typography.caption, { color: theme.onDanger, fontWeight: '700' }]}>
             {infos.length}
           </Text>
         </View>

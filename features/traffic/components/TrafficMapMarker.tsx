@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { trafficCategoryIcon } from '@/lib/traffic-icons';
+import { onColorFor } from '@/lib/color-utils';
 import { elevation } from '@/lib/tokens';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficReport } from '@/lib/types';
@@ -31,6 +32,7 @@ export function TrafficMapMarker({
   const slug = report.category.slug;
   const colorKey = CATEGORY_COLORS[slug] ?? 'primary';
   const bg = theme[colorKey] as string;
+  const onBg = onColorFor(bg);
   const Icon = trafficCategoryIcon(slug);
 
   return (
@@ -40,8 +42,8 @@ export function TrafficMapMarker({
       tracksViewChanges={false}
       anchor={{ x: 0.5, y: 0.5 }}
     >
-      <View style={[styles.marker, elevation(2, theme.text), { backgroundColor: bg, borderColor: theme.onPrimary }]}>
-        <Icon size={18} color={theme.onPrimary} strokeWidth={2.5} />
+      <View style={[styles.marker, elevation(2, theme.text), { backgroundColor: bg, borderColor: onBg }]}>
+        <Icon size={18} color={onBg} strokeWidth={2.5} />
       </View>
     </Marker>
   );

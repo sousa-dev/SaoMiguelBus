@@ -24,7 +24,7 @@ export function PinnedRoutesSection({ onSelect }: Props) {
 
   return (
     <TransitCollapsibleSection
-      icon={<Pin size={16} color={theme.onPrimary} />}
+      icon={<Pin size={16} color={theme.onInfo} />}
       iconBackground={theme.info}
       title={t('transitPinnedRoutes')}
       subtitle={t('pinnedRoutesSubtitle')}

@@ -39,7 +39,11 @@ export function SegmentedControl<T extends string>({
             onPress={() => onChange(opt.value)}
             style={[
               styles.segment,
-              selected && { backgroundColor: theme.card, ...styles.selected },
+              selected && {
+                backgroundColor: theme.card,
+                shadowColor: theme.text,
+                ...styles.selected,
+              },
             ]}
           >
             <Text
