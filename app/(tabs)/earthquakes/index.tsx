@@ -23,11 +23,19 @@ import type { SeismicEvent } from '@/lib/types';
 
 type ViewMode = 'map' | 'list';
 
+const WINDOW_OPTIONS = [
+  { hours: 24, labelKey: 'seismicWindow24h' as const },
+  { hours: 72, labelKey: 'seismicWindow3d' as const },
+  { hours: 168, labelKey: 'seismicWindow7d' as const },
+  { hours: 720, labelKey: 'seismicWindow30d' as const },
+];
+
 export default function EarthquakesScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const events = useSeismicEvents();
+  const [windowHours, setWindowHours] = useState(24);
+  const events = useSeismicEvents(windowHours);
   const hasMap = Platform.OS !== 'web';
 
   const [viewMode, setViewMode] = useState<ViewMode>(hasMap ? 'map' : 'list');
@@ -103,6 +111,32 @@ export default function EarthquakesScreen() {
         </View>
       ) : null}
 
+      <View style={[styles.windowRow, { borderBottomColor: theme.border }]}>
+        {WINDOW_OPTIONS.map((opt) => (
+          <Pressable
+            key={opt.hours}
+            onPress={() => {
+              setWindowHours(opt.hours);
+              track('seismic', 'filter', { window_hours: opt.hours });
+            }}
+            style={[
+              styles.windowChip,
+              { borderColor: theme.border },
+              windowHours === opt.hours && { backgroundColor: theme.primary },
+            ]}
+          >
+            <Text
+              style={[
+                styles.windowChipText,
+                { color: windowHours === opt.hours ? '#fff' : theme.text },
+              ]}
+            >
+              {t(opt.labelKey)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       {events.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
       {events.isError ? (
         <Text style={{ color: theme.muted, padding: 12 }}>{t('seismicLoadError')}</Text>
@@ -171,4 +205,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   toggleText: { fontWeight: '700', fontSize: 14 },
+  windowRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  windowChip: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  windowChipText: { fontSize: 12, fontWeight: '700' },
 });

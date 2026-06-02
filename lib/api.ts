@@ -168,11 +168,15 @@ export async function fetchNewsArticle(articleId: number): Promise<NewsArticle> 
 
 export async function fetchSeismicEvents(params?: {
   minMagnitude?: number;
+  sinceHours?: number;
   limit?: number;
 }): Promise<SeismicEvent[]> {
   const query = new URLSearchParams();
   if (params?.minMagnitude !== undefined) {
     query.set('min_magnitude', String(params.minMagnitude));
+  }
+  if (params?.sinceHours !== undefined) {
+    query.set('since_hours', String(params.sinceHours));
   }
   if (params?.limit) {
     query.set('limit', String(params.limit));
