@@ -1,3 +1,4 @@
+import { MapPin } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, UrlTile } from 'react-native-maps';
@@ -112,8 +113,8 @@ export function LocationPickerModal({
               setFromMap(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude)
             }
           >
-            <View style={[styles.pin, { backgroundColor: theme.primary }]}>
-              <Text style={styles.pinIcon}>📍</Text>
+            <View style={[styles.pin, { backgroundColor: theme.primary, borderColor: theme.onPrimary }]}>
+              <MapPin size={18} color={theme.onPrimary} strokeWidth={2.5} />
             </View>
           </Marker>
         </MapView>
@@ -152,9 +153,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
   },
-  pinIcon: { fontSize: 18 },
   gpsBtn: {
     margin: 16,
     marginBottom: 28,

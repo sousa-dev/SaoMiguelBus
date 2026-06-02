@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+
 import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/Button';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { ConsentPurposes } from '@/lib/types';
 
 export default function ConsentScreen() {
   const theme = useAppTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
@@ -37,7 +42,7 @@ export default function ConsentScreen() {
       if (wasDecided) {
         router.back();
       } else {
-        router.replace('/(tabs)/transit');
+        router.replace('/(tabs)/hub');
       }
     } finally {
       setBusy(false);
@@ -47,62 +52,58 @@ export default function ConsentScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: theme.primary }]}>Privacy & consent</Text>
-        <Text style={{ color: theme.text, marginBottom: 20 }}>
-          Choose how São Miguel Bus may use your data. Analytics and ads stay off until you opt in.
-        </Text>
+        <Text style={[typography.display, { color: theme.primary }]}>{t('consentTitle')}</Text>
+        <Text style={[typography.body, { color: theme.text, marginVertical: space.lg }]}>{t('consentIntro')}</Text>
 
         <PurposeRow
-          label="Strictly necessary"
-          description="Core app functionality"
+          label={t('consentPurposeNecessary')}
+          description={t('consentPurposeNecessaryDesc')}
           value
           disabled
           onToggle={() => undefined}
-          theme={theme}
         />
         <PurposeRow
-          label="Analytics"
-          description="Anonymous usage to improve routes"
+          label={t('consentPurposeAnalytics')}
+          description={t('consentPurposeAnalyticsDesc')}
           value={purposes.analytics}
           onToggle={() => toggle('analytics')}
-          theme={theme}
         />
         <PurposeRow
-          label="Ads"
-          description="Personalized advertising"
+          label={t('consentPurposeAds')}
+          description={t('consentPurposeAdsDesc')}
           value={purposes.ads}
           onToggle={() => toggle('ads')}
-          theme={theme}
         />
         <PurposeRow
-          label="Personalization"
-          description="Recommendations and notifications"
+          label={t('consentPurposePersonalization')}
+          description={t('consentPurposePersonalizationDesc')}
           value={purposes.personalization}
           onToggle={() => toggle('personalization')}
-          theme={theme}
         />
 
-        <Pressable
+        <Button
+          label={t('consentAcceptAll')}
           disabled={busy}
           onPress={() => wrap(() => acceptAll(policyVersion))}
-          style={[styles.btn, { backgroundColor: theme.primary }]}
-        >
-          <Text style={styles.btnText}>Accept all</Text>
-        </Pressable>
-        <Pressable
+          fullWidth
+          style={{ marginTop: space.lg }}
+        />
+        <Button
+          label={t('consentRejectNonEssential')}
+          variant="outline"
           disabled={busy}
           onPress={() => wrap(() => rejectNonEssential(policyVersion))}
-          style={[styles.btn, styles.btnOutline, { borderColor: theme.secondary }]}
-        >
-          <Text style={{ color: theme.secondary, fontWeight: '600' }}>Reject non-essential</Text>
-        </Pressable>
-        <Pressable
+          fullWidth
+          style={{ marginTop: space.md }}
+        />
+        <Button
+          label={t('consentSaveChoices')}
+          variant="secondary"
           disabled={busy}
           onPress={() => wrap(() => saveCustom(purposes, policyVersion))}
-          style={[styles.btn, { backgroundColor: theme.secondary }]}
-        >
-          <Text style={styles.btnText}>Save choices</Text>
-        </Pressable>
+          fullWidth
+          style={{ marginTop: space.md }}
+        />
       </ScrollView>
     </Screen>
   );
@@ -114,38 +115,38 @@ function PurposeRow({
   value,
   disabled,
   onToggle,
-  theme,
 }: {
   label: string;
   description: string;
   value: boolean;
   disabled?: boolean;
   onToggle: () => void;
-  theme: ReturnType<typeof useAppTheme>;
 }) {
+  const theme = useAppTheme();
   return (
     <View style={[styles.row, { borderColor: theme.border, backgroundColor: theme.card }]}>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: theme.text, fontWeight: '600' }}>{label}</Text>
-        <Text style={{ color: theme.muted, fontSize: 13 }}>{description}</Text>
+        <Text style={[typography.bodyStrong, { color: theme.text }]}>{label}</Text>
+        <Text style={[typography.caption, { color: theme.muted, marginTop: 2 }]}>{description}</Text>
       </View>
-      <Switch value={value} onValueChange={onToggle} disabled={disabled} />
+      <Switch
+        value={value}
+        onValueChange={onToggle}
+        disabled={disabled}
+        trackColor={{ false: theme.outline, true: theme.primary }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 20 },
-  title: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+    padding: space.lg,
+    marginBottom: space.md,
   },
-  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
-  btnOutline: { backgroundColor: 'transparent', borderWidth: 1 },
-  btnText: { color: '#fff', fontWeight: '700' },
 });

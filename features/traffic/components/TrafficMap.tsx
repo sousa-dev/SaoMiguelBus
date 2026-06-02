@@ -1,3 +1,4 @@
+import { MapPin } from 'lucide-react-native';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, UrlTile, type Region } from 'react-native-maps';
@@ -106,8 +107,8 @@ export function TrafficMap({
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 1 }}
           >
-            <View style={[styles.draftPin, { backgroundColor: theme.secondary }]}>
-              <Text style={styles.draftPinIcon}>📍</Text>
+            <View style={[styles.draftPin, { backgroundColor: theme.secondary, borderColor: theme.onSecondary }]}>
+              <MapPin size={22} color={theme.onSecondary} strokeWidth={2.5} />
             </View>
           </Marker>
         ) : null}
@@ -134,10 +135,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#fff',
     elevation: 6,
   },
-  draftPinIcon: { fontSize: 22 },
 });
 
 // Bounds exported for tests / callers that need explicit limits

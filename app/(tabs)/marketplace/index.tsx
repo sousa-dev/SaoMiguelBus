@@ -1,9 +1,12 @@
+import * as Location from 'expo-location';
+import { Plus } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Fab } from '@/components/ui/Fab';
 import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
 import {
@@ -37,26 +40,26 @@ export default function MarketplaceScreen() {
     }, [providers.refetch]),
   );
 
-  const toggleNearMe = useCallback(() => {
+  const toggleNearMe = useCallback(async () => {
     if (coords) {
       setCoords(null);
       return;
     }
-    const geo = (typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined);
-    if (!geo?.getCurrentPosition) {
-      return; // native without expo-location: degrade to default ordering
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({});
+      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    } catch {
+      setCoords(null);
     }
-    geo.getCurrentPosition(
-      (pos: { coords: { latitude: number; longitude: number } }) =>
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setCoords(null),
-    );
   }, [coords]);
 
   return (
     <Screen withStackHeader>
       <MarketplaceFilters
-        theme={theme}
         categories={categories.data ?? []}
         activeCategory={category}
         query={query}
@@ -98,26 +101,15 @@ export default function MarketplaceScreen() {
         contentContainerStyle={styles.list}
       />
 
-      <Pressable
+      <Fab
+        icon={Plus}
+        accessibilityLabel={t('marketplaceAddListing')}
         onPress={() => router.push('/(tabs)/marketplace/new')}
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-      >
-        <Text style={styles.fabText}>+ {t('marketplaceAddListing')}</Text>
-      </Pressable>
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   list: { padding: 12, paddingBottom: 90 },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 20,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    elevation: 3,
-  },
-  fabText: { color: '#fff', fontWeight: '700' },
 });

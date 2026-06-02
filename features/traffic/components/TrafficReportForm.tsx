@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { ReportLocationField } from '@/features/traffic/components/ReportLocationField';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficCategory, TrafficReportWriteInput } from '@/lib/types';
@@ -95,8 +96,8 @@ export function TrafficReportForm({
                 },
               ]}
             >
-              <Text style={styles.chipIcon}>{c.icon || '⚠️'}</Text>
-              <Text style={{ color: active ? '#fff' : theme.text, fontSize: 12, fontWeight: '600' }}>
+              
+              <Text style={{ color: active ? theme.onPrimary : theme.text, fontSize: 12, fontWeight: '600' }}>
                 {c.name}
               </Text>
             </Pressable>
@@ -160,19 +161,9 @@ export function TrafficReportForm({
         </View>
       ) : null}
 
-      {error ? <Text style={{ color: '#c0392b', marginTop: 12 }}>{error}</Text> : null}
+      {error ? <Text style={{ color: theme.danger, marginTop: 12 }}>{error}</Text> : null}
 
-      <Pressable
-        disabled={!canSubmit}
-        onPress={submit}
-        style={[styles.submit, { backgroundColor: theme.primary, opacity: canSubmit ? 1 : 0.5 }]}
-      >
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.submitText}>{t('trafficSubmit')}</Text>
-        )}
-      </Pressable>
+      <Button label={t('trafficSubmit')} onPress={submit} disabled={!canSubmit} loading={submitting} fullWidth style={{ marginTop: 24 }} />
     </ScrollView>
   );
 }
@@ -213,6 +204,4 @@ const styles = StyleSheet.create({
   scheduleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
   stepBtn: { width: 44, height: 44, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  submit: { marginTop: 24, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  submitText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

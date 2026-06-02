@@ -1,9 +1,13 @@
+import { ThumbsDown, ThumbsUp } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Card } from '@/components/ui/Card';
+import { IconButton } from '@/components/ui/IconButton';
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TransitSearchResult } from '@/lib/types';
 
@@ -21,7 +25,7 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
 
   if (results.length === 0) {
     return (
-      <Text style={{ color: theme.muted, marginTop: 16 }}>
+      <Text style={[typography.body, { color: theme.muted, marginTop: space.lg }]}>
         {t('noRoutesMessage', { origin: '—', destination: '—' })}
       </Text>
     );
@@ -30,7 +34,7 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
   return (
     <View style={styles.list}>
       {results.map((trip) => (
-        <Pressable
+        <Card
           key={trip.id}
           onPress={() => {
             onSelect(trip);
@@ -40,55 +44,41 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
             });
           }}
           style={[
-            styles.card,
             {
-              backgroundColor: theme.card,
               borderColor: selectedId === trip.id ? theme.primary : theme.border,
+              borderWidth: selectedId === trip.id ? 2 : StyleSheet.hairlineWidth,
             },
           ]}
         >
-          <Text style={[styles.route, { color: theme.primary }]}>{trip.route}</Text>
-          <Text style={{ color: theme.text }}>
+          <Text style={[typography.headline, { color: theme.primary }]}>{trip.route}</Text>
+          <Text style={[typography.body, { color: theme.text }]}>
             {trip.start} → {trip.end}
           </Text>
-          <Text style={{ color: theme.muted, marginTop: 4 }}>
-            👍 {trip.likesPercent}% · 👎 {trip.dislikesPercent}%
+          <Text style={[typography.caption, { color: theme.muted, marginTop: space.xs }]}>
+            {t('transitLikePercent', { percent: trip.likesPercent })} ·{' '}
+            {t('transitDislikePercent', { percent: trip.dislikesPercent })}
           </Text>
           <View style={styles.voteRow}>
-            <Pressable
-              onPress={(event) => {
-                event.stopPropagation?.();
-                vote.mutate({ tripId: trip.id, vote: 'like' });
-              }}
-              style={[styles.voteBtn, { borderColor: theme.primary }]}
-            >
-              <Text style={{ color: theme.primary }}>👍</Text>
-            </Pressable>
-            <Pressable
-              onPress={(event) => {
-                event.stopPropagation?.();
-                vote.mutate({ tripId: trip.id, vote: 'dislike' });
-              }}
-              style={[styles.voteBtn, { borderColor: theme.secondary }]}
-            >
-              <Text style={{ color: theme.secondary }}>👎</Text>
-            </Pressable>
+            <IconButton
+              icon={ThumbsUp}
+              variant="tonal"
+              accessibilityLabel={t('transitLikeAction')}
+              onPress={() => vote.mutate({ tripId: trip.id, vote: 'like' })}
+            />
+            <IconButton
+              icon={ThumbsDown}
+              variant="tonal"
+              accessibilityLabel={t('transitDislikeAction')}
+              onPress={() => vote.mutate({ tripId: trip.id, vote: 'dislike' })}
+            />
           </View>
-        </Pressable>
+        </Card>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { marginTop: 16, gap: 12 },
-  card: { borderWidth: 1, borderRadius: 12, padding: 14 },
-  route: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
-  voteRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  voteBtn: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
+  list: { marginTop: space.lg, gap: space.md },
+  voteRow: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
 });

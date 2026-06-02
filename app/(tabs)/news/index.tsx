@@ -32,7 +32,6 @@ export default function NewsScreen() {
   return (
     <Screen withStackHeader>
       <NewsFilters
-        theme={theme}
         query={query}
         category={category}
         onQueryChange={setQuery}

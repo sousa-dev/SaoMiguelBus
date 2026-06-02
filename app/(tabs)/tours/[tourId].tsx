@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { trackTourBookClick, trackTourOpen, useTour } from '@/features/events/hooks/useTourQueries';
 import { openViatorExternal } from '@/features/events/viator';
 import { useAppTheme } from '@/lib/theme';
@@ -107,15 +108,14 @@ export default function TourDetailScreen() {
           <Text style={[styles.description, { color: theme.text }]}>{data.description}</Text>
         ) : null}
 
-        <Pressable
+        <Button
+          label={t('tourBookCta')}
+          fullWidth
           onPress={() => {
             trackTourBookClick(data.code);
             openViatorExternal(data.bookingUrl);
           }}
-          style={[styles.btn, { backgroundColor: theme.primary }]}
-        >
-          <Text style={styles.btnText}>{t('tourBookCta')}</Text>
-        </Pressable>
+        />
       </View>
     </ScrollView>
   );
@@ -139,6 +139,4 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   description: { lineHeight: 22, marginBottom: 20 },
-  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

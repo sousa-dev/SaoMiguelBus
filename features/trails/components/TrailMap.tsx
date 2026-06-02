@@ -77,7 +77,11 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
             }
           }}
         >
-          <Image source={{ uri: trail.mapImageUrl }} style={styles.webImage} resizeMode="contain" />
+          <Image
+            source={{ uri: trail.mapImageUrl }}
+            style={[styles.webImage, { backgroundColor: theme.surfaceVariant }]}
+            resizeMode="contain"
+          />
         </Pressable>
         {externalUrl ? (
           <Text style={{ color: theme.primary, marginTop: 8, fontSize: 13 }}>
@@ -134,6 +138,6 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
 const styles = StyleSheet.create({
   wrap: { marginBottom: 16 },
   map: { width: '100%', height: 220, borderRadius: 12 },
-  webImage: { width: '100%', height: 220, borderRadius: 12, backgroundColor: '#eee' },
+  webImage: { width: '100%', height: 220, borderRadius: 12 },
   osmCredit: { fontSize: 10, marginTop: 4 },
 });

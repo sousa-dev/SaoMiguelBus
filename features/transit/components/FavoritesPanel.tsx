@@ -1,7 +1,10 @@
+import { ChevronDown, ChevronRight, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { IconButton } from '@/components/ui/IconButton';
+import { radius, space, typography } from '@/lib/tokens';
 import { useFavoritesStore } from '@/lib/favorites-store';
 import { useAppTheme } from '@/lib/theme';
 
@@ -20,32 +23,39 @@ export function FavoritesPanel({ onSelect }: Props) {
     return null;
   }
 
+  const Chevron = open ? ChevronDown : ChevronRight;
+
   return (
     <View style={styles.wrap}>
       <Pressable
         onPress={() => setOpen((value) => !value)}
         style={[styles.toggle, { borderColor: theme.border, backgroundColor: theme.card }]}
       >
-        <Text style={{ color: theme.primary, fontWeight: '600' }}>
-          {open ? '▾' : '▸'} {t('showFavorites')} ({routes.length})
+        <Chevron size={18} color={theme.primary} />
+        <Text style={[typography.label, { color: theme.primary }]}>
+          {t('showFavorites')} ({routes.length})
         </Text>
       </Pressable>
       {open ? (
         <View style={[styles.panel, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          <Text style={[styles.title, { color: theme.text }]}>{t('favoriteSearches')}</Text>
+          <Text style={[typography.label, { color: theme.text, marginBottom: space.sm }]}>
+            {t('favoriteSearches')}
+          </Text>
           {routes.map((route) => (
             <View key={`${route.origin}-${route.destination}-${route.createdAt}`} style={styles.row}>
-              <Pressable
-                style={styles.routePress}
-                onPress={() => onSelect(route.origin, route.destination)}
-              >
-                <Text style={{ color: theme.text }}>
+              <Pressable style={styles.routePress} onPress={() => onSelect(route.origin, route.destination)}>
+                <Text style={[typography.body, { color: theme.text }]}>
                   {route.origin} → {route.destination}
                 </Text>
               </Pressable>
-              <Pressable onPress={() => removeFavorite(route.origin, route.destination)}>
-                <Text style={{ color: theme.muted }}>✕</Text>
-              </Pressable>
+              <IconButton
+                icon={X}
+                variant="ghost"
+                size="sm"
+                color={theme.muted}
+                accessibilityLabel={t('removeFavorites')}
+                onPress={() => removeFavorite(route.origin, route.destination)}
+              />
             </View>
           ))}
         </View>
@@ -55,21 +65,23 @@ export function FavoritesPanel({ onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 8 },
+  wrap: { marginTop: space.sm },
   toggle: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    paddingHorizontal: space.md,
   },
   panel: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    gap: 8,
+    marginTop: space.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.sm,
   },
-  title: { fontWeight: '700', marginBottom: 4 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  routePress: { flex: 1, paddingVertical: 4 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  routePress: { flex: 1, paddingVertical: space.xs },
 });

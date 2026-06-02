@@ -1,7 +1,10 @@
+import { Bus, Footprints } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Card } from '@/components/ui/Card';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { DirectionsResponse } from '@/lib/types';
 
@@ -34,12 +37,12 @@ export function DirectionsResults({ data, origin, destination }: Props) {
 
   if (!data.routes?.length) {
     return (
-      <View style={[styles.empty, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Text style={[styles.emptyTitle, { color: theme.text }]}>
+      <Card style={{ marginTop: space.lg }}>
+        <Text style={[typography.headline, { color: theme.text }]}>
           {t('noRoutesMessage', { origin, destination })}
         </Text>
-        <Text style={{ color: theme.muted, marginTop: 8 }}>{t('noRoutesSubtitle')}</Text>
-      </View>
+        <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]}>{t('noRoutesSubtitle')}</Text>
+      </Card>
     );
   }
 
@@ -59,32 +62,49 @@ export function DirectionsResults({ data, origin, destination }: Props) {
         const transfers = (leg.steps ?? []).filter((step) => step.travel_mode === 'TRANSIT').length - 1;
 
         return (
-          <View
-            key={`route-${routeIndex}`}
-            style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
-          >
-            <Text style={[styles.summary, { color: theme.primary }]}>
+          <Card key={`route-${routeIndex}`}>
+            <Text style={[typography.headline, { color: theme.primary, fontSize: 16 }]}>
               {route.summary || t('directionsButton')} #{routeIndex + 1}
             </Text>
-            <Text style={{ color: theme.muted, marginBottom: 8 }}>
-              {formatDuration(leg.duration?.value ?? 0)} · 🚶 {formatDistance(walkDistance)} · 🚌{' '}
-              {formatDistance(busDistance)} · {Math.max(0, transfers)} transbordo(s)
-            </Text>
-            {(leg.steps ?? []).map((step, stepIndex) => (
-              <View key={`step-${routeIndex}-${stepIndex}`} style={styles.step}>
-                <Text style={{ color: theme.text, fontWeight: '600' }}>
-                  {step.travel_mode === 'TRANSIT' ? '🚌' : '🚶'}{' '}
-                  {step.transit_details?.line?.short_name ||
-                    step.transit_details?.line?.name ||
-                    step.html_instructions?.replace(/<[^>]+>/g, '') ||
-                    step.travel_mode}
-                </Text>
-                {step.duration?.value ? (
-                  <Text style={{ color: theme.muted }}>{formatDuration(step.duration.value)}</Text>
-                ) : null}
-              </View>
-            ))}
-          </View>
+            <View style={styles.metaRow}>
+              <Text style={[typography.caption, { color: theme.muted }]}>
+                {formatDuration(leg.duration?.value ?? 0)}
+              </Text>
+              <Footprints size={iconSize.sm} color={theme.muted} />
+              <Text style={[typography.caption, { color: theme.muted }]}>
+                {formatDistance(walkDistance)}
+              </Text>
+              <Bus size={iconSize.sm} color={theme.muted} />
+              <Text style={[typography.caption, { color: theme.muted }]}>
+                {formatDistance(busDistance)} · {Math.max(0, transfers)} {t('transfer', { count: Math.max(0, transfers) })}
+              </Text>
+            </View>
+            {(leg.steps ?? []).map((step, stepIndex) => {
+              const isTransit = step.travel_mode === 'TRANSIT';
+              const StepIcon = isTransit ? Bus : Footprints;
+              return (
+                <View
+                  key={`step-${routeIndex}-${stepIndex}`}
+                  style={[styles.step, { borderTopColor: theme.border }]}
+                >
+                  <View style={styles.stepRow}>
+                    <StepIcon size={iconSize.md} color={theme.primary} strokeWidth={2} />
+                    <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>
+                      {step.transit_details?.line?.short_name ||
+                        step.transit_details?.line?.name ||
+                        step.html_instructions?.replace(/<[^>]+>/g, '') ||
+                        (isTransit ? t('transitBusLabel') : t('transitWalkLabel'))}
+                    </Text>
+                  </View>
+                  {step.duration?.value ? (
+                    <Text style={[typography.caption, { color: theme.muted, marginLeft: 28 }]}>
+                      {formatDuration(step.duration.value)}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })}
+          </Card>
         );
       })}
     </View>
@@ -92,19 +112,8 @@ export function DirectionsResults({ data, origin, destination }: Props) {
 }
 
 const styles = StyleSheet.create({
-  list: { gap: 12, marginTop: 8 },
-  card: { borderWidth: 1, borderRadius: 12, padding: 14 },
-  summary: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
-  step: {
-    paddingVertical: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#ccc',
-  },
-  empty: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-  },
-  emptyTitle: { fontWeight: '700', fontSize: 16 },
+  list: { gap: space.md, marginTop: space.sm },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.xs, marginVertical: space.sm },
+  step: { paddingVertical: space.sm, borderTopWidth: StyleSheet.hairlineWidth },
+  stepRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });

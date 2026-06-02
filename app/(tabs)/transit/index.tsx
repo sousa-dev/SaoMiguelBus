@@ -1,17 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { Field } from '@/components/ui/Field';
+import { space, typography } from '@/lib/tokens';
 
 import { FavoriteToggle } from '@/features/transit/components/FavoriteToggle';
 import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
@@ -152,60 +148,21 @@ export default function TransitScreen() {
             <Text style={[styles.label, { color: theme.text }]}>{t('dayLabel')}</Text>
             <View style={styles.dayRow}>
               {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
-                <Pressable
-                  key={d}
-                  onPress={() => setDay(d)}
-                  style={[
-                    styles.dayChip,
-                    {
-                      backgroundColor: day === d ? theme.primary : theme.card,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: day === d ? '#fff' : theme.text, fontSize: 12 }}>
-                    {t(d)}
-                  </Text>
-                </Pressable>
+                <Chip key={d} label={t(d)} selected={day === d} onPress={() => setDay(d)} />
               ))}
             </View>
 
-            <Text style={[styles.label, { color: theme.text }]}>{t('timeLabel')}</Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
-              ]}
-              value={time}
-              onChangeText={setTime}
-              placeholder="08:00"
-              placeholderTextColor={theme.muted}
-            />
+            <Field label={t('timeLabel')} value={time} onChangeText={setTime} placeholder="08:00" />
 
-            <Pressable
-              onPress={runSearch}
-              style={[
-                styles.searchBtn,
-                { backgroundColor: isOnline ? theme.primary : theme.muted },
-              ]}
-              disabled={!isOnline}
-            >
-              <Text style={styles.searchBtnText}>{t('searchButton')}</Text>
-            </Pressable>
-
-            <Pressable
+            <Button label={t('searchButton')} onPress={runSearch} disabled={!isOnline} fullWidth />
+            <Button
+              label={t('directionsButton')}
+              variant="secondary"
               onPress={openDirections}
-              style={[
-                styles.directionsBtn,
-                {
-                  backgroundColor: isOnline ? theme.secondary : theme.muted,
-                  opacity: isOnline ? 1 : 0.7,
-                },
-              ]}
               disabled={!isOnline || !origin || !destination}
-            >
-              <Text style={styles.searchBtnText}>{t('directionsButton')}</Text>
-            </Pressable>
+              fullWidth
+              style={{ marginTop: space.sm }}
+            />
           </>
         )}
 
@@ -233,10 +190,5 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
   label: { fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
-  dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  dayChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8 },
-  searchBtn: { marginTop: 8, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  directionsBtn: { marginTop: 8, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  searchBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  dayRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: space.md },
 });

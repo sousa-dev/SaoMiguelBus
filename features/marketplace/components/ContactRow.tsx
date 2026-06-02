@@ -1,22 +1,17 @@
 import React from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { track } from '@/lib/analytics';
+import { space } from '@/lib/tokens';
 import type { MarketplaceProvider } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
 function digits(value: string): string {
   return value.replace(/[^\d+]/g, '');
 }
 
-export function ContactRow({
-  provider,
-  theme,
-}: {
-  provider: MarketplaceProvider;
-  theme: AppTheme;
-}) {
+export function ContactRow({ provider }: { provider: MarketplaceProvider }) {
   const { t } = useTranslation();
 
   const open = (action: 'call' | 'whatsapp' | 'email', url: string) => {
@@ -46,20 +41,18 @@ export function ContactRow({
   return (
     <View style={styles.row}>
       {actions.map((a) => (
-        <Pressable
+        <Button
           key={a.key}
+          label={a.label}
+          variant="secondary"
           onPress={() => open(a.key, a.url)}
-          style={[styles.btn, { backgroundColor: theme.secondary }]}
-        >
-          <Text style={styles.btnText}>{a.label}</Text>
-        </Pressable>
+          style={{ flexGrow: 1 }}
+        />
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 12 },
-  btn: { borderRadius: 10, paddingVertical: 12, paddingHorizontal: 16, flexGrow: 1, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700' },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginVertical: space.md },
 });

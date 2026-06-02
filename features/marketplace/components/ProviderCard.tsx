@@ -27,7 +27,7 @@ export function ProviderCard({
         </Text>
         {provider.isPromoted ? (
           <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-            <Text style={styles.badgeText}>{t('marketplacePromoted')}</Text>
+            <Text style={[styles.badgeText, { color: theme.text }]}>{t('marketplacePromoted')}</Text>
           </View>
         ) : null}
       </View>
@@ -53,5 +53,5 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   name: { fontSize: 16, fontWeight: '700', flexShrink: 1 },
   badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
-  badgeText: { color: '#1a1a1a', fontSize: 11, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontWeight: '700' },
 });

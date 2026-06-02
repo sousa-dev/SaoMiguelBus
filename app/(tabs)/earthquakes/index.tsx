@@ -13,6 +13,10 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Chip } from '@/components/ui/Chip';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { ErrorState } from '@/components/ui/StateView';
+import { space } from '@/lib/tokens';
 import { EarthquakeCard } from '@/features/earthquakes/components/EarthquakeCard';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { SeismicMap } from '@/features/earthquakes/components/SeismicMap';
@@ -75,65 +79,29 @@ export default function EarthquakesScreen() {
   return (
     <Screen withStackHeader>
       {hasMap ? (
-        <View style={[styles.toggleRow, { borderBottomColor: theme.border }]}>
-          <Pressable
-            onPress={() => setViewMode('map')}
-            style={[
-              styles.toggleBtn,
-              viewMode === 'map' && { backgroundColor: theme.primary },
+        <View style={{ padding: space.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border }}>
+          <SegmentedControl
+            options={[
+              { value: 'map' as ViewMode, label: t('seismicMapTab') },
+              { value: 'list' as ViewMode, label: t('seismicListTab') },
             ]}
-          >
-            <Text
-              style={[
-                styles.toggleText,
-                { color: viewMode === 'map' ? '#fff' : theme.text },
-              ]}
-            >
-              {t('seismicMapTab')}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setViewMode('list')}
-            style={[
-              styles.toggleBtn,
-              viewMode === 'list' && { backgroundColor: theme.primary },
-            ]}
-          >
-            <Text
-              style={[
-                styles.toggleText,
-                { color: viewMode === 'list' ? '#fff' : theme.text },
-              ]}
-            >
-              {t('seismicListTab')}
-            </Text>
-          </Pressable>
+            value={viewMode}
+            onChange={setViewMode}
+          />
         </View>
       ) : null}
 
       <View style={[styles.windowRow, { borderBottomColor: theme.border }]}>
         {WINDOW_OPTIONS.map((opt) => (
-          <Pressable
+          <Chip
             key={opt.hours}
+            label={t(opt.labelKey)}
+            selected={windowHours === opt.hours}
             onPress={() => {
               setWindowHours(opt.hours);
               track('seismic', 'filter', { window_hours: opt.hours });
             }}
-            style={[
-              styles.windowChip,
-              { borderColor: theme.border },
-              windowHours === opt.hours && { backgroundColor: theme.primary },
-            ]}
-          >
-            <Text
-              style={[
-                styles.windowChipText,
-                { color: windowHours === opt.hours ? '#fff' : theme.text },
-              ]}
-            >
-              {t(opt.labelKey)}
-            </Text>
-          </Pressable>
+          />
         ))}
       </View>
 
@@ -180,7 +148,6 @@ export default function EarthquakesScreen() {
           visible={voteOpen}
           eventId={selectedEvent.id}
           event={selectedEvent}
-          theme={theme}
           onClose={closeVote}
         />
       ) : null}

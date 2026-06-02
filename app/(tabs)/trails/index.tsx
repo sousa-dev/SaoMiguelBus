@@ -60,7 +60,6 @@ export default function TrailsScreen() {
   return (
     <Screen withStackHeader>
       <TrailFilters
-        theme={theme}
         draft={draftFilters}
         applied={appliedFilters}
         onDraftChange={setDraftFilters}

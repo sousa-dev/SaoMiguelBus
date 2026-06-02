@@ -65,7 +65,7 @@ export default function ProviderDetailScreen() {
         <Text style={[styles.name, { color: theme.text }]}>{p.name}</Text>
         {p.isPromoted ? (
           <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-            <Text style={styles.badgeText}>{t('marketplacePromoted')}</Text>
+            <Text style={[styles.badgeText, { color: theme.text }]}>{t('marketplacePromoted')}</Text>
           </View>
         ) : null}
       </View>
@@ -89,7 +89,7 @@ export default function ProviderDetailScreen() {
         </Text>
       ) : null}
 
-      <ContactRow provider={p} theme={theme} />
+      <ContactRow provider={p} />
 
       {isMine ? (
         <View style={styles.ownerRow}>
@@ -101,8 +101,8 @@ export default function ProviderDetailScreen() {
           >
             <Text style={{ color: theme.text, fontWeight: '600' }}>{t('marketplaceEditAction')}</Text>
           </Pressable>
-          <Pressable onPress={confirmDelete} style={[styles.ownerBtn, { borderColor: '#c0392b' }]}>
-            <Text style={{ color: '#c0392b', fontWeight: '600' }}>{t('marketplaceDeleteAction')}</Text>
+          <Pressable onPress={confirmDelete} style={[styles.ownerBtn, { borderColor: theme.danger }]}>
+            <Text style={{ color: theme.danger, fontWeight: '600' }}>{t('marketplaceDeleteAction')}</Text>
           </Pressable>
         </View>
       ) : null}
@@ -128,7 +128,6 @@ export default function ProviderDetailScreen() {
       <ReviewSheet
         visible={reviewVisible}
         providerId={providerId}
-        theme={theme}
         onClose={() => setReviewVisible(false)}
       />
     </ScrollView>
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   name: { fontSize: 22, fontWeight: '800', flexShrink: 1 },
   badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
-  badgeText: { color: '#1a1a1a', fontSize: 11, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontWeight: '700' },
   pending: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginTop: 10, alignSelf: 'flex-start' },
   ownerRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
   ownerBtn: { borderWidth: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16, flexGrow: 1, alignItems: 'center' },

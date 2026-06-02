@@ -1,44 +1,10 @@
+import { Plus } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import type { AppTheme } from '@/lib/theme';
+import { Fab } from '@/components/ui/Fab';
 
-export function QuickReportButton({
-  theme,
-  onPress,
-  disabled,
-}: {
-  theme: AppTheme;
-  onPress: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      disabled={disabled}
-      style={[styles.fab, { backgroundColor: theme.primary, opacity: disabled ? 0.5 : 1 }]}
-    >
-      <Text style={styles.icon}>＋</Text>
-    </Pressable>
-  );
+export function QuickReportButton({ onPress, disabled }: { onPress: () => void; disabled?: boolean }) {
+  const { t } = useTranslation();
+  return <Fab icon={Plus} onPress={onPress} accessibilityLabel={t('trafficReportTitle')} disabled={disabled} />;
 }
-
-const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 18,
-    bottom: 24,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  icon: { color: '#fff', fontSize: 34, lineHeight: 38, fontWeight: '700' },
-});

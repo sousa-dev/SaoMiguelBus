@@ -4,7 +4,9 @@ import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
+import { space } from '@/lib/tokens';
 import { useSeismicEvent } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
@@ -56,25 +58,13 @@ export default function EarthquakeDetailScreen() {
         </Text>
       ) : null}
 
-      <Pressable
-        onPress={() => WebBrowser.openBrowserAsync(mapsUrl)}
-        style={[styles.btn, { backgroundColor: theme.secondary, marginBottom: 10 }]}
-      >
-        <Text style={styles.btnText}>{t('seismicOpenMap')}</Text>
-      </Pressable>
-
-      <Pressable
-        onPress={() => setFeltOpen(true)}
-        style={[styles.btn, { backgroundColor: theme.primary }]}
-      >
-        <Text style={styles.btnText}>{t('seismicFeltButton')}</Text>
-      </Pressable>
+      <Button label={t('seismicOpenMap')} variant="secondary" fullWidth onPress={() => WebBrowser.openBrowserAsync(mapsUrl)} style={{ marginBottom: space.sm }} />
+      <Button label={t('seismicFeltButton')} fullWidth onPress={() => setFeltOpen(true)} />
 
       <FeltVoteSheet
         visible={feltOpen}
         eventId={data.id}
         event={data}
-        theme={theme}
         onClose={() => setFeltOpen(false)}
       />
     </ScrollView>
@@ -85,6 +75,4 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   mag: { fontSize: 36, fontWeight: '800' },
   region: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700' },
 });

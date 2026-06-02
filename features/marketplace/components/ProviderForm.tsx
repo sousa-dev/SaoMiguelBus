@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
 import { useMarketplaceCategories } from '@/features/marketplace/hooks/useMarketplaceQueries';
 import type { MarketplaceProvider, ProviderWriteInput } from '@/lib/types';
 import type { AppTheme } from '@/lib/theme';
@@ -105,7 +106,7 @@ export function ProviderForm({
                 },
               ]}
             >
-              <Text style={{ color: active ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
+              <Text style={{ color: active ? theme.onPrimary : theme.text, fontWeight: '600', fontSize: 13 }}>
                 {cat.name}
               </Text>
             </Pressable>
@@ -122,7 +123,7 @@ export function ProviderForm({
             },
           ]}
         >
-          <Text style={{ color: useNewCategory ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
+          <Text style={{ color: useNewCategory ? theme.onPrimary : theme.text, fontWeight: '600', fontSize: 13 }}>
             + {t('marketplaceFormNewCategory')}
           </Text>
         </Pressable>
@@ -154,20 +155,10 @@ export function ProviderForm({
       <Field theme={theme} label={t('marketplaceFormRate')} value={rate} onChange={setRate} keyboardType="numeric" />
 
       {(localError || error) ? (
-        <Text style={{ color: '#c0392b', marginTop: 8 }}>{localError || error}</Text>
+        <Text style={{ color: theme.danger, marginTop: 8 }}>{localError || error}</Text>
       ) : null}
 
-      <Pressable
-        onPress={submit}
-        disabled={submitting}
-        style={[styles.submit, { backgroundColor: theme.primary }]}
-      >
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.submitText}>{t('marketplaceFormSubmit')}</Text>
-        )}
-      </Pressable>
+      <Button label={t('marketplaceFormSubmit')} onPress={submit} loading={submitting} fullWidth />
       <Text style={{ color: theme.muted, fontSize: 12, marginTop: 10, textAlign: 'center' }}>
         {t('marketplaceFormPendingNotice')}
       </Text>
@@ -215,6 +206,4 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   chip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
-  submit: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  submitText: { color: '#fff', fontWeight: '700' },
 });
