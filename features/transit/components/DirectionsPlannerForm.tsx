@@ -1,34 +1,33 @@
-import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
-import { ArrowRightLeft, Calendar, Clock, Route, Search } from 'lucide-react-native';
+import { ArrowRightLeft, Calendar, Clock } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
+import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
 import { StopPicker } from '@/features/transit/components/StopPicker';
 import { formatDateLabel } from '@/lib/transit-format';
 import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
 
-type TransitPlannerCardProps = {
+type Props = {
   origin: string;
   destination: string;
   date: Date;
   time: string;
   stops: Stop[];
-  isOnline: boolean;
-  directionsOnline: boolean;
-  searching?: boolean;
+  submitting?: boolean;
+  disabled?: boolean;
   onOriginChange: (v: string) => void;
   onDestinationChange: (v: string) => void;
   onDateChange: (d: Date) => void;
   onTimeChange: (t: string) => void;
-  onSearch: () => void;
-  onDirections: () => void;
+  onSubmit: () => void;
 };
 
 function parseTime(time: string): Date {
-  const [h, m] = time.split(':').map((x) => parseInt(x, 10));
+  const [h, m] = time.split(/[:h]/).map((x) => parseInt(x, 10));
   const d = new Date();
   d.setHours(Number.isFinite(h) ? h : 8, Number.isFinite(m) ? m : 0, 0, 0);
   return d;
@@ -40,28 +39,25 @@ function formatTime(date: Date): string {
   return `${hh}:${mm}`;
 }
 
-export function TransitPlannerCard({
+export function DirectionsPlannerForm({
   origin,
   destination,
   date,
   time,
   stops,
-  isOnline,
-  directionsOnline,
-  searching,
+  submitting,
+  disabled,
   onOriginChange,
   onDestinationChange,
   onDateChange,
   onTimeChange,
-  onSearch,
-  onDirections,
-}: TransitPlannerCardProps) {
+  onSubmit,
+}: Props) {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const timeDate = parseTime(time);
-  const canDirections = directionsOnline;
 
   const swapStops = () => {
     onOriginChange(destination);
@@ -213,42 +209,14 @@ export function TransitPlannerCard({
         </View>
       ) : null}
 
-      <View style={styles.actions}>
-        <Pressable
-          onPress={onSearch}
-          disabled={!isOnline || searching}
-          style={({ pressed }) => [
-            styles.searchBtn,
-            { backgroundColor: theme.primary, opacity: !isOnline || searching ? 0.5 : pressed ? 0.9 : 1 },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('searchButton')}
-        >
-          {searching ? (
-            <ActivityIndicator color={theme.onPrimary} />
-          ) : (
-            <>
-              <Search size={18} color={theme.onPrimary} />
-              <Text style={[typography.label, { color: theme.onPrimary, marginLeft: space.sm }]}>
-                {t('searchButton')}
-              </Text>
-            </>
-          )}
-        </Pressable>
-
-        <Pressable
-          onPress={onDirections}
-          disabled={!canDirections}
-          style={({ pressed }) => [
-            styles.routeBtn,
-            { backgroundColor: theme.primary, opacity: !canDirections ? 0.5 : pressed ? 0.9 : 1 },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('directionsButton')}
-        >
-          <Route size={20} color={theme.onPrimary} />
-        </Pressable>
-      </View>
+      <Button
+        label={t('directionsButton')}
+        onPress={onSubmit}
+        loading={submitting}
+        disabled={disabled}
+        fullWidth
+        style={{ marginTop: space.md }}
+      />
     </View>
   );
 }
@@ -258,6 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
     padding: space.md,
+    width: '100%',
     overflow: 'hidden',
   },
   swapRow: { alignItems: 'flex-end', marginVertical: 2 },
@@ -268,11 +237,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayTimeRow: {
-    flexDirection: 'row',
-    gap: space.sm,
-    marginTop: space.md,
-  },
+  dayTimeRow: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
   pillField: {
     flex: 1,
     flexDirection: 'row',
@@ -284,24 +249,4 @@ const styles = StyleSheet.create({
   },
   pickerWrap: { marginTop: space.sm },
   pickerDone: { alignSelf: 'flex-end', paddingVertical: space.sm, paddingHorizontal: space.xs },
-  actions: {
-    flexDirection: 'row',
-    gap: space.sm,
-    marginTop: space.md,
-  },
-  searchBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.full,
-    height: 44,
-  },
-  routeBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

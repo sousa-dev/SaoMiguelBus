@@ -88,7 +88,7 @@ export default function TransitScreen() {
   };
 
   const openDirections = () => {
-    if (!origin || !destination || !isOnline) {
+    if (!isOnline) {
       return;
     }
     router.push({
@@ -136,6 +136,7 @@ export default function TransitScreen() {
               time={time}
               stops={stops}
               isOnline={canSearchOffline}
+              directionsOnline={isOnline}
               searching={search.isFetching}
               onOriginChange={setOrigin}
               onDestinationChange={setDestination}

@@ -1,22 +1,34 @@
 import { ArrowRight, Bus } from 'lucide-react-native';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
+import { DirectionsPlannerForm } from '@/features/transit/components/DirectionsPlannerForm';
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
-import { useDirections } from '@/features/transit/hooks/useTransitQueries';
+import { useBootstrap, useDirections, useStops } from '@/features/transit/hooks/useTransitQueries';
+import { useNetworkStatus } from '@/lib/network-status';
 import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { resolveDayType } from '@/lib/transit-format';
+
+function startFromParam(start: string): string {
+  return start.replace('h', ':');
+}
 
 export default function DirectionsScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { isOnline } = useNetworkStatus();
+  const { data: stops = [] } = useStops();
+  const bootstrap = useBootstrap();
   const params = useLocalSearchParams<{
     origin?: string;
     destination?: string;
@@ -24,20 +36,35 @@ export default function DirectionsScreen() {
     start?: string;
   }>();
 
-  const origin = params.origin ?? '';
-  const destination = params.destination ?? '';
-  const day = params.day ?? 'weekday';
-  const start = params.start ?? '08h00';
+  const [origin, setOrigin] = useState(params.origin ?? '');
+  const [destination, setDestination] = useState(params.destination ?? '');
+  const [date, setDate] = useState(() => new Date());
+  const [time, setTime] = useState(() => startFromParam(params.start ?? '08h00'));
+  const [submitted, setSubmitted] = useState(() => Boolean(params.origin && params.destination));
+
+  const day = useMemo(
+    () => resolveDayType(date, bootstrap.data?.holidays),
+    [date, bootstrap.data?.holidays],
+  );
 
   const directions = useDirections({
     origin,
     destination,
     day,
-    start,
-    enabled: Boolean(origin && destination),
+    start: time.replace(':', 'h'),
+    enabled: submitted && isOnline && Boolean(origin && destination),
   });
 
+  const onSubmit = () => {
+    if (!origin || !destination || !isOnline) {
+      return;
+    }
+    setSubmitted(true);
+    void directions.refetch();
+  };
+
   const empty =
+    submitted &&
     !directions.isLoading &&
     !directions.isError &&
     directions.data &&
@@ -45,27 +72,50 @@ export default function DirectionsScreen() {
 
   return (
     <Screen withStackHeader>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <TransitWebShell>
-          <View
-            style={[
-              styles.headerCard,
-              { backgroundColor: theme.card, borderColor: theme.border },
-              elevation(1, theme.text),
-            ]}
-          >
-            <View style={styles.endpoints}>
-              <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
-                {origin}
-              </Text>
-              <ArrowRight size={20} color={theme.muted} style={styles.arrow} />
-              <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
-                {destination}
-              </Text>
-            </View>
-          </View>
+          {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
 
-          {directions.isLoading ? <LoadingState title={t('searchButton')} /> : null}
+          <DirectionsPlannerForm
+            origin={origin}
+            destination={destination}
+            date={date}
+            time={time}
+            stops={stops}
+            submitting={directions.isFetching}
+            disabled={!isOnline}
+            onOriginChange={setOrigin}
+            onDestinationChange={setDestination}
+            onDateChange={setDate}
+            onTimeChange={setTime}
+            onSubmit={onSubmit}
+          />
+
+          {submitted && origin && destination ? (
+            <View
+              style={[
+                styles.headerCard,
+                { backgroundColor: theme.card, borderColor: theme.border },
+                elevation(1, theme.text),
+              ]}
+            >
+              <View style={styles.endpoints}>
+                <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+                  {origin}
+                </Text>
+                <ArrowRight size={20} color={theme.muted} style={styles.arrow} />
+                <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+                  {destination}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
+          {directions.isLoading && submitted ? <LoadingState title={t('searchButton')} /> : null}
 
           {directions.isError ? (
             <ErrorState
@@ -87,7 +137,7 @@ export default function DirectionsScreen() {
             />
           ) : null}
 
-          {directions.data && !empty ? (
+          {directions.data && !empty && submitted ? (
             <DirectionsResults data={directions.data} origin={origin} destination={destination} />
           ) : null}
 
@@ -107,6 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     padding: space.lg,
     width: '100%',
+    marginTop: space.md,
   },
   endpoints: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   arrow: { marginHorizontal: space.xs },
