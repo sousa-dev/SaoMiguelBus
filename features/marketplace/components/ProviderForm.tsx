@@ -32,6 +32,8 @@ export function ProviderForm({
 
   const [name, setName] = useState(initial?.name ?? '');
   const [categorySlug, setCategorySlug] = useState(initial?.category.slug ?? '');
+  const [useNewCategory, setUseNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [bio, setBio] = useState(initial?.bio ?? '');
   const [phone, setPhone] = useState(initial?.phone ?? '');
   const [whatsapp, setWhatsapp] = useState(initial?.whatsapp ?? '');
@@ -39,22 +41,48 @@ export function ProviderForm({
   const [rate, setRate] = useState(initial?.hourlyRate != null ? String(initial.hourlyRate) : '');
   const [localError, setLocalError] = useState<string | null>(null);
 
+  const selectExistingCategory = (slug: string) => {
+    setUseNewCategory(false);
+    setNewCategoryName('');
+    setCategorySlug(slug);
+  };
+
+  const enableNewCategory = () => {
+    setUseNewCategory(true);
+    setCategorySlug('');
+  };
+
   const submit = () => {
-    if (!name.trim() || !categorySlug) {
+    if (!name.trim()) {
+      setLocalError(t('marketplaceFormError'));
+      return;
+    }
+    if (useNewCategory) {
+      const trimmed = newCategoryName.trim();
+      if (trimmed.length < 2) {
+        setLocalError(t('marketplaceFormCategoryNameError'));
+        return;
+      }
+    } else if (!categorySlug) {
       setLocalError(t('marketplaceFormError'));
       return;
     }
     setLocalError(null);
     const parsedRate = rate.trim() ? Number(rate.replace(',', '.')) : null;
-    onSubmit({
+    const payload: ProviderWriteInput = {
       name: name.trim(),
-      category_slug: categorySlug,
       bio: bio.trim(),
       phone: phone.trim(),
       whatsapp: whatsapp.trim(),
       email: email.trim(),
       hourly_rate: Number.isFinite(parsedRate as number) ? parsedRate : null,
-    });
+    };
+    if (useNewCategory) {
+      payload.category_name = newCategoryName.trim();
+    } else {
+      payload.category_slug = categorySlug;
+    }
+    onSubmit(payload);
   };
 
   return (
@@ -64,11 +92,11 @@ export function ProviderForm({
       <Text style={[styles.label, { color: theme.muted }]}>{t('marketplaceFormCategory')}</Text>
       <View style={styles.chips}>
         {(categories.data ?? []).map((cat) => {
-          const active = cat.slug === categorySlug;
+          const active = !useNewCategory && cat.slug === categorySlug;
           return (
             <Pressable
               key={cat.slug}
-              onPress={() => setCategorySlug(cat.slug)}
+              onPress={() => selectExistingCategory(cat.slug)}
               style={[
                 styles.chip,
                 {
@@ -83,7 +111,41 @@ export function ProviderForm({
             </Pressable>
           );
         })}
+        <Pressable
+          onPress={enableNewCategory}
+          style={[
+            styles.chip,
+            {
+              backgroundColor: useNewCategory ? theme.primary : theme.card,
+              borderColor: useNewCategory ? theme.primary : theme.border,
+              borderStyle: 'dashed',
+            },
+          ]}
+        >
+          <Text style={{ color: useNewCategory ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
+            + {t('marketplaceFormNewCategory')}
+          </Text>
+        </Pressable>
       </View>
+
+      {useNewCategory ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={[styles.label, { color: theme.muted }]}>{t('marketplaceFormCategoryName')}</Text>
+          <TextInput
+            value={newCategoryName}
+            onChangeText={setNewCategoryName}
+            placeholder={t('marketplaceFormCategoryNamePlaceholder')}
+            placeholderTextColor={theme.muted}
+            style={[
+              styles.input,
+              { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
+            ]}
+          />
+          <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
+            {t('marketplaceFormCategoryNameHint')}
+          </Text>
+        </View>
+      ) : null}
 
       <Field theme={theme} label={t('marketplaceFormBio')} value={bio} onChange={setBio} multiline />
       <Field theme={theme} label={t('marketplaceFormPhone')} value={phone} onChange={setPhone} keyboardType="phone-pad" />

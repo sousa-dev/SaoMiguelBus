@@ -458,5 +458,10 @@
     "marketplaceFormRate": "Preço por hora (€)",
     "marketplaceFormSubmit": "Publicar",
     "marketplaceFormPendingNotice": "O teu anúncio fica em revisão antes de aparecer publicamente.",
-    "marketplaceFormError": "Preenche o nome e escolhe uma categoria."
+    "marketplaceFormError": "Preenche o nome e escolhe uma categoria.",
+    "marketplaceFormNewCategory": "Nova categoria",
+    "marketplaceFormCategoryName": "Nome da categoria",
+    "marketplaceFormCategoryNamePlaceholder": "Ex.: Passeio de cães",
+    "marketplaceFormCategoryNameHint": "A equipa pode ajustar o nome antes de publicar.",
+    "marketplaceFormCategoryNameError": "Indica um nome de categoria (mín. 2 caracteres)."
 }

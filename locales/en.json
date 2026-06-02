@@ -458,5 +458,10 @@
     "marketplaceFormRate": "Hourly rate (€)",
     "marketplaceFormSubmit": "Publish",
     "marketplaceFormPendingNotice": "Your listing is reviewed before it appears publicly.",
-    "marketplaceFormError": "Enter a name and pick a category."
+    "marketplaceFormError": "Enter a name and pick a category.",
+    "marketplaceFormNewCategory": "New category",
+    "marketplaceFormCategoryName": "Category name",
+    "marketplaceFormCategoryNamePlaceholder": "e.g. Dog walking",
+    "marketplaceFormCategoryNameHint": "Our team may refine the name before it goes live.",
+    "marketplaceFormCategoryNameError": "Enter a category name (min. 2 characters)."
 }

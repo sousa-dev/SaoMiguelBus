@@ -399,5 +399,10 @@
     "marketplaceFormRate": "Stundensatz (€)",
     "marketplaceFormSubmit": "Veröffentlichen",
     "marketplaceFormPendingNotice": "Dein Eintrag wird vor der Veröffentlichung geprüft.",
-    "marketplaceFormError": "Gib einen Namen ein und wähle eine Kategorie."
+    "marketplaceFormError": "Gib einen Namen ein und wähle eine Kategorie.",
+    "marketplaceFormNewCategory": "Neue Kategorie",
+    "marketplaceFormCategoryName": "Kategoriename",
+    "marketplaceFormCategoryNamePlaceholder": "z. B. Hundeausführung",
+    "marketplaceFormCategoryNameHint": "Das Team kann den Namen vor der Veröffentlichung anpassen.",
+    "marketplaceFormCategoryNameError": "Gib einen Kategorienamen ein (mind. 2 Zeichen)."
 }

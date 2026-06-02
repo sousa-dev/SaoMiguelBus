@@ -80,6 +80,7 @@ export function useCreateProvider() {
       addListing(provider.id);
       track('marketplace', 'engage', { action: 'create_listing', provider_id: provider.id });
       void queryClient.invalidateQueries({ queryKey: ['marketplace', 'v1', 'providers'] });
+      void queryClient.invalidateQueries({ queryKey: ['marketplace', 'v1', 'categories'] });
     },
   });
 }

@@ -399,5 +399,10 @@
     "marketplaceFormRate": "Tarif horaire (€)",
     "marketplaceFormSubmit": "Publier",
     "marketplaceFormPendingNotice": "Votre annonce est vérifiée avant d'apparaître publiquement.",
-    "marketplaceFormError": "Saisissez un nom et choisissez une catégorie."
+    "marketplaceFormError": "Saisissez un nom et choisissez une catégorie.",
+    "marketplaceFormNewCategory": "Nouvelle catégorie",
+    "marketplaceFormCategoryName": "Nom de la catégorie",
+    "marketplaceFormCategoryNamePlaceholder": "ex. Promenade de chiens",
+    "marketplaceFormCategoryNameHint": "L'équipe peut ajuster le nom avant publication.",
+    "marketplaceFormCategoryNameError": "Indiquez un nom de catégorie (min. 2 caractères)."
 }

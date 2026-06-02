@@ -132,6 +132,7 @@ export interface ServiceCategory {
   name: string;
   slug: string;
   icon: string;
+  userSuggested?: boolean;
 }
 
 export interface MarketplaceProvider {
@@ -163,6 +164,7 @@ export interface MarketplaceReview {
 export interface ProviderWriteInput {
   name?: string;
   category_slug?: string;
+  category_name?: string;
   bio?: string;
   hourly_rate?: number | null;
   phone?: string;
