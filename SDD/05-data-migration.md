@@ -101,6 +101,54 @@ python manage.py import_legacy --legacy-db "$LEGACY_DATABASE_URL"
 
 Importer uses a secondary DB router (`legacy` alias in settings) or raw SQLAlchemy/psycopg2 read-only connection — **never** writes to legacy.
 
+### Production JSON export → batched import (large datasets)
+
+When direct Postgres access is unavailable or the export is too large for a single in-memory parse (~400MB+, ~1.7M `app_stat` rows):
+
+**Export (legacy API on `main-temp` branch):**
+
+```bash
+# Batched export with checkpoint/resume (scripts/pull_legacy_export.py on operator machine)
+python3 scripts/pull_legacy_export.py \
+  --base-url https://api.saomiguelbus.com \
+  --key "$AUTH_KEY" \
+  --output final_smb_legacy_export.json \
+  --essential-only          # skips app_data (GMaps cache) — safe to omit
+
+# Or async job API:
+curl 'https://api.saomiguelbus.com/api/v1/export/legacy?key=$AUTH_KEY'
+curl 'https://api.saomiguelbus.com/api/v1/export/legacy/status?key=$AUTH_KEY&job_id=JOB_ID'
+curl -o export.json 'https://api.saomiguelbus.com/api/v1/export/legacy/download?key=$AUTH_KEY&job_id=JOB_ID'
+```
+
+**Split + async import (revamp backend):**
+
+```bash
+python3 scripts/split_legacy_export.py \
+  --input final_smb_legacy_export.json \
+  --output-dir smb_export_batches \
+  --batch-size 5000
+
+python manage.py import_legacy \
+  --export-dir media/legacy_imports/smb_export_batches \
+  --essential-only \
+  --async
+
+# Monitor: Django admin → Legacy import jobs
+# Cancel stale Celery: POST /api/v1/ops/celery/cancel-all?key=$AUTH_KEY
+```
+
+`LegacyBatchedExportSource` streams JSONL batches from a directory with `manifest.json` — avoids worker OOM. `LegacyImportJob` tracks progress via Celery.
+
+**Import mapping (essential tables):**
+
+| Export table | Target |
+|---|---|
+| `app_stop`, `app_route`, … | `transit.*` (Stop, Trip, Line, …) |
+| `app_stat` | `analytics.Stat` |
+| `subscriptions` | `billing.Subscription` |
+| `app_data`, `app_trip`, … | `legacy_archive` (optional; skip with `--essential-only`) |
+
 ## 4. Analytics migration with pseudonymization
 
 `Stat` is high-volume, append-only, mostly anonymous (no user/session id in legacy).
@@ -125,10 +173,12 @@ Before cutover:
 
 ## 6. Cutover (strangler-fig, reversible)
 
+**Current stage:** **B → C** — compat validated on staging; production DNS cutover pending.
+
 ```
-Stage A  ETL into new DB from legacy snapshot; legacy still serves live traffic.
-Stage B  compat on new backend behind Island.is_live; shadow/canary parity checks.
-Stage C  Point clients to new API (compat); legacy hot fallback.
+Stage A  ETL into new DB from legacy snapshot; legacy still serves live traffic.     ← done (batched import)
+Stage B  compat on new backend; shadow/canary parity checks.                         ← in progress
+Stage C  Point api.saomiguelbus.com to revamp (compat); legacy hot fallback.         ← next
 Stage D  Clients move to /api/v3 module-by-module.
 Stage E  Decommission legacy when compat usage → 0.
 ```

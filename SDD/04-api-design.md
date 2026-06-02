@@ -133,6 +133,31 @@ Subscription routes (from `legacy/src/subscriptions/urls.py`): at minimum **`POS
 
 All compat handlers scope to `island=sao-miguel` until multi-island clients ship.
 
+### Implementation status (`SaoMiguelBus-api` `revamp`, 2026-06-01)
+
+The revamp backend **substitutes for legacy production** for the web PWA: same URLs, same response shapes, backed by the normalized transit schema after `import_legacy`.
+
+| Method | Path | Status | Notes |
+|--------|------|--------|-------|
+| GET | `/api/v2/stops` | **Done** | `compat/api.py` |
+| GET | `/api/v2/webapp/load` | **Done** | Bootstrap payload |
+| GET | `/api/v2/route` | **Done** | Route search |
+| POST | `/api/v2/like/<id>`, `/dislike/<id>` | **Done** | |
+| GET | `/api/v1/stops` | **Done** | Desktop + Flutter |
+| GET | `/api/v1/route` | **Done** | Desktop search |
+| POST | `/api/v1/stat` | **Done** | Writes to new analytics |
+| GET | `/api/v1/gmaps` | **Done** | Needs `GOOGLE_MAPS_API_KEY` |
+| GET | `/api/v1/ad`, POST `/ad/click` | **Done** | |
+| POST | `/api/v1/subscription/verify/` | **Done** | |
+| GET | `/api/v2/android/load` | **Todo** | Native Android |
+| GET | `/api/v1/routes`, `/route/<id>` | **Todo** | P1 |
+| GET | `/api/v1/groups`, `/infos`, `/holidays` | **Todo** | P1 |
+| GET | `/api/v1/stats`, `/stats/group` | **Todo** | P2 admin |
+
+**Validated:** staging host (`staging.api.saomiguelbus.com`) serves web PWA traffic with compat handlers. **Cutover:** repoint `api.saomiguelbus.com` DNS to revamp backend — webapp already calls production hostname.
+
+**Env required on revamp:** `AUTH_KEY`, `GOOGLE_MAPS_API_KEY`, `DEFAULT_ISLAND_KEY=sao-miguel`, `CORS_ALLOW_ALL_ORIGINS=True`. See `SaoMiguelBus-api/AGENTS.md`.
+
 ### Shim behavior (examples)
 
 ```

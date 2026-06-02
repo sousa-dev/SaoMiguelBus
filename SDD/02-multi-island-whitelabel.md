@@ -43,12 +43,12 @@ TenantScopedModel (abstract)
 Client                         Backend
 ──────                         ───────
 X-Island: sao-miguel    ─────▶ TenantMiddleware resolves Island
-(or subdomain                  → sets active-island contextvar
- sao-miguel.azoreshub.app)     → all TenantManager queries auto-filter
-                               → 400 if island unknown / not is_live
+?island=sao-miguel              → sets active-island contextvar
+                                → all TenantManager queries auto-filter
+                                → unknown island → fallback to DEFAULT_ISLAND_KEY
 ```
 
-Resolution order: explicit `X-Island` header → subdomain → `?island=` query param (compat) → configured default. The legacy compat shim ([`04`](./04-api-design.md)) always injects `sao-miguel`.
+Resolution order: explicit `X-Island` header → `?island=` query param → `DEFAULT_ISLAND_KEY` env (default `sao-miguel`). **Hostname/subdomain parsing is disabled** — IP addresses and staging subdomains must not be interpreted as island keys. The legacy compat shim ([`04`](./04-api-design.md)) always scopes to `sao-miguel`.
 
 ## 4. Frontend white-labeling
 
