@@ -9,6 +9,7 @@ import type {
   Stop,
   TransitSearchResult,
   TripDetail,
+  NewsArticle,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -121,6 +122,34 @@ export async function fetchDirections(params: {
     locale: params.locale ?? 'pt',
   });
   return apiFetch<DirectionsResponse>(`/api/v3/transit/directions?${query.toString()}`);
+}
+
+export async function fetchNewsArticles(params?: {
+  category?: string;
+  source?: number;
+  q?: string;
+  limit?: number;
+}): Promise<NewsArticle[]> {
+  const query = new URLSearchParams();
+  if (params?.category) {
+    query.set('category', params.category);
+  }
+  if (params?.source) {
+    query.set('source', String(params.source));
+  }
+  if (params?.q) {
+    query.set('q', params.q);
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  const data = await apiFetch<{ articles: NewsArticle[] }>(`/api/v3/news/articles${suffix}`);
+  return data.articles;
+}
+
+export async function fetchNewsArticle(articleId: number): Promise<NewsArticle> {
+  return apiFetch<NewsArticle>(`/api/v3/news/articles/${articleId}`);
 }
 
 export async function postConsent(sessionId: string, purposes: ConsentPurposes) {

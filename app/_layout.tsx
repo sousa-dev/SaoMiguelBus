@@ -23,6 +23,8 @@ SplashScreen.preventAutoHideAsync();
 function AppShell() {
   const { data: bootstrap } = useBootstrap();
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
+  const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
+  const requireReconsent = useConsentStore((s) => s.requireReconsent);
 
   useEffect(() => {
     void loadSavedLocale().then((saved) => {
@@ -31,6 +33,16 @@ function AppShell() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    const serverVersion = bootstrap?.consentPolicyVersion;
+    if (!serverVersion || !storedPolicyVersion) {
+      return;
+    }
+    if (storedPolicyVersion !== serverVersion) {
+      requireReconsent();
+    }
+  }, [bootstrap?.consentPolicyVersion, storedPolicyVersion, requireReconsent]);
 
   useEffect(() => {
     if (hasAnalytics) {

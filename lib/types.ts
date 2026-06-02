@@ -14,6 +14,7 @@ export interface BootstrapResponse {
   };
   version: string;
   mapsEnabled: boolean;
+  consentPolicyVersion: string;
   holidays: { id: number; date: string; name: string }[];
   infos: Record<string, unknown>[];
 }
@@ -90,4 +91,18 @@ export interface DirectionsResponse {
   routes?: DirectionsRoute[];
   warning?: string;
   error?: { code?: string; message?: string } | string;
+}
+
+export interface NewsArticle {
+  id: number;
+  title: string;
+  summary: string;
+  link: string;
+  publishedAt: string;
+  category: string;
+  source: {
+    id: number;
+    name: string;
+    language: string;
+  };
 }

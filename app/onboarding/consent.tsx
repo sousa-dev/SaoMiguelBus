@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { useAppTheme } from '@/lib/theme';
 import type { ConsentPurposes } from '@/lib/types';
@@ -13,6 +14,8 @@ export default function ConsentScreen() {
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
   const saveCustom = useConsentStore((s) => s.saveCustom);
+  const bootstrap = useBootstrap();
+  const policyVersion = bootstrap.data?.consentPolicyVersion;
   const decided = useConsentStore((s) => s.decided);
   const storedPurposes = useConsentStore((s) => s.purposes);
   const [purposes, setPurposes] = useState<ConsentPurposes>(() =>
@@ -82,21 +85,21 @@ export default function ConsentScreen() {
 
         <Pressable
           disabled={busy}
-          onPress={() => wrap(acceptAll)}
+          onPress={() => wrap(() => acceptAll(policyVersion))}
           style={[styles.btn, { backgroundColor: theme.primary }]}
         >
           <Text style={styles.btnText}>Accept all</Text>
         </Pressable>
         <Pressable
           disabled={busy}
-          onPress={() => wrap(rejectNonEssential)}
+          onPress={() => wrap(() => rejectNonEssential(policyVersion))}
           style={[styles.btn, styles.btnOutline, { borderColor: theme.secondary }]}
         >
           <Text style={{ color: theme.secondary, fontWeight: '600' }}>Reject non-essential</Text>
         </Pressable>
         <Pressable
           disabled={busy}
-          onPress={() => wrap(() => saveCustom(purposes))}
+          onPress={() => wrap(() => saveCustom(purposes, policyVersion))}
           style={[styles.btn, { backgroundColor: theme.secondary }]}
         >
           <Text style={styles.btnText}>Save choices</Text>

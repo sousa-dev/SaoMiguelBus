@@ -29,6 +29,15 @@ export default function TabLayout() {
           }}
         />
       ) : null}
+      {modules.includes('news') ? (
+        <Tabs.Screen
+          name="news"
+          options={{
+            title: t('navBarNewsLabel'),
+            headerShown: false,
+          }}
+        />
+      ) : null}
     </Tabs>
   );
 }

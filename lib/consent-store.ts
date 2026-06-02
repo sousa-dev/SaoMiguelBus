@@ -18,11 +18,13 @@ export const defaultPurposes: ConsentPurposes = {
 interface ConsentState {
   decided: boolean;
   purposes: ConsentPurposes;
+  policyVersion: string | null;
   setPurposes: (purposes: ConsentPurposes) => void;
-  acceptAll: () => Promise<void>;
-  rejectNonEssential: () => Promise<void>;
-  saveCustom: (purposes: ConsentPurposes) => Promise<void>;
+  acceptAll: (policyVersion?: string) => Promise<void>;
+  rejectNonEssential: (policyVersion?: string) => Promise<void>;
+  saveCustom: (purposes: ConsentPurposes, policyVersion?: string) => Promise<void>;
   hasAnalyticsConsent: () => boolean;
+  requireReconsent: () => void;
 }
 
 async function syncToBackend(purposes: ConsentPurposes) {
@@ -34,14 +36,28 @@ async function syncToBackend(purposes: ConsentPurposes) {
   }
 }
 
+function persistDecision(
+  set: (partial: Partial<ConsentState>) => void,
+  purposes: ConsentPurposes,
+  policyVersion?: string,
+) {
+  set({
+    decided: true,
+    purposes,
+    ...(policyVersion ? { policyVersion } : {}),
+  });
+}
+
 export const useConsentStore = create<ConsentState>()(
   persist(
     (set, get) => ({
       decided: false,
       purposes: defaultPurposes,
+      policyVersion: null,
       setPurposes: (purposes) => set({ purposes }),
       hasAnalyticsConsent: () => get().decided && get().purposes.analytics,
-      acceptAll: async () => {
+      requireReconsent: () => set({ decided: false }),
+      acceptAll: async (policyVersion) => {
         const purposes: ConsentPurposes = {
           strictly_necessary: true,
           analytics: true,
@@ -49,23 +65,27 @@ export const useConsentStore = create<ConsentState>()(
           personalization: true,
         };
         await syncToBackend(purposes);
-        set({ decided: true, purposes });
+        persistDecision(set, purposes, policyVersion);
       },
-      rejectNonEssential: async () => {
+      rejectNonEssential: async (policyVersion) => {
         const purposes = { ...defaultPurposes };
         await syncToBackend(purposes);
-        set({ decided: true, purposes });
+        persistDecision(set, purposes, policyVersion);
       },
-      saveCustom: async (purposes) => {
+      saveCustom: async (purposes, policyVersion) => {
         const normalized = { ...defaultPurposes, ...purposes, strictly_necessary: true };
         await syncToBackend(normalized);
-        set({ decided: true, purposes: normalized });
+        persistDecision(set, normalized, policyVersion);
       },
     }),
     {
       name: CONSENT_KEY,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ decided: state.decided, purposes: state.purposes }),
+      partialize: (state) => ({
+        decided: state.decided,
+        purposes: state.purposes,
+        policyVersion: state.policyVersion,
+      }),
     },
   ),
 );
