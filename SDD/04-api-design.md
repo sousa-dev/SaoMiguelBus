@@ -45,7 +45,7 @@ Conventions for all CRUD resources:
 | **Marketplace** | `/marketplace/providers` (CRUD), `/marketplace/providers/{id}/reviews` (CRUD) | `GET /marketplace/categories`, `POST /marketplace/providers/{id}/moderate` |
 | Trails | — (open-data sync) | `GET /trails`, `GET /trails/{id}`, `GET /trails/pois` |
 | **Traffic** | `/traffic/reports` (CRUD) | `POST /traffic/reports/{id}/confirm`, `GET /traffic/reports?bbox=` |
-| **Events** | `/events` (CRUD) | `GET /events/tours` (Viator), `POST /events/{id}/moderate`, `POST /events/{id}/promote` |
+| **Events / Tours** | `/events` (CRUD — **planned**) | **`GET /events/tours`**, **`GET /events/tours/{code}`** (Viator proxy — **shipped**); `POST /events/{id}/moderate`, `POST /events/{id}/promote` (**planned**) |
 | Analytics | — | `POST /analytics/events` (consent-gated ingestion) |
 | Consent | — | `GET/POST /consent`, `POST /privacy/dsar/export`, `POST /privacy/dsar/delete` |
 | Billing | `/promotions` (create/list/cancel) | `GET /billing/entitlement`, `POST /billing/webhooks/stripe`, `POST /billing/webhooks/revenuecat` |
@@ -62,6 +62,25 @@ External "post your event / list your business / submit a promotion" sites (sepa
 - Partner-created rows are attributed (`created_by_partner`) and still enter the **moderation queue** before going public.
 - Partner-facing endpoints are exactly the §2.1 CRUD verbs — no special surface — so a partner can `POST` to create, `PATCH` to edit, `DELETE` to withdraw their own submissions.
 - A self-service **partner portal** can be built later on top of these same endpoints; nothing extra server-side is required.
+
+### 2.4 Viator tours proxy (`events` app — shipped)
+
+Read-only proxy to the **Viator Partner API** (`VIATOR_BASE_URL`, default `https://api.viator.com/partner`). No local tour DB — results are normalized in `events/services.py` and cached in Redis (TTL 3600s; destination lookup 24h).
+
+| Method | Path | Query | Success |
+|--------|------|-------|---------|
+| GET | `/api/v3/events/tours` | `locale`, `currency` (default `EUR`), `sort` (default `DEFAULT`), `limit`/`count` (1–50, default 30), `start` (pagination, default 1) | `{ "tours": [TourSummary, …] }` |
+| GET | `/api/v3/events/tours/{product_code}` | `locale`, `currency` | `TourDetail` (flat object) |
+
+**`TourSummary`:** `code`, `title`, `thumbnailUrl`, `rating`, `reviewCount`, `fromPrice`, `currency`, `durationMinutes`, `bookingUrl` (affiliate params injected server-side).
+
+**`TourDetail`** adds: `heroUrl`, `description`, `images: [{url, caption}]`, `flags: string[]`.
+
+**Errors:** `400 island_required`, `404 not_found`, `502 viator_unavailable` (missing `VIATOR_API_KEY` or upstream failure).
+
+**Env:** `VIATOR_API_KEY` (required for live data), `VIATOR_PARTNER_ID` (default `P00222801`), `VIATOR_CAMPAIGN` (default `sao-miguel-tours`), `VIATOR_DESTINATION_ID` (optional override), `VIATOR_BASE_URL`, `VIATOR_TIMEOUT` (default 25s).
+
+**Module flag:** bootstrap exposes `events` in `enabledModules` when `Island.feature_flags.events` is true (migration `0010_enable_events_feature_flag`). The tours endpoints do **not** re-check the flag — gating is client-side.
 
 ## 3. Versioning strategy
 
@@ -133,7 +152,7 @@ Subscription routes (from `legacy/src/subscriptions/urls.py`): at minimum **`POS
 
 All compat handlers scope to `island=sao-miguel` until multi-island clients ship.
 
-### Implementation status (`SaoMiguelBus-api` `revamp`, 2026-06-01)
+### Implementation status (`SaoMiguelBus-api` `revamp`, 2026-06-02)
 
 The revamp backend **substitutes for legacy production** for the web PWA: same URLs, same response shapes, backed by the normalized transit schema after `import_legacy`.
 
@@ -154,6 +173,8 @@ The revamp backend **substitutes for legacy production** for the web PWA: same U
 | GET/PATCH/DELETE | `/api/v3/marketplace/providers/{id}` | **Done** | Owner via `X-Session-Id`; soft-delete |
 | POST | `/api/v3/marketplace/providers/{id}/moderate` | **Done** | Staff only |
 | GET/POST | `/api/v3/marketplace/providers/{id}/reviews` | **Done** | Upsert per session; rating recompute on publish |
+| GET | `/api/v3/events/tours` | **Done** | Viator Partner API proxy; Redis cache; needs `VIATOR_API_KEY` |
+| GET | `/api/v3/events/tours/{code}` | **Done** | Product detail + affiliate `bookingUrl` |
 | GET | `/api/v2/android/load` | **Todo** | Native Android |
 | GET | `/api/v1/routes`, `/route/<id>` | **Todo** | P1 |
 | GET | `/api/v1/groups`, `/infos`, `/holidays` | **Todo** | P1 |
@@ -161,7 +182,7 @@ The revamp backend **substitutes for legacy production** for the web PWA: same U
 
 **Validated:** staging host (`staging.api.saomiguelbus.com`) serves web PWA traffic with compat handlers. **Cutover:** repoint `api.saomiguelbus.com` DNS to revamp backend — webapp already calls production hostname.
 
-**Env required on revamp:** `AUTH_KEY`, `GOOGLE_MAPS_API_KEY`, `DEFAULT_ISLAND_KEY=sao-miguel`, `CORS_ALLOW_ALL_ORIGINS=True`. See `SaoMiguelBus-api/AGENTS.md`.
+**Env required on revamp:** `AUTH_KEY`, `GOOGLE_MAPS_API_KEY`, `DEFAULT_ISLAND_KEY=sao-miguel`, `CORS_ALLOW_ALL_ORIGINS=True`, `VIATOR_API_KEY` (tours tab). See `SaoMiguelBus-api/AGENTS.md`.
 
 > **Implementation note (UGC style):** §2.1 specifies `ModelViewSet + DefaultRouter` for UGC. The shipped `marketplace` module (first UGC module) instead uses DRF `@api_view` function views with explicit URL routing and service-layer dict serialization — consistent with every other v3 module in `src/` (no router infra exists). The REST contract (verbs, moderation lifecycle, ownership, throttling) is unchanged; only the view mechanism differs. Events/Traffic should follow the marketplace pattern.
 

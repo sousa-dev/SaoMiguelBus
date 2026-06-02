@@ -195,7 +195,7 @@ seismic/     SeismicEvent(emsc_id,magnitude,depth,lat,lng,occurred_at,region)  F
 marketplace/ ServiceCategory(name,icon)  ServiceProvider(name,category,bio,hourly_rate,phone,geo,is_promoted,rating)  Review(provider,session_hash,rating,text)
 trails/      Trail(name,difficulty,length_km,geojson,source_ref)  TrailStage(...)  POI(name,type,geo)
 traffic/     TrafficReport(type,lat,lng,session_hash,created_at,expires_at,confirmations,status)
-events/      CommunityEvent(title,description,start,end,venue,geo,is_promoted,status)  ViatorListing(...)
+events/      **Shipped:** no ORM models — Viator tours are proxied live ([`04`](./04-api-design.md) §2.4). **Planned:** CommunityEvent(title,description,start,end,venue,geo,is_promoted,status); optional ViatorListing cache table if Partner API caching policy changes
 ads/         Ad(...)  StopGroup(...)   # first-party ad campaigns, migrated from legacy Ad/Group
 ```
 

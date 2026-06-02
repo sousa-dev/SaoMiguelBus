@@ -38,7 +38,8 @@ AnalyticsEvent
 | marketplace | engage | `{action: "call"|"review"|"view", provider_id}` |
 | trails | view | `{trail_id, difficulty}` |
 | traffic | submit | `{report_type, has_location: true}` |
-| events | engage | `{action: "view"|"submit"|"promote", event_id}` |
+| events | engage | `{action: "view"|"submit"|"promote", event_id}` — community events (**planned**) |
+| tours | view / open / book_click | `{screen?, tour_code, title?}` — **shipped** Expo client uses module key `tours` (not `events`) for Viator tab ([`09`](./09-modules.md) §7) |
 
 Property schemas are validated server-side (a registry per module/event_type) to keep the table analyzable.
 

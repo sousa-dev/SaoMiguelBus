@@ -85,7 +85,7 @@ SaoMiguelBus-api/                    # revamp branch
 │   ├── marketplace/
 │   ├── trails/
 │   ├── traffic/
-│   ├── events/
+│   ├── events/                      # Viator tours proxy (shipped); CommunityEvent CRUD planned
 │   └── compat/                      # Legacy /api/v1 + /api/v2 shim
 ├── setup.py
 ├── docker-compose.yml

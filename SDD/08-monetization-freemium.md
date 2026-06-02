@@ -74,9 +74,11 @@ Promotion
 
 ## 5. Viator affiliate (passive income)
 
-Migrate the existing Viator integration (partner `P00222801`, campaign `sao-miguel-tours`) into the Events/Tours module:
-- `ViatorListing` + an in-app Tours surface using Viator partner widgets/deep links with affiliate params.
-- Commission is passive (Viator-side); no billing entity on our end beyond attribution tracking.
+**Shipped (2026-06):** partner `P00222801`, campaign `sao-miguel-tours` — affiliate params injected server-side on every `bookingUrl` from `GET /api/v3/events/tours*`. Expo **Tours** tab shows native cards; booking opens the **system browser** (`Linking.openURL`) so users keep Viator sessions. Legacy webapp still uses the Viator JS widget until PWA retirement.
+
+**Planned:** optional `ViatorListing` DB cache if caching/attribution needs exceed Partner API TTL rules; community events CRUD + pay-to-promote remain separate ([`09`](./09-modules.md) §7).
+
+Commission is passive (Viator-side); no billing entity on our end beyond attribution tracking (`tours` analytics: `book_click`, etc.).
 
 ## 6. Cross-cutting
 

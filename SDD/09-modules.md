@@ -88,14 +88,29 @@ Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (re
 
 ## 7. Crowdsourced Events & Tours
 
-**Backend:** `events` — `CommunityEvent`, `ViatorListing`.
+**Backend:** `events` app (`src/events/`). **Shipped (2026-06):** Viator Partner API proxy only — no Django models, no admin, no Celery. **Planned:** `CommunityEvent` + community CRUD/moderation/promote ([`03`](./03-data-model.md), [`04`](./04-api-design.md) §2.1).
 
-**Features:**
-- **CRUD ([`04`](./04-api-design.md) §2.1):** `GET/POST /events`, `GET/PUT/PATCH/DELETE /events/{id}` — locals/promoters (user token or partner key from an external "submit your event" site) create, edit, and withdraw their own events.
+### Shipped — Viator affiliate tours
+
+- **API:** `GET /api/v3/events/tours`, `GET /api/v3/events/tours/{product_code}` — live search/detail via Viator Partner API; normalized JSON + affiliate `bookingUrl` (`pid`, `campaign`, `medium=link`); Redis cache ≤1h ([`04`](./04-api-design.md) §2.4).
+- **Config:** `VIATOR_API_KEY` required in prod; `VIATOR_PARTNER_ID=P00222801`, `VIATOR_CAMPAIGN=sao-miguel-tours`; São Miguel destination auto-resolved from `/destinations` unless `VIATOR_DESTINATION_ID` is set.
+- **Enablement:** `Island.feature_flags.events` → bootstrap `enabledModules` includes `'events'` (migration `0010_enable_events_feature_flag` on `sao-miguel`).
+- **Legacy webapp:** still embeds Viator `widget.js` in `SaoMiguelBus-webapp` — unchanged until PWA cutover.
+
+### Shipped — Expo Tours tab
+
+- **Tab route:** `app/(tabs)/tours/` (UI label "Tours"; module flag key remains **`events`**).
+- **Feature code:** `features/events/` — `TourCard`, `useTours`/`useTour` (TanStack Query → v3 API), `viator.ts` fallback URL + `openViatorExternal()` via **`Linking.openURL`** (system Safari/Chrome — not `expo-web-browser`, so users keep Viator logins/cookies).
+- **Screens:** list (`FlatList`), detail (`[tourId]`), book CTA opens `bookingUrl` from API.
+- **Static merge:** `config/island.ts` unions bootstrap modules with `enabledModules: ['transit', 'events']` so the tab stays available if API flags lag.
+- **Analytics (client):** `track('tours', 'view'|'open'|'book_click', …)` — module string `tours` in first-party events (backend `AnalyticsEvent` registry still lists `events`; align in a follow-up if needed).
+
+### Planned — community events
+
+- **CRUD ([`04`](./04-api-design.md) §2.1):** `GET/POST /events`, `GET/PUT/PATCH/DELETE /events/{id}` — locals/promoters (user token or partner key) create, edit, withdraw.
 - Submissions enter `pending` → `POST /events/{id}/moderate` (staff) → `published`/`rejected`.
 - Promoters **Pay-to-Promote** via `POST /events/{id}/promote` ([`08`](./08-monetization-freemium.md)).
-- **Viator** affiliate tours surface (passive commission) at `GET /events/tours`.
-- Calendar/list/map views; filter by date/category; tracked.
+- Calendar/list/map views; filter by date/category; tracked under `events` module.
 
 ---
 

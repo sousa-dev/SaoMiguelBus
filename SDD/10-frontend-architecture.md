@@ -31,7 +31,7 @@ app/
 │   ├── marketplace/
 │   ├── trails/
 │   ├── traffic/
-│   └── events/            # incl. Viator tours
+│   └── tours/             # Viator tours (gated by module key `events`)
 ├── premium/               # paywall, manage subscription
 ├── settings/              # language, theme, consent, account, privacy/DSAR
 └── onboarding/consent.tsx # CMP, shown first launch before any tracking
@@ -41,7 +41,22 @@ features/<module>/         # components + hooks + queries per module
 lib/                       # api client, analytics SDK, consent, theme, i18n, offline
 ```
 
-Tabs and routes are **conditionally registered** from `enabledModules` so a transit-only island doesn't render empty tabs.
+**Naming:** backend/bootstrap module key is `events`; Expo tab folder and analytics module string are `tours`; feature code lives under `features/events/`.
+
+Tabs and routes are **conditionally registered** from `enabledModules` so a transit-only island doesn't render empty tabs. `resolveEnabledModules()` in `config/island.ts` unions bootstrap flags with static `enabledModules` so client-shipped tabs are not hidden when the API flag lags.
+
+## 2.1 Tours module (shipped)
+
+| Piece | Location |
+|-------|----------|
+| Tab | `app/(tabs)/tours/` — `_layout.tsx` (stack), `index.tsx` (list), `[tourId].tsx` (detail) |
+| Data | `lib/api.ts` → `fetchTours` / `fetchTour` → `/api/v3/events/tours` |
+| Types | `lib/types.ts` — `TourSummary`, `TourDetail`, `TourImage` |
+| UI | `features/events/components/TourCard.tsx`, `hooks/useTourQueries.ts` |
+| External booking | `features/events/viator.ts` — `openViatorExternal()` uses `Linking.openURL` (default system browser); fallback affiliate URL when list is empty |
+| i18n | `navBarToursLabel`, `toursSubtitle`, `tourBookCta`, duration/price keys in all 8 locale files |
+
+No WebView / `react-native-webview` — native cards only; commission via server-injected `bookingUrl` and footer fallback link.
 
 ## 3. Theming / white-label (see [`02`](./02-multi-island-whitelabel.md))
 
@@ -88,3 +103,18 @@ Tabs and routes are **conditionally registered** from `enabledModules` so a tran
 | Tailwind CDN, no build | RN styling/theme tokens, EAS builds |
 | Three clients (web/Android/Flutter) | one Expo codebase |
 | 8 JSON locales | typed i18n, **Portuguese-first**; core `pt,en,de,es,fr` maintained, `it,uk,zh` optional (keep keys, run `check_locale_keys` equivalent against `pt`) |
+| Legacy webapp Viator widget embed | Native tour cards + detail; book opens system browser |
+
+## 9. Implementation status (`SaoMiguelBus` `revamp`, 2026-06-02)
+
+| Tab / module | Route | API | Notes |
+|--------------|-------|-----|-------|
+| Transit | `(tabs)/transit/` | `/api/v3/transit/*`, bootstrap | **Shipped** — primary tab |
+| Tours (`events`) | `(tabs)/tours/` | `/api/v3/events/tours` | **Shipped** — requires API `VIATOR_API_KEY` + island `events` flag |
+| Earthquakes (`seismic`) | `(tabs)/earthquakes/` | `/api/v3/seismic/*` | **Shipped** — list + map, time-window filters, felt vote |
+| News | `(tabs)/news/` | `/api/v3/news/*` | Implemented; tab hidden unless bootstrap enables `news` |
+| Trails | `(tabs)/trails/` | `/api/v3/trails/*` | Implemented; tab hidden unless `trails` |
+| Marketplace | `(tabs)/marketplace/` | `/api/v3/marketplace/*` | Implemented; tab hidden unless `marketplace` |
+| Traffic | `(tabs)/traffic/` | `/api/v3/traffic/*` | Client implemented; backend `traffic/urls_v3.py` still missing — wire before enabling tab |
+
+**São Miguel default visibility:** static `enabledModules: ['transit', 'events']` plus bootstrap merge; other modules appear when `Island.feature_flags` enables them (see API migrations `0005`–`0010`).

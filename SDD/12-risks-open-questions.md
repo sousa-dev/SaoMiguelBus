@@ -61,3 +61,5 @@ Resolve product open questions **before Phase 1 coding**. Technical assumptions 
 | 2026-06-01 | Compat API substitutes legacy for web PWA | Drop-in cutover: same URLs/shapes; revamp validated on staging |
 | 2026-06-01 | Batched JSONL import + Celery async for large exports | Avoids OOM on 400MB+ exports; `LegacyImportJob` tracks progress |
 | 2026-06-01 | Tenancy: no hostname island parsing | Prevents `unknown_island: staging` / IP octet bugs; fallback to `DEFAULT_ISLAND_KEY` |
+| 2026-06-02 | Viator tours via Partner API proxy, not widget/DB | `events` app: `viator_client.py` + Redis cache; mobile native list/detail; `Linking.openURL` for booking |
+| 2026-06-02 | Tours tab gated by `feature_flags.events` | Bootstrap `enabledModules`; static client merge keeps tab if API lags; API does not enforce flag on `/events/tours` |

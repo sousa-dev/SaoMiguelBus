@@ -46,7 +46,7 @@ export const staticIslandConfig: IslandConfig = {
 
 /**
  * Merge bootstrap modules with build-time static modules so client-shipped tabs
- * (e.g. tours via Viator WebView) stay visible when the API flag lags behind the app.
+ * (e.g. tours tab) stay visible when the API flag lags behind the app.
  */
 export function resolveEnabledModules(fromBootstrap: string[] | undefined): ModuleKey[] {
   if (!fromBootstrap?.length) {
