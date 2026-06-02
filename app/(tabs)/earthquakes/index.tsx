@@ -144,7 +144,26 @@ export default function EarthquakesScreen() {
 
       <View style={styles.fill}>
         {viewMode === 'map' && hasMap ? (
-          <SeismicMap events={eventList} onMarkerPress={onMarkerPress} />
+          <View style={styles.mapWrap}>
+            <SeismicMap events={eventList} onMarkerPress={onMarkerPress} />
+            {!events.isLoading && !events.isError && eventList.length === 0 ? (
+              <View style={styles.mapEmptyOverlay} pointerEvents="box-none">
+                <View
+                  style={[
+                    styles.mapEmptyCard,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Text style={[styles.mapEmptyText, { color: theme.text }]}>
+                    {t('seismicMapEmpty')}
+                  </Text>
+                  <Text style={[styles.mapEmptyHint, { color: theme.muted }]}>
+                    {t('seismicMapEmptyHint')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
         ) : (
           <FlatList
             data={eventList}
@@ -190,6 +209,29 @@ export default function EarthquakesScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  mapWrap: { flex: 1, position: 'relative' },
+  mapEmptyOverlay: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
+    zIndex: 10,
+    elevation: 10,
+    alignItems: 'stretch',
+  },
+  mapEmptyCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  mapEmptyText: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
+  mapEmptyHint: { fontSize: 13, textAlign: 'center', marginTop: 6, lineHeight: 18 },
   list: { padding: 12, paddingBottom: 24 },
   toggleRow: {
     flexDirection: 'row',

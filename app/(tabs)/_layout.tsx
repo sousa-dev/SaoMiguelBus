@@ -1,25 +1,64 @@
 import { Tabs } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
+import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { resolveEnabledModules } from '@/config/island';
+import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useHubStore } from '@/lib/hub-store';
 import { logger } from '@/lib/logger';
+import { HUB_MODULES, HUB_TAB } from '@/lib/modules';
 import { useAppTheme } from '@/lib/theme';
+
+const SCREEN_MODULE_KEY: Record<string, ModuleKey> = {
+  transit: 'transit',
+  news: 'news',
+  earthquakes: 'seismic',
+  trails: 'trails',
+  marketplace: 'marketplace',
+  traffic: 'traffic',
+  tours: 'events',
+};
+
+function TabBarIcon({
+  Icon,
+  color,
+  size,
+}: {
+  Icon: typeof HUB_TAB.Icon;
+  color: ColorValue;
+  size: number;
+}) {
+  return <Icon color={color} size={size} strokeWidth={2} />;
+}
 
 export default function TabLayout() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { data: bootstrap, refetch } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
-  const showTransit = modules.includes('transit');
-  const showNews = modules.includes('news');
-  const showSeismic = modules.includes('seismic');
-  const showTrails = modules.includes('trails');
-  const showMarketplace = modules.includes('marketplace');
-  const showTraffic = modules.includes('traffic');
-  const showTours = modules.includes('events');
+  const pinnedKeys = useHubStore((s) => s.pinnedKeys);
+
+  const isEnabled = useCallback(
+    (key: ModuleKey) => modules.includes(key),
+    [modules],
+  );
+
+  const tabHref = useCallback(
+    (screenName: string) => {
+      const moduleKey = SCREEN_MODULE_KEY[screenName];
+      if (!moduleKey) {
+        return null;
+      }
+      const mod = HUB_MODULES.find((m) => m.key === moduleKey);
+      if (!mod || !isEnabled(moduleKey) || !pinnedKeys.includes(moduleKey)) {
+        return null;
+      }
+      return mod.route;
+    },
+    [isEnabled, pinnedKeys],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -31,6 +70,8 @@ export default function TabLayout() {
     logger.debug('tab modules', modules.join(','));
   }
 
+  const HubIcon = HUB_TAB.Icon;
+
   return (
     <Tabs
       screenOptions={{
@@ -41,11 +82,26 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="hub"
+        options={{
+          title: t(HUB_TAB.labelKey),
+          headerShown: false,
+          href: HUB_TAB.route,
+          tabBarIcon: ({ color, size }) => (
+            <TabBarIcon Icon={HubIcon} color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="transit"
         options={{
           title: t('navBarSearchLabel'),
           headerShown: false,
-          href: showTransit ? '/transit' : null,
+          href: tabHref('transit'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'transit');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -53,7 +109,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarNewsLabel'),
           headerShown: false,
-          href: showNews ? '/news' : null,
+          href: tabHref('news'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'news');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -61,7 +121,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarEarthquakesLabel'),
           headerShown: false,
-          href: showSeismic ? '/earthquakes' : null,
+          href: tabHref('earthquakes'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'seismic');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -69,7 +133,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarTrailsLabel'),
           headerShown: false,
-          href: showTrails ? '/trails' : null,
+          href: tabHref('trails'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'trails');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -77,7 +145,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarMarketplaceLabel'),
           headerShown: false,
-          href: showMarketplace ? '/marketplace' : null,
+          href: tabHref('marketplace'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'marketplace');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -85,7 +157,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarTrafficLabel'),
           headerShown: false,
-          href: showTraffic ? '/traffic' : null,
+          href: tabHref('traffic'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'traffic');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
@@ -93,7 +169,11 @@ export default function TabLayout() {
         options={{
           title: t('navBarToursLabel'),
           headerShown: false,
-          href: showTours ? '/tours' : null,
+          href: tabHref('tours'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'events');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
     </Tabs>

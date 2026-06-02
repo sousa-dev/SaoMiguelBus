@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Settings } from 'lucide-react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 /** Gear icon for stack headerRight — opens settings modal. */
@@ -14,7 +15,7 @@ export function SettingsHeaderButton() {
       accessibilityLabel={t('settingsTitle')}
       hitSlop={8}
     >
-      <Text style={[styles.icon, { color: '#fff' }]}>⚙</Text>
+      <Settings color="#fff" size={20} strokeWidth={2} />
     </Pressable>
   );
 }
@@ -29,5 +30,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 4,
   },
-  icon: { fontSize: 18, fontWeight: '700' },
 });
