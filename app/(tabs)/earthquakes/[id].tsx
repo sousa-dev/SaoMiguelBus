@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
-import { FeltReportSheet } from '@/features/earthquakes/components/FeltReportSheet';
+import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { useSeismicEvent } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
@@ -33,6 +33,8 @@ export default function EarthquakeDetailScreen() {
 
   const data = event.data;
   const mapsUrl = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+  const feltYes = data.feltYesCount ?? data.feltCount ?? 0;
+  const feltNo = data.feltNoCount ?? 0;
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -47,9 +49,10 @@ export default function EarthquakeDetailScreen() {
       <Text style={{ color: theme.text, marginBottom: 16 }}>
         {t('seismicCoords', { lat: data.latitude.toFixed(2), lng: data.longitude.toFixed(2) })}
       </Text>
-      {data.feltCount ? (
+      {feltYes > 0 || feltNo > 0 ? (
         <Text style={{ color: theme.muted, marginBottom: 16 }}>
-          {t('seismicFeltCount', { count: data.feltCount })}
+          {t('seismicFeltYesCount', { count: feltYes })}
+          {feltNo > 0 ? ` · ${t('seismicFeltNoCount', { count: feltNo })}` : ''}
         </Text>
       ) : null}
 
@@ -67,9 +70,10 @@ export default function EarthquakeDetailScreen() {
         <Text style={styles.btnText}>{t('seismicFeltButton')}</Text>
       </Pressable>
 
-      <FeltReportSheet
+      <FeltVoteSheet
         visible={feltOpen}
         eventId={data.id}
+        event={data}
         theme={theme}
         onClose={() => setFeltOpen(false)}
       />

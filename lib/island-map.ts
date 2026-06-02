@@ -90,3 +90,71 @@ export function regionNeedsClamp(region: Region, bounds: MapBounds = saoMiguelMa
     Math.abs(clamped.longitudeDelta - region.longitudeDelta) > 1e-6
   );
 }
+
+/** Wide Azores viewport when no events are available. */
+export const azoresSeismicFallbackRegion: Region = {
+  latitude: 38.5,
+  longitude: -28.0,
+  latitudeDelta: 6.0,
+  longitudeDelta: 8.0,
+};
+
+/**
+ * Fit map to seismic event markers (archipelago-wide). No pan clamp — events span
+ * beyond São Miguel island bounds.
+ */
+export function getSeismicMapRegion(
+  events: { latitude: number; longitude: number }[],
+): Region {
+  if (events.length === 0) {
+    return azoresSeismicFallbackRegion;
+  }
+
+  let minLat = events[0].latitude;
+  let maxLat = events[0].latitude;
+  let minLng = events[0].longitude;
+  let maxLng = events[0].longitude;
+
+  for (const e of events) {
+    minLat = Math.min(minLat, e.latitude);
+    maxLat = Math.max(maxLat, e.latitude);
+    minLng = Math.min(minLng, e.longitude);
+    maxLng = Math.max(maxLng, e.longitude);
+  }
+
+  const pad = 1.25;
+  const latSpan = Math.max((maxLat - minLat) * pad, 0.15);
+  const lngSpan = Math.max((maxLng - minLng) * pad, 0.2);
+
+  return {
+    latitude: (minLat + maxLat) / 2,
+    longitude: (minLng + maxLng) / 2,
+    latitudeDelta: latSpan,
+    longitudeDelta: lngSpan,
+  };
+}
+
+/** Marker color by magnitude (green / amber / red). */
+export function markerColorForMagnitude(magnitude: number): string {
+  if (magnitude >= 4.5) {
+    return '#C62828';
+  }
+  if (magnitude >= 3) {
+    return '#E65100';
+  }
+  return '#2E7D32';
+}
+
+/** Marker bubble size (px) scaled by magnitude. */
+export function markerSizeForMagnitude(magnitude: number): number {
+  if (magnitude >= 5) {
+    return 48;
+  }
+  if (magnitude >= 4) {
+    return 42;
+  }
+  if (magnitude >= 3) {
+    return 36;
+  }
+  return 30;
+}

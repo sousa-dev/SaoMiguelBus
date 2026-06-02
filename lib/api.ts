@@ -12,6 +12,7 @@ import type {
   NewsArticle,
   SeismicEvent,
   FeltReportResponse,
+  SeismicFeltInput,
   TrailsListResponse,
   TrailDetail,
   POIsListResponse,
@@ -187,12 +188,7 @@ export async function fetchSeismicEvent(eventId: number): Promise<SeismicEvent> 
 
 export async function postSeismicFelt(
   eventId: number,
-  payload: {
-    session_id: string;
-    intensity: number;
-    latitude?: number;
-    longitude?: number;
-  },
+  payload: SeismicFeltInput & { session_id: string },
 ): Promise<FeltReportResponse> {
   return apiFetch<FeltReportResponse>(`/api/v3/seismic/events/${eventId}/felt`, {
     method: 'POST',

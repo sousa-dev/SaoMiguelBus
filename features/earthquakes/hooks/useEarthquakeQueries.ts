@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchSeismicEvent, fetchSeismicEvents, postSeismicFelt } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { getOrCreateSessionId } from '@/lib/session';
+import type { SeismicFeltInput } from '@/lib/types';
 
 export function useSeismicEvents(enabled = true) {
   return useQuery({
@@ -26,12 +27,17 @@ export function useSeismicEvent(eventId: number, enabled = true) {
 export function useSubmitFeltReport(eventId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (intensity: number) => {
+    mutationFn: async (input: SeismicFeltInput) => {
       const sessionId = await getOrCreateSessionId();
-      return postSeismicFelt(eventId, { session_id: sessionId, intensity });
+      return postSeismicFelt(eventId, { session_id: sessionId, ...input });
     },
-    onSuccess: (_data, intensity) => {
-      track('seismic', 'engage', { action: 'felt', event_id: eventId, intensity });
+    onSuccess: (_data, input) => {
+      track('seismic', 'engage', {
+        action: 'felt',
+        event_id: eventId,
+        felt: input.felt,
+        intensity: input.intensity ?? null,
+      });
       void queryClient.invalidateQueries({ queryKey: ['seismic', 'v1', 'event', eventId] });
       void queryClient.invalidateQueries({ queryKey: ['seismic', 'v1', 'events'] });
     },

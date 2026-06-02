@@ -117,13 +117,25 @@ export interface SeismicEvent {
   occurredAt: string;
   region: string;
   feltCount?: number;
+  feltYesCount?: number;
+  feltNoCount?: number;
   feltSummary?: Record<string, number>;
+}
+
+export interface SeismicFeltInput {
+  felt: boolean;
+  intensity?: number | null;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface FeltReportResponse {
   eventId: number;
-  intensity: number;
+  felt: boolean;
+  intensity: number | null;
   feltCount: number;
+  feltYesCount: number;
+  feltNoCount: number;
   feltSummary: Record<string, number>;
 }
 
