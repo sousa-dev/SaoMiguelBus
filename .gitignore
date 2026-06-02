@@ -48,3 +48,4 @@ src/android-project/**/build/
 src/android-project/app/debug/
 src/android-project/app/release/
 src/android-project/local.properties
+src/android-project/app/.idea/
