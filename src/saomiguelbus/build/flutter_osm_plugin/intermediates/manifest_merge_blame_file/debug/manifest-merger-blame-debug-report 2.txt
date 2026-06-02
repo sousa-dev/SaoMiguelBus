@@ -1,0 +1,27 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="hamza.dali.flutter_osm_plugin" >
+4
+5    <uses-sdk
+6        android:minSdkVersion="19"
+6-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml
+7        android:targetSdkVersion="19" />
+7-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml
+8
+9    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+9-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:4:5-81
+9-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:4:22-78
+10    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+10-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:5:5-78
+10-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:5:22-76
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:6:5-67
+11-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:6:22-64
+12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+12-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:7:5-80
+12-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:7:22-76
+13    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+13-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:8:5-81
+13-->/Users/sousa/.pub-cache/hosted/pub.dev/flutter_osm_plugin-0.60.5/android/src/main/AndroidManifest.xml:8:22-78
+14
+15</manifest>

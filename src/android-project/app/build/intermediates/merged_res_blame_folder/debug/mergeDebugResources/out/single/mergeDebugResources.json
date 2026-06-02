@@ -1,0 +1,1014 @@
+[
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_outline_settings_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxhdpi/outline_settings_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_monetization_on_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_monetization_on_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_sousa_dev_logo_bg.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/sousa_dev_logo_bg.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_outline_home_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxhdpi/outline_home_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_logo_foreground.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/logo_foreground.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_bus_mode_gif.gif.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/bus_mode_gif.gif"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_route_page.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/route_page.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_sousa_dev_logo_bg_round.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/sousa_dev_logo_bg_round.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_button_background.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/button_background.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_outline_settings_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-hdpi/outline_settings_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_activity_web_view.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/activity_web_view.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_baseline_swap_vert_black_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/baseline_swap_vert_black_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_logo_round.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/logo_round.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_stars.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/stars.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_portugal.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/portugal.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_sousa_dev_logo_bg_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/sousa_dev_logo_bg_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_logo.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/logo.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_sousa_dev_logo_bg_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/sousa_dev_logo_bg_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_sousa_dev_logo_bg.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/sousa_dev_logo_bg.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_logo_round.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/logo_round.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_location_on_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_location_on_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_outline_settings_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/outline_settings_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_home.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/home.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_sousa_dev_logo_bg.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/sousa_dev_logo_bg.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_baseline_swap_vert_black_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/baseline_swap_vert_black_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_sousa_dev_logo_bg_foreground.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/sousa_dev_logo_bg_foreground.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_ad_loading.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/ad_loading.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_sousa_dev_logo_bg.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/sousa_dev_logo_bg.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_sousa_dev_logo_bg.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/sousa_dev_logo_bg.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_logo.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/logo.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_heartoff.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/heartoff.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_outline_home_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-hdpi/outline_home_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_logo.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/logo.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_logo_foreground.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/logo_foreground.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_logo_round.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/logo_round.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_my_location_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_my_location_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_question_mark_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_question_mark_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_settings.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/settings.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_instruction_step_layout.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/instruction_step_layout.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "com.hsousa_apps.Autocarros.app-debug-48:/layout_activity_web_view.xml.flat",
+        "source": "com.hsousa_apps.Autocarros.app-main-50:/layout/activity_web_view.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_sousa_dev_logo_bg_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/sousa_dev_logo_bg_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_heartoff.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/heartoff.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_my_location_24_blue.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_my_location_24_blue.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_sousa_dev_logo_bg_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/sousa_dev_logo_bg_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_stop_times_layout.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/stop_times_layout.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_sousadev_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-hdpi/sousadev_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_sousadev_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxhdpi/sousadev_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_my_location_24_blue.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_my_location_24_blue.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_logo_round.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/logo_round.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_sousa_dev_logo_bg_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/sousa_dev_logo_bg_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_hearton.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/hearton.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_logo_round.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/logo_round.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_sousadev_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xhdpi/sousadev_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_ic_baseline_info_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/ic_baseline_info_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_route_layout.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/route_layout.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_avm_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/avm_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_patreon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/patreon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_baseline_swap_vert_black_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/baseline_swap_vert_black_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_sousadev_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxxhdpi/sousadev_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_hearton.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/hearton.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_saomiguel.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/saomiguel.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_offline_ad_3.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/offline_ad_3.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_outline_settings_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/outline_settings_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_walking_icon.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/walking_icon.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_hearton.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/hearton.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_baseline_swap_vert_black_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/baseline_swap_vert_black_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_ic_baseline_info_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/ic_baseline_info_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_germany.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/germany.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_main.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/main.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_baseline_arrow_drop_down_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/baseline_arrow_drop_down_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_heartoff.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/heartoff.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_search_layout.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/search_layout.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_outline_home_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/outline_home_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_location_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_location_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "com.hsousa_apps.Autocarros.app-debug-48:/layout_settings.xml.flat",
+        "source": "com.hsousa_apps.Autocarros.app-main-50:/layout/settings.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_heartoff.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/heartoff.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_star_rate_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_star_rate_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_logo.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/logo.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_ic_launcher_background.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/ic_launcher_background.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_outline_home_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxxhdpi/outline_home_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_map.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/map.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_arrow_back_ios_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_arrow_back_ios_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-anydpi-v26_logo.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-anydpi-v26/logo.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_sousa_dev_logo_bg_foreground.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/sousa_dev_logo_bg_foreground.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_english.jpg.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/english.jpg"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_logo_foreground.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/logo_foreground.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_bus_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/bus_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_offline_ad_1.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/offline_ad_1.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_sousa_dev_logo_bg.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/sousa_dev_logo_bg.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_arrow_drop_down_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_arrow_drop_down_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_monetization_on_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_monetization_on_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_sousa_dev_logo_bg_foreground.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/sousa_dev_logo_bg_foreground.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_outline_settings_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/outline_settings_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_ic_baseline_arrow_downward_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/ic_baseline_arrow_downward_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_swap_vert_36.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_swap_vert_36.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_offline_ad_4.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/offline_ad_4.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_outline_home_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xhdpi/outline_home_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_heartoff.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/heartoff.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_bus_icon.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/bus_icon.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/menu_bottom_navigation_menu.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/menu/bottom_navigation_menu.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_directions_bus_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_directions_bus_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_logo_foreground.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/logo_foreground.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_my_location_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_my_location_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_logo_foreground.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/logo_foreground.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_bus.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/bus.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_sousadev_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/sousadev_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/layout_find.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/layout/find.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxxhdpi_baseline_arrow_drop_down_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxxhdpi/baseline_arrow_drop_down_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_baseline_arrow_drop_down_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/baseline_arrow_drop_down_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_baseline_swap_vert_black_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/baseline_swap_vert_black_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_warning_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_warning_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_varela_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/varela_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_outline_home_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/outline_home_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_arrow_drop_up_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_arrow_drop_up_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_outline_settings_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xxxhdpi/outline_settings_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_baseline_swap_vert_36.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/baseline_swap_vert_36.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_logo_round.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/logo_round.webp"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_hearton.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/hearton.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_arrow_back_ios_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_arrow_back_ios_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_directions_bus_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_directions_bus_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_crp_logo.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/crp_logo.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_bus_alert_icon.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/bus_alert_icon.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_ic_launcher_background.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/ic_launcher_background.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable_rectangle.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable/rectangle.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxhdpi_walking_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxhdpi/walking_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_bus_alert_icon.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/bus_alert_icon.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_baseline_question_mark_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/baseline_question_mark_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-hdpi_sousa_dev_logo_bg_foreground.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-hdpi/sousa_dev_logo_bg_foreground.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-mdpi_sousa_dev_logo_bg_foreground.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-mdpi/sousa_dev_logo_bg_foreground.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_star_rate_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_star_rate_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_baseline_arrow_drop_down_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/baseline_arrow_drop_down_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_outline_home_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/outline_home_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-anydpi-v21_baseline_warning_24.xml.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-anydpi-v21/baseline_warning_24.xml"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_hearton.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/hearton.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_offline_ad_2.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-mdpi/offline_ad_2.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xhdpi_baseline_arrow_drop_down_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xhdpi/baseline_arrow_drop_down_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_ic_baseline_arrow_downward_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xhdpi/ic_baseline_arrow_downward_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-hdpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-hdpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xxxhdpi_baseline_arrow_drop_down_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-xxxhdpi/baseline_arrow_drop_down_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-ldpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-ldpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-xhdpi_outline_settings_black_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/drawable-xhdpi/outline_settings_black_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/drawable-mdpi_baseline_arrow_drop_up_24.png.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-pngs-44:/drawable-mdpi/baseline_arrow_drop_up_24.png"
+    },
+    {
+        "merged": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-debug-48:/mipmap-xxhdpi_logo.webp.flat",
+        "source": "/Users/sousa/.gradle/daemon/8.7/com.hsousa_apps.Autocarros.app-main-50:/mipmap-xxhdpi/logo.webp"
+    }
+]

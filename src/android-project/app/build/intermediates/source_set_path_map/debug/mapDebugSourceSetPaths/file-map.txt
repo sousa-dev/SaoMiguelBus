@@ -1,0 +1,51 @@
+com.hsousa_apps.Autocarros.app-transition-1.2.0-0 /Users/sousa/.gradle/caches/transforms-4/0555db72ed12dfbb1eef81a561bcb6b3/transformed/transition-1.2.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-viewmodel-ktx-2.6.0-1 /Users/sousa/.gradle/caches/transforms-4/0bbcdc259f52e35ddb72aafefd44a29d/transformed/lifecycle-viewmodel-ktx-2.6.0/res
+com.hsousa_apps.Autocarros.app-annotation-experimental-1.3.0-2 /Users/sousa/.gradle/caches/transforms-4/12ba57f5d8a067dec3ae3a30feb2c63c/transformed/annotation-experimental-1.3.0/res
+com.hsousa_apps.Autocarros.app-recyclerview-1.1.0-3 /Users/sousa/.gradle/caches/transforms-4/152b6253a704f655fe2c9ee83551ef6c/transformed/recyclerview-1.1.0/res
+com.hsousa_apps.Autocarros.app-play-services-base-18.1.0-4 /Users/sousa/.gradle/caches/transforms-4/1732b4c7e5ebaa0dc64de472c80b9d23/transformed/play-services-base-18.1.0/res
+com.hsousa_apps.Autocarros.app-emoji2-1.2.0-5 /Users/sousa/.gradle/caches/transforms-4/1799ae586aff20ee82a31b0e32fe89ae/transformed/emoji2-1.2.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-runtime-ktx-2.6.0-6 /Users/sousa/.gradle/caches/transforms-4/1819f4835868fb9c930591ee5826aefa/transformed/lifecycle-runtime-ktx-2.6.0/res
+com.hsousa_apps.Autocarros.app-constraintlayout-2.1.4-7 /Users/sousa/.gradle/caches/transforms-4/25d127dc283b6a0906abaf04f777d085/transformed/constraintlayout-2.1.4/res
+com.hsousa_apps.Autocarros.app-play-services-maps-18.1.0-8 /Users/sousa/.gradle/caches/transforms-4/2771c1a4c6bdc49b24d722bf495f99c0/transformed/play-services-maps-18.1.0/res
+com.hsousa_apps.Autocarros.app-material-1.8.0-9 /Users/sousa/.gradle/caches/transforms-4/2efeca3712fc2937e2296b74538825a1/transformed/material-1.8.0/res
+com.hsousa_apps.Autocarros.app-core-1.10.1-10 /Users/sousa/.gradle/caches/transforms-4/30bc1ef7a091fad31d57a01b9bf200c6/transformed/core-1.10.1/res
+com.hsousa_apps.Autocarros.app-work-runtime-2.8.0-11 /Users/sousa/.gradle/caches/transforms-4/3f0aa5d596928207ef4a974851272999/transformed/work-runtime-2.8.0/res
+com.hsousa_apps.Autocarros.app-play-services-ads-21.5.0-12 /Users/sousa/.gradle/caches/transforms-4/465fdea0e2df8eec2ddaf46bcdc3e415/transformed/play-services-ads-21.5.0/res
+com.hsousa_apps.Autocarros.app-appcompat-resources-1.6.1-13 /Users/sousa/.gradle/caches/transforms-4/514c2af107ed69bfa75c497550243c5e/transformed/appcompat-resources-1.6.1/res
+com.hsousa_apps.Autocarros.app-viewpager2-1.0.0-14 /Users/sousa/.gradle/caches/transforms-4/54ce3a84854e0c3fd7658cae9a50d724/transformed/viewpager2-1.0.0/res
+com.hsousa_apps.Autocarros.app-core-runtime-2.2.0-15 /Users/sousa/.gradle/caches/transforms-4/5545ef2c715e638832dc19b9abd574d3/transformed/core-runtime-2.2.0/res
+com.hsousa_apps.Autocarros.app-osmdroid-android-6.1.11-16 /Users/sousa/.gradle/caches/transforms-4/5832c206f421cb86376a2be8a94a8ea9/transformed/osmdroid-android-6.1.11/res
+com.hsousa_apps.Autocarros.app-lifecycle-livedata-core-2.6.0-17 /Users/sousa/.gradle/caches/transforms-4/59fbce179e61e2a81800b0874dd11341/transformed/lifecycle-livedata-core-2.6.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-service-2.6.0-18 /Users/sousa/.gradle/caches/transforms-4/5b715cc1118e6afea2ca2dd32a377e91/transformed/lifecycle-service-2.6.0/res
+com.hsousa_apps.Autocarros.app-glide-4.12.0-19 /Users/sousa/.gradle/caches/transforms-4/63d2f67e64cd3cf2054515a21610b35d/transformed/glide-4.12.0/res
+com.hsousa_apps.Autocarros.app-emoji2-views-helper-1.2.0-20 /Users/sousa/.gradle/caches/transforms-4/686fb7cb2fc4b34e96ed04bbb33dab57/transformed/emoji2-views-helper-1.2.0/res
+com.hsousa_apps.Autocarros.app-startup-runtime-1.1.1-21 /Users/sousa/.gradle/caches/transforms-4/6ab692ab9959107c8426489614e3d57f/transformed/startup-runtime-1.1.1/res
+com.hsousa_apps.Autocarros.app-fragment-1.3.6-22 /Users/sousa/.gradle/caches/transforms-4/752b070e1acd83d7ad1618120321031b/transformed/fragment-1.3.6/res
+com.hsousa_apps.Autocarros.app-savedstate-1.2.0-23 /Users/sousa/.gradle/caches/transforms-4/7c9c8c76c5d9a63c6b5f0428bd9308b9/transformed/savedstate-1.2.0/res
+com.hsousa_apps.Autocarros.app-appcompat-1.6.1-24 /Users/sousa/.gradle/caches/transforms-4/85c26d7c85478c8181b929f3933dd3b8/transformed/appcompat-1.6.1/res
+com.hsousa_apps.Autocarros.app-activity-1.6.0-25 /Users/sousa/.gradle/caches/transforms-4/861e2bb2dfeacb81a7cae3f623608b27/transformed/activity-1.6.0/res
+com.hsousa_apps.Autocarros.app-drawerlayout-1.1.1-26 /Users/sousa/.gradle/caches/transforms-4/889a543fd9407c1a1384c55780bb4595/transformed/drawerlayout-1.1.1/res
+com.hsousa_apps.Autocarros.app-play-services-ads-lite-21.5.0-27 /Users/sousa/.gradle/caches/transforms-4/96ce3f02b9b214002656b6fd0ddc386b/transformed/play-services-ads-lite-21.5.0/res
+com.hsousa_apps.Autocarros.app-android-gif-drawable-1.2.12-28 /Users/sousa/.gradle/caches/transforms-4/9f6032044aa2d11e2b86e2946169c3ea/transformed/android-gif-drawable-1.2.12/res
+com.hsousa_apps.Autocarros.app-cardview-1.0.0-29 /Users/sousa/.gradle/caches/transforms-4/a02a6c59c09ebf7d68f254473f68a2dc/transformed/cardview-1.0.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-livedata-2.6.0-30 /Users/sousa/.gradle/caches/transforms-4/a9b0c68709f94b06f60802865ca612e5/transformed/lifecycle-livedata-2.6.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-runtime-2.6.0-31 /Users/sousa/.gradle/caches/transforms-4/b33779cdddaf2ac4a910c893e092316c/transformed/lifecycle-runtime-2.6.0/res
+com.hsousa_apps.Autocarros.app-work-runtime-ktx-2.8.0-32 /Users/sousa/.gradle/caches/transforms-4/bd2cfe85566b7fedfd55970085afa69e/transformed/work-runtime-ktx-2.8.0/res
+com.hsousa_apps.Autocarros.app-profileinstaller-1.2.1-33 /Users/sousa/.gradle/caches/transforms-4/c84a44936cd068cf5411879edeafbd30/transformed/profileinstaller-1.2.1/res
+com.hsousa_apps.Autocarros.app-coordinatorlayout-1.1.0-34 /Users/sousa/.gradle/caches/transforms-4/d33a124bf861606c4eacaa7d66af6f4b/transformed/coordinatorlayout-1.1.0/res
+com.hsousa_apps.Autocarros.app-sqlite-framework-2.3.0-35 /Users/sousa/.gradle/caches/transforms-4/da5bb69b6ed5a24707f9fba191a5d53b/transformed/sqlite-framework-2.3.0/res
+com.hsousa_apps.Autocarros.app-browser-1.4.0-36 /Users/sousa/.gradle/caches/transforms-4/df94f051c059307aebf728888ddc4c1d/transformed/browser-1.4.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-viewmodel-2.6.0-37 /Users/sousa/.gradle/caches/transforms-4/e6c27d50e5c4e678f594ac3cf657ca66/transformed/lifecycle-viewmodel-2.6.0/res
+com.hsousa_apps.Autocarros.app-play-services-basement-18.1.0-38 /Users/sousa/.gradle/caches/transforms-4/e6c9847d3dd5d7c63483d513583444c4/transformed/play-services-basement-18.1.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-process-2.6.0-39 /Users/sousa/.gradle/caches/transforms-4/e85d007ffcc5a11661c963741663286d/transformed/lifecycle-process-2.6.0/res
+com.hsousa_apps.Autocarros.app-lifecycle-viewmodel-savedstate-2.6.0-40 /Users/sousa/.gradle/caches/transforms-4/f135cb1208529626ca35af4f1665ad0e/transformed/lifecycle-viewmodel-savedstate-2.6.0/res
+com.hsousa_apps.Autocarros.app-room-runtime-2.5.0-41 /Users/sousa/.gradle/caches/transforms-4/f61f5b9a106ea849dd22bef2d80a1e73/transformed/room-runtime-2.5.0/res
+com.hsousa_apps.Autocarros.app-sqlite-2.3.0-42 /Users/sousa/.gradle/caches/transforms-4/f699c1e5b0a6dbca4d8639525bdffb58/transformed/sqlite-2.3.0/res
+com.hsousa_apps.Autocarros.app-core-ktx-1.10.1-43 /Users/sousa/.gradle/caches/transforms-4/fe517781b32b5bb6dafe5b1569caa481/transformed/core-ktx-1.10.1/res
+com.hsousa_apps.Autocarros.app-pngs-44 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/generated/res/pngs/debug
+com.hsousa_apps.Autocarros.app-resValues-45 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/generated/res/resValues/debug
+com.hsousa_apps.Autocarros.app-mergeDebugResources-46 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
+com.hsousa_apps.Autocarros.app-mergeDebugResources-47 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
+com.hsousa_apps.Autocarros.app-debug-48 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.hsousa_apps.Autocarros.app-debug-49 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/src/debug/res
+com.hsousa_apps.Autocarros.app-main-50 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/src/main/res

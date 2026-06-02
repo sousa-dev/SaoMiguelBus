@@ -18,6 +18,7 @@ export default function TabLayout() {
   const showSeismic = modules.includes('seismic');
   const showTrails = modules.includes('trails');
   const showMarketplace = modules.includes('marketplace');
+  const showTraffic = modules.includes('traffic');
 
   useFocusEffect(
     useCallback(() => {
@@ -77,6 +78,14 @@ export default function TabLayout() {
           title: t('navBarMarketplaceLabel'),
           headerShown: false,
           href: showMarketplace ? '/marketplace' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="traffic"
+        options={{
+          title: t('navBarTrafficLabel'),
+          headerShown: false,
+          href: showTraffic ? '/traffic' : null,
         }}
       />
     </Tabs>

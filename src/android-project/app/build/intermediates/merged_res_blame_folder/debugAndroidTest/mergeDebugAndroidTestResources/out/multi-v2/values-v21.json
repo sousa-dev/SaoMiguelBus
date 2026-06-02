@@ -1,0 +1,28 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.hsousa_apps.Autocarros.test.app-mergeDebugAndroidTestResources-3:/values-v21/values-v21.xml",
+            "map": [
+                {
+                    "source": "/Users/sousa/.gradle/caches/transforms-4/8230009e95ecab6725ec2e22b3e75e47/transformed/core-1.5.0/res/values-v21/values.xml",
+                    "from": {
+                        "startLines": "4,13",
+                        "startColumns": "0,0",
+                        "startOffsets": "180,655",
+                        "endLines": "12,21",
+                        "endColumns": "8,8",
+                        "endOffsets": "654,1127"
+                    },
+                    "to": {
+                        "startLines": "2,11",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,534",
+                        "endLines": "10,19",
+                        "endColumns": "8,8",
+                        "endOffsets": "529,1006"
+                    }
+                }
+            ]
+        }
+    ]
+}

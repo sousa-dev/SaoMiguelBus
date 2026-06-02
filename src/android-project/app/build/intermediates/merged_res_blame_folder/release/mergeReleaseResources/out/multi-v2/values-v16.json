@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.hsousa_apps.Autocarros.app-mergeReleaseResources-46:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "/Users/sousa/.gradle/caches/transforms-4/85c26d7c85478c8181b929f3933dd3b8/transformed/appcompat-1.6.1/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "223"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "121",
+                        "endLines": "6",
+                        "endColumns": "12",
+                        "endOffsets": "289"
+                    }
+                },
+                {
+                    "source": "/Users/sousa/.gradle/caches/transforms-4/30bc1ef7a091fad31d57a01b9bf200c6/transformed/core-1.10.1/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
