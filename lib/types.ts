@@ -127,6 +127,51 @@ export interface FeltReportResponse {
   feltSummary: Record<string, number>;
 }
 
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string;
+}
+
+export interface MarketplaceProvider {
+  id: number;
+  name: string;
+  category: { id: number; name: string; slug: string };
+  bio: string;
+  hourlyRate: number | null;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  latitude: number | null;
+  longitude: number | null;
+  isPromoted: boolean;
+  rating: number;
+  reviewCount: number;
+  status?: string;
+}
+
+export interface MarketplaceReview {
+  id: number;
+  providerId: number;
+  rating: number;
+  text: string;
+  createdAt: string;
+  status: string;
+}
+
+export interface ProviderWriteInput {
+  name?: string;
+  category_slug?: string;
+  bio?: string;
+  hourly_rate?: number | null;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 export type TrailGeoJson = {
   type: string;
   coordinates?: unknown;

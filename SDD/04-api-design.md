@@ -149,6 +149,11 @@ The revamp backend **substitutes for legacy production** for the web PWA: same U
 | GET | `/api/v1/gmaps` | **Done** | Needs `GOOGLE_MAPS_API_KEY` |
 | GET | `/api/v1/ad`, POST `/ad/click` | **Done** | |
 | POST | `/api/v1/subscription/verify/` | **Done** | |
+| GET | `/api/v3/marketplace/categories` | **Done** | Seeded defaults per island |
+| GET/POST | `/api/v3/marketplace/providers` | **Done** | List (published only) + create (pending) |
+| GET/PATCH/DELETE | `/api/v3/marketplace/providers/{id}` | **Done** | Owner via `X-Session-Id`; soft-delete |
+| POST | `/api/v3/marketplace/providers/{id}/moderate` | **Done** | Staff only |
+| GET/POST | `/api/v3/marketplace/providers/{id}/reviews` | **Done** | Upsert per session; rating recompute on publish |
 | GET | `/api/v2/android/load` | **Todo** | Native Android |
 | GET | `/api/v1/routes`, `/route/<id>` | **Todo** | P1 |
 | GET | `/api/v1/groups`, `/infos`, `/holidays` | **Todo** | P1 |
@@ -157,6 +162,8 @@ The revamp backend **substitutes for legacy production** for the web PWA: same U
 **Validated:** staging host (`staging.api.saomiguelbus.com`) serves web PWA traffic with compat handlers. **Cutover:** repoint `api.saomiguelbus.com` DNS to revamp backend — webapp already calls production hostname.
 
 **Env required on revamp:** `AUTH_KEY`, `GOOGLE_MAPS_API_KEY`, `DEFAULT_ISLAND_KEY=sao-miguel`, `CORS_ALLOW_ALL_ORIGINS=True`. See `SaoMiguelBus-api/AGENTS.md`.
+
+> **Implementation note (UGC style):** §2.1 specifies `ModelViewSet + DefaultRouter` for UGC. The shipped `marketplace` module (first UGC module) instead uses DRF `@api_view` function views with explicit URL routing and service-layer dict serialization — consistent with every other v3 module in `src/` (no router infra exists). The REST contract (verbs, moderation lifecycle, ownership, throttling) is unchanged; only the view mechanism differs. Events/Traffic should follow the marketplace pattern.
 
 ### Shim behavior (examples)
 

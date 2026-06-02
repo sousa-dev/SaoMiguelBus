@@ -15,6 +15,10 @@ import type {
   TrailsListResponse,
   TrailDetail,
   POIsListResponse,
+  ServiceCategory,
+  MarketplaceProvider,
+  MarketplaceReview,
+  ProviderWriteInput,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -236,6 +240,98 @@ export async function fetchPOIs(params?: {
 
 export async function fetchTrail(trailId: number): Promise<TrailDetail> {
   return apiFetch<TrailDetail>(`/api/v3/trails/${trailId}`);
+}
+
+// --------------------------------------------------------------------------- //
+// Marketplace
+// --------------------------------------------------------------------------- //
+
+export async function fetchMarketplaceCategories(): Promise<ServiceCategory[]> {
+  const data = await apiFetch<{ categories: ServiceCategory[] }>('/api/v3/marketplace/categories');
+  return data.categories;
+}
+
+export async function fetchProviders(params?: {
+  category?: string;
+  q?: string;
+  lat?: number;
+  lng?: number;
+  limit?: number;
+}): Promise<MarketplaceProvider[]> {
+  const query = new URLSearchParams();
+  if (params?.category) {
+    query.set('category', params.category);
+  }
+  if (params?.q) {
+    query.set('q', params.q);
+  }
+  if (params?.lat != null && params?.lng != null) {
+    query.set('lat', String(params.lat));
+    query.set('lng', String(params.lng));
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  const data = await apiFetch<{ providers: MarketplaceProvider[] }>(
+    `/api/v3/marketplace/providers${suffix}`,
+  );
+  return data.providers;
+}
+
+export async function fetchProvider(providerId: number): Promise<MarketplaceProvider> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<MarketplaceProvider>(`/api/v3/marketplace/providers/${providerId}`, {
+    headers: { 'X-Session-Id': sessionId },
+  });
+}
+
+export async function createProvider(input: ProviderWriteInput): Promise<MarketplaceProvider> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<MarketplaceProvider>('/api/v3/marketplace/providers', {
+    method: 'POST',
+    headers: { 'X-Session-Id': sessionId },
+    body: JSON.stringify({ ...input, session_id: sessionId }),
+  });
+}
+
+export async function updateProvider(
+  providerId: number,
+  input: ProviderWriteInput,
+): Promise<MarketplaceProvider> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<MarketplaceProvider>(`/api/v3/marketplace/providers/${providerId}`, {
+    method: 'PATCH',
+    headers: { 'X-Session-Id': sessionId },
+    body: JSON.stringify({ ...input, session_id: sessionId }),
+  });
+}
+
+export async function deleteProvider(providerId: number): Promise<void> {
+  const sessionId = await getOrCreateSessionId();
+  await apiFetch(`/api/v3/marketplace/providers/${providerId}`, {
+    method: 'DELETE',
+    headers: { 'X-Session-Id': sessionId },
+  });
+}
+
+export async function fetchReviews(providerId: number): Promise<MarketplaceReview[]> {
+  const data = await apiFetch<{ reviews: MarketplaceReview[] }>(
+    `/api/v3/marketplace/providers/${providerId}/reviews`,
+  );
+  return data.reviews;
+}
+
+export async function submitReview(
+  providerId: number,
+  payload: { rating: number; text?: string },
+): Promise<MarketplaceReview> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<MarketplaceReview>(`/api/v3/marketplace/providers/${providerId}/reviews`, {
+    method: 'POST',
+    headers: { 'X-Session-Id': sessionId },
+    body: JSON.stringify({ ...payload, session_id: sessionId }),
+  });
 }
 
 export async function postConsent(sessionId: string, purposes: ConsentPurposes) {
