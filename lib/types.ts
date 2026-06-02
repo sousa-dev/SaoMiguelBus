@@ -174,6 +174,45 @@ export interface ProviderWriteInput {
   longitude?: number | null;
 }
 
+export interface TrafficCategory {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string;
+  defaultTtlMinutes: number;
+  isSchedulable: boolean;
+  order: number;
+}
+
+export type TrafficReportStatus = 'active' | 'scheduled' | 'expired' | 'removed';
+
+export interface TrafficReport {
+  id: number;
+  status: TrafficReportStatus;
+  category: { id: number; name: string; slug: string; icon: string };
+  latitude: number;
+  longitude: number;
+  description: string;
+  road: string;
+  confidence: { confirm: number; deny: number };
+  activeFrom: string | null;
+  activeUntil: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface TrafficReportWriteInput {
+  category_slug: string;
+  latitude: number;
+  longitude: number;
+  description?: string;
+  road?: string;
+  active_from?: string | null;
+  active_until?: string | null;
+}
+
+export type ConfirmVote = 'still_there' | 'gone';
+
 export type TrailGeoJson = {
   type: string;
   coordinates?: unknown;
