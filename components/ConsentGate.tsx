@@ -13,9 +13,5 @@ export function ConsentGate({ children }: { children: React.ReactNode }) {
     return <Redirect href="/onboarding/consent" />;
   }
 
-  if (decided && onConsentScreen) {
-    return <Redirect href="/transit" />;
-  }
-
   return <>{children}</>;
 }

@@ -9,6 +9,8 @@ import '@/lib/dev-logging';
 import { ConsentGate } from '@/components/ConsentGate';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import '@/lib/i18n';
+import { loadSavedLocale } from '@/lib/locale-prefs';
+import i18n, { resources } from '@/lib/i18n';
 import { AppQueryProvider } from '@/lib/query-provider';
 import { ThemeProvider } from '@/lib/theme';
 import { track } from '@/lib/analytics';
@@ -23,6 +25,14 @@ function AppShell() {
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
 
   useEffect(() => {
+    void loadSavedLocale().then((saved) => {
+      if (saved && saved in resources) {
+        void i18n.changeLanguage(saved);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     if (hasAnalytics) {
       track('transit', 'load', { surface: 'app_shell' });
     }
@@ -33,6 +43,7 @@ function AppShell() {
       <ConsentGate>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
           <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
         </Stack>
       </ConsentGate>

@@ -12,6 +12,7 @@ import uk from '@/locales/uk.json';
 import zh from '@/locales/zh.json';
 
 import { staticIslandConfig } from '@/config/island';
+import { saveLocale } from '@/lib/locale-prefs';
 
 // Portuguese-first: `pt` is the source-of-truth catalog and the global fallback
 // for any missing key in any other locale (see SDD 02 §7).
@@ -55,5 +56,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: FALLBACK_LOCALE,
   interpolation: { escapeValue: false },
 });
+
+export { saveLocale };
 
 export default i18n;

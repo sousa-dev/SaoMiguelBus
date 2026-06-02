@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
@@ -8,10 +9,15 @@ import type { ConsentPurposes } from '@/lib/types';
 
 export default function ConsentScreen() {
   const theme = useAppTheme();
+  const router = useRouter();
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
   const saveCustom = useConsentStore((s) => s.saveCustom);
-  const [purposes, setPurposes] = useState<ConsentPurposes>({ ...defaultPurposes });
+  const decided = useConsentStore((s) => s.decided);
+  const storedPurposes = useConsentStore((s) => s.purposes);
+  const [purposes, setPurposes] = useState<ConsentPurposes>(() =>
+    decided ? { ...storedPurposes } : { ...defaultPurposes },
+  );
   const [busy, setBusy] = useState(false);
 
   const toggle = (key: keyof ConsentPurposes) => {
@@ -22,9 +28,15 @@ export default function ConsentScreen() {
   };
 
   const wrap = async (fn: () => Promise<void>) => {
+    const wasDecided = decided;
     setBusy(true);
     try {
       await fn();
+      if (wasDecided) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/transit');
+      }
     } finally {
       setBusy(false);
     }

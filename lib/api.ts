@@ -1,5 +1,6 @@
 import { staticIslandConfig } from '@/config/island';
 import { logger } from '@/lib/logger';
+import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
 import type {
   BootstrapResponse,
@@ -137,7 +138,8 @@ export async function postAnalyticsEvents(
     method: 'POST',
     body: JSON.stringify({
       session_id: sessionId,
-      platform: 'ios',
+      platform: getAnalyticsPlatform(),
+      app_version: getAppVersion(),
       events,
     }),
   });
