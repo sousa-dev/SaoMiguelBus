@@ -13,8 +13,10 @@ import { track } from '@/lib/analytics';
 
 export function useBootstrap() {
   return useQuery({
-    queryKey: ['bootstrap'],
+    queryKey: ['bootstrap', 'v3'],
     queryFn: fetchBootstrap,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: 'always',
   });
 }
 

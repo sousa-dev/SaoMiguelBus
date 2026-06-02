@@ -1,21 +1,35 @@
 import { Tabs } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { logger } from '@/lib/logger';
 import { useAppTheme } from '@/lib/theme';
 
 export default function TabLayout() {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { data: bootstrap } = useBootstrap();
+  const { data: bootstrap, refetch } = useBootstrap();
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
   const showTransit = modules.includes('transit');
   const showNews = modules.includes('news');
   const showSeismic = modules.includes('seismic');
 
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch]),
+  );
+
+  if (__DEV__) {
+    logger.debug('tab modules', modules.join(','));
+  }
+
   return (
     <Tabs
+      key={modules.join('-')}
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.muted,
