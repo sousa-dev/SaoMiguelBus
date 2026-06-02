@@ -1,4 +1,4 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
 import { ArrowRightLeft, Calendar, Clock, Route, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -66,6 +66,16 @@ export function TransitPlannerCard({
     onDestinationChange(origin);
   };
 
+  const openDatePicker = () => {
+    setShowTimePicker(false);
+    setShowDatePicker((open) => !open);
+  };
+
+  const openTimePicker = () => {
+    setShowDatePicker(false);
+    setShowTimePicker((open) => !open);
+  };
+
   const onTimePicked = (_: unknown, selected?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
@@ -81,6 +91,9 @@ export function TransitPlannerCard({
     }
     if (selected) {
       onDateChange(selected);
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
+      }
     }
   };
 
@@ -121,8 +134,14 @@ export function TransitPlannerCard({
 
       <View style={styles.dayTimeRow}>
         <Pressable
-          onPress={() => setShowDatePicker(true)}
-          style={[styles.pillField, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
+          onPress={openDatePicker}
+          style={[
+            styles.pillField,
+            {
+              borderColor: showDatePicker ? theme.primary : theme.border,
+              backgroundColor: theme.surfaceVariant,
+            },
+          ]}
           accessibilityRole="button"
           accessibilityLabel={t('dayLabel')}
         >
@@ -133,8 +152,14 @@ export function TransitPlannerCard({
         </Pressable>
 
         <Pressable
-          onPress={() => setShowTimePicker(true)}
-          style={[styles.pillField, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
+          onPress={openTimePicker}
+          style={[
+            styles.pillField,
+            {
+              borderColor: showTimePicker ? theme.primary : theme.border,
+              backgroundColor: theme.surfaceVariant,
+            },
+          ]}
           accessibilityRole="button"
           accessibilityLabel={t('transitPickTime')}
         >
@@ -144,22 +169,46 @@ export function TransitPlannerCard({
       </View>
 
       {showDatePicker ? (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'inline' : 'default'}
-          onChange={onDatePicked}
-        />
+        <View style={styles.pickerWrap}>
+          <ThemedDateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={onDatePicked}
+          />
+          {Platform.OS === 'ios' ? (
+            <Pressable
+              onPress={() => setShowDatePicker(false)}
+              style={styles.pickerDone}
+              accessibilityRole="button"
+              accessibilityLabel={t('close')}
+            >
+              <Text style={[typography.label, { color: theme.primary }]}>{t('close')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       ) : null}
 
       {showTimePicker ? (
-        <DateTimePicker
-          value={timeDate}
-          mode="time"
-          is24Hour
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onTimePicked}
-        />
+        <View style={styles.pickerWrap}>
+          <ThemedDateTimePicker
+            value={timeDate}
+            mode="time"
+            is24Hour
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onTimePicked}
+          />
+          {Platform.OS === 'ios' ? (
+            <Pressable
+              onPress={() => setShowTimePicker(false)}
+              style={styles.pickerDone}
+              accessibilityRole="button"
+              accessibilityLabel={t('close')}
+            >
+              <Text style={[typography.label, { color: theme.primary }]}>{t('close')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       ) : null}
 
       <View style={styles.actions}>
@@ -231,6 +280,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     height: 44,
   },
+  pickerWrap: { marginTop: space.sm },
+  pickerDone: { alignSelf: 'flex-end', paddingVertical: space.sm, paddingHorizontal: space.xs },
   actions: {
     flexDirection: 'row',
     gap: space.sm,

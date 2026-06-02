@@ -1,4 +1,4 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -180,7 +180,7 @@ export function TrafficReportForm({
                   <Text style={[typography.body, { color: theme.text }]}>{formatWhen(startAt)}</Text>
                 </Pressable>
                 {showStartPicker ? (
-                  <DateTimePicker
+                  <ThemedDateTimePicker
                     value={startAt}
                     mode="datetime"
                     onChange={(_, date) => {
@@ -204,7 +204,7 @@ export function TrafficReportForm({
                   <Text style={[typography.body, { color: theme.text }]}>{formatWhen(endAt)}</Text>
                 </Pressable>
                 {showEndPicker ? (
-                  <DateTimePicker
+                  <ThemedDateTimePicker
                     value={endAt}
                     mode="datetime"
                     minimumDate={startAt}
