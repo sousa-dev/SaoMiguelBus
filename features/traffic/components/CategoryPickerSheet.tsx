@@ -24,6 +24,7 @@ export function CategoryPickerSheet({
   pending,
   onPick,
   onAddDetails,
+  onPickOnMap,
   onClose,
 }: {
   visible: boolean;
@@ -32,6 +33,7 @@ export function CategoryPickerSheet({
   pending: boolean;
   onPick: (category: TrafficCategory) => void;
   onAddDetails: () => void;
+  onPickOnMap: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -61,8 +63,14 @@ export function CategoryPickerSheet({
 
           {pending ? <ActivityIndicator color={theme.primary} style={{ marginTop: 12 }} /> : null}
 
-          <Pressable onPress={onAddDetails} style={{ marginTop: 16 }}>
+          <Pressable onPress={onPickOnMap} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, textAlign: 'center', fontWeight: '600' }}>
+              {t('trafficPickOnMap')}
+            </Text>
+          </Pressable>
+
+          <Pressable onPress={onAddDetails} style={{ marginTop: 12 }}>
+            <Text style={{ color: theme.muted, textAlign: 'center', fontWeight: '600' }}>
               {t('trafficAddDetails')}
             </Text>
           </Pressable>

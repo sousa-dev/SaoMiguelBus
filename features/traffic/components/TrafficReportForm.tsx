@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { ReportLocationField } from '@/features/traffic/components/ReportLocationField';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficCategory, TrafficReportWriteInput } from '@/lib/types';
 
@@ -19,6 +20,9 @@ type Props = {
   categories: TrafficCategory[];
   initialCategory?: string;
   coords: { lat: number; lng: number } | null;
+  gpsCoords?: { lat: number; lng: number } | null;
+  userOnIsland?: boolean;
+  onCoordsChange: (coords: { lat: number; lng: number }) => void;
   submitting: boolean;
   error: string | null;
   onSubmit: (input: TrafficReportWriteInput) => void;
@@ -34,6 +38,9 @@ export function TrafficReportForm({
   categories,
   initialCategory,
   coords,
+  gpsCoords,
+  userOnIsland,
+  onCoordsChange,
   submitting,
   error,
   onSubmit,
@@ -97,6 +104,14 @@ export function TrafficReportForm({
         })}
       </View>
 
+      <ReportLocationField
+        theme={theme}
+        coords={coords}
+        gpsCoords={gpsCoords}
+        userOnIsland={userOnIsland}
+        onCoordsChange={onCoordsChange}
+      />
+
       <Text style={[styles.label, { color: theme.text }]}>{t('trafficRoad')}</Text>
       <TextInput
         value={road}
@@ -145,9 +160,6 @@ export function TrafficReportForm({
         </View>
       ) : null}
 
-      {!coords ? (
-        <Text style={{ color: theme.muted, marginTop: 16 }}>{t('trafficLocationNeededHint')}</Text>
-      ) : null}
       {error ? <Text style={{ color: '#c0392b', marginTop: 12 }}>{error}</Text> : null}
 
       <Pressable

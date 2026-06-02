@@ -32,7 +32,6 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      key={modules.join('-')}
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.muted,

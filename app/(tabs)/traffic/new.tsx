@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -8,21 +8,53 @@ import {
   useTrafficCategories,
 } from '@/features/traffic/hooks/useTrafficQueries';
 import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
+import { clampCoordinate, isWithinIslandBounds } from '@/lib/island-map';
 import type { TrafficReportWriteInput } from '@/lib/types';
 import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
+
+function parseCoord(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
 
 export default function NewTrafficReportScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const params = useLocalSearchParams<{ category?: string }>();
+  const params = useLocalSearchParams<{ category?: string; lat?: string; lng?: string }>();
 
   const categories = useTrafficCategories();
   const create = useCreateTrafficReport();
   const addReport = useTrafficStore((s) => s.addReport);
-  const { coords } = useNearbyLocation(true);
+  const { coords: gpsCoords } = useNearbyLocation(true);
+  const userOnIsland = gpsCoords ? isWithinIslandBounds(gpsCoords.lat, gpsCoords.lng) : false;
+
+  const paramCoords = useMemo(() => {
+    const lat = parseCoord(params.lat);
+    const lng = parseCoord(params.lng);
+    if (lat == null || lng == null) {
+      return null;
+    }
+    return clampCoordinate(lat, lng);
+  }, [params.lat, params.lng]);
+
+  const [reportCoords, setReportCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [coordsInitialized, setCoordsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (paramCoords) {
+      setReportCoords(paramCoords);
+      setCoordsInitialized(true);
+      return;
+    }
+    if (!coordsInitialized && userOnIsland && gpsCoords) {
+      setReportCoords(gpsCoords);
+      setCoordsInitialized(true);
+    }
+  }, [paramCoords, coordsInitialized, userOnIsland, gpsCoords]);
 
   const onSubmit = async (input: TrafficReportWriteInput) => {
     setError(null);
@@ -40,7 +72,10 @@ export default function NewTrafficReportScreen() {
       theme={theme}
       categories={categories.data ?? []}
       initialCategory={params.category}
-      coords={coords}
+      coords={reportCoords}
+      gpsCoords={userOnIsland ? gpsCoords : null}
+      userOnIsland={userOnIsland}
+      onCoordsChange={setReportCoords}
       submitting={create.isPending}
       error={error}
       onSubmit={(input) => void onSubmit(input)}

@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { StackBackButton } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TrafficLayout() {
@@ -14,8 +15,21 @@ export default function TrafficLayout() {
         name="index"
         options={{ title: t('navBarTrafficLabel'), headerRight: () => <SettingsHeaderButton /> }}
       />
-      <Stack.Screen name="[id]" options={{ title: t('trafficDetailTitle') }} />
-      <Stack.Screen name="new" options={{ title: t('trafficReportTitle'), presentation: 'modal' }} />
+      <Stack.Screen
+        name="[id]"
+        options={{
+          title: t('trafficDetailTitle'),
+          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
+        }}
+      />
+      <Stack.Screen
+        name="new"
+        options={{
+          title: t('trafficReportTitle'),
+          presentation: 'modal',
+          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
+        }}
+      />
     </Stack>
   );
 }

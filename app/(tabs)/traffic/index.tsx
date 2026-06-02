@@ -26,9 +26,8 @@ import {
 } from '@/features/traffic/hooks/useTrafficQueries';
 import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { useProximityAlert } from '@/features/traffic/hooks/useProximityAlert';
-import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { isWithinIslandBounds } from '@/lib/island-map';
 import { track } from '@/lib/analytics';
-import { staticIslandConfig } from '@/config/island';
 import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
 import type { TrafficCategory, TrafficReport } from '@/lib/types';
@@ -41,24 +40,21 @@ export default function TrafficScreen() {
   const router = useRouter();
   const addReport = useTrafficStore((s) => s.addReport);
 
-  const { data: bootstrap } = useBootstrap();
-  const center = bootstrap?.island?.mapCenter ?? {
-    lat: staticIslandConfig.mapCenter?.lat ?? 37.78,
-    lng: staticIslandConfig.mapCenter?.lng ?? -25.5,
-  };
-
   const [focused, setFocused] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [scheduledOpen, setScheduledOpen] = useState(false);
   const [dismissedAlertId, setDismissedAlertId] = useState<number | null>(null);
+  const [draftPin, setDraftPin] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapPickMode, setMapPickMode] = useState(false);
 
   const { coords, permission } = useNearbyLocation(focused);
+  const userOnIsland = coords ? isWithinIslandBounds(coords.lat, coords.lng) : false;
 
   const categories = useTrafficCategories();
   const reports = useTrafficReports({
-    lat: coords?.lat,
-    lng: coords?.lng,
-    radiusKm: coords ? 15 : undefined,
+    lat: userOnIsland ? coords!.lat : undefined,
+    lng: userOnIsland ? coords!.lng : undefined,
+    radiusKm: userOnIsland ? 15 : undefined,
     enabled: focused,
     refetchInterval: focused ? POLL_MS : undefined,
   });
@@ -86,20 +82,34 @@ export default function TrafficScreen() {
     [scheduled.data],
   );
 
-  const nearest = useProximityAlert(activeReports, coords ?? null);
+  const nearest = useProximityAlert(activeReports, userOnIsland ? coords : null);
   const showAlert = nearest && nearest.id !== dismissedAlertId ? nearest : null;
 
   const openReport = (report: TrafficReport) =>
     router.push({ pathname: '/(tabs)/traffic/[id]', params: { id: String(report.id) } });
 
+  const openNewAtPin = (category?: string) => {
+    const params: { category?: string; lat?: string; lng?: string } = {};
+    if (category) {
+      params.category = category;
+    }
+    if (draftPin) {
+      params.lat = String(draftPin.lat);
+      params.lng = String(draftPin.lng);
+    }
+    setPickerOpen(false);
+    setMapPickMode(false);
+    setDraftPin(null);
+    router.push({ pathname: '/(tabs)/traffic/new', params });
+  };
+
   const quickCreate = async (category: TrafficCategory) => {
-    if (!coords) {
-      Alert.alert(t('trafficLocationNeeded'), t('trafficLocationNeededHint'));
+    if (category.isSchedulable || draftPin) {
+      openNewAtPin(category.slug);
       return;
     }
-    if (category.isSchedulable) {
-      setPickerOpen(false);
-      router.push({ pathname: '/(tabs)/traffic/new', params: { category: category.slug } });
+    if (!userOnIsland || !coords) {
+      openNewAtPin(category.slug);
       return;
     }
     try {
@@ -113,6 +123,12 @@ export default function TrafficScreen() {
     } catch {
       Alert.alert(t('trafficReportError'));
     }
+  };
+
+  const onMapPick = (picked: { lat: number; lng: number }) => {
+    setDraftPin(picked);
+    setMapPickMode(false);
+    setPickerOpen(true);
   };
 
   const reportList = (
@@ -136,15 +152,18 @@ export default function TrafficScreen() {
   const hasMap = Platform.OS !== 'web';
 
   return (
-    <Screen withStackHeader edges={hasMap ? [] : ['bottom']}>
-      <View style={styles.fill}>
+    <Screen withStackHeader>
+      <View style={styles.fill} pointerEvents="box-none">
         {hasMap ? (
           <TrafficMap
             reports={activeReports}
-            center={center}
             userCoords={coords}
+            draftPin={draftPin}
+            pickMode={mapPickMode}
             theme={theme}
             onMarkerPress={openReport}
+            onLongPress={onMapPick}
+            onPickTap={onMapPick}
           />
         ) : (
           reportList
@@ -178,6 +197,30 @@ export default function TrafficScreen() {
           </View>
         ) : null}
 
+        {mapPickMode ? (
+          <View style={[styles.pickBanner, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={{ color: theme.text, fontSize: 12, flex: 1 }}>{t('trafficMapPickModeHint')}</Text>
+            <Pressable onPress={() => setMapPickMode(false)} hitSlop={8}>
+              <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('trafficCancel')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {draftPin && !pickerOpen ? (
+          <View style={[styles.draftBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={{ color: theme.text, fontSize: 12, flex: 1 }}>{t('trafficDraftPinHint')}</Text>
+            <Pressable
+              onPress={() => setPickerOpen(true)}
+              style={[styles.draftBtn, { backgroundColor: theme.primary }]}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>{t('trafficReportTitle')}</Text>
+            </Pressable>
+            <Pressable onPress={() => setDraftPin(null)} hitSlop={8}>
+              <Text style={{ color: theme.muted, fontWeight: '700' }}>✕</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         <QuickReportButton theme={theme} onPress={() => setPickerOpen(true)} />
       </View>
 
@@ -187,44 +230,58 @@ export default function TrafficScreen() {
         theme={theme}
         pending={create.isPending}
         onPick={(c) => void quickCreate(c)}
-        onAddDetails={() => {
+        onAddDetails={() => openNewAtPin()}
+        onPickOnMap={() => {
           setPickerOpen(false);
-          router.push('/(tabs)/traffic/new');
+          setMapPickMode(true);
         }}
-        onClose={() => setPickerOpen(false)}
+        onClose={() => {
+          setPickerOpen(false);
+          setDraftPin(null);
+        }}
       />
 
-      <Modal visible={scheduledOpen} animationType="slide" onRequestClose={() => setScheduledOpen(false)}>
-        <Screen edges={['top', 'bottom']}>
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>{t('trafficScheduledTitle')}</Text>
-            <Pressable onPress={() => setScheduledOpen(false)}>
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('trafficClose')}</Text>
-            </Pressable>
-          </View>
-          <FlatList
-            data={scheduledReports}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <ReportCard
-                report={item}
-                theme={theme}
-                onPress={() => {
-                  setScheduledOpen(false);
-                  openReport(item);
-                }}
-              />
-            )}
-            ListEmptyComponent={
-              !scheduled.isLoading ? (
-                <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-                  {t('trafficScheduledEmpty')}
-                </Text>
-              ) : null
-            }
-            contentContainerStyle={styles.list}
-          />
-        </Screen>
+      <Modal
+        visible={scheduledOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setScheduledOpen(false)}
+      >
+        <Pressable style={styles.scheduledBackdrop} onPress={() => setScheduledOpen(false)}>
+          <Pressable
+            style={[styles.scheduledSheet, { backgroundColor: theme.background }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('trafficScheduledTitle')}</Text>
+              <Pressable onPress={() => setScheduledOpen(false)} hitSlop={8}>
+                <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('trafficClose')}</Text>
+              </Pressable>
+            </View>
+            <FlatList
+              data={scheduledReports}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => (
+                <ReportCard
+                  report={item}
+                  theme={theme}
+                  onPress={() => {
+                    setScheduledOpen(false);
+                    openReport(item);
+                  }}
+                />
+              )}
+              ListEmptyComponent={
+                !scheduled.isLoading ? (
+                  <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
+                    {t('trafficScheduledEmpty')}
+                  </Text>
+                ) : null
+              }
+              contentContainerStyle={styles.list}
+            />
+          </Pressable>
+        </Pressable>
       </Modal>
     </Screen>
   );
@@ -260,4 +317,42 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   modalTitle: { fontSize: 18, fontWeight: '800' },
+  scheduledBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  scheduledSheet: {
+    maxHeight: '78%',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 8,
+  },
+  pickBanner: {
+    position: 'absolute',
+    top: 8,
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    elevation: 3,
+  },
+  draftBar: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    elevation: 4,
+  },
+  draftBtn: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
 });
