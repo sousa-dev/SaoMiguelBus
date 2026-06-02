@@ -1,21 +1,19 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { useAppTheme } from '@/lib/theme';
+import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TrailsLayout() {
-  const theme = useAppTheme();
   const { t } = useTranslation();
+  const screenOptions = useAppStackScreenOptions();
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.primary },
-        headerTintColor: '#fff',
-        contentStyle: { backgroundColor: theme.background },
-      }}
-    >
-      <Stack.Screen name="index" options={{ title: t('navBarTrailsLabel') }} />
+    <Stack screenOptions={screenOptions}>
+      <Stack.Screen
+        name="index"
+        options={{ title: t('navBarTrailsLabel'), headerRight: () => <SettingsHeaderButton /> }}
+      />
       <Stack.Screen name="[id]" options={{ title: t('trailsDetailTitle') }} />
     </Stack>
   );

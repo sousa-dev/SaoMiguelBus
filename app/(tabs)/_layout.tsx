@@ -17,6 +17,7 @@ export default function TabLayout() {
   const showNews = modules.includes('news');
   const showSeismic = modules.includes('seismic');
   const showTrails = modules.includes('trails');
+  const showMarketplace = modules.includes('marketplace');
 
   useFocusEffect(
     useCallback(() => {
@@ -68,6 +69,14 @@ export default function TabLayout() {
           title: t('navBarTrailsLabel'),
           headerShown: false,
           href: showTrails ? '/trails' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="marketplace"
+        options={{
+          title: t('navBarMarketplaceLabel'),
+          headerShown: false,
+          href: showMarketplace ? '/marketplace' : null,
         }}
       />
     </Tabs>

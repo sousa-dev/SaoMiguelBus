@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Screen } from '@/components/Screen';
 
 import { FavoriteToggle } from '@/features/transit/components/FavoriteToggle';
 import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
@@ -118,22 +119,11 @@ export default function TransitScreen() {
   }, [isOnline, searchEnabled, t]);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['bottom']}>
+    <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {!isOnline ? <OfflineBanner /> : null}
 
-        <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: theme.primary, flex: 1 }]}>
-            {islandName} · {t('bannerTitle')}
-          </Text>
-          <Pressable
-            onPress={() => router.push('/settings')}
-            style={[styles.settingsBtn, { borderColor: theme.border }]}
-            accessibilityLabel={t('settingsTitle')}
-          >
-            <Text style={{ color: theme.secondary, fontWeight: '700' }}>⚙</Text>
-          </Pressable>
-        </View>
+        <Text style={[styles.title, { color: theme.primary }]}>{islandName}</Text>
         <Text style={{ color: theme.muted, marginBottom: 16 }}>{t('bannerSubtitle')}</Text>
 
         <FavoritesPanel onSelect={applyFavorite} />
@@ -235,23 +225,13 @@ export default function TransitScreen() {
           </>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16, paddingBottom: 40 },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 4 },
-  title: { fontSize: 22, fontWeight: '700' },
-  settingsBtn: {
-    borderWidth: 1,
-    borderRadius: 8,
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  title: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
   label: { fontWeight: '600', marginBottom: 6, marginTop: 4 },
   input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },

@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } f
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { EarthquakeCard } from '@/features/earthquakes/components/EarthquakeCard';
 import { useSeismicEvents } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { track } from '@/lib/analytics';
@@ -26,7 +27,7 @@ export default function EarthquakesScreen() {
   }, [events.refetch]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Screen withStackHeader>
       {events.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
       {events.isError ? (
         <Text style={{ color: theme.muted }}>{t('seismicLoadError')}</Text>
@@ -63,11 +64,10 @@ export default function EarthquakesScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12 },
-  list: { paddingBottom: 24 },
+  list: { padding: 12, paddingBottom: 24 },
 });
