@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Calendar, X } from 'lucide-react-native';
+import { Calendar, Plus, X } from 'lucide-react-native';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,6 +13,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Badge } from '@/components/ui/Badge';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
@@ -20,7 +21,6 @@ import { Sheet } from '@/components/ui/Sheet';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { CategoryPickerSheet } from '@/features/traffic/components/CategoryPickerSheet';
 import { ProximityAlert } from '@/features/traffic/components/ProximityAlert';
-import { QuickReportButton } from '@/features/traffic/components/QuickReportButton';
 import { ReportCard } from '@/features/traffic/components/ReportCard';
 import { TrafficMap } from '@/features/traffic/components/TrafficMap';
 import {
@@ -31,6 +31,7 @@ import {
 import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { useProximityAlert } from '@/features/traffic/hooks/useProximityAlert';
 import { isWithinIslandBounds } from '@/lib/island-map';
+import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
@@ -65,10 +66,25 @@ export default function TrafficScreen() {
   });
   const scheduled = useTrafficReports({
     includeScheduled: true,
-    enabled: scheduledOpen,
+    enabled: focused,
+    refetchInterval: focused ? POLL_MS : undefined,
   });
 
   const create = useCreateTrafficReport();
+
+  useFabActions(
+    useMemo(
+      () => [
+        {
+          key: 'report-traffic',
+          labelKey: 'trafficReportTitle',
+          icon: Plus,
+          onPress: () => setPickerOpen(true),
+        },
+      ],
+      [],
+    ),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -86,6 +102,7 @@ export default function TrafficScreen() {
     () => (scheduled.data ?? []).filter((r) => r.status === 'scheduled'),
     [scheduled.data],
   );
+  const scheduledCount = scheduledReports.length;
 
   const nearest = useProximityAlert(activeReports, userOnIsland ? coords : null);
   const showAlert = nearest && nearest.id !== dismissedAlertId ? nearest : null;
@@ -185,12 +202,17 @@ export default function TrafficScreen() {
 
         <Pressable
           onPress={() => setScheduledOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('trafficScheduledA11y', { count: scheduledCount })}
           style={[styles.scheduledPill, { backgroundColor: theme.card, borderColor: theme.border }]}
         >
           <Calendar size={iconSize.sm} color={theme.primary} strokeWidth={2} />
           <Text style={[typography.caption, { color: theme.text, fontWeight: '600' }]}>
             {t('trafficScheduledTitle')}
           </Text>
+          {scheduledCount > 0 ? (
+            <Badge label={String(scheduledCount)} tone="primary" />
+          ) : null}
         </Pressable>
 
         {reportError ? (
@@ -230,7 +252,6 @@ export default function TrafficScreen() {
           </View>
         ) : null}
 
-        <QuickReportButton onPress={() => setPickerOpen(true)} />
       </View>
 
       <CategoryPickerSheet
@@ -251,28 +272,25 @@ export default function TrafficScreen() {
       />
 
       <Sheet visible={scheduledOpen} onClose={() => setScheduledOpen(false)} title={t('trafficScheduledTitle')}>
-        <FlatList
-          data={scheduledReports}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <ReportCard
-              report={item}
-              theme={theme}
-              onPress={() => {
-                setScheduledOpen(false);
-                openReport(item);
-              }}
-            />
-          )}
-          ListEmptyComponent={
-            !scheduled.isLoading ? (
-              <Text style={[typography.body, { color: theme.muted, textAlign: 'center', marginTop: space['2xl'] }]}>
-                {t('trafficScheduledEmpty')}
-              </Text>
-            ) : null
-          }
-          contentContainerStyle={styles.list}
-        />
+        {scheduled.isLoading ? (
+          <ActivityIndicator color={theme.primary} style={{ marginVertical: space['2xl'] }} />
+        ) : null}
+        {!scheduled.isLoading && scheduledReports.length === 0 ? (
+          <Text style={[typography.body, { color: theme.muted, textAlign: 'center', marginTop: space['2xl'] }]}>
+            {t('trafficScheduledEmpty')}
+          </Text>
+        ) : null}
+        {scheduledReports.map((item) => (
+          <ReportCard
+            key={item.id}
+            report={item}
+            theme={theme}
+            onPress={() => {
+              setScheduledOpen(false);
+              openReport(item);
+            }}
+          />
+        ))}
       </Sheet>
     </Screen>
   );
@@ -280,7 +298,7 @@ export default function TrafficScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  list: { padding: 12, paddingBottom: 90 },
+  list: { padding: space.md, paddingBottom: space['2xl'] },
   loader: { position: 'absolute', top: 70, alignSelf: 'center' },
   scheduledPill: {
     position: 'absolute',
@@ -288,7 +306,7 @@ const styles = StyleSheet.create({
     bottom: 28,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.xs,
+    gap: space.sm,
     borderRadius: 18,
     borderWidth: 1,
     paddingHorizontal: 14,

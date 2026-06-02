@@ -11,8 +11,6 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Check, Clock, ExternalLink, Star } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -46,7 +44,6 @@ function formatDuration(
 export default function TourDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const { isOnline } = useNetworkStatus();
   const { tourId } = useLocalSearchParams<{ tourId: string }>();
   const code = (tourId ?? '').trim();
@@ -90,7 +87,7 @@ export default function TourDetailScreen() {
       : t('tourBookCta');
 
   return (
-    <Screen withStackHeader style={{ paddingBottom: insets.bottom + 72 }}>
+    <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.scroll}>
         {images.length > 0 ? (
           <View>
@@ -173,7 +170,7 @@ export default function TourDetailScreen() {
         style={[
           styles.bookBar,
           {
-            paddingBottom: insets.bottom + space.md,
+            paddingBottom: space.md,
             backgroundColor: theme.surface,
             borderTopColor: theme.border,
           },
@@ -200,7 +197,7 @@ export default function TourDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: space['2xl'] },
+  scroll: { paddingBottom: 96 },
   hero: { width: SCREEN_WIDTH, height: 240 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: space.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },

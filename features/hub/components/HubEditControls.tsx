@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { PIN_CAP, useHubStore, type HubColumns, type HubLayout } from '@/lib/hub-store';
 import { space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 
 type HubEditControlsProps = {
   pinnedCount: number;
@@ -14,6 +15,7 @@ type HubEditControlsProps = {
 };
 
 export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsProps) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const layout = useHubStore((s) => s.layout);
   const columns = useHubStore((s) => s.columns);
@@ -43,6 +45,13 @@ export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsPro
           <Text style={[typography.label, styles.flex]}>{t('hubPinHint', { count: pinnedCount, max: PIN_CAP })}</Text>
           <Badge label={t('hubBarCounter', { count: pinnedCount, max: PIN_CAP })} tone="primary" />
         </View>
+
+        <Text style={[typography.caption, { color: theme.muted, marginBottom: space.sm }]}>
+          {t('hubBarOrderHint')}
+        </Text>
+        <Text style={[typography.caption, { color: theme.muted, marginBottom: space.md }]}>
+          {t('hubGridOrderHint')}
+        </Text>
 
         <Text style={[typography.overline, styles.sectionLabel]}>{t('hubLayoutLabel')}</Text>
         <SegmentedControl

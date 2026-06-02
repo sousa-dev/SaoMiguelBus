@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Clock, MapPin, Waves } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -21,6 +20,7 @@ import { useAppTheme } from '@/lib/theme';
 export default function EarthquakeDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const eventId = Number(id);
   const event = useSeismicEvent(eventId, Number.isFinite(eventId));
@@ -49,8 +49,19 @@ export default function EarthquakeDetailScreen() {
   }
 
   const data = event.data;
-  const mapsUrl = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
   const feltYes = data.feltYesCount ?? data.feltCount ?? 0;
+
+  const openOnSeismicMap = () => {
+    track('seismic', 'view', { screen: 'map', source: 'detail', event_id: data.id });
+    router.replace({
+      pathname: '/(tabs)/earthquakes',
+      params: {
+        focusLat: String(data.latitude),
+        focusLng: String(data.longitude),
+        focusId: String(data.id),
+      },
+    });
+  };
   const feltNo = data.feltNoCount ?? 0;
   const magColor = magnitudeColor(theme, data.magnitude);
   return (
@@ -82,7 +93,7 @@ export default function EarthquakeDetailScreen() {
           <Button
             label={t('seismicOpenMap')}
             variant="outline"
-            onPress={() => WebBrowser.openBrowserAsync(mapsUrl)}
+            onPress={openOnSeismicMap}
             fullWidth
             style={{ marginTop: space.md }}
           />

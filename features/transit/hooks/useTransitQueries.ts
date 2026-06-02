@@ -10,13 +10,22 @@ import {
   voteTrip,
 } from '@/lib/api';
 import { track } from '@/lib/analytics';
+import type { BootstrapResponse } from '@/lib/types';
 
 export function useBootstrap() {
   return useQuery({
     queryKey: ['bootstrap', 'v3'],
     queryFn: fetchBootstrap,
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: 'always',
+  });
+}
+
+/** Cached bootstrap only — does not refetch when the screen mounts. */
+export function useBootstrapCached() {
+  return useQuery<BootstrapResponse>({
+    queryKey: ['bootstrap', 'v3'],
+    queryFn: fetchBootstrap,
+    enabled: false,
   });
 }
 

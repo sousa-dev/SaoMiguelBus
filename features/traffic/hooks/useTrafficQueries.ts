@@ -17,6 +17,7 @@ export interface NearbyReportsParams {
   radiusKm?: number;
   category?: string;
   includeScheduled?: boolean;
+  limit?: number;
   enabled?: boolean;
   /** Poll interval (ms) — set while driving mode is active. */
   refetchInterval?: number;

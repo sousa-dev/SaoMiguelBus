@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -21,7 +21,7 @@ import { space } from '@/lib/tokens';
 import { EarthquakeCard } from '@/features/earthquakes/components/EarthquakeCard';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { SeismicMap } from '@/features/earthquakes/components/SeismicMap';
-import { useSeismicEvents } from '@/features/earthquakes/hooks/useEarthquakeQueries';
+import { useSeismicEvent, useSeismicEvents } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent } from '@/lib/types';
@@ -39,6 +39,11 @@ export default function EarthquakesScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    focusLat?: string;
+    focusLng?: string;
+    focusId?: string;
+  }>();
   const [windowHours, setWindowHours] = useState(24);
   const events = useSeismicEvents(windowHours);
   const hasMap = Platform.OS !== 'web';
@@ -46,6 +51,24 @@ export default function EarthquakesScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>(hasMap ? 'map' : 'list');
   const [selectedEvent, setSelectedEvent] = useState<SeismicEvent | null>(null);
   const [voteOpen, setVoteOpen] = useState(false);
+
+  const focusEventId = params.focusId != null ? Number(params.focusId) : 0;
+  const mapFocus = useMemo(() => {
+    const lat = params.focusLat != null ? Number(params.focusLat) : NaN;
+    const lng = params.focusLng != null ? Number(params.focusLng) : NaN;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+    return { lat, lng };
+  }, [params.focusLat, params.focusLng]);
+
+  const focusedEvent = useSeismicEvent(focusEventId, mapFocus != null && focusEventId > 0);
+
+  useEffect(() => {
+    if (mapFocus && hasMap) {
+      setViewMode('map');
+    }
+  }, [mapFocus, hasMap]);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,7 +98,14 @@ export default function EarthquakesScreen() {
     setSelectedEvent(null);
   };
 
-  const eventList = events.data ?? [];
+  const eventList = useMemo(() => {
+    const list = events.data ?? [];
+    const extra = focusedEvent.data;
+    if (!extra || list.some((e) => e.id === extra.id)) {
+      return list;
+    }
+    return [extra, ...list];
+  }, [events.data, focusedEvent.data]);
 
   return (
     <Screen withStackHeader>
@@ -117,7 +147,7 @@ export default function EarthquakesScreen() {
 
       <View style={styles.fill}>
         {viewMode === 'map' && hasMap ? (
-          <SeismicMap events={eventList} onMarkerPress={onMarkerPress} />
+          <SeismicMap events={eventList} focus={mapFocus} onMarkerPress={onMarkerPress} />
         ) : (
           <FlatList
             data={eventList}

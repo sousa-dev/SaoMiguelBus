@@ -10,6 +10,8 @@ type ListRowProps = {
   title: string;
   subtitle?: string;
   icon?: LucideIcon;
+  /** Replaces `icon` when set (e.g. locale flag emoji). */
+  leading?: ReactNode;
   trailing?: ReactNode;
   onPress?: () => void;
   showChevron?: boolean;
@@ -21,6 +23,7 @@ export function ListRow({
   title,
   subtitle,
   icon: Icon,
+  leading,
   trailing,
   onPress,
   showChevron = Boolean(onPress),
@@ -32,7 +35,9 @@ export function ListRow({
 
   const content = (
     <>
-      {Icon ? (
+      {leading ? (
+        <View style={styles.leadingWrap}>{leading}</View>
+      ) : Icon ? (
         <View style={[styles.iconWrap, { backgroundColor: theme.surfaceVariant }]}>
           <Icon size={iconSize.md} color={theme.primary} strokeWidth={2} />
         </View>
@@ -76,6 +81,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg,
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: space.md,
+  },
+  leadingWrap: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconWrap: {
     width: 36,

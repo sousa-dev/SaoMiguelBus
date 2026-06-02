@@ -20,9 +20,15 @@ export const useThemePrefsStore = create<ThemePrefsState>()(
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => AsyncStorage),
+      // Avoid async rehydrate overwriting in-session preference changes.
+      skipHydration: true,
     },
   ),
 );
+
+export function rehydrateThemePrefs(): void {
+  void useThemePrefsStore.persist.rehydrate();
+}
 
 export function resolveColorScheme(
   preference: ThemePreference,

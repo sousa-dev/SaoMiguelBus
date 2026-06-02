@@ -20,8 +20,8 @@ export const FALLBACK_LOCALE = 'pt';
 
 // All shipped translation catalogs (shared across islands).
 // Add a language: drop a `locales/<code>.json` keyed identically to `pt.json`,
-// register it here + in LANGUAGE_NAMES, then add the code to an island's
-// `locales` list in config/island.ts. No other code changes needed.
+// register it here + in LANGUAGE_NAMES + LANGUAGE_DEFAULT_REGION in locale-region.ts,
+// then add the code to an island's `locales` list in config/island.ts.
 export const resources = {
   pt: { translation: pt },
   en: { translation: en },
@@ -43,7 +43,44 @@ export const LANGUAGE_NAMES: Record<string, string> = {
   it: 'Italiano',
   uk: 'Українська',
   zh: '中文',
+  nl: 'Nederlands',
+  pl: 'Polski',
 };
+
+/** BCP-47 tag → base language code (`pt-PT` → `pt`). */
+export function normalizeLocaleCode(code: string): string {
+  return code.split(/[-_]/)[0]?.toLowerCase() ?? code;
+}
+
+export function isSupportedLocale(code: string): boolean {
+  return normalizeLocaleCode(code) in resources;
+}
+
+export function getLanguageDisplayName(code: string): string {
+  const base = normalizeLocaleCode(code);
+  return LANGUAGE_NAMES[base] ?? LANGUAGE_NAMES[code] ?? code;
+}
+
+/** Locales offered in Settings: island list ∩ shipped catalogs, stable order. */
+export function resolvePickerLocales(islandLocales: string[] | undefined): string[] {
+  const catalog = Object.keys(resources);
+  const source = islandLocales?.length ? islandLocales : staticIslandConfig.locales;
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const raw of source) {
+    const base = normalizeLocaleCode(raw);
+    if (!catalog.includes(base) || seen.has(base)) {
+      continue;
+    }
+    seen.add(base);
+    ordered.push(base);
+  }
+  return ordered.length ? ordered : staticIslandConfig.locales.filter((c) => catalog.includes(c));
+}
+
+export function isActiveLocale(active: string, code: string): boolean {
+  return normalizeLocaleCode(active) === normalizeLocaleCode(code);
+}
 
 const deviceLocale = Localization.getLocales()[0]?.languageCode ?? FALLBACK_LOCALE;
 const initialLng = staticIslandConfig.locales.includes(deviceLocale)

@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { BarChart3, Lock, Megaphone, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -9,7 +9,7 @@ import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { ListRow } from '@/components/ui/ListRow';
-import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { useNetworkStatus } from '@/lib/network-status';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -21,13 +21,14 @@ export default function ConsentScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const screenOptions = useAppStackScreenOptions();
   const { isOnline } = useNetworkStatus();
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
   const saveCustom = useConsentStore((s) => s.saveCustom);
-  const bootstrap = useBootstrap();
-  const policyVersion = bootstrap.data?.consentPolicyVersion;
+  const { data: bootstrap } = useBootstrapCached();
+  const policyVersion = bootstrap?.consentPolicyVersion;
   const decided = useConsentStore((s) => s.decided);
   const storedPurposes = useConsentStore((s) => s.purposes);
   const [purposes, setPurposes] = useState<ConsentPurposes>(() =>
@@ -57,19 +58,25 @@ export default function ConsentScreen() {
     }
   };
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      ...screenOptions,
+      headerShown: true,
+      title: t('consentTitle'),
+      presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+      ...(Platform.OS === 'ios'
+        ? {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [1],
+            sheetExpandsWhenScrolledToEdge: true,
+          }
+        : {}),
+    });
+  }, [navigation, screenOptions, t]);
+
   return (
-    <>
-      <Stack.Screen
-        options={{
-          ...screenOptions,
-          headerShown: true,
-          title: t('consentTitle'),
-          presentation: 'modal',
-          ...(Platform.OS === 'ios' ? { sheetGrabberVisible: true } : {}),
-        }}
-      />
-      <Screen>
-        <ScrollView contentContainerStyle={styles.content}>
+    <Screen withStackHeader collapsable={false}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <View style={[styles.hero, { backgroundColor: theme.surfaceVariant }]}>
             <ShieldCheck size={48} color={theme.primary} strokeWidth={1.5} />
           </View>
@@ -134,8 +141,7 @@ export default function ConsentScreen() {
             style={{ marginTop: space.md }}
           />
         </ScrollView>
-      </Screen>
-    </>
+    </Screen>
   );
 }
 
@@ -174,6 +180,7 @@ function PurposeRow({
 }
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1 },
   content: { padding: space.lg, paddingBottom: space['4xl'] },
   hero: {
     width: 80,

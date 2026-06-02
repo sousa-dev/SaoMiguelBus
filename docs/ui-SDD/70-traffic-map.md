@@ -1,6 +1,6 @@
 # UI-SDD 70 — Traffic (Map)
 
-**Screen & route:** [`app/(tabs)/traffic/index.tsx`](../../app/(tabs)/traffic/index.tsx) → `/(tabs)/traffic`. Components: `TrafficMap`, `TrafficMapMarker`, `QuickReportButton`, `CategoryPickerSheet`, `ProximityAlert`, `ReportCard`, `LocationPickerModal`.
+**Screen & route:** [`app/(tabs)/traffic/index.tsx`](../../app/(tabs)/traffic/index.tsx) → `/(tabs)/traffic`. Components: `TrafficMap`, `TrafficMapMarker`, `CategoryPickerSheet`, `ProximityAlert`, `ReportCard`, `LocationPickerModal`. The "Report traffic" action is now provided by the global FAB (`useFabActions`, see UI-SDD 02 §7b) rather than a local `QuickReportButton`.
 
 ---
 

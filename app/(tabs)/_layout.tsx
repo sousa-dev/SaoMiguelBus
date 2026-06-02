@@ -1,16 +1,14 @@
-import { BlurView } from 'expo-blur';
 import { Tabs, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import type { ColorValue } from 'react-native';
-import { Platform, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { HubTabBar } from '@/components/HubTabBar';
 import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useHubStore } from '@/lib/hub-store';
 import { logger } from '@/lib/logger';
 import { HUB_MODULES, HUB_TAB } from '@/lib/modules';
-import { elevation } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 const SCREEN_MODULE_KEY: Record<string, ModuleKey> = {
@@ -33,14 +31,6 @@ function TabBarIcon({
   size: number;
 }) {
   return <Icon color={color} size={size} strokeWidth={2} />;
-}
-
-function TabBarBackground() {
-  const theme = useAppTheme();
-  if (Platform.OS === 'ios') {
-    return <BlurView intensity={80} tint={theme.isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />;
-  }
-  return null;
 }
 
 export default function TabLayout() {
@@ -77,20 +67,22 @@ export default function TabLayout() {
     logger.debug('tab modules', modules.join(','));
   }
 
-  const tabBarStyle =
-    Platform.OS === 'android'
-      ? { backgroundColor: theme.surface, borderTopColor: theme.divider, ...elevation(1, theme.text) }
-      : { backgroundColor: 'transparent', borderTopColor: theme.divider, position: 'absolute' as const };
-
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.onSurfaceMuted,
-        tabBarStyle,
-        tabBarBackground: Platform.OS === 'ios' ? () => <TabBarBackground /> : undefined,
         headerShown: false,
       }}
+      tabBar={(props) => (
+        <HubTabBar
+          state={props.state}
+          descriptors={props.descriptors as import('@/components/HubTabBar').HubTabBarProps['descriptors']}
+          navigation={props.navigation as import('@/components/HubTabBar').HubTabBarProps['navigation']}
+          pinnedKeys={pinnedKeys}
+          enabledKeys={modules}
+        />
+      )}
     >
       <Tabs.Screen
         name="hub"

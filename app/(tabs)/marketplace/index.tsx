@@ -1,13 +1,14 @@
 import * as Location from 'expo-location';
 import { Plus } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Store } from 'lucide-react-native';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import type { Href } from 'expo-router';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Fab } from '@/components/ui/Fab';
+import { useFabActions } from '@/lib/fab-store';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
@@ -28,6 +29,20 @@ export default function MarketplaceScreen() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  useFabActions(
+    useMemo(
+      () => [
+        {
+          key: 'add-listing',
+          labelKey: 'marketplaceAddListing',
+          icon: Plus,
+          href: '/(tabs)/marketplace/new' as Href,
+        },
+      ],
+      [],
+    ),
+  );
 
   const categories = useMarketplaceCategories();
   const providers = useProviders({
@@ -111,16 +126,10 @@ export default function MarketplaceScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-
-      <Fab
-        icon={Plus}
-        accessibilityLabel={t('marketplaceAddListing')}
-        onPress={() => router.push('/(tabs)/marketplace/new')}
-      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 12, paddingBottom: 90 },
+  list: { padding: 12, paddingBottom: 24 },
 });
