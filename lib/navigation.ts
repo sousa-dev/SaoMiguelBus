@@ -7,6 +7,9 @@ export function useAppStackScreenOptions() {
     headerStyle: { backgroundColor: theme.primary },
     headerTintColor: '#fff' as const,
     headerShadowVisible: false,
+    headerBackVisible: true,
+    gestureEnabled: true,
+    fullScreenGestureEnabled: true,
     contentStyle: { backgroundColor: theme.background },
   };
 }

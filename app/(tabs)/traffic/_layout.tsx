@@ -5,7 +5,7 @@ import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { StackBackButton } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
-export default function TransitLayout() {
+export default function TrafficLayout() {
   const { t } = useTranslation();
   const screenOptions = useAppStackScreenOptions();
 
@@ -13,23 +13,21 @@ export default function TransitLayout() {
     <Stack screenOptions={screenOptions}>
       <Stack.Screen
         name="index"
+        options={{ title: t('navBarTrafficLabel'), headerRight: () => <SettingsHeaderButton /> }}
+      />
+      <Stack.Screen
+        name="[id]"
         options={{
-          title: t('navBarSearchLabel'),
-          headerRight: () => <SettingsHeaderButton />,
+          title: t('trafficDetailTitle'),
+          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
         }}
       />
       <Stack.Screen
-        name="directions"
+        name="new"
         options={{
-          title: t('directionsButton'),
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/transit" />,
-        }}
-      />
-      <Stack.Screen
-        name="[tripId]"
-        options={{
-          title: t('routeDetails'),
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/transit" />,
+          title: t('trafficReportTitle'),
+          presentation: 'modal',
+          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
         }}
       />
     </Stack>

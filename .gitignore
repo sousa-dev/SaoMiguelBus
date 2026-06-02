@@ -40,3 +40,29 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Legacy Android Studio project (src/android-project)
+src/android-project/.gradle/
+src/android-project/.idea/
+src/android-project/**/build/
+src/android-project/app/debug/
+src/android-project/app/release/
+src/android-project/local.properties
+
+# Legacy Flutter project (src/saomiguelbus)
+src/saomiguelbus/.dart_tool/
+src/saomiguelbus/.idea/
+src/saomiguelbus/.vscode/
+src/saomiguelbus/build/
+src/saomiguelbus/**/*.iml
+src/saomiguelbus/pubspec.lock
+src/saomiguelbus/pubspec*.lock
+src/saomiguelbus/.flutter-plugins
+src/saomiguelbus/.flutter-plugins-dependencies
+src/saomiguelbus/android/.gradle/
+src/saomiguelbus/android/local.properties
+src/saomiguelbus/ios/Pods/
+src/saomiguelbus/ios/Podfile.lock
+src/saomiguelbus/macos/Pods/
+src/saomiguelbus/macos/Podfile.lock
+src/android-project/app/.idea/

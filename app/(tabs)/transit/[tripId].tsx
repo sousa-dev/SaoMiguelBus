@@ -1,6 +1,6 @@
-import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import React, { useCallback } from 'react';
+import { ActivityIndicator, BackHandler, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 
@@ -12,8 +12,23 @@ import type { TransitSearchResult } from '@/lib/types';
 export default function TripDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
+  const navigation = useNavigation();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
   const id = Number(tripId);
+
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (navigation.canGoBack()) {
+          return false;
+        }
+        router.replace('/(tabs)/transit');
+        return true;
+      });
+      return () => sub.remove();
+    }, [navigation, router]),
+  );
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();
 

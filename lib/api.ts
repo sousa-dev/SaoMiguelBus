@@ -19,6 +19,10 @@ import type {
   MarketplaceProvider,
   MarketplaceReview,
   ProviderWriteInput,
+  TrafficCategory,
+  TrafficReport,
+  TrafficReportWriteInput,
+  ConfirmVote,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -331,6 +335,85 @@ export async function submitReview(
     method: 'POST',
     headers: { 'X-Session-Id': sessionId },
     body: JSON.stringify({ ...payload, session_id: sessionId }),
+  });
+}
+
+// --------------------------------------------------------------------------- //
+// Traffic
+// --------------------------------------------------------------------------- //
+
+export async function fetchTrafficCategories(): Promise<TrafficCategory[]> {
+  const data = await apiFetch<{ categories: TrafficCategory[] }>('/api/v3/traffic/categories');
+  return data.categories;
+}
+
+export async function fetchTrafficReports(params?: {
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
+  bbox?: [number, number, number, number];
+  category?: string;
+  includeScheduled?: boolean;
+  limit?: number;
+}): Promise<TrafficReport[]> {
+  const query = new URLSearchParams();
+  if (params?.lat != null && params?.lng != null && params?.radiusKm != null) {
+    query.set('lat', String(params.lat));
+    query.set('lng', String(params.lng));
+    query.set('radius_km', String(params.radiusKm));
+  }
+  if (params?.bbox) {
+    query.set('bbox', params.bbox.join(','));
+  }
+  if (params?.category) {
+    query.set('category', params.category);
+  }
+  if (params?.includeScheduled) {
+    query.set('include_scheduled', 'true');
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  const data = await apiFetch<{ reports: TrafficReport[] }>(`/api/v3/traffic/reports${suffix}`);
+  return data.reports;
+}
+
+export async function fetchTrafficReport(reportId: number): Promise<TrafficReport> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<TrafficReport>(`/api/v3/traffic/reports/${reportId}`, {
+    headers: { 'X-Session-Id': sessionId },
+  });
+}
+
+export async function createTrafficReport(
+  input: TrafficReportWriteInput,
+): Promise<TrafficReport> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<TrafficReport>('/api/v3/traffic/reports', {
+    method: 'POST',
+    headers: { 'X-Session-Id': sessionId },
+    body: JSON.stringify({ ...input, session_id: sessionId }),
+  });
+}
+
+export async function deleteTrafficReport(reportId: number): Promise<void> {
+  const sessionId = await getOrCreateSessionId();
+  await apiFetch(`/api/v3/traffic/reports/${reportId}`, {
+    method: 'DELETE',
+    headers: { 'X-Session-Id': sessionId },
+  });
+}
+
+export async function confirmTrafficReport(
+  reportId: number,
+  vote: ConfirmVote,
+): Promise<TrafficReport> {
+  const sessionId = await getOrCreateSessionId();
+  return apiFetch<TrafficReport>(`/api/v3/traffic/reports/${reportId}/confirm`, {
+    method: 'POST',
+    headers: { 'X-Session-Id': sessionId },
+    body: JSON.stringify({ session_id: sessionId, vote }),
   });
 }
 
