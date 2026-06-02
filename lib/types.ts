@@ -137,15 +137,51 @@ export interface TrailSummary {
   name: string;
   difficulty: string;
   distanceKm: number | null;
+  shape?: string;
+  durationMin?: number | null;
+}
+
+export interface TrailWaypoint {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+export interface TrailNearestStop {
+  name: string;
+  distanceKm: number;
+  lat: number;
+  lng: number;
 }
 
 export interface TrailDetail extends TrailSummary {
+  descriptionPt?: string;
+  descriptionEn?: string;
+  gpxUrl?: string;
+  kmlUrl?: string;
+  mapImageUrl?: string;
+  leafletUrl?: string;
+  startLat?: number | null;
+  startLng?: number | null;
+  waypoints?: TrailWaypoint[];
+  nearestStop?: TrailNearestStop | null;
   geojson: TrailGeoJson;
   stages: {
     id: number;
     name: string;
     sequence: number;
     geojson: TrailGeoJson;
+  }[];
+  attribution: string;
+}
+
+export interface POIsListResponse {
+  pois: {
+    id: number;
+    name: string;
+    category: string;
+    latitude: number;
+    longitude: number;
   }[];
   attribution: string;
 }

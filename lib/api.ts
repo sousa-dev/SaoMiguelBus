@@ -14,6 +14,7 @@ import type {
   FeltReportResponse,
   TrailsListResponse,
   TrailDetail,
+  POIsListResponse,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -193,17 +194,44 @@ export async function postSeismicFelt(
 
 export async function fetchTrails(params?: {
   difficulty?: string;
+  shape?: string;
+  minLength?: number;
+  maxLength?: number;
   limit?: number;
 }): Promise<TrailsListResponse> {
   const query = new URLSearchParams();
   if (params?.difficulty) {
     query.set('difficulty', params.difficulty);
   }
+  if (params?.shape) {
+    query.set('shape', params.shape);
+  }
+  if (params?.minLength != null) {
+    query.set('min_length', String(params.minLength));
+  }
+  if (params?.maxLength != null) {
+    query.set('max_length', String(params.maxLength));
+  }
   if (params?.limit) {
     query.set('limit', String(params.limit));
   }
   const suffix = query.toString() ? `?${query.toString()}` : '';
   return apiFetch<TrailsListResponse>(`/api/v3/trails/${suffix}`);
+}
+
+export async function fetchPOIs(params?: {
+  category?: string;
+  limit?: number;
+}): Promise<POIsListResponse> {
+  const query = new URLSearchParams();
+  if (params?.category) {
+    query.set('category', params.category);
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return apiFetch<POIsListResponse>(`/api/v3/trails/pois${suffix}`);
 }
 
 export async function fetchTrail(trailId: number): Promise<TrailDetail> {

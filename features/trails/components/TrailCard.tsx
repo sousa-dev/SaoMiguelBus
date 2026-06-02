@@ -35,6 +35,19 @@ export function TrailCard({
           {t('trailsDistance', { km: trail.distanceKm.toFixed(1) })}
         </Text>
       ) : null}
+      {trail.durationMin != null ? (
+        <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4 }}>
+          {t('trailsDurationShort', {
+            hours: Math.floor(trail.durationMin / 60),
+            minutes: trail.durationMin % 60,
+          })}
+        </Text>
+      ) : null}
+      {trail.shape ? (
+        <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4 }}>
+          {t(`trailsShape_${trail.shape}`, { defaultValue: trail.shape })}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
