@@ -126,3 +126,31 @@ export interface FeltReportResponse {
   feltCount: number;
   feltSummary: Record<string, number>;
 }
+
+export type TrailGeoJson = {
+  type: string;
+  coordinates?: unknown;
+};
+
+export interface TrailSummary {
+  id: number;
+  name: string;
+  difficulty: string;
+  distanceKm: number | null;
+}
+
+export interface TrailDetail extends TrailSummary {
+  geojson: TrailGeoJson;
+  stages: {
+    id: number;
+    name: string;
+    sequence: number;
+    geojson: TrailGeoJson;
+  }[];
+  attribution: string;
+}
+
+export interface TrailsListResponse {
+  trails: TrailSummary[];
+  attribution: string;
+}

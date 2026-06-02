@@ -12,6 +12,8 @@ import type {
   NewsArticle,
   SeismicEvent,
   FeltReportResponse,
+  TrailsListResponse,
+  TrailDetail,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -187,6 +189,25 @@ export async function postSeismicFelt(
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchTrails(params?: {
+  difficulty?: string;
+  limit?: number;
+}): Promise<TrailsListResponse> {
+  const query = new URLSearchParams();
+  if (params?.difficulty) {
+    query.set('difficulty', params.difficulty);
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return apiFetch<TrailsListResponse>(`/api/v3/trails/${suffix}`);
+}
+
+export async function fetchTrail(trailId: number): Promise<TrailDetail> {
+  return apiFetch<TrailDetail>(`/api/v3/trails/${trailId}`);
 }
 
 export async function postConsent(sessionId: string, purposes: ConsentPurposes) {
