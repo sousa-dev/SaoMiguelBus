@@ -1,20 +1,30 @@
 # São Miguel Bus → Azores Hub (revamp)
 
-This repository is being reorganized for the **Azores Hub** platform revamp: one Expo client (Android, iOS, Web) against a modernized multi-tenant backend.
+Expo client (Android, iOS, Web) for the **Azores Hub** platform — Phase 2+ on branch `revamp`.
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
-| [`legacy/`](./legacy/) | Frozen pre-revamp mobile app, docs, and assets (Kotlin Android, Flutter stub, etc.) |
-| [`SDD/`](./SDD/) | Software design documents for the new platform |
-| [`MIGRATION_PLAN.md`](./MIGRATION_PLAN.md) | Executive migration index and phased plan |
+| [`app/`](./app/) | Expo Router screens (tabs, onboarding, consent) |
+| [`config/`](./config/) | Island branding (`EXPO_PUBLIC_ISLAND_KEY`) |
+| [`features/`](./features/) | Module UI (transit first) |
+| [`lib/`](./lib/) | API client, analytics, consent, theme, i18n |
+| [`locales/`](./locales/) | 8 languages ported from legacy webapp |
+| [`legacy/`](./legacy/) | Frozen pre-revamp mobile app |
+| [`SDD/`](./SDD/) | Software design documents |
 
-## Status
+## Run (Expo Go)
 
-Planning and architecture are in progress on the `revamp` branch. Application code for the new stack will land at the repo root (`app/`, etc.) as phases are approved — not under `legacy/`.
+```bash
+cp .env.example .env   # EXPO_PUBLIC_API_URL, EXPO_PUBLIC_ISLAND_KEY
+npm install
+npx expo start
+```
+
+Point `EXPO_PUBLIC_API_URL` at a running [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) `revamp` backend (`/api/v3/*`). All requests send `X-Island: sao-miguel`.
 
 ## Related repos
 
-- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) — `legacy/` = Django 3.0; new backend from [`boilerplate/`](https://github.com/sousa-dev/SaoMiguelBus-api/tree/revamp/boilerplate) (djast) promoted to root; `python manage.py import_legacy` for data migration
-- **Web PWA:** [SaoMiguelBus-webapp](https://github.com/sousa-dev/SaoMiguelBus-webapp) (unchanged; deprecated after API revamp)
+- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) — Django 5, `/api/v3` + compat shims
+- **Web PWA:** [SaoMiguelBus-webapp](https://github.com/sousa-dev/SaoMiguelBus-webapp) (reference only)
