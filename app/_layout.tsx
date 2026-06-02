@@ -4,6 +4,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
+import '@/lib/dev-logging';
+
 import { ConsentGate } from '@/components/ConsentGate';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import '@/lib/i18n';

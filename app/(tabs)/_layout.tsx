@@ -23,6 +23,7 @@ export default function TabLayout() {
           name="transit"
           options={{
             title: t('navBarSearchLabel'),
+            headerShown: false,
           }}
         />
       ) : null}

@@ -51,3 +51,43 @@ export interface ConsentPurposes {
   ads: boolean;
   personalization: boolean;
 }
+
+export interface TripDetail {
+  id: number;
+  route: string;
+  typeOfDay?: string;
+  likes: number;
+  dislikes: number;
+  information: Record<string, unknown>;
+  stops: TripStop[];
+  likesPercent?: number;
+  dislikesPercent?: number;
+}
+
+export interface DirectionsStep {
+  travel_mode: string;
+  html_instructions?: string;
+  duration?: { value: number; text: string };
+  distance?: { value: number; text: string };
+  transit_details?: {
+    line?: { short_name?: string; name?: string };
+    departure_stop?: { name?: string };
+    arrival_stop?: { name?: string };
+  };
+}
+
+export interface DirectionsLeg {
+  duration?: { value: number; text: string };
+  steps?: DirectionsStep[];
+}
+
+export interface DirectionsRoute {
+  summary?: string;
+  legs?: DirectionsLeg[];
+}
+
+export interface DirectionsResponse {
+  routes?: DirectionsRoute[];
+  warning?: string;
+  error?: { code?: string; message?: string } | string;
+}

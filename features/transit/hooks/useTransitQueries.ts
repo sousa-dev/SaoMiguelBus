@@ -1,6 +1,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
-import { fetchBootstrap, fetchStops, searchTransit, voteTrip } from '@/lib/api';
+import {
+  fetchBootstrap,
+  fetchDirections,
+  fetchStops,
+  fetchTripDetail,
+  searchTransit,
+  voteTrip,
+} from '@/lib/api';
 import { track } from '@/lib/analytics';
 
 export function useBootstrap() {
@@ -43,6 +51,48 @@ export function useTransitSearch(params: {
       return results;
     },
     enabled: params.enabled,
+    networkMode: 'online',
+  });
+}
+
+export function useDirections(params: {
+  origin: string;
+  destination: string;
+  day: string;
+  start: string;
+  enabled: boolean;
+}) {
+  const { i18n } = useTranslation();
+  return useQuery({
+    queryKey: ['transit', 'directions', params, i18n.language],
+    queryFn: async () => {
+      const data = await fetchDirections({
+        origin: params.origin,
+        destination: params.destination,
+        day: params.day,
+        start: params.start,
+        locale: i18n.language,
+      });
+      track('transit', 'engage', {
+        action: 'get_directions',
+        origin: params.origin,
+        destination: params.destination,
+        day_type: params.day,
+        routes_count: data.routes?.length ?? 0,
+      });
+      return data;
+    },
+    enabled: params.enabled,
+    networkMode: 'online',
+    retry: 1,
+  });
+}
+
+export function useTripDetail(tripId: number, enabled = true) {
+  return useQuery({
+    queryKey: ['transit', 'trip', tripId],
+    queryFn: () => fetchTripDetail(tripId),
+    enabled: enabled && tripId > 0,
   });
 }
 

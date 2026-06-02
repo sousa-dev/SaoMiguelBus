@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
@@ -16,6 +17,7 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const vote = useTripVote();
+  const router = useRouter();
 
   if (results.length === 0) {
     return (
@@ -30,7 +32,13 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
       {results.map((trip) => (
         <Pressable
           key={trip.id}
-          onPress={() => onSelect(trip)}
+          onPress={() => {
+            onSelect(trip);
+            router.push({
+              pathname: '/(tabs)/transit/[tripId]',
+              params: { tripId: String(trip.id) },
+            });
+          }}
           style={[
             styles.card,
             {
@@ -48,13 +56,19 @@ export function RouteResults({ results, onSelect, selectedId }: Props) {
           </Text>
           <View style={styles.voteRow}>
             <Pressable
-              onPress={() => vote.mutate({ tripId: trip.id, vote: 'like' })}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                vote.mutate({ tripId: trip.id, vote: 'like' });
+              }}
               style={[styles.voteBtn, { borderColor: theme.primary }]}
             >
               <Text style={{ color: theme.primary }}>👍</Text>
             </Pressable>
             <Pressable
-              onPress={() => vote.mutate({ tripId: trip.id, vote: 'dislike' })}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                vote.mutate({ tripId: trip.id, vote: 'dislike' });
+              }}
               style={[styles.voteBtn, { borderColor: theme.secondary }]}
             >
               <Text style={{ color: theme.secondary }}>👎</Text>

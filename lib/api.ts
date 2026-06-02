@@ -1,9 +1,13 @@
 import { staticIslandConfig } from '@/config/island';
+import { logger } from '@/lib/logger';
+import { getOrCreateSessionId } from '@/lib/session';
 import type {
   BootstrapResponse,
   ConsentPurposes,
+  DirectionsResponse,
   Stop,
   TransitSearchResult,
+  TripDetail,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -16,17 +20,31 @@ function islandHeaders(): HeadersInit {
 }
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      ...islandHeaders(),
-      ...(init?.headers ?? {}),
-    },
-  });
+  const method = init?.method ?? 'GET';
+  const url = `${API_BASE}${path}`;
+  logger.debug('API →', method, url);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: {
+        ...islandHeaders(),
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch (error) {
+    logger.error('API ✗ network', method, url, error);
+    throw error;
+  }
+
   if (!response.ok) {
     const body = await response.text();
+    logger.error('API ✗', response.status, method, url, body.slice(0, 300));
     throw new Error(`API ${response.status}: ${body}`);
   }
+
+  logger.debug('API ←', response.status, method, url);
   return response.json() as Promise<T>;
 }
 
@@ -79,6 +97,29 @@ export async function fetchConsent(sessionId: string) {
     policy_version: string;
     granted_at: string | null;
   }>(`/api/v3/consent/?session_id=${encodeURIComponent(sessionId)}`);
+}
+
+export async function fetchTripDetail(tripId: number): Promise<TripDetail> {
+  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}`);
+}
+
+export async function fetchDirections(params: {
+  origin: string;
+  destination: string;
+  day: string;
+  start: string;
+  locale?: string;
+}): Promise<DirectionsResponse> {
+  const sessionId = await getOrCreateSessionId();
+  const query = new URLSearchParams({
+    origin: params.origin,
+    destination: params.destination,
+    day: params.day,
+    start: params.start,
+    session_id: sessionId,
+    locale: params.locale ?? 'pt',
+  });
+  return apiFetch<DirectionsResponse>(`/api/v3/transit/directions?${query.toString()}`);
 }
 
 export async function postConsent(sessionId: string, purposes: ConsentPurposes) {

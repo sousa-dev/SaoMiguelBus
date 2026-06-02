@@ -20,6 +20,8 @@
     "timeLabel": "What time?",
     "optionalLabel": "Optional",
     "searchButton": "Search",
+    "offlineBanner": "You are offline — cached schedules are available; live search and directions are disabled.",
+    "offlineSearchDisabled": "No connection — use favorites or previously loaded schedules.",
     "noRoutesMessage": "No routes found from {origin} to {destination}. Please try again with different parameters.",
     "noRoutesSubtitle": "Try changing your origin or destination, or select a different day.",
     "routesPopularTitle": "Popular Routes",
