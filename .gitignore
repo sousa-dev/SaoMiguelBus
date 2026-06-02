@@ -48,4 +48,10 @@ src/android-project/**/build/
 src/android-project/app/debug/
 src/android-project/app/release/
 src/android-project/local.properties
+
+# Legacy Flutter project (src/saomiguelbus)
+src/saomiguelbus/.dart_tool/
+src/saomiguelbus/build/
+src/saomiguelbus/**/*.iml
+src/saomiguelbus/pubspec.lock
 src/android-project/app/.idea/
