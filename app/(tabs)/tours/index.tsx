@@ -9,13 +9,12 @@ import {
   View,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { TourCard } from '@/features/events/components/TourCard';
 import { useTours } from '@/features/events/hooks/useTourQueries';
-import { VIATOR_FALLBACK_URL } from '@/features/events/viator';
+import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -67,7 +66,7 @@ export default function ToursScreen() {
             <View style={styles.empty}>
               <Text style={{ color: theme.muted, textAlign: 'center' }}>{t('toursEmpty')}</Text>
               <Pressable
-                onPress={() => void WebBrowser.openBrowserAsync(VIATOR_FALLBACK_URL)}
+                onPress={() => openViatorExternal(VIATOR_FALLBACK_URL)}
                 style={styles.fallbackLink}
               >
                 <Text style={{ color: theme.primary, fontWeight: '600' }}>
@@ -80,7 +79,7 @@ export default function ToursScreen() {
         ListFooterComponent={
           (tours.data?.length ?? 0) > 0 ? (
             <View style={styles.footer}>
-              <Pressable onPress={() => void WebBrowser.openBrowserAsync(VIATOR_FALLBACK_URL)}>
+              <Pressable onPress={() => openViatorExternal(VIATOR_FALLBACK_URL)}>
                 <Text style={{ color: theme.primary, textAlign: 'center', fontWeight: '600' }}>
                   {t('toursBrowseAll')}
                 </Text>

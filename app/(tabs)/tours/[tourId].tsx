@@ -9,10 +9,10 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
 import { trackTourBookClick, trackTourOpen, useTour } from '@/features/events/hooks/useTourQueries';
+import { openViatorExternal } from '@/features/events/viator';
 import { useAppTheme } from '@/lib/theme';
 
 function formatDuration(
@@ -110,7 +110,7 @@ export default function TourDetailScreen() {
         <Pressable
           onPress={() => {
             trackTourBookClick(data.code);
-            void WebBrowser.openBrowserAsync(data.bookingUrl);
+            openViatorExternal(data.bookingUrl);
           }}
           style={[styles.btn, { backgroundColor: theme.primary }]}
         >
