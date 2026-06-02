@@ -78,6 +78,12 @@ function AppShell() {
                 presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
               }}
             />
+            <Stack.Screen
+              name="profile"
+              options={{
+                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+              }}
+            />
             <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
             <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
           </Stack>

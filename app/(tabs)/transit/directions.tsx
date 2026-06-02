@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
+import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { useDirections } from '@/features/transit/hooks/useTransitQueries';
-import { space, typography } from '@/lib/tokens';
+import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function DirectionsScreen() {
@@ -45,56 +45,69 @@ export default function DirectionsScreen() {
 
   return (
     <Screen withStackHeader>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Card elevated style={styles.headerCard}>
-          <View style={styles.endpoints}>
-            <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
-              {origin}
-            </Text>
-            <ArrowRight size={20} color={theme.muted} style={styles.arrow} />
-            <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
-              {destination}
-            </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <TransitWebShell>
+          <View
+            style={[
+              styles.headerCard,
+              { backgroundColor: theme.card, borderColor: theme.border },
+              elevation(1, theme.text),
+            ]}
+          >
+            <View style={styles.endpoints}>
+              <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+                {origin}
+              </Text>
+              <ArrowRight size={20} color={theme.muted} style={styles.arrow} />
+              <Text style={[typography.headline, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+                {destination}
+              </Text>
+            </View>
           </View>
-        </Card>
 
-        {directions.isLoading ? <LoadingState title={t('searchButton')} /> : null}
+          {directions.isLoading ? <LoadingState title={t('searchButton')} /> : null}
 
-        {directions.isError ? (
-          <ErrorState
-            icon={Bus}
-            title={t('noRoutesMessage', { origin, destination })}
-            description={t('noRoutesSubtitle')}
-            actionLabel={t('settingsBack')}
-            onAction={() => router.back()}
-          />
-        ) : null}
+          {directions.isError ? (
+            <ErrorState
+              icon={Bus}
+              title={t('noRoutesMessage', { origin, destination })}
+              description={t('noRoutesSubtitle')}
+              actionLabel={t('settingsBack')}
+              onAction={() => router.back()}
+            />
+          ) : null}
 
-        {empty ? (
-          <EmptyState
-            icon={Bus}
-            title={t('noRoutesMessage', { origin, destination })}
-            description={t('noRoutesSubtitle')}
-            actionLabel={t('settingsBack')}
-            onAction={() => router.back()}
-          />
-        ) : null}
+          {empty ? (
+            <EmptyState
+              icon={Bus}
+              title={t('noRoutesMessage', { origin, destination })}
+              description={t('noRoutesSubtitle')}
+              actionLabel={t('settingsBack')}
+              onAction={() => router.back()}
+            />
+          ) : null}
 
-        {directions.data && !empty ? (
-          <DirectionsResults data={directions.data} origin={origin} destination={destination} />
-        ) : null}
+          {directions.data && !empty ? (
+            <DirectionsResults data={directions.data} origin={origin} destination={destination} />
+          ) : null}
 
-        {!directions.isLoading && (directions.isError || empty) ? (
-          <Button label={t('settingsBack')} variant="outline" onPress={() => router.back()} fullWidth />
-        ) : null}
+          {!directions.isLoading && (directions.isError || empty) ? (
+            <Button label={t('settingsBack')} variant="outline" onPress={() => router.back()} fullWidth />
+          ) : null}
+        </TransitWebShell>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.lg, paddingBottom: space['4xl'] },
-  headerCard: { marginBottom: space.lg },
+  content: { padding: space.md, paddingBottom: space['4xl'], alignItems: 'center' },
+  headerCard: {
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: space.lg,
+    width: '100%',
+  },
   endpoints: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   arrow: { marginHorizontal: space.xs },
 });

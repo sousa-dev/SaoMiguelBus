@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { BackHandler, ScrollView, StyleSheet, Text } from 'react-native';
+import { BackHandler, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -8,15 +8,18 @@ import { Banner } from '@/components/ui/Banner';
 import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TripDetail } from '@/features/transit/components/TripDetail';
+import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
+import { resolveInfo } from '@/lib/infos';
 import { useNetworkStatus } from '@/lib/network-status';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TransitSearchResult } from '@/lib/types';
+import { Text } from 'react-native';
 
 export default function TripDetailScreen() {
   const theme = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
   const { isOnline } = useNetworkStatus();
@@ -80,25 +83,32 @@ export default function TripDetailScreen() {
       return route === detail.route;
     }) ?? null;
 
+  const resolvedNotice = infoNotice ? resolveInfo(infoNotice, i18n.language) : null;
+
   return (
     <Screen withStackHeader>
-      <ScrollView contentContainerStyle={styles.content}>
-        {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <TransitWebShell>
+          {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
 
-        {infoNotice && typeof infoNotice.text === 'object' ? (
-          <Card style={{ marginBottom: space.md }}>
-            <Text style={[typography.body, { color: theme.text }]}>
-              {String((infoNotice.text as Record<string, string>).pt ?? '')}
-            </Text>
-          </Card>
-        ) : null}
+          {resolvedNotice?.message ? (
+            <Card style={{ marginBottom: space.md }}>
+              {resolvedNotice.title ? (
+                <Text style={[typography.headline, { color: theme.text }]}>{resolvedNotice.title}</Text>
+              ) : null}
+              <Text style={[typography.body, { color: theme.text, marginTop: space.sm }]}>
+                {resolvedNotice.message}
+              </Text>
+            </Card>
+          ) : null}
 
-        <TripDetail trip={trip} />
+          <TripDetail trip={trip} />
+        </TransitWebShell>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  content: { padding: space.md, paddingBottom: space['4xl'], alignItems: 'center' },
 });

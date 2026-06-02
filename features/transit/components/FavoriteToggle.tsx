@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { space, typography } from '@/lib/tokens';
-import { useFavoritesStore } from '@/lib/favorites-store';
+import { useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
@@ -15,8 +15,8 @@ type Props = {
 export function FavoriteToggle({ origin, destination }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const isFavorite = useFavoritesStore((state) => state.isFavorite(origin, destination));
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const isFavorite = useProfileStore((state) => state.isFavoriteRoute(origin, destination));
+  const toggleFavorite = useProfileStore((state) => state.toggleFavoriteRoute);
 
   if (!origin.trim() || !destination.trim()) {
     return null;

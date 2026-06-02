@@ -1,31 +1,26 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ArrowRightLeft, Clock, MapPin } from 'lucide-react-native';
+import { ArrowRightLeft, Calendar, Clock, Route, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Chip } from '@/components/ui/Chip';
-import { IconButton } from '@/components/ui/IconButton';
-import { FavoriteToggle } from '@/features/transit/components/FavoriteToggle';
 import { StopPicker } from '@/features/transit/components/StopPicker';
-import { space, typography } from '@/lib/tokens';
+import { formatDateLabel } from '@/lib/transit-format';
+import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
-
-type DayType = 'weekday' | 'saturday' | 'sunday';
 
 type TransitPlannerCardProps = {
   origin: string;
   destination: string;
-  day: DayType;
+  date: Date;
   time: string;
   stops: Stop[];
   isOnline: boolean;
+  searching?: boolean;
   onOriginChange: (v: string) => void;
   onDestinationChange: (v: string) => void;
-  onDayChange: (d: DayType) => void;
+  onDateChange: (d: Date) => void;
   onTimeChange: (t: string) => void;
   onSearch: () => void;
   onDirections: () => void;
@@ -47,21 +42,24 @@ function formatTime(date: Date): string {
 export function TransitPlannerCard({
   origin,
   destination,
-  day,
+  date,
   time,
   stops,
   isOnline,
+  searching,
   onOriginChange,
   onDestinationChange,
-  onDayChange,
+  onDateChange,
   onTimeChange,
   onSearch,
   onDirections,
 }: TransitPlannerCardProps) {
   const theme = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const timeDate = parseTime(time);
+  const canDirections = isOnline && Boolean(origin && destination);
 
   const swapStops = () => {
     onOriginChange(destination);
@@ -77,62 +75,82 @@ export function TransitPlannerCard({
     }
   };
 
+  const onDatePicked = (_: unknown, selected?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selected) {
+      onDateChange(selected);
+    }
+  };
+
   return (
-    <Card elevated style={styles.card}>
-      <View style={styles.stopRow}>
-        <MapPin size={18} color={theme.primary} style={styles.pinIcon} />
-        <View style={styles.stopFields}>
-          <StopPicker
-            label={t('originLabel')}
-            placeholder={t('originPlaceholder')}
-            value={origin}
-            stops={stops}
-            onSelect={onOriginChange}
-          />
-        </View>
-      </View>
+    <View
+      style={[
+        styles.shell,
+        { backgroundColor: theme.card, borderColor: theme.border },
+        elevation(2, theme.text),
+      ]}
+    >
+      <StopPicker
+        placeholder={t('originPlaceholder')}
+        value={origin}
+        stops={stops}
+        onSelect={onOriginChange}
+        pinColor={theme.primary}
+      />
 
       <View style={styles.swapRow}>
-        <IconButton
-          icon={ArrowRightLeft}
-          accessibilityLabel={t('transitSwapStops')}
-          color={theme.primary}
+        <Pressable
           onPress={swapStops}
+          style={[styles.swapBtn, { backgroundColor: theme.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('transitSwapStops')}
+        >
+          <ArrowRightLeft size={16} color={theme.onPrimary} style={{ transform: [{ rotate: '90deg' }] }} />
+        </Pressable>
+      </View>
+
+      <StopPicker
+        placeholder={t('destinationPlaceholder')}
+        value={destination}
+        stops={stops}
+        onSelect={onDestinationChange}
+        pinColor={theme.primary}
+      />
+
+      <View style={styles.dayTimeRow}>
+        <Pressable
+          onPress={() => setShowDatePicker(true)}
+          style={[styles.pillField, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('dayLabel')}
+        >
+          <Calendar size={18} color={theme.muted} />
+          <Text style={[typography.body, { color: theme.text, marginLeft: space.sm }]} numberOfLines={1}>
+            {formatDateLabel(date, i18n.language)}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setShowTimePicker(true)}
+          style={[styles.pillField, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('transitPickTime')}
+        >
+          <Clock size={18} color={theme.muted} />
+          <Text style={[typography.body, { color: theme.text, marginLeft: space.sm }]}>{time}</Text>
+        </Pressable>
+      </View>
+
+      {showDatePicker ? (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'inline' : 'default'}
+          onChange={onDatePicked}
         />
-      </View>
-
-      <View style={styles.stopRow}>
-        <MapPin size={18} color={theme.accent} style={styles.pinIcon} />
-        <View style={styles.stopFields}>
-          <StopPicker
-            label={t('destinationLabel')}
-            placeholder={t('destinationPlaceholder')}
-            value={destination}
-            stops={stops}
-            onSelect={onDestinationChange}
-          />
-        </View>
-      </View>
-
-      <FavoriteToggle origin={origin} destination={destination} />
-
-      <Text style={[typography.label, { color: theme.text, marginTop: space.md }]}>{t('dayLabel')}</Text>
-      <View style={styles.dayRow}>
-        {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
-          <Chip key={d} label={t(d)} selected={day === d} onPress={() => onDayChange(d)} />
-        ))}
-      </View>
-
-      <Text style={[typography.label, { color: theme.text, marginTop: space.md }]}>{t('timeLabel')}</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(true)}
-        style={[styles.timeField, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
-        accessibilityRole="button"
-        accessibilityLabel={t('transitPickTime')}
-      >
-        <Clock size={18} color={theme.muted} />
-        <Text style={[typography.body, { color: theme.text, marginLeft: space.sm }]}>{time}</Text>
-      </Pressable>
+      ) : null}
 
       {showTimePicker ? (
         <DateTimePicker
@@ -144,38 +162,93 @@ export function TransitPlannerCard({
         />
       ) : null}
 
-      <Button
-        label={t('searchButton')}
-        onPress={onSearch}
-        disabled={!isOnline}
-        fullWidth
-        style={{ marginTop: space.lg }}
-      />
-      <Button
-        label={t('directionsButton')}
-        variant="outline"
-        onPress={onDirections}
-        disabled={!isOnline || !origin || !destination}
-        fullWidth
-        style={{ marginTop: space.sm }}
-      />
-    </Card>
+      <View style={styles.actions}>
+        <Pressable
+          onPress={onSearch}
+          disabled={!isOnline || searching}
+          style={({ pressed }) => [
+            styles.searchBtn,
+            { backgroundColor: theme.primary, opacity: !isOnline || searching ? 0.5 : pressed ? 0.9 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t('searchButton')}
+        >
+          {searching ? (
+            <ActivityIndicator color={theme.onPrimary} />
+          ) : (
+            <>
+              <Search size={18} color={theme.onPrimary} />
+              <Text style={[typography.label, { color: theme.onPrimary, marginLeft: space.sm }]}>
+                {t('searchButton')}
+              </Text>
+            </>
+          )}
+        </Pressable>
+
+        <Pressable
+          onPress={onDirections}
+          disabled={!canDirections}
+          style={({ pressed }) => [
+            styles.routeBtn,
+            { backgroundColor: theme.primary, opacity: !canDirections ? 0.5 : pressed ? 0.9 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t('directionsButton')}
+        >
+          <Route size={20} color={theme.onPrimary} />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { marginBottom: space.lg },
-  stopRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  pinIcon: { marginTop: space['2xl'] },
-  stopFields: { flex: 1 },
-  swapRow: { alignItems: 'center', marginVertical: space.xs },
-  dayRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.sm },
-  timeField: {
+  shell: {
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: space.md,
+    overflow: 'hidden',
+  },
+  swapRow: { alignItems: 'flex-end', marginVertical: 2 },
+  swapBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayTimeRow: {
+    flexDirection: 'row',
+    gap: space.sm,
+    marginTop: space.md,
+  },
+  pillField: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 12,
-    padding: space.md,
-    marginTop: space.sm,
+    borderRadius: radius.full,
+    paddingHorizontal: space.md,
+    height: 44,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: space.sm,
+    marginTop: space.md,
+  },
+  searchBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
+    height: 44,
+  },
+  routeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

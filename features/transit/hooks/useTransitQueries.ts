@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -10,7 +10,12 @@ import {
   voteTrip,
 } from '@/lib/api';
 import { track } from '@/lib/analytics';
-import type { BootstrapResponse } from '@/lib/types';
+import {
+  resolveVoteVerb,
+  useProfileStore,
+  type TripVote,
+} from '@/lib/profile-store';
+import type { BootstrapResponse, TransitSearchResult } from '@/lib/types';
 
 export function useBootstrap() {
   return useQuery({
@@ -108,8 +113,46 @@ export function useTripDetail(tripId: number, enabled = true) {
 }
 
 export function useTripVote() {
+  const queryClient = useQueryClient();
+  const getVote = useProfileStore((s) => s.getVote);
+  const setVote = useProfileStore((s) => s.setVote);
+
   return useMutation({
-    mutationFn: ({ tripId, vote }: { tripId: number; vote: 'like' | 'dislike' }) =>
-      voteTrip(tripId, vote),
+    mutationFn: async ({
+      tripId,
+      intent,
+    }: {
+      tripId: number;
+      intent: TripVote;
+    }) => {
+      const current = getVote(tripId);
+      const verb = resolveVoteVerb(current, intent);
+      const detail = await voteTrip(tripId, verb);
+      const nextVote =
+        verb === 'undo_like' || verb === 'undo_dislike'
+          ? undefined
+          : verb === 'switch_to_like' || verb === 'like'
+            ? 'like'
+            : 'dislike';
+      setVote(tripId, nextVote);
+      track('transit', 'vote', { trip_id: tripId, direction: intent, verb });
+      return detail;
+    },
+    onSuccess: (detail, { tripId }) => {
+      queryClient.setQueryData(['transit', 'trip', tripId], detail);
+      queryClient.setQueriesData<TransitSearchResult[]>(
+        { queryKey: ['transit', 'search'] },
+        (old) =>
+          old?.map((row) =>
+            row.id === tripId
+              ? {
+                  ...row,
+                  likesPercent: detail.likesPercent ?? row.likesPercent,
+                  dislikesPercent: detail.dislikesPercent ?? row.dislikesPercent,
+                }
+              : row,
+          ),
+      );
+    },
   });
 }

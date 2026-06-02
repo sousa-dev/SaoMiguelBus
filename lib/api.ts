@@ -74,6 +74,11 @@ export async function fetchBootstrap(): Promise<BootstrapResponse> {
   return apiFetch<BootstrapResponse>('/api/v3/bootstrap');
 }
 
+/** Legacy bulk payload for offline search (compat with SaoMiguelBus-webapp). */
+export async function fetchWebappLoad(): Promise<unknown[]> {
+  return apiFetch<unknown[]>('/api/v2/webapp/load');
+}
+
 export async function fetchStops(): Promise<Stop[]> {
   const data = await apiFetch<{ stops: Stop[] }>('/api/v3/transit/stops');
   const seen = new Set<number>();
@@ -102,8 +107,8 @@ export async function searchTransit(params: {
 export async function voteTrip(
   tripId: number,
   vote: 'like' | 'dislike' | 'undo_like' | 'undo_dislike' | 'switch_to_like',
-): Promise<void> {
-  await apiFetch(`/api/v3/transit/trips/${tripId}/vote`, {
+) {
+  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}/vote`, {
     method: 'POST',
     body: JSON.stringify({ vote }),
   });

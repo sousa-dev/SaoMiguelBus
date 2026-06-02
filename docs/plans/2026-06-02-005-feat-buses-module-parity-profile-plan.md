@@ -1,6 +1,6 @@
 ---
 title: "feat: Buses module — full webapp parity + cache-backed user profile"
-status: active
+status: completed
 date: 2026-06-02
 type: feat
 depth: deep
