@@ -1,8 +1,9 @@
 import { MapPin } from 'lucide-react-native';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, UrlTile, type Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps';
 
+import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { TrafficMapMarker } from '@/features/traffic/components/TrafficMapMarker';
 import {
   clampCoordinate,
@@ -65,6 +66,7 @@ export function TrafficMap({
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_DEFAULT}
+        mapType="none"
         initialRegion={islandRegion}
         minZoomLevel={9}
         maxZoomLevel={18}
@@ -94,13 +96,7 @@ export function TrafficMap({
             : undefined
         }
       >
-        {Platform.OS === 'android' ? (
-          <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-        ) : null}
+        <OsmMapLayer isDark={theme.isDark} />
         {draftPin ? (
           <Marker
             coordinate={{ latitude: draftPin.lat, longitude: draftPin.lng }}

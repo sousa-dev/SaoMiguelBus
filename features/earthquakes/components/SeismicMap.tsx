@@ -5,6 +5,7 @@ import MapView, { PROVIDER_DEFAULT, type Region } from 'react-native-maps';
 import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { SeismicMapMarker } from '@/features/earthquakes/components/SeismicMapMarker';
 import { coordinateToRegion, getAzoresArchipelagoRegion, getSeismicMapRegion } from '@/lib/island-map';
+import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent } from '@/lib/types';
 
 export type SeismicMapFocus = { lat: number; lng: number };
@@ -23,6 +24,7 @@ type SeismicMapProps = {
 const FOCUS_DELTA = 0.28;
 
 export function SeismicMap({ events, userCoords, focus, onMarkerPress }: SeismicMapProps) {
+  const theme = useAppTheme();
   const mapRef = useRef<MapView>(null);
   const initialRegion = useMemo(
     () => (events.length > 0 ? getSeismicMapRegion(events) : getAzoresArchipelagoRegion()),
@@ -59,7 +61,7 @@ export function SeismicMap({ events, userCoords, focus, onMarkerPress }: Seismic
         zoomEnabled
         rotateEnabled={false}
       >
-        <OsmMapLayer />
+        <OsmMapLayer isDark={theme.isDark} />
         {events.map((event) => (
           <SeismicMapMarker
             key={event.id}

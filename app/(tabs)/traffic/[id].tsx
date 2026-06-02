@@ -6,6 +6,7 @@ import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -94,9 +95,11 @@ export default function TrafficDetailScreen() {
             <MapView
               style={styles.map}
               provider={PROVIDER_DEFAULT}
+              mapType="none"
               scrollEnabled={false}
               initialRegion={coordinateToRegion({ lat: r.latitude, lng: r.longitude })}
             >
+              <OsmMapLayer isDark={theme.isDark} />
               <Marker coordinate={{ latitude: r.latitude, longitude: r.longitude }} />
             </MapView>
             <Button

@@ -1,10 +1,11 @@
 import { MapPin } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, UrlTile } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
+import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { staticIslandConfig } from '@/config/island';
 import {
   clampCoordinate,
@@ -94,6 +95,7 @@ export function LocationPickerModal({
           ref={mapRef}
           style={styles.map}
           provider={PROVIDER_DEFAULT}
+          mapType="none"
           initialRegion={coordinateToRegion(pin)}
           showsUserLocation={userOnIsland}
           onPress={(e) => setFromMap(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude)}
@@ -104,13 +106,7 @@ export function LocationPickerModal({
             mapRef.current?.animateToRegion(clampMapRegion(region), 180);
           }}
         >
-          {Platform.OS === 'android' ? (
-            <UrlTile
-              urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maximumZ={19}
-              flipY={false}
-            />
-          ) : null}
+          <OsmMapLayer isDark={theme.isDark} />
           <Marker
             coordinate={{ latitude: pin.lat, longitude: pin.lng }}
             draggable
