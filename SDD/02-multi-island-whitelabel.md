@@ -14,8 +14,8 @@ Island (tenancy app — `src/tenancy/`, toggle in `src/src/settings.py`)
   center_lng     float                     e.g. -25.4998
   radius_km      int   geo-fence for data validity (legacy hardcoded 50)
   timezone       e.g. "Atlantic/Azores"
-  default_locale e.g. "pt"
-  locales        list[str]                 supported languages
+  default_locale e.g. "pt"                  Portuguese is the product default (see §7)
+  locales        list[str]                 supported languages, e.g. ["pt","en","de","es","fr"]
   theme          JSON  (see §4)
   feature_flags  JSON  per-module enable/disable
   created_at / updated_at
@@ -95,3 +95,26 @@ Rules:
 | Single set of routes/stops/ads | All tenant-scoped by `island` FK |
 | Brand color `#28a745` baked into manifest/CSS | `Island.theme.primaryColor` token |
 | Per-island = new repo/app | Per-island = config + data |
+
+## 7. Language strategy (Portuguese-first, extensible)
+
+The product primarily serves **Portuguese residents**, so **Portuguese (`pt`) is the default and source-of-truth locale** — it is the fallback whenever a key is missing in another catalog, and the default `Island.default_locale` for São Miguel.
+
+**Officially supported locales** (translated + maintained):
+
+| Locale | Language | Role |
+|--------|----------|------|
+| `pt` | Portuguese | **Default / primary / fallback** |
+| `en` | English | Supported (tourist baseline) |
+| `de` | German | Supported |
+| `es` | Spanish | Supported |
+| `fr` | French | Supported |
+
+Legacy also shipped `it`, `uk`, `zh`. These are **retained as optional/community locales** (already-translated keys are kept) but are not part of the maintained core; they can be promoted to "supported" with no code change.
+
+**Easy to upgrade (add a language):**
+1. Add the new locale's typed catalog (one JSON/TS file, keyed identically — `pt` is the canonical key set).
+2. Run the `check_locale_keys` equivalent to confirm full key parity against `pt`.
+3. Add the locale code to that island's `Island.locales` list — it becomes selectable in **Settings → language**, with `pt` fallback for any gaps.
+
+No component or routing changes are required; the supported-language set is **data-driven per island** via `Island.locales` / `Island.default_locale`. Different islands may expose different language subsets while sharing the same catalogs.
