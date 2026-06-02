@@ -40,6 +40,21 @@ export const staticIslandConfig: IslandConfig = {
   // Legacy `it`, `uk`, `zh` catalogs still ship (see lib/i18n.ts) and can be promoted
   // here with no code change.
   locales: ['pt', 'en', 'de', 'es', 'fr'],
-  enabledModules: ['transit'],
+  enabledModules: ['transit', 'events'],
   mapCenter: { lat: 37.7822, lng: -25.4998 },
 };
+
+/**
+ * Merge bootstrap modules with build-time static modules so client-shipped tabs
+ * (e.g. tours via Viator WebView) stay visible when the API flag lags behind the app.
+ */
+export function resolveEnabledModules(fromBootstrap: string[] | undefined): ModuleKey[] {
+  if (!fromBootstrap?.length) {
+    return staticIslandConfig.enabledModules;
+  }
+  const merged = new Set<ModuleKey>([
+    ...(fromBootstrap as ModuleKey[]),
+    ...staticIslandConfig.enabledModules,
+  ]);
+  return Array.from(merged);
+}

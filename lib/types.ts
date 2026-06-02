@@ -107,6 +107,30 @@ export interface NewsArticle {
   };
 }
 
+export interface TourSummary {
+  code: string;
+  title: string;
+  thumbnailUrl: string;
+  rating: number | null;
+  reviewCount: number | null;
+  fromPrice: number | null;
+  currency: string;
+  durationMinutes: number | null;
+  bookingUrl: string;
+}
+
+export interface TourImage {
+  url: string;
+  caption: string;
+}
+
+export interface TourDetail extends TourSummary {
+  heroUrl: string;
+  description: string;
+  images: TourImage[];
+  flags: string[];
+}
+
 export interface SeismicEvent {
   id: number;
   emscId: string;

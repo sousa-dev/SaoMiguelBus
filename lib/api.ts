@@ -10,6 +10,8 @@ import type {
   TransitSearchResult,
   TripDetail,
   NewsArticle,
+  TourSummary,
+  TourDetail,
   SeismicEvent,
   FeltReportResponse,
   SeismicFeltInput,
@@ -164,6 +166,41 @@ export async function fetchNewsArticles(params?: {
 
 export async function fetchNewsArticle(articleId: number): Promise<NewsArticle> {
   return apiFetch<NewsArticle>(`/api/v3/news/articles/${articleId}`);
+}
+
+export async function fetchTours(params?: {
+  locale?: string;
+  currency?: string;
+  limit?: number;
+}): Promise<TourSummary[]> {
+  const query = new URLSearchParams();
+  if (params?.locale) {
+    query.set('locale', params.locale);
+  }
+  if (params?.currency) {
+    query.set('currency', params.currency);
+  }
+  if (params?.limit) {
+    query.set('limit', String(params.limit));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  const data = await apiFetch<{ tours: TourSummary[] }>(`/api/v3/events/tours${suffix}`);
+  return data.tours;
+}
+
+export async function fetchTour(
+  code: string,
+  params?: { locale?: string; currency?: string },
+): Promise<TourDetail> {
+  const query = new URLSearchParams();
+  if (params?.locale) {
+    query.set('locale', params.locale);
+  }
+  if (params?.currency) {
+    query.set('currency', params.currency);
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return apiFetch<TourDetail>(`/api/v3/events/tours/${encodeURIComponent(code)}${suffix}`);
 }
 
 export async function fetchSeismicEvents(params?: {

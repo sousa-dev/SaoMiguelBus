@@ -3,7 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { staticIslandConfig } from '@/config/island';
+import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { logger } from '@/lib/logger';
 import { useAppTheme } from '@/lib/theme';
@@ -12,13 +12,14 @@ export default function TabLayout() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { data: bootstrap, refetch } = useBootstrap();
-  const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
+  const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const showTransit = modules.includes('transit');
   const showNews = modules.includes('news');
   const showSeismic = modules.includes('seismic');
   const showTrails = modules.includes('trails');
   const showMarketplace = modules.includes('marketplace');
   const showTraffic = modules.includes('traffic');
+  const showTours = modules.includes('events');
 
   useFocusEffect(
     useCallback(() => {
@@ -85,6 +86,14 @@ export default function TabLayout() {
           title: t('navBarTrafficLabel'),
           headerShown: false,
           href: showTraffic ? '/traffic' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="tours"
+        options={{
+          title: t('navBarToursLabel'),
+          headerShown: false,
+          href: showTours ? '/tours' : null,
         }}
       />
     </Tabs>
