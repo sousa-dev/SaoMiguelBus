@@ -42,19 +42,20 @@ export function HubTabBar({ state, descriptors, navigation, pinnedKeys, enabledK
   const activeRoute = state.routes[state.index];
   const activeName = activeRoute?.name;
 
-  const tabBarStyle =
-    Platform.OS === 'android'
-      ? { backgroundColor: theme.surface, borderTopColor: theme.divider, ...elevation(1, theme.text) }
-      : { backgroundColor: 'transparent', borderTopColor: theme.divider };
+  const useSolidBar = Platform.OS === 'android' || theme.isDark;
+
+  const tabBarStyle = useSolidBar
+    ? {
+        backgroundColor: theme.surface,
+        borderTopColor: theme.divider,
+        ...(Platform.OS === 'android' ? elevation(1, theme.text) : {}),
+      }
+    : { backgroundColor: 'transparent', borderTopColor: theme.divider };
 
   return (
     <View style={[styles.wrap, tabBarStyle, { paddingBottom: Math.max(insets.bottom, space.sm) }]}>
-      {Platform.OS === 'ios' ? (
-        <BlurView
-          intensity={80}
-          tint={theme.isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
+      {Platform.OS === 'ios' && !theme.isDark ? (
+        <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
       ) : null}
       <View style={styles.row}>
         {order.map((screenName) => {

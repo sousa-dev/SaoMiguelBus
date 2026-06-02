@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { Appearance, useColorScheme } from 'react-native';
 
 import { staticIslandConfig } from '@/config/island';
 import { onColorFor, withAlpha } from '@/lib/color-utils';
@@ -108,6 +108,10 @@ export function ThemeProvider({
   const preference = useThemePrefsStore((s) => s.preference);
   const scheme = resolveColorScheme(preference, systemScheme);
   const dark = scheme === 'dark';
+
+  useEffect(() => {
+    Appearance.setColorScheme(preference === 'system' ? null : preference);
+  }, [preference]);
 
   const theme = useMemo<AppTheme>(() => {
     const colors = bootstrap?.island?.theme ?? {

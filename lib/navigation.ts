@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import { useAppTheme } from '@/lib/theme';
 
@@ -21,10 +21,16 @@ export function useAppStackScreenOptions(screenName?: string) {
     Platform.OS === 'ios' && screenName != null && LARGE_TITLE_SCREENS.has(screenName);
 
   return {
-    headerStyle: { backgroundColor: theme.surface },
+    headerStyle: {
+      backgroundColor: theme.surface,
+      ...(theme.isDark
+        ? { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.divider }
+        : {}),
+    },
     headerTintColor: theme.onSurface,
     headerTitleStyle: { fontWeight: '600' as const, color: theme.onSurface },
-    headerShadowVisible: true,
+    headerShadowVisible: !theme.isDark,
+    headerBackTitleVisible: false,
     headerBackVisible: true,
     headerLargeTitle: largeTitle,
     headerLargeTitleStyle: { color: theme.onSurface },
