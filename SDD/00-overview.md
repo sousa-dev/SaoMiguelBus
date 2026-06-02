@@ -2,7 +2,7 @@
 
 ## 1. Vision
 
-**Azores Hub** is a white-labelable mobile + web platform that is the daily-utility companion for residents and visitors of an Azorean island. The first instance, **`sao-miguel-hub`**, supersedes the existing São Miguel Bus app. The same codebase and backend must clone to other islands (Terceira, Faial, Pico, …) by configuration and data only.
+**Azores Hub** is a white-labelable mobile + web platform that is the daily-utility companion for residents and visitors of an Azorean island. The first instance, **`sao-miguel`** (display name **São Miguel Hub**), supersedes the existing São Miguel Bus app as an in-place Play Store update (`com.hsousa_apps.Autocarros`). The same codebase and backend must clone to other islands (Terceira, Faial, Pico, …) by configuration and data only.
 
 It expands the product from a single feature (bus schedules) to a multi-module hub:
 
