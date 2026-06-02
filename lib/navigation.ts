@@ -21,13 +21,13 @@ export function useAppStackScreenOptions(screenName?: string) {
     Platform.OS === 'ios' && screenName != null && LARGE_TITLE_SCREENS.has(screenName);
 
   return {
-    headerStyle: { backgroundColor: theme.primary },
-    headerTintColor: theme.headerTint,
-    headerTitleStyle: { fontWeight: '600' as const },
-    headerShadowVisible: false,
+    headerStyle: { backgroundColor: theme.surface },
+    headerTintColor: theme.onSurface,
+    headerTitleStyle: { fontWeight: '600' as const, color: theme.onSurface },
+    headerShadowVisible: true,
     headerBackVisible: true,
     headerLargeTitle: largeTitle,
-    headerLargeTitleStyle: { color: theme.headerTint },
+    headerLargeTitleStyle: { color: theme.onSurface },
     gestureEnabled: true,
     fullScreenGestureEnabled: true,
     contentStyle: { backgroundColor: theme.background },

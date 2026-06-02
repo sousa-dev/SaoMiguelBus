@@ -16,11 +16,15 @@ export interface AppTheme {
   background: string;
   surface: string;
   surfaceVariant: string;
+  surfaceElevated: string;
+  surfaceSunken: string;
   card: string;
   text: string;
   onSurface: string;
+  onSurfaceMuted: string;
   muted: string;
   border: string;
+  divider: string;
   outline: string;
   scrim: string;
   success: string;
@@ -129,11 +133,15 @@ export function ThemeProvider({
       background: palette.background,
       surface: palette.surface,
       surfaceVariant: palette.surfaceVariant,
+      surfaceElevated: palette.card,
+      surfaceSunken: palette.surfaceVariant,
       card: palette.card,
       text: palette.text,
       onSurface: palette.text,
+      onSurfaceMuted: palette.muted,
       muted: palette.muted,
       border: palette.border,
+      divider: palette.border,
       outline: palette.outline,
       scrim: palette.scrim,
       success: palette.success,

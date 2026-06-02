@@ -1,19 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
-import { Field } from '@/components/ui/Field';
+import { EmptyState, LoadingState } from '@/components/ui/StateView';
 import { space, typography } from '@/lib/tokens';
+import { Bus } from 'lucide-react-native';
 
-import { FavoriteToggle } from '@/features/transit/components/FavoriteToggle';
 import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
 import { OfflineBanner } from '@/features/transit/components/OfflineBanner';
 import { RouteResults } from '@/features/transit/components/RouteResults';
-import { StopPicker } from '@/features/transit/components/StopPicker';
+import { TransitPlannerCard } from '@/features/transit/components/TransitPlannerCard';
 import { TripDetail } from '@/features/transit/components/TripDetail';
 import { useBootstrap, useStops, useTransitSearch } from '@/features/transit/hooks/useTransitQueries';
 import { staticIslandConfig } from '@/config/island';
@@ -74,10 +72,7 @@ export default function TransitScreen() {
   });
 
   const runSearch = () => {
-    if (!origin || !destination) {
-      return;
-    }
-    if (!isOnline) {
+    if (!origin || !destination || !isOnline) {
       return;
     }
     setSearchEnabled(true);
@@ -107,71 +102,49 @@ export default function TransitScreen() {
     setSelected(null);
   };
 
-  const offlineSearchMessage = useMemo(() => {
-    if (isOnline || !searchEnabled) {
-      return null;
-    }
-    return t('offlineSearchDisabled');
-  }, [isOnline, searchEnabled, t]);
+  const showEmptyResults =
+    searchEnabled && !search.isFetching && search.data && search.data.length === 0;
 
   return (
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {!isOnline ? <OfflineBanner /> : null}
 
-        <Text style={[styles.title, { color: theme.primary }]}>{islandName}</Text>
-        <Text style={{ color: theme.muted, marginBottom: 16 }}>{t('bannerSubtitle')}</Text>
+        <Text style={[typography.title, { color: theme.primary }]}>{islandName}</Text>
+        <Text style={[typography.body, { color: theme.muted, marginBottom: space.lg }]}>{t('bannerSubtitle')}</Text>
 
         <FavoritesPanel onSelect={applyFavorite} />
 
         {stopsLoading && isOnline ? (
-          <ActivityIndicator color={theme.primary} />
+          <LoadingState title={t('originPlaceholder')} />
         ) : (
-          <>
-            <StopPicker
-              label={t('originLabel')}
-              placeholder={t('originPlaceholder')}
-              value={origin}
-              stops={stops}
-              onSelect={setOrigin}
-            />
-            <StopPicker
-              label={t('destinationLabel')}
-              placeholder={t('destinationPlaceholder')}
-              value={destination}
-              stops={stops}
-              onSelect={setDestination}
-            />
-
-            <FavoriteToggle origin={origin} destination={destination} />
-
-            <Text style={[styles.label, { color: theme.text }]}>{t('dayLabel')}</Text>
-            <View style={styles.dayRow}>
-              {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
-                <Chip key={d} label={t(d)} selected={day === d} onPress={() => setDay(d)} />
-              ))}
-            </View>
-
-            <Field label={t('timeLabel')} value={time} onChangeText={setTime} placeholder="08:00" />
-
-            <Button label={t('searchButton')} onPress={runSearch} disabled={!isOnline} fullWidth />
-            <Button
-              label={t('directionsButton')}
-              variant="secondary"
-              onPress={openDirections}
-              disabled={!isOnline || !origin || !destination}
-              fullWidth
-              style={{ marginTop: space.sm }}
-            />
-          </>
+          <TransitPlannerCard
+            origin={origin}
+            destination={destination}
+            day={day}
+            time={time}
+            stops={stops}
+            isOnline={isOnline}
+            onOriginChange={setOrigin}
+            onDestinationChange={setDestination}
+            onDayChange={setDay}
+            onTimeChange={setTime}
+            onSearch={runSearch}
+            onDirections={openDirections}
+          />
         )}
 
-        {offlineSearchMessage ? (
-          <Text style={{ color: theme.muted, marginTop: 12 }}>{offlineSearchMessage}</Text>
+        {search.isFetching ? <ActivityIndicator color={theme.primary} style={{ marginTop: space.lg }} /> : null}
+
+        {showEmptyResults ? (
+          <EmptyState
+            icon={Bus}
+            title={t('noRoutesMessage', { origin, destination })}
+            description={t('noRoutesSubtitle')}
+          />
         ) : null}
 
-        {search.isFetching ? <ActivityIndicator color={theme.primary} style={{ marginTop: 16 }} /> : null}
-        {search.data ? (
+        {search.data && search.data.length > 0 ? (
           <>
             <RouteResults
               results={search.data}
@@ -187,8 +160,5 @@ export default function TransitScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  label: { fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  dayRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: space.md },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
 });

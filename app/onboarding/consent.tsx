@@ -1,12 +1,18 @@
+import type { LucideIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { BarChart3, Lock, Megaphone, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
+import { ListRow } from '@/components/ui/ListRow';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
+import { useNetworkStatus } from '@/lib/network-status';
+import { useAppStackScreenOptions } from '@/lib/navigation';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { ConsentPurposes } from '@/lib/types';
@@ -15,6 +21,8 @@ export default function ConsentScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const screenOptions = useAppStackScreenOptions();
+  const { isOnline } = useNetworkStatus();
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
   const saveCustom = useConsentStore((s) => s.saveCustom);
@@ -50,72 +58,96 @@ export default function ConsentScreen() {
   };
 
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[typography.display, { color: theme.primary }]}>{t('consentTitle')}</Text>
-        <Text style={[typography.body, { color: theme.text, marginVertical: space.lg }]}>{t('consentIntro')}</Text>
+    <>
+      <Stack.Screen
+        options={{
+          ...screenOptions,
+          headerShown: true,
+          title: t('consentTitle'),
+          presentation: 'modal',
+          ...(Platform.OS === 'ios' ? { sheetGrabberVisible: true } : {}),
+        }}
+      />
+      <Screen>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={[styles.hero, { backgroundColor: theme.surfaceVariant }]}>
+            <ShieldCheck size={48} color={theme.primary} strokeWidth={1.5} />
+          </View>
+          <Text style={[typography.display, { color: theme.primary, marginTop: space.lg }]}>{t('consentTitle')}</Text>
+          <Text style={[typography.body, { color: theme.text, marginVertical: space.lg }]}>{t('consentIntro')}</Text>
 
-        <PurposeRow
-          label={t('consentPurposeNecessary')}
-          description={t('consentPurposeNecessaryDesc')}
-          value
-          disabled
-          onToggle={() => undefined}
-        />
-        <PurposeRow
-          label={t('consentPurposeAnalytics')}
-          description={t('consentPurposeAnalyticsDesc')}
-          value={purposes.analytics}
-          onToggle={() => toggle('analytics')}
-        />
-        <PurposeRow
-          label={t('consentPurposeAds')}
-          description={t('consentPurposeAdsDesc')}
-          value={purposes.ads}
-          onToggle={() => toggle('ads')}
-        />
-        <PurposeRow
-          label={t('consentPurposePersonalization')}
-          description={t('consentPurposePersonalizationDesc')}
-          value={purposes.personalization}
-          onToggle={() => toggle('personalization')}
-        />
+          {!isOnline ? <Banner variant="offline" message={t('consentOfflineBanner')} /> : null}
 
-        <Button
-          label={t('consentAcceptAll')}
-          disabled={busy}
-          onPress={() => wrap(() => acceptAll(policyVersion))}
-          fullWidth
-          style={{ marginTop: space.lg }}
-        />
-        <Button
-          label={t('consentRejectNonEssential')}
-          variant="outline"
-          disabled={busy}
-          onPress={() => wrap(() => rejectNonEssential(policyVersion))}
-          fullWidth
-          style={{ marginTop: space.md }}
-        />
-        <Button
-          label={t('consentSaveChoices')}
-          variant="secondary"
-          disabled={busy}
-          onPress={() => wrap(() => saveCustom(purposes, policyVersion))}
-          fullWidth
-          style={{ marginTop: space.md }}
-        />
-      </ScrollView>
-    </Screen>
+          <View style={[styles.group, { borderColor: theme.border, backgroundColor: theme.card }]}>
+            <PurposeRow
+              icon={Lock}
+              label={t('consentPurposeNecessary')}
+              description={t('consentPurposeNecessaryDesc')}
+              value
+              disabled
+              onToggle={() => undefined}
+            />
+            <PurposeRow
+              icon={BarChart3}
+              label={t('consentPurposeAnalytics')}
+              description={t('consentPurposeAnalyticsDesc')}
+              value={purposes.analytics}
+              onToggle={() => toggle('analytics')}
+            />
+            <PurposeRow
+              icon={Megaphone}
+              label={t('consentPurposeAds')}
+              description={t('consentPurposeAdsDesc')}
+              value={purposes.ads}
+              onToggle={() => toggle('ads')}
+            />
+            <PurposeRow
+              icon={Sparkles}
+              label={t('consentPurposePersonalization')}
+              description={t('consentPurposePersonalizationDesc')}
+              value={purposes.personalization}
+              onToggle={() => toggle('personalization')}
+            />
+          </View>
+
+          <Button
+            label={t('consentAcceptAll')}
+            disabled={busy}
+            onPress={() => wrap(() => acceptAll(policyVersion))}
+            fullWidth
+            style={{ marginTop: space.lg }}
+          />
+          <Button
+            label={t('consentRejectNonEssential')}
+            variant="outline"
+            disabled={busy}
+            onPress={() => wrap(() => rejectNonEssential(policyVersion))}
+            fullWidth
+            style={{ marginTop: space.md }}
+          />
+          <Button
+            label={t('consentSaveChoices')}
+            variant="secondary"
+            disabled={busy}
+            onPress={() => wrap(() => saveCustom(purposes, policyVersion))}
+            fullWidth
+            style={{ marginTop: space.md }}
+          />
+        </ScrollView>
+      </Screen>
+    </>
   );
 }
 
 function PurposeRow({
+  icon,
   label,
   description,
   value,
   disabled,
   onToggle,
 }: {
+  icon: LucideIcon;
   label: string;
   description: string;
   value: boolean;
@@ -124,29 +156,32 @@ function PurposeRow({
 }) {
   const theme = useAppTheme();
   return (
-    <View style={[styles.row, { borderColor: theme.border, backgroundColor: theme.card }]}>
-      <View style={{ flex: 1 }}>
-        <Text style={[typography.bodyStrong, { color: theme.text }]}>{label}</Text>
-        <Text style={[typography.caption, { color: theme.muted, marginTop: 2 }]}>{description}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        disabled={disabled}
-        trackColor={{ false: theme.outline, true: theme.primary }}
-      />
-    </View>
+    <ListRow
+      icon={icon}
+      title={label}
+      subtitle={description}
+      showChevron={false}
+      trailing={
+        <Switch
+          value={value}
+          onValueChange={onToggle}
+          disabled={disabled}
+          trackColor={{ false: theme.outline, true: theme.primary }}
+        />
+      }
+    />
   );
 }
 
 const styles = StyleSheet.create({
   content: { padding: space.lg, paddingBottom: space['4xl'] },
-  row: {
-    flexDirection: 'row',
+  hero: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 12,
-    padding: space.lg,
-    marginBottom: space.md,
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
+  group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
 });

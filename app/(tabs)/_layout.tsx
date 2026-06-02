@@ -1,25 +1,39 @@
 import { BlurView } from 'expo-blur';
-import { Tabs } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
-import {
-  Bus,
-  CalendarDays,
-  LayoutGrid,
-  Mountain,
-  Newspaper,
-  ShoppingBag,
-  TrafficCone,
-  Waves,
-} from 'lucide-react-native';
+import { Tabs, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
+import type { ColorValue } from 'react-native';
 import { Platform, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { resolveEnabledModules } from '@/config/island';
+import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
-import { elevation } from '@/lib/tokens';
+import { useHubStore } from '@/lib/hub-store';
 import { logger } from '@/lib/logger';
+import { HUB_MODULES, HUB_TAB } from '@/lib/modules';
+import { elevation } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+
+const SCREEN_MODULE_KEY: Record<string, ModuleKey> = {
+  transit: 'transit',
+  news: 'news',
+  earthquakes: 'seismic',
+  trails: 'trails',
+  marketplace: 'marketplace',
+  traffic: 'traffic',
+  tours: 'events',
+};
+
+function TabBarIcon({
+  Icon,
+  color,
+  size,
+}: {
+  Icon: typeof HUB_TAB.Icon;
+  color: ColorValue;
+  size: number;
+}) {
+  return <Icon color={color} size={size} strokeWidth={2} />;
+}
 
 function TabBarBackground() {
   const theme = useAppTheme();
@@ -34,14 +48,24 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { data: bootstrap, refetch } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
-  const showHub = true;
-  const showTransit = modules.includes('transit');
-  const showNews = modules.includes('news');
-  const showSeismic = modules.includes('seismic');
-  const showTrails = modules.includes('trails');
-  const showMarketplace = modules.includes('marketplace');
-  const showTraffic = modules.includes('traffic');
-  const showTours = modules.includes('events');
+  const pinnedKeys = useHubStore((s) => s.pinnedKeys);
+
+  const isEnabled = useCallback((key: ModuleKey) => modules.includes(key), [modules]);
+
+  const tabHref = useCallback(
+    (screenName: string) => {
+      const moduleKey = SCREEN_MODULE_KEY[screenName];
+      if (!moduleKey) {
+        return null;
+      }
+      const mod = HUB_MODULES.find((m) => m.key === moduleKey);
+      if (!mod || !isEnabled(moduleKey) || !pinnedKeys.includes(moduleKey)) {
+        return null;
+      }
+      return mod.route;
+    },
+    [isEnabled, pinnedKeys],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -55,83 +79,110 @@ export default function TabLayout() {
 
   const tabBarStyle =
     Platform.OS === 'android'
-      ? { backgroundColor: theme.surface, borderTopColor: theme.border, ...elevation(2, theme.text) }
-      : { backgroundColor: 'transparent', borderTopColor: theme.border, position: 'absolute' as const };
+      ? { backgroundColor: theme.surface, borderTopColor: theme.divider, ...elevation(1, theme.text) }
+      : { backgroundColor: 'transparent', borderTopColor: theme.divider, position: 'absolute' as const };
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.muted,
+        tabBarInactiveTintColor: theme.onSurfaceMuted,
         tabBarStyle,
         tabBarBackground: Platform.OS === 'ios' ? () => <TabBarBackground /> : undefined,
-        headerStyle: { backgroundColor: theme.primary },
-        headerTintColor: theme.headerTint,
         headerShown: false,
       }}
     >
       <Tabs.Screen
         name="hub"
         options={{
-          title: t('hubTabLabel'),
-          href: showHub ? '/hub' : null,
-          tabBarIcon: ({ color, size }) => <LayoutGrid color={color} size={size} strokeWidth={2} />,
+          title: t(HUB_TAB.labelKey),
+          headerShown: false,
+          href: HUB_TAB.route,
+          tabBarIcon: ({ color, size }) => <TabBarIcon Icon={HUB_TAB.Icon} color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="transit"
         options={{
           title: t('navBarSearchLabel'),
-          href: showTransit ? '/transit' : null,
-          tabBarIcon: ({ color, size }) => <Bus color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('transit'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'transit');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="news"
         options={{
           title: t('navBarNewsLabel'),
-          href: showNews ? '/news' : null,
-          tabBarIcon: ({ color, size }) => <Newspaper color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('news'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'news');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="earthquakes"
         options={{
           title: t('navBarEarthquakesLabel'),
-          href: showSeismic ? '/earthquakes' : null,
-          tabBarIcon: ({ color, size }) => <Waves color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('earthquakes'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'seismic');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="trails"
         options={{
           title: t('navBarTrailsLabel'),
-          href: showTrails ? '/trails' : null,
-          tabBarIcon: ({ color, size }) => <Mountain color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('trails'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'trails');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="marketplace"
         options={{
           title: t('navBarMarketplaceLabel'),
-          href: showMarketplace ? '/marketplace' : null,
-          tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('marketplace'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'marketplace');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="traffic"
         options={{
           title: t('navBarTrafficLabel'),
-          href: showTraffic ? '/traffic' : null,
-          tabBarIcon: ({ color, size }) => <TrafficCone color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('traffic'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'traffic');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
       <Tabs.Screen
         name="tours"
         options={{
           title: t('navBarToursLabel'),
-          href: showTours ? '/tours' : null,
-          tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} strokeWidth={2} />,
+          headerShown: false,
+          href: tabHref('tours'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'events');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
         }}
       />
     </Tabs>
