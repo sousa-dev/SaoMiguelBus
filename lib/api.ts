@@ -40,7 +40,14 @@ export async function fetchBootstrap(): Promise<BootstrapResponse> {
 
 export async function fetchStops(): Promise<Stop[]> {
   const data = await apiFetch<{ stops: Stop[] }>('/api/v3/transit/stops');
-  return data.stops;
+  const seen = new Set<number>();
+  return data.stops.filter((stop) => {
+    if (seen.has(stop.id)) {
+      return false;
+    }
+    seen.add(stop.id);
+    return true;
+  });
 }
 
 export async function searchTransit(params: {

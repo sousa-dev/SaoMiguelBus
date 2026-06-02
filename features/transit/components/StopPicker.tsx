@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
@@ -42,22 +42,18 @@ export function StopPicker({ label, placeholder, value, stops, onSelect }: Props
       />
       {query.length > 0 && filtered.length > 0 ? (
         <View style={[styles.suggestions, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          <FlatList
-            keyboardShouldPersistTaps="handled"
-            data={filtered}
-            keyExtractor={(item) => `${item.id}-${item.name}`}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  setQuery(item.name);
-                  onSelect(item.name);
-                }}
-                style={styles.suggestionRow}
-              >
-                <Text style={{ color: theme.text }}>{item.name}</Text>
-              </Pressable>
-            )}
-          />
+          {filtered.map((item, index) => (
+            <Pressable
+              key={`${item.id}-${index}`}
+              onPress={() => {
+                setQuery(item.name);
+                onSelect(item.name);
+              }}
+              style={styles.suggestionRow}
+            >
+              <Text style={{ color: theme.text }}>{item.name}</Text>
+            </Pressable>
+          ))}
         </View>
       ) : null}
     </View>
