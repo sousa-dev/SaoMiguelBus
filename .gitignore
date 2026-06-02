@@ -40,3 +40,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Legacy Android Studio project (src/android-project)
+src/android-project/.gradle/
+src/android-project/.idea/
+src/android-project/**/build/
+src/android-project/app/debug/
+src/android-project/app/release/
+src/android-project/local.properties
