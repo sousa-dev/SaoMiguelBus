@@ -1,6 +1,0 @@
-com.hsousa_apps.Autocarros.test.app-annotation-experimental-1.3.0-0 /Users/sousa/.gradle/caches/transforms-4/12ba57f5d8a067dec3ae3a30feb2c63c/transformed/annotation-experimental-1.3.0/res
-com.hsousa_apps.Autocarros.test.app-core-1.5.0-1 /Users/sousa/.gradle/caches/transforms-4/8230009e95ecab6725ec2e22b3e75e47/transformed/core-1.5.0/res
-com.hsousa_apps.Autocarros.test.app-androidTest-2 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/generated/res/resValues/androidTest/debug
-com.hsousa_apps.Autocarros.test.app-mergeDebugAndroidTestResources-3 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
-com.hsousa_apps.Autocarros.test.app-mergeDebugAndroidTestResources-4 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
-com.hsousa_apps.Autocarros.test.app-debugAndroidTest-5 /Users/sousa/Documents/Sousa Dev/SMB/SaoMiguelBus/src/android-project/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources

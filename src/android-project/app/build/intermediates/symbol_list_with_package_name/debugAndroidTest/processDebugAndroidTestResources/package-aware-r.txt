@@ -1,3 +1,0 @@
-com.hsousa_apps.Autocarros.test
-style WhiteBackgroundDialogTheme
-style WhiteBackgroundTheme
