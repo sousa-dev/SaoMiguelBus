@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } f
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { TrailCard } from '@/features/trails/components/TrailCard';
 import { TrailFilters } from '@/features/trails/components/TrailFilters';
 import {
@@ -57,7 +58,7 @@ export default function TrailsScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Screen withStackHeader>
       <TrailFilters
         theme={theme}
         draft={draftFilters}
@@ -110,11 +111,10 @@ export default function TrailsScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12 },
-  list: { paddingBottom: 24 },
+  list: { padding: 12, paddingBottom: 24 },
 });

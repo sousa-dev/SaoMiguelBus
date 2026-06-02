@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } f
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { NewsCard } from '@/features/news/components/NewsCard';
 import { NewsFilters } from '@/features/news/components/NewsFilters';
 import { useNewsArticles } from '@/features/news/hooks/useNewsQueries';
@@ -29,7 +30,7 @@ export default function NewsScreen() {
   }, [articles.refetch]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Screen withStackHeader>
       <NewsFilters
         theme={theme}
         query={query}
@@ -75,11 +76,10 @@ export default function NewsScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  list: { paddingBottom: 32 },
+  list: { padding: 16, paddingBottom: 32 },
 });

@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '@/components/Screen';
 
 import { TripDetail } from '@/features/transit/components/TripDetail';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
@@ -19,17 +19,17 @@ export default function TripDetailScreen() {
 
   if (tripQuery.isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
+      <Screen withStackHeader style={styles.center}>
         <ActivityIndicator color={theme.primary} />
-      </View>
+      </Screen>
     );
   }
 
   if (tripQuery.isError || !tripQuery.data) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
+      <Screen withStackHeader style={styles.center}>
         <Text style={{ color: theme.muted }}>{t('noRoutesSubtitle')}</Text>
-      </View>
+      </Screen>
     );
   }
 
@@ -55,7 +55,7 @@ export default function TripDetailScreen() {
     }) ?? null;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['bottom']}>
+    <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
         {infoNotice && typeof infoNotice.text === 'object' ? (
           <View style={[styles.notice, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -66,12 +66,11 @@ export default function TripDetailScreen() {
         ) : null}
         <TripDetail trip={trip} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   notice: {

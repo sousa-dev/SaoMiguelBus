@@ -1,9 +1,9 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Screen } from '@/components/Screen';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { LANGUAGE_NAMES } from '@/lib/i18n';
 import { saveLocale } from '@/lib/locale-prefs';
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+    <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: theme.primary }]}>{t('settingsTitle')}</Text>
 
@@ -59,12 +59,11 @@ export default function SettingsScreen() {
           <Text style={{ color: theme.secondary, fontWeight: '600' }}>{t('settingsBack')}</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 20 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
   section: { fontWeight: '700', marginBottom: 10 },

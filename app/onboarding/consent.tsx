@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Screen } from '@/components/Screen';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { useAppTheme } from '@/lib/theme';
@@ -46,7 +45,7 @@ export default function ConsentScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+    <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: theme.primary }]}>Privacy & consent</Text>
         <Text style={{ color: theme.text, marginBottom: 20 }}>
@@ -105,7 +104,7 @@ export default function ConsentScreen() {
           <Text style={styles.btnText}>Save choices</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -136,7 +135,6 @@ function PurposeRow({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 20 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
   row: {

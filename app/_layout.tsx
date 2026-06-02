@@ -1,8 +1,10 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '@/lib/dev-logging';
 
@@ -51,15 +53,18 @@ function AppShell() {
   }, [hasAnalytics]);
 
   return (
-    <ThemeProvider bootstrap={bootstrap ?? null}>
-      <ConsentGate>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ConsentGate>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider bootstrap={bootstrap ?? null}>
+        <StatusBar style="auto" />
+        <ConsentGate>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ConsentGate>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 

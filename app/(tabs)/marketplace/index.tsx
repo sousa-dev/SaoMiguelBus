@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Tex
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
 import {
@@ -53,7 +54,7 @@ export default function MarketplaceScreen() {
   }, [coords]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Screen withStackHeader>
       <MarketplaceFilters
         theme={theme}
         categories={categories.data ?? []}
@@ -103,13 +104,12 @@ export default function MarketplaceScreen() {
       >
         <Text style={styles.fabText}>+ {t('marketplaceAddListing')}</Text>
       </Pressable>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12 },
-  list: { paddingBottom: 90 },
+  list: { padding: 12, paddingBottom: 90 },
   fab: {
     position: 'absolute',
     right: 16,

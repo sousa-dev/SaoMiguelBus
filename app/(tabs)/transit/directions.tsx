@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '@/components/Screen';
 
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
 import { useDirections } from '@/features/transit/hooks/useTransitQueries';
@@ -32,7 +32,7 @@ export default function DirectionsScreen() {
   });
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['bottom']}>
+    <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: theme.text }]}>
           {origin} → {destination}
@@ -45,12 +45,11 @@ export default function DirectionsScreen() {
           <DirectionsResults data={directions.data} origin={origin} destination={destination} />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   content: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
 });

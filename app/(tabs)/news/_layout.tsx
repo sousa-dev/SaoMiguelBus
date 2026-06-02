@@ -1,21 +1,19 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { useAppTheme } from '@/lib/theme';
+import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function NewsLayout() {
-  const theme = useAppTheme();
   const { t } = useTranslation();
+  const screenOptions = useAppStackScreenOptions();
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.primary },
-        headerTintColor: '#fff',
-        contentStyle: { backgroundColor: theme.background },
-      }}
-    >
-      <Stack.Screen name="index" options={{ title: t('navBarNewsLabel') }} />
+    <Stack screenOptions={screenOptions}>
+      <Stack.Screen
+        name="index"
+        options={{ title: t('navBarNewsLabel'), headerRight: () => <SettingsHeaderButton /> }}
+      />
       <Stack.Screen name="[articleId]" options={{ title: t('newsArticleTitle') }} />
     </Stack>
   );
