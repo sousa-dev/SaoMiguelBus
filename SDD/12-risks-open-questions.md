@@ -58,3 +58,6 @@ Resolve product open questions **before Phase 1 coding**. Technical assumptions 
 | 2026-06-01 | Backend foundation = djast boilerplate at `SaoMiguelBus-api/boilerplate/`, promoted to root | Concrete starter; feature toggles + Stripe + Celery + auth already wired |
 | 2026-06-01 | SDD + planning in `SaoMiguelBus/SDD/`; API implementation in `SaoMiguelBus-api` | Matches `revamp` README layout |
 | 2026-06-01 | Legacy import via `import_legacy` + `migrate_legacy <step>` | Idempotent, one-command operator workflow |
+| 2026-06-01 | Compat API substitutes legacy for web PWA | Drop-in cutover: same URLs/shapes; revamp validated on staging |
+| 2026-06-01 | Batched JSONL import + Celery async for large exports | Avoids OOM on 400MB+ exports; `LegacyImportJob` tracks progress |
+| 2026-06-01 | Tenancy: no hostname island parsing | Prevents `unknown_island: staging` / IP octet bugs; fallback to `DEFAULT_ISLAND_KEY` |

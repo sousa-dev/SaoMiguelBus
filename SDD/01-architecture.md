@@ -155,8 +155,8 @@ OpenAPI types for the Expo app are generated from the new backend schema (single
 | Env | Backend | Frontend |
 |-----|---------|----------|
 | dev | SQLite (`DEBUG=True`), Celery eager optional, fake external feeds | Expo dev client, `EXPO_PUBLIC_API_URL` → `http://127.0.0.1:8000` |
-| staging | Postgres, real Celery, sandbox Stripe/RevenueCat | points at staging API |
-| prod | Postgres, Redis, real feeds & billing | per-island EAS build |
+| staging | Postgres, real Celery; **`staging.api.saomiguelbus.com`** — revamp compat validation | Same as prod hostname in webapp; point DNS or override for testing |
+| prod | Postgres, Redis, real feeds & billing; **`api.saomiguelbus.com`** → revamp after DNS cutover | Web PWA hardcodes `https://api.saomiguelbus.com`; per-island EAS build |
 
 Secrets and toggles: `src/src/.env` (see `src/src/.env.example`). Run dev with `cd src && python run.py`.
 

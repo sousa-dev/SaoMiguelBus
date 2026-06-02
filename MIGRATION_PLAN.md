@@ -1,6 +1,6 @@
 # Azores Hub — Migration Plan & Software Design Document (SDD)
 
-> **Status:** Phase 1 in progress — backend skeleton, tenancy, transit schema, legacy ETL, and compat shim (v2 stops + webapp/load).
+> **Status:** Phase 1 — **compat cutover validated.** Revamp backend (`SaoMiguelBus-api` `revamp`) serves all **web PWA** legacy URLs via the `compat` app; production data import pipeline (JSON export → batched JSONL → Celery) is operational. Remaining Phase 1: Android/Flutter compat endpoints, parity gate, DNS cutover to revamp.
 > **Author:** Architecture (Cursor agent)
 > **Target repos:** [`SaoMiguelBus-api`](https://github.com/sousa-dev/SaoMiguelBus-api) (djast backend, `revamp`) + [`SaoMiguelBus`](https://github.com/sousa-dev/SaoMiguelBus) (Expo client + this SDD)
 > **Source material:** legacy `SaoMiguelBus` (mobile), `SaoMiguelBus-api` (Django/DRF), `SaoMiguelBus-webapp` (vanilla-JS PWA)
@@ -109,6 +109,14 @@ Each phase has an **objective**, **scope**, **exit criteria**, and **dependencie
   - Implement **`import_legacy`** + **`migrate_legacy <step>`** — ETL from `legacy/src/db.sqlite3` or prod Postgres + `scripts/csv/` fallbacks ([`05`](./SDD/05-data-migration.md)).
   - **`compat`** app: full legacy URL inventory → old `/api/v1` + `/api/v2` shapes ([`04`](./SDD/04-api-design.md) §4).
 - **Exit criteria:** new backend serves São Miguel transit data through both the new API and the compat shim; migrated data byte-diff-validated against production `/api/v2/webapp/load`.
+- **Progress (2026-06-01):**
+  - ✓ `import_legacy` + batched `--export-dir` + async Celery (`LegacyImportJob`)
+  - ✓ Legacy export from production (`main-temp`: `/api/v1/export/legacy/batch`)
+  - ✓ **Web PWA compat** — all endpoints in [`04-api-design.md`](./SDD/04-api-design.md) client matrix (v2 stops/route/webapp/load/like/dislike; v1 gmaps/stat/ad/subscription)
+  - ✓ Tenancy middleware — island from `X-Island` / `?island=` / `DEFAULT_ISLAND_KEY` (no hostname/IP parsing)
+  - ✓ Staging validation at `staging.api.saomiguelbus.com` — webapp uses `api.saomiguelbus.com` (DNS cutover pending)
+  - ☐ `validate_legacy_parity` green on production import
+  - ☐ Android v2 `android/load`, Flutter v1 `stops`, remaining P1/P2 compat inventory
 - **Depends on:** Phase 0.
 
 ### Phase 2 — GDPR/Analytics foundation, theming & Expo bootstrap
@@ -173,6 +181,13 @@ Details: [`05-data-migration.md`](./SDD/05-data-migration.md).
 
 ---
 
-## 8. Next step
+## 8. Next steps (cutover)
 
-Phase 1 backend work is underway on branch `cursor/sdd-phase-1-38ca` in `SaoMiguelBus-api`. Remaining Phase 1 scope: expand compat shim to full legacy URL inventory (§4), route search parity, and subscription verify endpoint.
+1. **Finish production import** — confirm `LegacyImportJob` completed on revamp staging; verify stops/routes in Django admin (`transit`, `analytics`, `billing`).
+2. **Parity gate** — run `python manage.py validate_legacy_parity` (search + bootstrap diff vs legacy).
+3. **DNS cutover** — point `api.saomiguelbus.com` at revamp backend (webapp already uses production hostname; no client redeploy needed beyond cache bust).
+4. **Smoke-test web PWA** — stops load, route search, directions, ads, subscription verify against live compat API.
+5. **Expand compat** — `GET /api/v2/android/load`, `GET /api/v1/stops` (Flutter), desktop v1 routes, holidays/infos/groups (P1).
+6. **Phase 2** — `AnalyticsEvent` ingestion, consent/CMP, Expo bootstrap (see Phase 2 above).
+
+**Branches:** `SaoMiguelBus-api` → `revamp`; SDD → `cursor/sdd-phase-1-38ca`; legacy export → `main-temp`.
