@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
-import { MessageCircle, Navigation, Pencil, Phone, Star } from 'lucide-react-native';
+import { MessageCircle, Navigation, PenLine, Pencil, Phone, Star } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +27,9 @@ import { useAppTheme } from '@/lib/theme';
 import { useFabActions } from '@/lib/fab-store';
 import { useMarketplaceStore } from '@/lib/marketplace-store';
 import { track } from '@/lib/analytics';
+import { composeMarketplaceEditSuggestion } from '@/lib/feedback-mail';
+import i18n from '@/lib/i18n';
+import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 
 function contactDigits(value: string): string {
   return value.replace(/[^\d+]/g, '');
@@ -90,6 +93,32 @@ export default function ProviderDetailScreen() {
       icon: Star,
       onPress: () => setReviewVisible(true),
     });
+    if (!isMine) {
+      actions.push({
+        key: 'suggest-edit',
+        labelKey: 'fabSuggestEdit',
+        icon: PenLine,
+        onPress: () => {
+          track('marketplace', 'engage', { action: 'suggest_edit', provider_id: p.id });
+          void composeMarketplaceEditSuggestion({
+            provider: { id: p.id, name: p.name, category: p.category.name },
+            subject: t('marketplaceSuggestEditSubject', { name: p.name }),
+            description: t('marketplaceSuggestEditBody', {
+              name: p.name,
+              category: p.category.name,
+              id: p.id,
+            }),
+            context: {
+              from: `/(tabs)/marketplace/${p.id}`,
+              label: p.name,
+              appVersion: getAppVersion(),
+              platform: getAnalyticsPlatform(),
+              locale: i18n.language,
+            },
+          });
+        },
+      });
+    }
     if (isMine) {
       actions.push({
         key: 'edit-listing',
@@ -102,7 +131,7 @@ export default function ProviderDetailScreen() {
       });
     }
     return actions;
-  }, [provider.data, isMine, providerId]);
+  }, [provider.data, isMine, providerId, t]);
 
   useFabActions(fabActions);
 

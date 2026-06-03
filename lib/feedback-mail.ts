@@ -67,6 +67,25 @@ function mailtoUrl(subject: string, body: string): string {
  * Uses the native composer (with screenshot attachments) when available, and
  * falls back to a `mailto:` link (no attachments) otherwise — e.g. on web.
  */
+export type MarketplaceEditSuggestionInput = {
+  provider: { id: number; name: string; category: string };
+  context: FeedbackContext;
+  subject: string;
+  description: string;
+};
+
+/** Pre-filled mail draft for suggesting corrections to a marketplace listing. */
+export async function composeMarketplaceEditSuggestion(
+  input: MarketplaceEditSuggestionInput,
+): Promise<ComposeResult> {
+  return composeFeedbackEmail({
+    category: 'suggestion',
+    subject: input.subject,
+    description: input.description,
+    context: input.context,
+  });
+}
+
 export async function composeFeedbackEmail(input: ComposeFeedbackInput): Promise<ComposeResult> {
   const subject = buildSubject(input.category, input.subject);
   const body = buildBody(input);
