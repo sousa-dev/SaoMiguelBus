@@ -7,7 +7,7 @@ import { MODULE_KEY_TO_TAB_SCREEN } from '@/lib/hub-tab-screens';
 /** App entry screen: hub grid or a feature module tab. */
 export type LandingPageKey = 'hub' | ModuleKey;
 
-export const DEFAULT_LANDING_PAGE_KEY: LandingPageKey = 'transit';
+export const DEFAULT_LANDING_PAGE_KEY: ModuleKey = 'transit';
 
 export function resolveLandingPageKey(
   stored: LandingPageKey | undefined,
@@ -17,7 +17,7 @@ export function resolveLandingPageKey(
   if (key === 'hub') {
     return 'hub';
   }
-  if (key !== 'hub' && enabledKeys.includes(key)) {
+  if (enabledKeys.includes(key)) {
     return key;
   }
   if (enabledKeys.includes(DEFAULT_LANDING_PAGE_KEY)) {

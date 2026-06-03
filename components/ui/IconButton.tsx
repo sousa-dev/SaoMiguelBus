@@ -52,15 +52,15 @@ export function IconButton({
           ? { color: theme.outline, borderless: true }
           : undefined
       }
-      style={({ pressed }) => [
+      style={(state) => [
         styles.base,
         {
           minWidth: hitSlop.minTouch,
           minHeight: hitSlop.minTouch,
           backgroundColor: bg,
-          opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+          opacity: disabled ? 0.4 : state.pressed ? 0.85 : 1,
         },
-        typeof style === 'function' ? style({ pressed }) : style,
+        typeof style === 'function' ? style(state) : style,
       ]}
       {...rest}
     >
