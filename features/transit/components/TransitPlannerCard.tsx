@@ -1,5 +1,5 @@
 import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
-import { ArrowRightLeft, Calendar, Clock, Route, Search } from 'lucide-react-native';
+import { ArrowUpDown, Calendar, Clock, Route, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -122,7 +122,7 @@ export function TransitPlannerCard({
           accessibilityRole="button"
           accessibilityLabel={t('transitSwapStops')}
         >
-          <ArrowRightLeft size={16} color={theme.onPrimary} style={{ transform: [{ rotate: '90deg' }] }} />
+          <ArrowUpDown size={16} color={theme.onPrimary} />
         </Pressable>
       </View>
 
