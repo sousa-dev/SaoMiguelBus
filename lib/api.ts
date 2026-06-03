@@ -82,6 +82,51 @@ export async function fetchWebappLoad(): Promise<unknown[]> {
   return apiFetch<unknown[]>('/api/v2/webapp/load');
 }
 
+export interface OfflineBundleVersionResponse {
+  version: string;
+  island: string;
+}
+
+export interface OfflineBundleStop {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface OfflineBundleRoute {
+  id: number;
+  route: string;
+  stops: string[];
+  times: string[];
+  weekday: string;
+  likes_percent?: number;
+  dislikes_percent?: number;
+  information?: Record<string, unknown> | string;
+}
+
+export interface OfflineBundleResponse {
+  version: string;
+  generatedAt: string;
+  island: string;
+  maps: boolean;
+  counts: { stops: number; routes: number };
+  stops: OfflineBundleStop[];
+  holidays: { id: number; date: string; name: string }[];
+  infos: Record<string, unknown>[];
+  routes: OfflineBundleRoute[];
+}
+
+/** Lightweight staleness probe — poll before downloading the full bundle. */
+export async function fetchOfflineBundleVersion(): Promise<OfflineBundleVersionResponse> {
+  return apiFetch<OfflineBundleVersionResponse>('/api/v3/transit/offline-bundle/version');
+}
+
+/** Self-contained transit dataset for offline route search (v3). */
+export async function fetchOfflineBundle(): Promise<OfflineBundleResponse> {
+  return apiFetch<OfflineBundleResponse>('/api/v3/transit/offline-bundle');
+}
+
 export async function fetchStops(): Promise<Stop[]> {
   const data = await apiFetch<{ stops: Stop[] }>('/api/v3/transit/stops');
   const seen = new Set<number>();

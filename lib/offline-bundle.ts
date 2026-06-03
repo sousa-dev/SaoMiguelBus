@@ -1,11 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { staticIslandConfig } from '@/config/island';
-import { fetchWebappLoad } from '@/lib/api';
+import { fetchOfflineBundle, fetchOfflineBundleVersion, fetchWebappLoad } from '@/lib/api';
+import { logger } from '@/lib/logger';
 import type { TransitSearchResult, TripStop } from '@/lib/types';
+
+/** Minimum spacing between successful syncs (foreground/staleness driven). */
+export const MIN_SYNC_INTERVAL = 1000 * 60 * 60; // 1h
 
 export interface OfflineHoliday {
   date: string;
+}
+
+export interface OfflineStop {
+  name: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface OfflineRouteRow {
@@ -20,7 +30,9 @@ export interface OfflineRouteRow {
 }
 
 export interface OfflineBundle {
-  stops: { name: string }[];
+  /** Server version fingerprint; `null` when sourced from the legacy v2 fallback. */
+  version: string | null;
+  stops: OfflineStop[];
   holidays: OfflineHoliday[];
   infos: Record<string, unknown>[];
   routes: OfflineRouteRow[];
@@ -118,18 +130,20 @@ export async function saveCachedBundle(bundle: OfflineBundle): Promise<void> {
   await AsyncStorage.setItem(bundleKey(), JSON.stringify(bundle));
 }
 
-export async function refreshOfflineBundle(): Promise<OfflineBundle | null> {
+/** Legacy v2 fallback used only when the v3 endpoint is unavailable (e.g. 404). */
+async function refreshOfflineBundleFromV2(): Promise<OfflineBundle | null> {
   const data = await fetchWebappLoad();
   if (!Array.isArray(data) || data.length < 2) {
     return null;
   }
   const meta = data[0] as {
-    stops?: { name: string }[];
+    stops?: OfflineStop[];
     holidays?: OfflineHoliday[];
     infos?: Record<string, unknown>[];
   };
   const routes = data.slice(1) as OfflineRouteRow[];
   const bundle: OfflineBundle = {
+    version: null,
     stops: meta.stops ?? [],
     holidays: meta.holidays ?? [],
     infos: meta.infos ?? [],
@@ -138,6 +152,52 @@ export async function refreshOfflineBundle(): Promise<OfflineBundle | null> {
   };
   await saveCachedBundle(bundle);
   return bundle;
+}
+
+export async function refreshOfflineBundle(): Promise<OfflineBundle | null> {
+  try {
+    const data = await fetchOfflineBundle();
+    const bundle: OfflineBundle = {
+      version: data.version ?? null,
+      stops: (data.stops ?? []).map((s) => ({
+        name: s.name,
+        latitude: s.latitude,
+        longitude: s.longitude,
+      })),
+      holidays: data.holidays ?? [],
+      infos: data.infos ?? [],
+      routes: data.routes ?? [],
+      fetchedAt: new Date().toISOString(),
+    };
+    await saveCachedBundle(bundle);
+    return bundle;
+  } catch (error) {
+    logger.warn('offline bundle v3 unavailable, falling back to v2', error);
+    return refreshOfflineBundleFromV2();
+  }
+}
+
+/**
+ * Version-aware refresh: probe the server version first and skip the (large)
+ * download when the cached bundle already matches.
+ */
+export async function refreshOfflineBundleIfStale(): Promise<{
+  bundle: OfflineBundle | null;
+  updated: boolean;
+}> {
+  const cached = await loadCachedBundle();
+  try {
+    const remote = await fetchOfflineBundleVersion();
+    if (cached?.version && remote.version && cached.version === remote.version) {
+      return { bundle: cached, updated: false };
+    }
+  } catch (error) {
+    // Version probe failed (offline / older backend) — fall through to a full
+    // refresh attempt, which itself falls back to v2 when needed.
+    logger.debug('offline version probe failed', error);
+  }
+  const bundle = await refreshOfflineBundle();
+  return { bundle, updated: Boolean(bundle) };
 }
 
 export function offlineSearch(
