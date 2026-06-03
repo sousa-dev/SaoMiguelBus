@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { Share2 } from 'lucide-react-native';
+import { useCallback, useMemo } from 'react';
 import { BackHandler, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,9 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TripDetail } from '@/features/transit/components/TripDetail';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import { shareTrip } from '@/features/transit/share-trip';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
+import { useFabActions } from '@/lib/fab-store';
 import { resolveInfo } from '@/lib/infos';
 import { useNetworkStatus } from '@/lib/network-status';
 import { space, typography } from '@/lib/tokens';
@@ -41,6 +44,36 @@ export default function TripDetailScreen() {
 
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();
+
+  const fabActions = useMemo(() => {
+    const detail = tripQuery.data;
+    if (!detail) {
+      return [];
+    }
+    const trip: TransitSearchResult = {
+      id: detail.id,
+      route: detail.route,
+      origin: detail.stops[0]?.name ?? '',
+      destination: detail.stops[detail.stops.length - 1]?.name ?? '',
+      start: detail.stops[0]?.time ?? '',
+      end: detail.stops[detail.stops.length - 1]?.time ?? '',
+      typeOfDay: detail.typeOfDay,
+      likesPercent: detail.likesPercent ?? 0,
+      dislikesPercent: detail.dislikesPercent ?? 0,
+      information: detail.information,
+      stops: detail.stops,
+    };
+    return [
+      {
+        key: 'share-trip',
+        labelKey: 'fabShareTrip',
+        icon: Share2,
+        onPress: () => void shareTrip(trip, { alertTitle: t('transitShareTitle') }),
+      },
+    ];
+  }, [tripQuery.data, t]);
+
+  useFabActions(fabActions);
 
   if (tripQuery.isLoading) {
     return (

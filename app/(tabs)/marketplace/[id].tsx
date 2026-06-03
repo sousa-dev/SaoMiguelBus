@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Star } from 'lucide-react-native';
+import type { Href } from 'expo-router';
+import { MessageCircle, Navigation, Pencil, Phone, Star } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
@@ -23,7 +24,13 @@ import { coordinateToRegion } from '@/lib/island-map';
 import { useNetworkStatus } from '@/lib/network-status';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { useFabActions } from '@/lib/fab-store';
 import { useMarketplaceStore } from '@/lib/marketplace-store';
+import { track } from '@/lib/analytics';
+
+function contactDigits(value: string): string {
+  return value.replace(/[^\d+]/g, '');
+}
 
 export default function ProviderDetailScreen() {
   const theme = useAppTheme();
@@ -40,6 +47,64 @@ export default function ProviderDetailScreen() {
 
   const [reviewVisible, setReviewVisible] = useState(false);
   const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
+
+  const fabActions = useMemo(() => {
+    const p = provider.data;
+    if (!p) {
+      return [];
+    }
+    const actions = [];
+    const open = (action: 'call' | 'whatsapp' | 'directions', url: string) => {
+      track('marketplace', 'engage', { action, provider_id: p.id });
+      void Linking.openURL(url);
+    };
+    if (p.phone) {
+      actions.push({
+        key: 'call',
+        labelKey: 'fabCall',
+        icon: Phone,
+        onPress: () => open('call', `tel:${contactDigits(p.phone!)}`),
+      });
+    }
+    if (p.whatsapp) {
+      actions.push({
+        key: 'whatsapp',
+        labelKey: 'fabWhatsApp',
+        icon: MessageCircle,
+        onPress: () =>
+          open('whatsapp', `https://wa.me/${contactDigits(p.whatsapp!).replace('+', '')}`),
+      });
+    }
+    if (p.latitude != null && p.longitude != null) {
+      actions.push({
+        key: 'directions',
+        labelKey: 'fabDirections',
+        icon: Navigation,
+        onPress: () =>
+          open('directions', `https://www.google.com/maps?q=${p.latitude},${p.longitude}`),
+      });
+    }
+    actions.push({
+      key: 'write-review',
+      labelKey: 'fabWriteReview',
+      icon: Star,
+      onPress: () => setReviewVisible(true),
+    });
+    if (isMine) {
+      actions.push({
+        key: 'edit-listing',
+        labelKey: 'fabEditListing',
+        icon: Pencil,
+        href: {
+          pathname: '/(tabs)/marketplace/edit/[id]',
+          params: { id: String(providerId) },
+        } as Href,
+      });
+    }
+    return actions;
+  }, [provider.data, isMine, providerId]);
+
+  useFabActions(fabActions);
 
   const runDelete = async () => {
     setDeleteSheetOpen(false);

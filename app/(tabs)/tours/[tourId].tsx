@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Share } from 'react-native';
 import {
   Dimensions,
   FlatList,
@@ -10,7 +11,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Check, Clock, ExternalLink, Star } from 'lucide-react-native';
+import { Check, Clock, ExternalLink, Share2, Star, Ticket } from 'lucide-react-native';
 import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -18,6 +19,7 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/StateView';
 import { trackTourBookClick, trackTourOpen, useTour } from '@/features/events/hooks/useTourQueries';
 import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
+import { useFabActions } from '@/lib/fab-store';
 import { useNetworkStatus } from '@/lib/network-status';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -49,6 +51,36 @@ export default function TourDetailScreen() {
   const code = (tourId ?? '').trim();
   const tour = useTour(code, code.length > 0);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const fabActions = useMemo(() => {
+    const data = tour.data;
+    if (!data) {
+      return [];
+    }
+    return [
+      {
+        key: 'book-tour',
+        labelKey: 'fabBookTour',
+        icon: Ticket,
+        onPress: () => {
+          if (!isOnline) {
+            return;
+          }
+          trackTourBookClick(data.code);
+          openViatorExternal(data.bookingUrl);
+        },
+      },
+      {
+        key: 'share-tour',
+        labelKey: 'fabShareTour',
+        icon: Share2,
+        onPress: () =>
+          void Share.share({ message: `${data.title} ${data.bookingUrl}`, title: data.title }),
+      },
+    ];
+  }, [tour.data, isOnline]);
+
+  useFabActions(fabActions);
 
   useEffect(() => {
     if (tour.data) {

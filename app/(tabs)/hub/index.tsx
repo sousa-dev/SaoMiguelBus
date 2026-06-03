@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { LayoutGrid } from 'lucide-react-native';
+import { LayoutGrid, Pencil } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Platform, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { HubSkeletonTiles } from '@/features/hub/components/HubSkeletonTiles';
 import { useHubPreviews } from '@/features/hub/hooks/useHubPreviews';
 import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useFabActions } from '@/lib/fab-store';
 import { useHubStore } from '@/lib/hub-store';
 import { getEnabledHubModules } from '@/lib/modules';
 import { useScrollContentPadding, useStackScrollProps } from '@/lib/stack-scroll';
@@ -34,6 +35,21 @@ export default function HubScreen() {
   const enabledKeys = resolveEnabledModules(bootstrap?.island?.enabledModules);
 
   const editMode = useHubStore((s) => s.editMode);
+  const setEditMode = useHubStore((s) => s.setEditMode);
+
+  useFabActions(
+    useMemo(
+      () => [
+        {
+          key: 'customize-hub',
+          labelKey: 'fabCustomizeHub',
+          icon: Pencil,
+          onPress: () => setEditMode(!editMode),
+        },
+      ],
+      [editMode, setEditMode],
+    ),
+  );
   const layout = useHubStore((s) => s.layout);
   const columns = useHubStore((s) => s.columns);
   const pinnedKeys = useHubStore((s) => s.pinnedKeys);

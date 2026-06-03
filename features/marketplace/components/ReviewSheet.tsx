@@ -58,7 +58,7 @@ export function ReviewSheet({
         <Field
           value={text}
           onChangeText={setText}
-          placeholder={t('marketplaceReviewPlaceholder')}
+          placeholder={t('marketplaceReviewHint')}
           multiline
           numberOfLines={4}
         />

@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Clock, ExternalLink, Newspaper, Share2 } from 'lucide-react-native';
+import { useEffect, useMemo } from 'react';
+import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { Clock, ExternalLink, Newspaper } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { useNewsArticle } from '@/features/news/hooks/useNewsQueries';
+import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -21,6 +22,29 @@ export default function NewsArticleScreen() {
   const { articleId } = useLocalSearchParams<{ articleId: string }>();
   const id = Number(articleId);
   const article = useNewsArticle(id, Number.isFinite(id));
+
+  const fabActions = useMemo(() => {
+    const data = article.data;
+    if (!data) {
+      return [];
+    }
+    return [
+      {
+        key: 'share-article',
+        labelKey: 'fabShareArticle',
+        icon: Share2,
+        onPress: () => void Share.share({ message: `${data.title} ${data.link}` }),
+      },
+      {
+        key: 'open-original',
+        labelKey: 'fabOpenOriginal',
+        icon: ExternalLink,
+        onPress: () => void WebBrowser.openBrowserAsync(data.link),
+      },
+    ];
+  }, [article.data]);
+
+  useFabActions(fabActions);
 
   useEffect(() => {
     if (article.data) {

@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Calendar, Plus, X } from 'lucide-react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Calendar, LocateFixed, Plus, X } from 'lucide-react-native';
 import {
   ActivityIndicator,
   FlatList,
@@ -22,7 +22,7 @@ import { iconSize, space, typography } from '@/lib/tokens';
 import { CategoryPickerSheet } from '@/features/traffic/components/CategoryPickerSheet';
 import { ProximityAlert } from '@/features/traffic/components/ProximityAlert';
 import { ReportCard } from '@/features/traffic/components/ReportCard';
-import { TrafficMap } from '@/features/traffic/components/TrafficMap';
+import { TrafficMap, type TrafficMapHandle } from '@/features/traffic/components/TrafficMap';
 import {
   useCreateTrafficReport,
   useTrafficCategories,
@@ -71,6 +71,7 @@ export default function TrafficScreen() {
   });
 
   const create = useCreateTrafficReport();
+  const mapRef = useRef<TrafficMapHandle>(null);
 
   useFabActions(
     useMemo(
@@ -81,8 +82,24 @@ export default function TrafficScreen() {
           icon: Plus,
           onPress: () => setPickerOpen(true),
         },
+        {
+          key: 'center-on-me',
+          labelKey: 'fabCenterOnMe',
+          icon: LocateFixed,
+          onPress: () => {
+            if (userOnIsland && coords) {
+              mapRef.current?.centerOn(coords);
+            }
+          },
+        },
+        {
+          key: 'scheduled-events',
+          labelKey: 'fabScheduledEvents',
+          icon: Calendar,
+          onPress: () => setScheduledOpen(true),
+        },
       ],
-      [],
+      [coords, userOnIsland],
     ),
   );
 
@@ -178,6 +195,7 @@ export default function TrafficScreen() {
       <View style={styles.fill} pointerEvents="box-none">
         {hasMap ? (
           <TrafficMap
+            ref={mapRef}
             reports={activeReports}
             userCoords={coords}
             draftPin={draftPin}

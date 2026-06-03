@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Clock } from 'lucide-react-native';
+import { Clock, Navigation } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ import { coordinateToRegion } from '@/lib/island-map';
 import { trafficCategoryIcon } from '@/lib/traffic-icons';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { useFabActions } from '@/lib/fab-store';
 import { useTrafficStore } from '@/lib/traffic-store';
 
 export default function TrafficDetailScreen() {
@@ -35,6 +36,24 @@ export default function TrafficDetailScreen() {
   const remove = useDeleteTrafficReport();
   const isMine = useTrafficStore((s) => s.isMine(reportId));
   const removeFromStore = useTrafficStore((s) => s.removeReport);
+
+  const fabActions = useMemo(() => {
+    const r = report.data;
+    if (!r) {
+      return [];
+    }
+    return [
+      {
+        key: 'directions',
+        labelKey: 'fabDirections',
+        icon: Navigation,
+        onPress: () =>
+          void Linking.openURL(`https://www.google.com/maps?q=${r.latitude},${r.longitude}`),
+      },
+    ];
+  }, [report.data]);
+
+  useFabActions(fabActions);
 
   const runDelete = async () => {
     await remove.mutateAsync(reportId);

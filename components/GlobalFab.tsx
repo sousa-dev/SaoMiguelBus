@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FabAction } from '@/components/ui/FabAction';
 import {
+  getModuleIcon,
   getScreenLabelKey,
   getStaticActions,
   isFabHidden,
@@ -66,8 +67,8 @@ export function GlobalFab() {
 
   const closedFabIcon = useMemo(() => {
     const primary = actions.find((a) => a.key !== 'feedback');
-    return primary?.icon ?? Zap;
-  }, [actions]);
+    return primary?.icon ?? getModuleIcon(pathname) ?? Zap;
+  }, [actions, pathname]);
 
   if (isFabHidden(pathname)) {
     return null;

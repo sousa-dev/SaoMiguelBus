@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Activity, Share2 } from 'lucide-react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Clock, MapPin, Waves } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { onColorFor } from '@/lib/color-utils';
 import { magnitudeColor } from '@/lib/seismic-colors';
 import { useSeismicEvent } from '@/features/earthquakes/hooks/useEarthquakeQueries';
+import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -25,6 +27,33 @@ export default function EarthquakeDetailScreen() {
   const eventId = Number(id);
   const event = useSeismicEvent(eventId, Number.isFinite(eventId));
   const [feltOpen, setFeltOpen] = useState(false);
+
+  const fabActions = useMemo(() => {
+    const data = event.data;
+    if (!data) {
+      return [];
+    }
+    return [
+      {
+        key: 'felt-it',
+        labelKey: 'fabFeltIt',
+        icon: Activity,
+        onPress: () => setFeltOpen(true),
+      },
+      {
+        key: 'share-event',
+        labelKey: 'fabShareEvent',
+        icon: Share2,
+        onPress: () => {
+          const when = new Date(data.occurredAt).toLocaleString();
+          const message = `M${data.magnitude.toFixed(1)} — ${data.region || '—'} (${when})`;
+          void Share.share({ message, title: data.region || 'Earthquake' });
+        },
+      },
+    ];
+  }, [event.data]);
+
+  useFabActions(fabActions);
 
   useEffect(() => {
     if (event.data) {

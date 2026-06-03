@@ -1,4 +1,4 @@
-import { Plus, Store } from 'lucide-react-native';
+import { Plus, Share2, Store } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import type { Href } from 'expo-router';
@@ -11,11 +11,16 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
 import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
+import { MarketplaceRegisterCta } from '@/features/marketplace/components/MarketplaceRegisterCta';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
 import {
   useMarketplaceCategories,
   useProviders,
 } from '@/features/marketplace/hooks/useMarketplaceQueries';
+import {
+  MARKETPLACE_REGISTER_URL,
+  shareMarketplaceListingInvite,
+} from '@/features/marketplace/share-listing-invite';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -36,8 +41,18 @@ export default function MarketplaceScreen() {
           icon: Plus,
           href: '/(tabs)/marketplace/new' as Href,
         },
+        {
+          key: 'share-listing-invite',
+          labelKey: 'fabShareMarketplaceInvite',
+          icon: Share2,
+          onPress: () =>
+            void shareMarketplaceListingInvite(
+              t('fabShareMarketplaceInviteMessage', { url: MARKETPLACE_REGISTER_URL }),
+              { title: t('fabShareMarketplaceInvite'), alertTitle: t('fabShareMarketplaceInvite') },
+            ),
+        },
       ],
-      [],
+      [t],
     ),
   );
 
@@ -92,6 +107,9 @@ export default function MarketplaceScreen() {
             <EmptyState icon={Store} title={t('marketplaceEmpty')} />
           ) : null
         }
+        ListFooterComponent={
+          !providers.isLoading && !providers.isError ? <MarketplaceRegisterCta /> : null
+        }
         renderItem={({ item }) => (
           <ProviderCard
             provider={item}
@@ -107,5 +125,5 @@ export default function MarketplaceScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 12, paddingBottom: 24 },
+  list: { padding: space.md, paddingBottom: space['4xl'] },
 });

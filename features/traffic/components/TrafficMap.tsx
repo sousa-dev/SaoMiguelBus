@@ -1,5 +1,5 @@
 import { MapPin } from 'lucide-react-native';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps';
 
@@ -8,6 +8,7 @@ import { TrafficMapMarker } from '@/features/traffic/components/TrafficMapMarker
 import {
   clampCoordinate,
   clampMapRegion,
+  coordinateToRegion,
   getIslandMapRegion,
   isWithinIslandBounds,
   regionNeedsClamp,
@@ -27,21 +28,38 @@ type TrafficMapProps = {
   onPickTap?: (coords: { lat: number; lng: number }) => void;
 };
 
+export type TrafficMapHandle = {
+  centerOn: (coords: { lat: number; lng: number }) => void;
+};
+
 /**
  * Native live map of nearby reports. Always frames São Miguel; user location is
  * shown only when on-island. Web has no react-native-maps MapView — list fallback.
  */
-export function TrafficMap({
-  reports,
-  userCoords,
-  draftPin,
-  pickMode,
-  theme,
-  onMarkerPress,
-  onLongPress,
-  onPickTap,
-}: TrafficMapProps) {
+export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function TrafficMap(
+  {
+    reports,
+    userCoords,
+    draftPin,
+    pickMode,
+    theme,
+    onMarkerPress,
+    onLongPress,
+    onPickTap,
+  },
+  ref,
+) {
   const mapRef = useRef<MapView>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      centerOn: (coords) => {
+        mapRef.current?.animateToRegion(coordinateToRegion(coords, 0.025), 280);
+      },
+    }),
+    [],
+  );
   const islandRegion = useMemo(() => getIslandMapRegion(), []);
   const userOnIsland = useMemo(
     () => (userCoords ? isWithinIslandBounds(userCoords.lat, userCoords.lng) : false),
@@ -119,7 +137,7 @@ export function TrafficMap({
       </MapView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   wrap: { width: '100%', height: '100%' },

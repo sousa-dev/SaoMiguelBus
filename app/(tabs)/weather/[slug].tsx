@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { Pin, RefreshCw } from 'lucide-react-native';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,8 @@ import { useWeatherParish } from '@/features/weather/hooks/useWeatherQueries';
 import { weatherCodeEmoji, weatherCodeLabelKey } from '@/features/weather/weatherCodes';
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useFabActions } from '@/lib/fab-store';
+import { useWeatherStore } from '@/features/weather/weather-store';
 import { track } from '@/lib/analytics';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -22,6 +25,30 @@ export default function WeatherDetailScreen() {
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
   const showWeather = modules.includes('weather');
   const query = useWeatherParish(parishSlug, showWeather && Boolean(parishSlug));
+  const togglePin = useWeatherStore((s) => s.togglePin);
+
+  useFabActions(
+    useMemo(
+      () =>
+        parishSlug
+          ? [
+              {
+                key: 'pin-parish',
+                labelKey: 'fabPinParish',
+                icon: Pin,
+                onPress: () => togglePin(parishSlug),
+              },
+              {
+                key: 'refresh',
+                labelKey: 'fabRefresh',
+                icon: RefreshCw,
+                onPress: () => void query.refetch(),
+              },
+            ]
+          : [],
+      [parishSlug, togglePin, query.refetch],
+    ),
+  );
 
   useFocusEffect(
     useCallback(() => {

@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
@@ -23,6 +24,7 @@ import { useWeatherParishes } from '@/features/weather/hooks/useWeatherQueries';
 import { useWeatherStore, WEATHER_PIN_CAP } from '@/features/weather/weather-store';
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import type { ParishWeather } from '@/lib/types';
 import { space, typography } from '@/lib/tokens';
@@ -41,6 +43,20 @@ export default function WeatherScreen() {
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
   const showWeather = modules.includes('weather');
   const query = useWeatherParishes(showWeather);
+
+  useFabActions(
+    useMemo(
+      () => [
+        {
+          key: 'refresh',
+          labelKey: 'fabRefresh',
+          icon: RefreshCw,
+          onPress: () => void query.refetch(),
+        },
+      ],
+      [query.refetch],
+    ),
+  );
 
   const pinnedSlugs = useWeatherStore((s) => s.pinnedSlugs);
   const togglePin = useWeatherStore((s) => s.togglePin);

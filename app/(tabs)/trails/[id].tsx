@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { MapPin } from 'lucide-react-native';
-import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { MapPin, Navigation, Share2 } from 'lucide-react-native';
+import { Linking, Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,8 @@ import { TrailMap } from '@/features/trails/components/TrailMap';
 import { space, typography } from '@/lib/tokens';
 import { TrailWeather } from '@/features/trails/components/TrailWeather';
 import { useTrail } from '@/features/trails/hooks/useTrailQueries';
+import type { FabAction } from '@/lib/fab-registry';
+import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -23,6 +25,46 @@ export default function TrailDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const trailId = Number(id);
   const trail = useTrail(trailId, Number.isFinite(trailId));
+
+  const fabActions = useMemo(() => {
+    const data = trail.data;
+    if (!data) {
+      return [];
+    }
+    const destination =
+      data.startLat != null && data.startLng != null
+        ? { lat: data.startLat, lng: data.startLng }
+        : null;
+    const directionsUrl = destination
+      ? Platform.select({
+          ios: `http://maps.apple.com/?daddr=${destination.lat},${destination.lng}&q=${encodeURIComponent(
+            data.name,
+          )}`,
+          default: `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}`,
+        })
+      : null;
+    const actions: FabAction[] = [];
+    if (directionsUrl) {
+      actions.push({
+        key: 'trail-directions',
+        labelKey: 'fabDirections',
+        icon: Navigation,
+        onPress: () => {
+          track('trails', 'engage', { action: 'get_directions', trail_id: data.id });
+          void Linking.openURL(directionsUrl);
+        },
+      });
+    }
+    actions.push({
+      key: 'share-trail',
+      labelKey: 'fabShareTrail',
+      icon: Share2,
+      onPress: () => void Share.share({ message: data.name, title: data.name }),
+    });
+    return actions;
+  }, [trail.data]);
+
+  useFabActions(fabActions);
 
   useEffect(() => {
     if (trail.data) {
