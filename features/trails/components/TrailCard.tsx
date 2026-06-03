@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
 import { TrailThumb } from '@/features/trails/components/TrailThumb';
-import { staticIslandConfig } from '@/config/island';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme, type AppTheme } from '@/lib/theme';
 import type { TrailSummary } from '@/features/trails/types';
@@ -121,7 +120,6 @@ export function TrailCard({
 
   const metaParts = [
     trail.sourceRef,
-    staticIslandConfig.islandName,
     trail.distanceKm != null ? `${trail.distanceKm.toFixed(1)} km` : null,
     trail.durationMin != null ? formatDuration(trail.durationMin) : null,
   ].filter(Boolean);

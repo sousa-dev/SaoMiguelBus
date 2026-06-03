@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,13 +10,17 @@ import {
 } from 'react-native';
 import { Mountain } from 'lucide-react-native';
 
+import {
+  markTrailImageError,
+  markTrailImageLoaded,
+  trailImageCacheStatus,
+  type TrailImageCacheStatus,
+} from '@/features/trails/trailImageCache';
 import type { AppTheme } from '@/lib/theme';
 
-type Status = 'idle' | 'loading' | 'loaded' | 'error';
-
 /**
- * Trail image with graceful loading/error states: shows a spinner while the
- * remote map image loads and a mountain icon when it's missing or fails.
+ * Trail map thumbnail with in-memory + RN prefetch cache so list/grid toggles
+ * do not re-show spinners for already-fetched images.
  */
 export function TrailThumb({
   uri,
@@ -31,25 +35,42 @@ export function TrailThumb({
   resizeMode?: ImageResizeMode;
   style?: StyleProp<ViewStyle>;
 }) {
-  const hasUri = Boolean(uri?.trim());
-  const [status, setStatus] = useState<Status>(hasUri ? 'loading' : 'idle');
-  const showImage = hasUri && status !== 'error';
+  const key = uri?.trim() ?? '';
+  const [status, setStatus] = useState<TrailImageCacheStatus>(() => trailImageCacheStatus(uri));
+
+  useEffect(() => {
+    setStatus(trailImageCacheStatus(uri));
+  }, [uri]);
+
+  const showImage = Boolean(key) && status !== 'error';
+  const showSpinner = status === 'loading';
+  const showPlaceholder = status !== 'loaded';
 
   return (
     <View style={[styles.box, { backgroundColor: theme.surfaceVariant }, style]}>
       {showImage ? (
         <Image
-          source={{ uri }}
+          key={key}
+          source={{ uri: key }}
           style={StyleSheet.absoluteFill}
           resizeMode={resizeMode}
-          onLoadStart={() => setStatus('loading')}
-          onLoad={() => setStatus('loaded')}
-          onError={() => setStatus('error')}
+          onLoadStart={() => {
+            if (trailImageCacheStatus(key) !== 'loaded') {
+              setStatus('loading');
+            }
+          }}
+          onLoad={() => {
+            markTrailImageLoaded(key);
+            setStatus('loaded');
+          }}
+          onError={() => {
+            markTrailImageError(key);
+            setStatus('error');
+          }}
         />
       ) : null}
-      {status === 'loading' ? (
-        <ActivityIndicator color={theme.muted} />
-      ) : status !== 'loaded' ? (
+      {showSpinner ? <ActivityIndicator color={theme.muted} /> : null}
+      {showPlaceholder && !showSpinner ? (
         <Mountain size={iconSize} color={theme.muted} />
       ) : null}
     </View>

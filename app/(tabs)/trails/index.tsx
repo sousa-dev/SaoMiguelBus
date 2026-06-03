@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Footprints, LayoutGrid, List as ListIcon } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import { iconSize, radius, space } from '@/lib/tokens';
 import { TrailCard } from '@/features/trails/components/TrailCard';
 import { TrailFilters } from '@/features/trails/components/TrailFilters';
 import { trackTrailFilter, useTrails, type TrailListFilters } from '@/features/trails/hooks/useTrailQueries';
+import { prefetchTrailImages } from '@/features/trails/trailImageCache';
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { track } from '@/lib/analytics';
@@ -29,6 +30,14 @@ export default function TrailsScreen() {
   const [filters, setFilters] = useState<TrailListFilters>(EMPTY_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const trails = useTrails(filters, showTrails);
+  const trailItems = trails.data?.trails;
+
+  useEffect(() => {
+    if (!trailItems?.length) {
+      return;
+    }
+    prefetchTrailImages(trailItems.map((t) => t.mapImageUrl));
+  }, [trailItems]);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,7 +110,7 @@ export default function TrailsScreen() {
 
       <FlatList
         key={viewMode}
-        data={trails.isLoading ? [] : (trails.data?.trails ?? [])}
+        data={trails.isLoading ? [] : (trailItems ?? [])}
         keyExtractor={(item) => String(item.id)}
         numColumns={isGrid ? 2 : 1}
         columnWrapperStyle={isGrid ? styles.gridRow : undefined}
