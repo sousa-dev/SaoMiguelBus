@@ -416,7 +416,6 @@
     "marketplaceLoadError": "Impossible de charger les services.",
     "marketplaceSearchPlaceholder": "Rechercher des services...",
     "marketplaceAllCategories": "Tous",
-    "marketplaceNearMe": "Plus proches",
     "marketplacePromoted": "En vedette",
     "marketplaceReviews": "Avis",
     "marketplaceReviewCount": "{{count}} avis",

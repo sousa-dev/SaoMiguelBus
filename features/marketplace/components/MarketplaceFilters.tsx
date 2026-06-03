@@ -11,18 +11,14 @@ export function MarketplaceFilters({
   categories,
   activeCategory,
   query,
-  nearMe,
   onChangeQuery,
   onSelectCategory,
-  onToggleNearMe,
 }: {
   categories: ServiceCategory[];
   activeCategory: string | null;
   query: string;
-  nearMe: boolean;
   onChangeQuery: (value: string) => void;
   onSelectCategory: (slug: string | null) => void;
-  onToggleNearMe: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -40,7 +36,6 @@ export function MarketplaceFilters({
           selected={activeCategory === null}
           onPress={() => onSelectCategory(null)}
         />
-        <Chip label={t('marketplaceNearMe')} selected={nearMe} onPress={onToggleNearMe} />
         {categories.map((cat) => (
           <Chip
             key={cat.slug}

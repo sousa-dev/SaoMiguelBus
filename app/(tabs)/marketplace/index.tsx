@@ -1,7 +1,5 @@
-import * as Location from 'expo-location';
-import { Plus } from 'lucide-react-native';
+import { Plus, Store } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Store } from 'lucide-react-native';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import type { Href } from 'expo-router';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -28,7 +26,6 @@ export default function MarketplaceScreen() {
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useFabActions(
     useMemo(
@@ -48,8 +45,6 @@ export default function MarketplaceScreen() {
   const providers = useProviders({
     q: query.trim() || undefined,
     category: category ?? undefined,
-    lat: coords?.lat,
-    lng: coords?.lng,
   });
 
   useFocusEffect(
@@ -59,33 +54,14 @@ export default function MarketplaceScreen() {
     }, [providers.refetch]),
   );
 
-  const toggleNearMe = useCallback(async () => {
-    if (coords) {
-      setCoords(null);
-      return;
-    }
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        return;
-      }
-      const pos = await Location.getCurrentPositionAsync({});
-      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-    } catch {
-      setCoords(null);
-    }
-  }, [coords]);
-
   return (
     <Screen withStackHeader>
       <MarketplaceFilters
         categories={categories.data ?? []}
         activeCategory={category}
         query={query}
-        nearMe={coords !== null}
         onChangeQuery={setQuery}
         onSelectCategory={setCategory}
-        onToggleNearMe={toggleNearMe}
       />
 
       {providers.isLoading ? (

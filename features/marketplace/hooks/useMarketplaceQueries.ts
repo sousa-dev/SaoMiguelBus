@@ -17,8 +17,6 @@ import type { ProviderWriteInput } from '@/lib/types';
 export interface ProviderQueryParams {
   category?: string;
   q?: string;
-  lat?: number;
-  lng?: number;
   enabled?: boolean;
 }
 
