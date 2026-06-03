@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
+import type { TourListFilters } from '@/features/events/filterHelpers';
 import { fetchTour, fetchTours } from '@/lib/api';
 import { track } from '@/lib/analytics';
 
@@ -41,4 +42,14 @@ export function trackTourOpen(code: string, title: string) {
 
 export function trackTourBookClick(code: string) {
   track('tours', 'book_click', { tour_code: code });
+}
+
+export function trackTourFilter(filters: TourListFilters) {
+  track('tours', 'filter', {
+    query: filters.query.trim() || undefined,
+    sort: filters.sort,
+    rating: filters.rating,
+    price: filters.price,
+    duration: filters.duration,
+  });
 }
