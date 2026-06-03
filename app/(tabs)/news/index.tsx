@@ -75,10 +75,10 @@ export default function NewsScreen() {
             <EmptyState icon={Newspaper} title={t('newsEmpty')} />
           ) : null
         }
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <NewsCard
             article={item}
-            featured={index === 0}
+            showSummary={category === 'pagamentos'}
             onPress={() =>
               router.push({
                 pathname: '/(tabs)/news/[articleId]',
