@@ -21,8 +21,10 @@ export function HubHero({ islandName, logoUri }: HubHeroProps) {
         <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" accessibilityIgnoresInvertColors />
       ) : null}
       <Text style={[typography.caption, { color: theme.onSurfaceMuted }]}>{greeting}</Text>
-      <Text style={[typography.display, { color: theme.onSurface, marginTop: space.xs }]}>{islandName}</Text>
-      <Text style={[typography.body, { color: theme.onSurfaceMuted, marginTop: space.sm }]}>{t('hubSubtitle')}</Text>
+      <Text style={[typography.headline, { color: theme.onSurface, marginTop: space.xs }]}>{islandName}</Text>
+      <Text style={[typography.caption, { color: theme.onSurfaceMuted, marginTop: space.xs }]} numberOfLines={2}>
+        {t('hubSubtitle')}
+      </Text>
     </View>
   );
 }
@@ -30,12 +32,12 @@ export function HubHero({ islandName, logoUri }: HubHeroProps) {
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: space.lg,
-    paddingTop: space.sm,
-    paddingBottom: space.lg,
+    paddingTop: space.xs,
+    paddingBottom: space.md,
   },
   logo: {
-    width: 48,
-    height: 48,
-    marginBottom: space.md,
+    width: 40,
+    height: 40,
+    marginBottom: space.sm,
   },
 });

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { StackBackButton } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
@@ -17,6 +18,7 @@ export default function TransitLayout() {
         name="index"
         options={{
           title: t('navBarSearchLabel'),
+          headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ProfileHeaderButton />

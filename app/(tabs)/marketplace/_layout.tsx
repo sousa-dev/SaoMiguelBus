@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function MarketplaceLayout() {
@@ -12,7 +13,11 @@ export default function MarketplaceLayout() {
     <Stack screenOptions={screenOptions}>
       <Stack.Screen
         name="index"
-        options={{ title: t('navBarMarketplaceLabel'), headerRight: () => <SettingsHeaderButton /> }}
+        options={{
+          title: t('navBarMarketplaceLabel'),
+          headerLeft: () => <SidebarHeaderButton />,
+          headerRight: () => <SettingsHeaderButton />,
+        }}
       />
       <Stack.Screen name="[id]" options={{ title: t('marketplaceDetailTitle') }} />
       <Stack.Screen name="new" options={{ title: t('marketplaceAddListing'), presentation: 'modal' }} />

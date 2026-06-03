@@ -2,9 +2,12 @@ import type { Href } from 'expo-router';
 import {
   Activity,
   Bus,
+  CircleUser,
   Footprints,
   LayoutGrid,
+  MessageSquarePlus,
   Newspaper,
+  Settings,
   Store,
   CloudSun,
   Ticket,
@@ -115,3 +118,72 @@ export function getEnabledHubModules(
   const enabled = HUB_MODULES.filter((m) => set.has(m.key));
   return sortModulesByOrder(enabled, orderKeys);
 }
+
+export type SidebarSectionId = 'hub' | 'modules' | 'app';
+
+export type SidebarNavItem = {
+  key: string;
+  route: Href;
+  labelKey: string;
+  Icon: LucideIcon;
+  accent?: string;
+  section: SidebarSectionId;
+  /** Feature module key when `section === 'modules'`. */
+  moduleKey?: ModuleKey;
+};
+
+export type SidebarSection = {
+  id: SidebarSectionId;
+  /** Omit for hub (single item, no section header). */
+  titleKey?: string;
+  items: SidebarNavItem[];
+};
+
+const hubNavItem: SidebarNavItem = {
+  key: HUB_TAB.key,
+  route: HUB_TAB.route,
+  labelKey: HUB_TAB.labelKey,
+  Icon: HUB_TAB.Icon,
+  section: 'hub',
+};
+
+const moduleNavItems: SidebarNavItem[] = HUB_MODULES.map((m) => ({
+  key: m.key,
+  route: m.route,
+  labelKey: m.labelKey,
+  Icon: m.Icon,
+  accent: m.accent,
+  section: 'modules' as const,
+  moduleKey: m.key,
+}));
+
+const appNavItems: SidebarNavItem[] = [
+  {
+    key: 'settings',
+    route: '/settings',
+    labelKey: 'settingsTitle',
+    Icon: Settings,
+    section: 'app',
+  },
+  {
+    key: 'profile',
+    route: '/profile',
+    labelKey: 'navBarProfileLabel',
+    Icon: CircleUser,
+    section: 'app',
+  },
+  {
+    key: 'feedback',
+    route: '/feedback',
+    labelKey: 'fabSendFeedback',
+    Icon: MessageSquarePlus,
+    section: 'app',
+  },
+];
+
+/** Full sidebar catalog: Hub, all shipped modules, app screens. */
+export const SIDEBAR_SECTIONS: SidebarSection[] = [
+  { id: 'hub', items: [hubNavItem] },
+  { id: 'modules', titleKey: 'sidebarSectionModules', items: moduleNavItems },
+  { id: 'app', titleKey: 'sidebarSectionApp', items: appNavItems },
+];

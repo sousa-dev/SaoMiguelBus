@@ -1,19 +1,10 @@
 import { Platform, StyleSheet } from 'react-native';
 
+import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
-/** Screens that use iOS large titles (list roots). */
-export const LARGE_TITLE_SCREENS = new Set([
-  'index',
-  'hub/index',
-  'transit/index',
-  'news/index',
-  'earthquakes/index',
-  'trails/index',
-  'marketplace/index',
-  'traffic/index',
-  'tours/index',
-]);
+/** Screens that use iOS large titles (list roots). None enabled — compact headers everywhere. */
+export const LARGE_TITLE_SCREENS = new Set<string>();
 
 export function useAppStackScreenOptions(screenName?: string) {
   const theme = useAppTheme();
@@ -32,6 +23,7 @@ export function useAppStackScreenOptions(screenName?: string) {
     headerShadowVisible: !theme.isDark,
     headerBackTitleVisible: false,
     headerBackVisible: true,
+    headerLeftContainerStyle: { paddingLeft: space.md },
     headerLargeTitle: largeTitle,
     headerLargeTitleStyle: { color: theme.onSurface },
     gestureEnabled: true,

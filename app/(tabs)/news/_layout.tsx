@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function NewsLayout() {
@@ -12,7 +13,11 @@ export default function NewsLayout() {
     <Stack screenOptions={screenOptions}>
       <Stack.Screen
         name="index"
-        options={{ title: t('navBarNewsLabel'), headerRight: () => <SettingsHeaderButton /> }}
+        options={{
+          title: t('navBarNewsLabel'),
+          headerLeft: () => <SidebarHeaderButton />,
+          headerRight: () => <SettingsHeaderButton />,
+        }}
       />
       <Stack.Screen name="[articleId]" options={{ title: t('newsArticleTitle') }} />
     </Stack>

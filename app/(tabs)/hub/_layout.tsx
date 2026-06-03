@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { IconButton } from '@/components/ui/IconButton';
 import { useHubStore } from '@/lib/hub-store';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -27,7 +28,7 @@ function HubEditHeaderButton() {
 
 export default function HubLayout() {
   const { t } = useTranslation();
-  const screenOptions = useAppStackScreenOptions('hub/index');
+  const screenOptions = useAppStackScreenOptions();
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -35,6 +36,7 @@ export default function HubLayout() {
         name="index"
         options={{
           title: t('hubTitle'),
+          headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => (
             <View style={styles.headerRight}>
               <HubEditHeaderButton />

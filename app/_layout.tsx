@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '@/lib/dev-logging';
 
+import { AppSidebar } from '@/components/AppSidebar';
 import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
@@ -88,6 +89,7 @@ function AppShell() {
             <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
           </Stack>
           <GlobalFab />
+          <AppSidebar />
         </ConsentGate>
       </ThemeProvider>
     </SafeAreaProvider>
