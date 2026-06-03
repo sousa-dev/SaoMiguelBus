@@ -5,11 +5,13 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { CachedBadge } from '@/components/ui/CachedBadge';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { NewsCard } from '@/features/news/components/NewsCard';
 import { NewsFilters, type NewsTabCategory } from '@/features/news/components/NewsFilters';
 import { useNewsArticles, useNewsSources } from '@/features/news/hooks/useNewsQueries';
+import { useNetwork } from '@/lib/network-provider';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -17,6 +19,7 @@ export default function NewsScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { isOnline } = useNetwork();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<NewsTabCategory>('noticias');
   const [sourceId, setSourceId] = useState<number | null>(null);
@@ -72,6 +75,13 @@ export default function NewsScreen() {
       <FlatList
         data={articles.isLoading ? [] : data}
         keyExtractor={(item) => String(item.id)}
+        ListHeaderComponent={
+          !isOnline && data.length > 0 ? (
+            <View style={styles.cachedHeader}>
+              <CachedBadge date={articles.dataUpdatedAt || null} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl
             refreshing={articles.isRefetching}
@@ -104,4 +114,5 @@ export default function NewsScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: space.lg, paddingBottom: space['2xl'] },
+  cachedHeader: { marginBottom: space.md },
 });

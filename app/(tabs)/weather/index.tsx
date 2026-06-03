@@ -5,6 +5,7 @@ import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { CachedBadge } from '@/components/ui/CachedBadge';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { ParishWeatherCard } from '@/features/weather/components/ParishWeatherCard';
@@ -25,6 +26,7 @@ import { useWeatherStore, WEATHER_PIN_CAP } from '@/features/weather/weather-sto
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useFabActions } from '@/lib/fab-store';
+import { useNetwork } from '@/lib/network-provider';
 import { track } from '@/lib/analytics';
 import type { ParishWeather } from '@/lib/types';
 import { space, typography } from '@/lib/tokens';
@@ -43,6 +45,7 @@ export default function WeatherScreen() {
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
   const showWeather = modules.includes('weather');
   const query = useWeatherParishes(showWeather);
+  const { isOnline } = useNetwork();
 
   useFabActions(
     useMemo(
@@ -195,11 +198,16 @@ export default function WeatherScreen() {
     () => (
       <View>
         <Text style={[styles.subtitle, { color: theme.muted }]}>{t('weatherSubtitle')}</Text>
+        {!isOnline ? (
+          <View style={styles.cachedHeader}>
+            <CachedBadge date={query.dataUpdatedAt || null} />
+          </View>
+        ) : null}
         {toolbar}
         {pinnedBlock}
       </View>
     ),
-    [theme, t, toolbar, pinnedBlock],
+    [theme, t, toolbar, pinnedBlock, isOnline, query.dataUpdatedAt],
   );
 
   const renderSectionHeader = useCallback(
@@ -299,6 +307,7 @@ const styles = StyleSheet.create({
   subtitle: { ...typography.body, marginBottom: space.md },
   skeletons: { paddingHorizontal: space.lg, paddingBottom: space.xl },
   pinnedBlock: { marginBottom: space.md },
+  cachedHeader: { marginBottom: space.md },
   pinnedLabel: { ...typography.label, fontWeight: '700', marginBottom: space.sm },
   sectionHeader: {
     ...typography.caption,
