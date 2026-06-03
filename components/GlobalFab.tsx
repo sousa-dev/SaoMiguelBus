@@ -64,6 +64,11 @@ export function GlobalFab() {
     [pathname, runtimeActions, feedbackAction],
   );
 
+  const closedFabIcon = useMemo(() => {
+    const primary = actions.find((a) => a.key !== 'feedback');
+    return primary?.icon ?? Zap;
+  }, [actions]);
+
   if (isFabHidden(pathname)) {
     return null;
   }
@@ -78,7 +83,7 @@ export function GlobalFab() {
   };
 
   const bottom = insets.bottom + TAB_BAR_BASE + space.lg;
-  const FabIcon = open ? X : Zap;
+  const FabIcon = open ? X : closedFabIcon;
 
   return (
     <>
