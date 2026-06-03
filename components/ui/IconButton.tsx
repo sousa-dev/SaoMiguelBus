@@ -27,7 +27,6 @@ export function IconButton({
 }: IconButtonProps) {
   const theme = useAppTheme();
   const dim = iconSize[size];
-  const tint = color ?? theme.onPrimary;
 
   const bg =
     variant === 'filled'
@@ -35,8 +34,7 @@ export function IconButton({
       : variant === 'tonal'
         ? theme.surfaceVariant
         : 'transparent';
-  const iconColor =
-    variant === 'filled' ? theme.onPrimary : color ?? (variant === 'tonal' ? theme.text : tint);
+  const iconColor = variant === 'filled' ? theme.onPrimary : (color ?? theme.text);
 
   return (
     <Pressable
