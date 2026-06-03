@@ -1,5 +1,5 @@
 import { Footprints } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
@@ -89,32 +89,39 @@ export function TrailCard({
 
   if (variant === 'grid') {
     return (
-      <Card onPress={onPress} elevated style={styles.gridCard}>
-        <TrailThumb uri={trail.mapImageUrl} theme={theme} iconSize={24} style={styles.gridCover} />
-        <View style={styles.gridBody}>
-          <Text style={[typography.label, { color: theme.text }]} numberOfLines={2}>
-            {trail.name}
-          </Text>
-          <View style={styles.attrRow}>
-            {trail.difficulty ? (
-              <View style={styles.attr}>
-                <DifficultyBars difficulty={trail.difficulty} theme={theme} />
-                <Text style={[styles.attrText, { color: difficultyColor(theme, trail.difficulty) }]}>
-                  {difficultyLabel}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={trail.name}
+        onPress={onPress}
+        style={({ pressed }) => [styles.gridPressable, { opacity: pressed ? 0.92 : 1 }]}
+      >
+        <Card elevated style={styles.gridCard}>
+          <TrailThumb uri={trail.mapImageUrl} theme={theme} iconSize={24} style={styles.gridCover} />
+          <View style={styles.gridBody}>
+            <Text style={[typography.label, { color: theme.text }]} numberOfLines={2}>
+              {trail.name}
+            </Text>
+            <View style={styles.attrRow}>
+              {trail.difficulty ? (
+                <View style={styles.attr}>
+                  <DifficultyBars difficulty={trail.difficulty} theme={theme} />
+                  <Text style={[styles.attrText, { color: difficultyColor(theme, trail.difficulty) }]}>
+                    {difficultyLabel}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            {trail.distanceKm != null ? (
+              <View style={styles.metric}>
+                <Footprints size={iconSize.sm} color={theme.muted} />
+                <Text style={[typography.caption, { color: theme.muted }]}>
+                  {t('trailsDistance', { km: trail.distanceKm.toFixed(1) })}
                 </Text>
               </View>
             ) : null}
           </View>
-          {trail.distanceKm != null ? (
-            <View style={styles.metric}>
-              <Footprints size={iconSize.sm} color={theme.muted} />
-              <Text style={[typography.caption, { color: theme.muted }]}>
-                {t('trailsDistance', { km: trail.distanceKm.toFixed(1) })}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-      </Card>
+        </Card>
+      </Pressable>
     );
   }
 
@@ -178,7 +185,8 @@ const styles = StyleSheet.create({
   },
 
   // Grid (vertical compact)
-  gridCard: { padding: 0, overflow: 'hidden', borderRadius: radius.lg },
+  gridPressable: { flex: 1 },
+  gridCard: { flex: 1, padding: 0, overflow: 'hidden', borderRadius: radius.lg },
   gridCover: { height: 96, alignItems: 'center', justifyContent: 'center' },
   gridBody: { padding: space.md, gap: space.xs },
 

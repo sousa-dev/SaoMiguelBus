@@ -1,4 +1,5 @@
 import type { TrailListFilters } from '@/features/trails/hooks/useTrailQueries';
+import type { TrailSummary } from '@/lib/types';
 
 export type DistanceRangeKey = 'all' | 'short' | 'mid' | 'long';
 
@@ -42,11 +43,36 @@ export function buildTrailListFilters(partial: {
   return next;
 }
 
+export function countActiveTrailFilters(filters: TrailListFilters): number {
+  let count = 0;
+  if (filters.difficulty != null) {
+    count += 1;
+  }
+  if (filters.shape != null) {
+    count += 1;
+  }
+  if (filters.minLength != null || filters.maxLength != null) {
+    count += 1;
+  }
+  return count;
+}
+
 export function hasActiveTrailFilters(filters: TrailListFilters): boolean {
-  return (
-    filters.difficulty != null ||
-    filters.shape != null ||
-    filters.minLength != null ||
-    filters.maxLength != null
-  );
+  return countActiveTrailFilters(filters) > 0;
+}
+
+export function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .trim();
+}
+
+export function filterTrailsByQuery(trails: TrailSummary[], query: string): TrailSummary[] {
+  const q = normalizeSearchText(query);
+  if (!q) {
+    return trails;
+  }
+  return trails.filter((trail) => normalizeSearchText(trail.name).includes(q));
 }
