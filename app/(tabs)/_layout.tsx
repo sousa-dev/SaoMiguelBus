@@ -160,7 +160,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="traffic"
         options={{
-          title: t('navBarTrafficLabel'),
+          title: t('homeTrafficTitle'),
           headerShown: false,
           href: tabHref('traffic'),
           tabBarIcon: ({ color, size }) => {

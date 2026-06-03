@@ -90,7 +90,7 @@ const SEGMENT_LABEL_KEY: Record<string, string> = {
   earthquakes: 'navBarEarthquakesLabel',
   trails: 'navBarTrailsLabel',
   marketplace: 'navBarMarketplaceLabel',
-  traffic: 'navBarTrafficLabel',
+  traffic: 'homeTrafficTitle',
   tours: 'navBarToursLabel',
   weather: 'navBarWeatherLabel',
   settings: 'settingsTitle',

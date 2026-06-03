@@ -72,7 +72,7 @@ export const HUB_MODULES: HubModule[] = [
   {
     key: 'traffic',
     route: '/traffic',
-    labelKey: 'navBarTrafficLabel',
+    labelKey: 'homeTrafficTitle',
     Icon: TriangleAlert,
     accent: '#ea580c',
   },

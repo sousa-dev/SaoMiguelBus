@@ -15,7 +15,7 @@ export default function TrafficLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: t('navBarTrafficLabel'),
+          title: t('homeTrafficTitle'),
           headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => <SettingsHeaderButton />,
         }}
