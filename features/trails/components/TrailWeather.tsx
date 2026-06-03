@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useTrailWeather } from '@/features/trails/hooks/useTrailWeather';
+import { formatAppDate } from '@/lib/date-format';
 import { track } from '@/lib/analytics';
 import type { AppTheme } from '@/lib/theme';
 
@@ -51,7 +52,7 @@ export function TrailWeather({
         <View style={styles.forecast}>
           {daily.time.slice(0, 3).map((day, index) => (
             <Text key={day} style={{ color: theme.muted, fontSize: 12 }}>
-              {new Date(day).toLocaleDateString(undefined, { weekday: 'short' })}{' '}
+              {formatAppDate(day)}{' '}
               {daily.temperature_2m_min?.[index] != null && daily.temperature_2m_max?.[index] != null
                 ? `${Math.round(daily.temperature_2m_min[index])}–${Math.round(daily.temperature_2m_max[index])}°C`
                 : ''}

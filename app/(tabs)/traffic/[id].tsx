@@ -16,6 +16,7 @@ import {
   useDeleteTrafficReport,
   useTrafficReport,
 } from '@/features/traffic/hooks/useTrafficQueries';
+import { formatAppDateTime } from '@/lib/date-format';
 import { coordinateToRegion } from '@/lib/island-map';
 import { trafficCategoryIcon } from '@/lib/traffic-icons';
 import { iconSize, space, typography } from '@/lib/tokens';
@@ -98,7 +99,7 @@ export default function TrafficDetailScreen() {
           <View style={styles.meta}>
             <Clock size={iconSize.sm} color={theme.muted} />
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {new Date(r.createdAt).toLocaleString()}
+              {formatAppDateTime(r.createdAt)}
             </Text>
           </View>
           {r.road ? <Text style={[typography.body, { color: theme.text, marginTop: space.md }]}>{r.road}</Text> : null}

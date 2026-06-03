@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { onColorFor } from '@/lib/color-utils';
+import { formatAppDateTime } from '@/lib/date-format';
 import { formatRelativeTime } from '@/lib/format-time';
 import { magnitudeColor } from '@/lib/seismic-colors';
 import { seismicEventHeadline } from '@/lib/seismic-display';
@@ -47,7 +48,7 @@ export default function EarthquakeDetailScreen() {
         labelKey: 'fabShareEvent',
         icon: Share2,
         onPress: () => {
-          const when = new Date(data.occurredAt).toLocaleString();
+          const when = formatAppDateTime(data.occurredAt);
           const headline = seismicEventHeadline(data, t) ?? data.region ?? '—';
           const message = `M${data.magnitude.toFixed(1)} — ${headline} (${when})`;
           void Share.share({ message, title: headline });
@@ -115,7 +116,7 @@ export default function EarthquakeDetailScreen() {
             <Clock size={iconSize.sm} color={theme.muted} />
             <Text style={[typography.caption, { color: theme.muted }]}>
               {formatRelativeTime(data.occurredAt, i18n.language) ||
-                new Date(data.occurredAt).toLocaleString()}
+                formatAppDateTime(data.occurredAt)}
             </Text>
           </View>
           <Badge label={t('seismicDepth', { depth: data.depthKm ?? '—' })} tone="neutral" />

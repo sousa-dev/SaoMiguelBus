@@ -10,6 +10,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Field } from '@/components/ui/Field';
 import { ReportLocationField } from '@/features/traffic/components/ReportLocationField';
 import { trafficCategoryIcon } from '@/lib/traffic-icons';
+import { formatAppDateTime } from '@/lib/date-format';
 import { isWithinIslandBounds } from '@/lib/island-map';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -80,8 +81,7 @@ export function TrafficReportForm({
     onSubmit(input);
   };
 
-  const formatWhen = (d: Date) =>
-    d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+  const formatWhen = (d: Date) => formatAppDateTime(d);
 
   return (
     <KeyboardAvoidingView

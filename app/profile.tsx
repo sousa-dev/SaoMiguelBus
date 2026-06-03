@@ -1,7 +1,7 @@
 import * as Linking from 'expo-linking';
 import { useNavigation } from 'expo-router';
-import React, { useLayoutEffect } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -18,6 +18,9 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const screenOptions = useAppStackScreenOptions();
+  const displayName = useProfileStore((s) => s.displayName);
+  const setDisplayName = useProfileStore((s) => s.setDisplayName);
+  const [nameInput, setNameInput] = useState(displayName ?? '');
   const favoriteRoutes = useProfileStore((s) => s.favoriteRoutes);
   const favoriteStops = useProfileStore((s) => s.favoriteStops);
   const recentSearches = useProfileStore((s) => s.recentSearches);
@@ -43,6 +46,23 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
+        <Section title={t('profileNameTitle')}>
+          <Card>
+            <TextInput
+              value={nameInput}
+              onChangeText={setNameInput}
+              onBlur={() => setDisplayName(nameInput)}
+              onEndEditing={() => setDisplayName(nameInput)}
+              placeholder={t('profileNamePlaceholder')}
+              placeholderTextColor={theme.muted}
+              style={[typography.body, { color: theme.text, paddingVertical: space.xs }]}
+              maxLength={40}
+              returnKeyType="done"
+              autoCapitalize="words"
+            />
+          </Card>
+        </Section>
+
         <Section title={t('favoriteSearches')}>
           {favoriteRoutes.length === 0 ? (
             <Text style={[typography.body, { color: theme.muted }]}>{t('noFavoriteSearches')}</Text>

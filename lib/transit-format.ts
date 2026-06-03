@@ -1,3 +1,5 @@
+import { formatAppDate } from '@/lib/date-format';
+
 /** Time strings from API are usually `08h30` or `08:30`. */
 export function normalizeTripTime(time: string): string {
   if (time.includes('h')) {
@@ -81,11 +83,6 @@ export function resolveDayType(
   return 'weekday';
 }
 
-export function formatDateLabel(date: Date, locale: string): string {
-  const label = new Intl.DateTimeFormat(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  }).format(date);
-  return label.charAt(0).toUpperCase() + label.slice(1);
+export function formatDateLabel(date: Date, _locale: string): string {
+  return formatAppDate(date);
 }

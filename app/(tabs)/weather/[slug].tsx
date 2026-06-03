@@ -13,6 +13,7 @@ import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useFabActions } from '@/lib/fab-store';
 import { useWeatherStore } from '@/features/weather/weather-store';
 import { track } from '@/lib/analytics';
+import { formatAppDate } from '@/lib/date-format';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -120,13 +121,7 @@ export default function WeatherDetailScreen() {
             key={day.date}
             style={[styles.dayRow, { backgroundColor: theme.card, borderColor: theme.border }]}
           >
-            <Text style={[styles.dayLabel, { color: theme.text }]}>
-              {new Date(day.date).toLocaleDateString(undefined, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-              })}
-            </Text>
+            <Text style={[styles.dayLabel, { color: theme.text }]}>{formatAppDate(day.date)}</Text>
             <Text style={styles.dayEmoji}>{weatherCodeEmoji(day.weatherCode)}</Text>
             <Text style={{ color: theme.muted, flex: 1 }}>{t(weatherCodeLabelKey(day.weatherCode))}</Text>
             {day.tempMin != null && day.tempMax != null ? (

@@ -91,11 +91,13 @@ function newTrackId() {
 }
 
 interface ProfileState {
+  displayName: string | null;
   favoriteRoutes: FavoriteRoute[];
   favoriteStops: FavoriteStop[];
   recentSearches: RecentSearch[];
   votes: Record<number, TripVote>;
   tracking: TrackingState;
+  setDisplayName: (name: string | null) => void;
   isFavoriteRoute: (origin: string, destination: string) => boolean;
   toggleFavoriteRoute: (origin: string, destination: string) => void;
   removeFavoriteRoute: (origin: string, destination: string) => void;
@@ -123,11 +125,17 @@ const defaultTracking = (): TrackingState => ({
 export const useProfileStore = create<ProfileState>()(
   persist(
     (set, get) => ({
+      displayName: null,
       favoriteRoutes: [],
       favoriteStops: [],
       recentSearches: [],
       votes: {},
       tracking: defaultTracking(),
+
+      setDisplayName: (name) => {
+        const trimmed = name?.trim();
+        set({ displayName: trimmed ? trimmed : null });
+      },
 
       isFavoriteRoute: (origin, destination) => {
         const key = pairKey(origin, destination);
