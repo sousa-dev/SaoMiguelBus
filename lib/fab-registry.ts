@@ -14,7 +14,7 @@ import {
   Star,
   Store,
   Ticket,
-  TriangleAlert,
+  Binoculars,
 } from 'lucide-react-native';
 
 import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
@@ -43,7 +43,7 @@ const MODULE_ICON_BY_SEGMENT: Record<string, LucideIcon> = {
   earthquakes: Activity,
   trails: Footprints,
   marketplace: Store,
-  traffic: TriangleAlert,
+  traffic: Binoculars,
   tours: Ticket,
   weather: CloudSun,
 };

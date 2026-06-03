@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { Binoculars } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -16,7 +15,9 @@ export function HomeTrafficCard({ data }: { data: HomeData['traffic'] }) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const accent = getModule('traffic')?.accent ?? theme.warning;
+  const mod = getModule('traffic');
+  const accent = mod?.accent ?? theme.warning;
+  const Icon = mod?.Icon;
   const active = data.reports.filter((r) => r.status === 'active');
   const reportsLastDay = countTrafficReportsInWindow(data.reports);
   const points = active.map((r) => ({ latitude: r.latitude, longitude: r.longitude }));
@@ -24,9 +25,11 @@ export function HomeTrafficCard({ data }: { data: HomeData['traffic'] }) {
   return (
     <Card onPress={() => router.push('/traffic')} accessibilityLabel={t('homeTrafficTitle')} style={styles.card}>
       <View style={styles.header}>
-        <View style={[styles.iconChip, { backgroundColor: withAlpha(accent, 0.12) }]}>
-          <Binoculars size={iconSize.sm} color={accent} />
-        </View>
+        {Icon ? (
+          <View style={[styles.iconChip, { backgroundColor: withAlpha(accent, 0.12) }]}>
+            <Icon size={iconSize.sm} color={accent} strokeWidth={2} />
+          </View>
+        ) : null}
         <Text style={[typography.label, { color: theme.onSurface }]} numberOfLines={1}>
           {t('homeTrafficTitle')}
         </Text>

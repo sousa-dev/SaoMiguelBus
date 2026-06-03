@@ -10,8 +10,8 @@ import {
   Settings,
   Store,
   CloudSun,
+  Binoculars,
   Ticket,
-  TriangleAlert,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -73,7 +73,7 @@ export const HUB_MODULES: HubModule[] = [
     key: 'traffic',
     route: '/traffic',
     labelKey: 'homeTrafficTitle',
-    Icon: TriangleAlert,
+    Icon: Binoculars,
     accent: '#ea580c',
   },
   {
