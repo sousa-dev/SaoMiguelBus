@@ -1,10 +1,17 @@
 import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Rect } from 'react-native-svg';
+import { useReducedMotion } from 'react-native-reanimated';
+import Svg from 'react-native-svg';
 
+import { AzoresMapBackground } from '@/features/hub/components/previews/AzoresMapBackground';
+import { HubMiniMapFrame } from '@/features/hub/components/previews/HubMiniMapFrame';
+import { PulsingMarker } from '@/features/hub/components/previews/PulsingMarker';
+import {
+  AZORES_MAP_INSET,
+  AZORES_MAP_VIEWBOX,
+  projectToMapUnits,
+} from '@/features/hub/map-insets';
 import { projectToUnit, regionForPreview, type MapPoint } from '@/lib/azores-map-projection';
 import { magnitudeColor } from '@/lib/seismic-colors';
-import { radius, space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type AzoresMiniMapProps = {
@@ -13,95 +20,51 @@ type AzoresMiniMapProps = {
   height?: number;
 };
 
-const PAD = 0.08;
+const MARKER_CAP = 16;
+const INTENSITY_FULL_AT = 10;
 
 export function AzoresMiniMap({ points, magnitudes, height = 72 }: AzoresMiniMapProps) {
   const theme = useAppTheme();
+  const reducedMotion = useReducedMotion();
   const region = useMemo(() => regionForPreview(points), [points]);
+  const intensity = Math.min(points.length / INTENSITY_FULL_AT, 1);
+  const { width: vbW, height: vbH } = AZORES_MAP_VIEWBOX;
 
   const dots = useMemo(() => {
-    return points.map((p, i) => {
+    const mapped = points.map((p, i) => {
       const { x, y } = projectToUnit(p.latitude, p.longitude, region);
+      const { x: nx, y: ny } = projectToMapUnits(x, y, AZORES_MAP_INSET);
       const mag = magnitudes?.[i] ?? 2;
       return {
-        cx: (PAD + x * (1 - 2 * PAD)) * 100,
-        cy: (PAD + y * (1 - 2 * PAD)) * 100,
+        cx: nx * vbW,
+        cy: ny * vbH,
         fill: magnitudeColor(theme, mag),
-        r: mag >= 4 ? 4.5 : mag >= 3 ? 3.5 : 2.5,
+        r: mag >= 4 ? 5 : mag >= 3 ? 4 : 3,
+        mag,
       };
     });
+    return mapped.sort((a, b) => b.mag - a.mag).slice(0, MARKER_CAP);
   }, [points, magnitudes, region, theme]);
 
   return (
-    <View
-      style={[
-        styles.wrap,
-        {
-          height,
-          backgroundColor: theme.surfaceSunken,
-          borderRadius: radius.md,
-        },
-      ]}
-      accessibilityElementsHidden
-    >
-      <Svg width="100%" height="100%" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid meet">
-        <Rect
-          x={12}
-          y={18}
-          width={18}
-          height={14}
-          rx={3}
-          fill={theme.divider}
-          opacity={0.55}
-        />
-        <Rect
-          x={34}
-          y={12}
-          width={22}
-          height={20}
-          rx={4}
-          fill={theme.divider}
-          opacity={0.7}
-        />
-        <Rect
-          x={58}
-          y={16}
-          width={16}
-          height={12}
-          rx={3}
-          fill={theme.divider}
-          opacity={0.5}
-        />
-        <Rect
-          x={72}
-          y={22}
-          width={14}
-          height={10}
-          rx={2}
-          fill={theme.divider}
-          opacity={0.45}
-        />
-        <Rect
-          x={20}
-          y={34}
-          width={20}
-          height={16}
-          rx={4}
-          fill={theme.divider}
-          opacity={0.65}
-        />
-        {dots.map((d, i) => (
-          <Circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} opacity={0.95} />
-        ))}
-      </Svg>
-    </View>
+    <HubMiniMapFrame
+      height={height}
+      vectorBackground={<AzoresMapBackground />}
+      overlay={
+        <Svg width="100%" height="100%" viewBox={`0 0 ${vbW} ${vbH}`} preserveAspectRatio="xMidYMid slice">
+          {dots.map((d, i) => (
+            <PulsingMarker
+              key={i}
+              cx={d.cx}
+              cy={d.cy}
+              r={d.r}
+              color={d.fill}
+              intensity={intensity}
+              animate={!reducedMotion}
+            />
+          ))}
+        </Svg>
+      }
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    width: '100%',
-    overflow: 'hidden',
-    marginBottom: space.sm,
-  },
-});

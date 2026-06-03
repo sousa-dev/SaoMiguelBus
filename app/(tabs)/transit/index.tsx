@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -31,21 +31,40 @@ function currentTime(): string {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
+function searchParam(value: string | string[] | undefined): string {
+  if (value == null) {
+    return '';
+  }
+  return typeof value === 'string' ? value : (value[0] ?? '');
+}
+
 export default function TransitScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const params = useLocalSearchParams<{ origin?: string; destination?: string }>();
   const { isOnline } = useNetworkStatus();
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
-  const [origin, setOrigin] = useState('');
-  const [destination, setDestination] = useState('');
+  const [origin, setOrigin] = useState(() => searchParam(params.origin));
+  const [destination, setDestination] = useState(() => searchParam(params.destination));
   const [date, setDate] = useState(() => new Date());
   const [time, setTime] = useState(currentTime);
   const [searchEnabled, setSearchEnabled] = useState(false);
+
+  useEffect(() => {
+    const nextOrigin = searchParam(params.origin);
+    const nextDestination = searchParam(params.destination);
+    if (nextOrigin) {
+      setOrigin(nextOrigin);
+    }
+    if (nextDestination) {
+      setDestination(nextDestination);
+    }
+  }, [params.origin, params.destination]);
 
   const day = useMemo(
     () => resolveDayType(date, bootstrap.data?.holidays),

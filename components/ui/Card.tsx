@@ -14,6 +14,12 @@ type CardProps = {
 
 export function Card({ children, onPress, elevated = true, style, accessibilityLabel }: CardProps) {
   const theme = useAppTheme();
+  const flat = StyleSheet.flatten(style);
+  const pressableLayout =
+    flat?.flex != null
+      ? { flex: flat.flex as number, alignSelf: 'stretch' as const, minWidth: 0 }
+      : null;
+
   const content = (
     <View
       style={[
@@ -37,7 +43,7 @@ export function Card({ children, onPress, elevated = true, style, accessibilityL
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       android_ripple={Platform.OS === 'android' ? { color: theme.outline } : undefined}
-      style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
+      style={({ pressed }) => [pressableLayout, { opacity: pressed ? 0.92 : 1 }]}
     >
       {content}
     </Pressable>

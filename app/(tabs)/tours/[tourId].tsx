@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/StateView';
 import { trackTourBookClick, trackTourOpen, useTour } from '@/features/events/hooks/useTourQueries';
+import { useHubSuggestionListHeader } from '@/features/hub/hooks/useHubSuggestionListHeader';
 import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
 import { useFabActions } from '@/lib/fab-store';
 import { useNetworkStatus } from '@/lib/network-status';
@@ -51,6 +52,8 @@ export default function TourDetailScreen() {
   const code = (tourId ?? '').trim();
   const tour = useTour(code, code.length > 0);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  useHubSuggestionListHeader('/(tabs)/tours');
 
   const fabActions = useMemo(() => {
     const data = tour.data;

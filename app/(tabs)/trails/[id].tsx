@@ -13,6 +13,7 @@ import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TrailMap } from '@/features/trails/components/TrailMap';
 import { space, typography } from '@/lib/tokens';
 import { TrailWeather } from '@/features/trails/components/TrailWeather';
+import { useHubSuggestionListHeader } from '@/features/hub/hooks/useHubSuggestionListHeader';
 import { useTrail } from '@/features/trails/hooks/useTrailQueries';
 import { pickTrailDescription } from '@/features/trails/trailDescription';
 import type { FabAction } from '@/lib/fab-registry';
@@ -26,6 +27,8 @@ export default function TrailDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const trailId = Number(id);
   const trail = useTrail(trailId, Number.isFinite(trailId));
+
+  useHubSuggestionListHeader('/(tabs)/trails');
 
   const fabActions = useMemo(() => {
     const data = trail.data;

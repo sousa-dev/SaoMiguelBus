@@ -1,6 +1,10 @@
 import type { Region } from 'react-native-maps';
 
-import { getAzoresArchipelagoRegion, getSeismicMapRegion } from '@/lib/island-map';
+import {
+  getAzoresArchipelagoRegion,
+  getIslandMapRegion,
+  getSeismicMapRegion,
+} from '@/lib/island-map';
 
 export type MapPoint = { latitude: number; longitude: number };
 
@@ -28,4 +32,9 @@ export function regionForPreview(points: MapPoint[]): Region {
     return getAzoresArchipelagoRegion();
   }
   return getSeismicMapRegion(points);
+}
+
+/** Fixed São Miguel viewport for the traffic mini-map (single-island, no auto-fit). */
+export function regionForSaoMiguel(): Region {
+  return getIslandMapRegion();
 }
