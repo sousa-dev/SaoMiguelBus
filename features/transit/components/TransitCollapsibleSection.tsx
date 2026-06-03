@@ -34,6 +34,8 @@ export function TransitCollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
   const Chevron = open ? ChevronDown : ChevronRight;
 
+  const toggle = () => setOpen((v) => !v);
+
   return (
     <View
       style={[
@@ -43,21 +45,13 @@ export function TransitCollapsibleSection({
         style,
       ]}
     >
-      <View style={styles.topRow}>
-        <View style={[styles.countBadge, { backgroundColor: countBackground }]}>
-          <Text style={[typography.caption, { color: countColor, fontWeight: '700' }]}>{countLabel}</Text>
-        </View>
-        <Pressable
-          onPress={() => setOpen((v) => !v)}
-          style={[styles.chevronBtn, { backgroundColor: theme.surfaceVariant }]}
-          accessibilityRole="button"
-          accessibilityLabel={title}
-        >
-          <Chevron size={16} color={theme.muted} />
-        </Pressable>
-      </View>
-
-      <Pressable onPress={() => setOpen((v) => !v)} style={styles.header} accessibilityRole="button">
+      <Pressable
+        onPress={toggle}
+        style={styles.header}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={title}
+      >
         <View style={[styles.iconCircle, { backgroundColor: iconBackground }]}>{icon}</View>
         <View style={styles.headerText}>
           <Text style={[typography.headline, { color: theme.text }]} numberOfLines={1}>
@@ -66,6 +60,12 @@ export function TransitCollapsibleSection({
           <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
             {subtitle}
           </Text>
+        </View>
+        <View style={[styles.countBadge, { backgroundColor: countBackground }]}>
+          <Text style={[typography.caption, { color: countColor, fontWeight: '700' }]}>{countLabel}</Text>
+        </View>
+        <View style={[styles.chevronBtn, { backgroundColor: theme.surfaceVariant }]}>
+          <Chevron size={16} color={theme.muted} />
         </View>
       </Pressable>
 
@@ -80,12 +80,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: space.md,
   },
-  topRow: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     alignItems: 'center',
     gap: space.sm,
-    marginBottom: space.sm,
   },
   countBadge: {
     paddingHorizontal: space.sm,
@@ -99,15 +97,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: space.xs },
   iconCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: space.md,
   },
   headerText: { flex: 1, minWidth: 0 },
-  body: { gap: space.sm, marginTop: space.sm },
+  body: { gap: space.sm, marginTop: space.md },
 });

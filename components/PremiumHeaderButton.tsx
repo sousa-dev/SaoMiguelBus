@@ -1,23 +1,59 @@
+import * as Haptics from 'expo-haptics';
+import { Crown } from 'lucide-react-native';
 import React, { useState } from 'react';
+import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/Button';
 import { PremiumLaunchModal } from '@/features/transit/components/PremiumLaunchModal';
+import { withAlpha } from '@/lib/color-utils';
+import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 
 export function PremiumHeaderButton() {
   const { t } = useTranslation();
+  const theme = useAppTheme();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button
-        label={t('premiumHeaderButton')}
-        variant="outline"
-        size="sm"
+      <Pressable
+        accessibilityRole="button"
         accessibilityLabel={t('premiumHeaderButton')}
-        onPress={() => setOpen(true)}
-      />
+        onPress={() => {
+          if (Platform.OS !== 'web') {
+            void Haptics.selectionAsync();
+          }
+          setOpen(true);
+        }}
+        style={({ pressed }) => [
+          styles.pill,
+          {
+            backgroundColor: theme.accent,
+            borderColor: withAlpha(theme.onAccent, 0.12),
+            opacity: pressed ? 0.88 : 1,
+          },
+        ]}
+      >
+        <Crown size={iconSize.sm} color={theme.onAccent} strokeWidth={2.25} fill={withAlpha(theme.onAccent, 0.2)} />
+        <Text style={[typography.caption, styles.label, { color: theme.onAccent }]} numberOfLines={1}>
+          {t('premiumHeaderButton')}
+        </Text>
+      </Pressable>
       <PremiumLaunchModal visible={open} onClose={() => setOpen(false)} />
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    paddingHorizontal: space.sm,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginLeft: space.xs,
+  },
+  label: { fontWeight: '700', letterSpacing: 0.3 },
+});

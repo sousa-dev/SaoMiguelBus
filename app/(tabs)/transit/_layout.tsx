@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { space } from '@/lib/tokens';
+
 import { PremiumHeaderButton } from '@/components/PremiumHeaderButton';
 import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
@@ -21,7 +23,7 @@ export default function TransitLayout() {
           title: t('navBarSearchLabel'),
           headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
               <ProfileHeaderButton />
               <SettingsHeaderButton />
               <PremiumHeaderButton />
