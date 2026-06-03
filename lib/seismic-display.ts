@@ -4,6 +4,22 @@ import type { SeismicEvent } from '@/lib/types';
 
 const GENERIC_REGION = /^(AZORES(\s+REGION)?|AZORES\s+ISLAND)$/i;
 
+const BEARING_I18N_KEYS: Record<string, string> = {
+  N: 'seismicBearingN',
+  NE: 'seismicBearingNE',
+  E: 'seismicBearingE',
+  SE: 'seismicBearingSE',
+  S: 'seismicBearingS',
+  SW: 'seismicBearingSW',
+  W: 'seismicBearingW',
+  NW: 'seismicBearingNW',
+};
+
+export function formatSeismicBearing(bearing: string, t: TFunction): string {
+  const key = BEARING_I18N_KEYS[bearing.trim().toUpperCase()];
+  return key ? t(key) : bearing;
+}
+
 export function isGenericSeismicRegion(region: string | undefined | null): boolean {
   if (!region?.trim()) {
     return true;
@@ -16,7 +32,7 @@ export function seismicEventHeadline(event: SeismicEvent, t: TFunction): string 
     const distance = Math.round(event.nearestIsland.distanceKm);
     return t('seismicNearIsland', {
       distance,
-      bearing: event.nearestIsland.bearing,
+      bearing: formatSeismicBearing(event.nearestIsland.bearing, t),
       island: event.nearestIsland.name,
     });
   }
