@@ -1,15 +1,23 @@
 import type { TrailListFilters } from '@/features/trails/hooks/useTrailQueries';
 
-export function parseLength(text: string): number | undefined {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  const value = parseFloat(trimmed);
-  if (Number.isNaN(value)) {
-    return undefined;
-  }
-  return value;
+export type DistanceRangeKey = 'all' | 'short' | 'mid' | 'long';
+
+export const DISTANCE_RANGES: {
+  key: DistanceRangeKey;
+  minLength?: number;
+  maxLength?: number;
+}[] = [
+  { key: 'all' },
+  { key: 'short', maxLength: 5 },
+  { key: 'mid', minLength: 5, maxLength: 10 },
+  { key: 'long', minLength: 10 },
+];
+
+export function activeDistanceRange(filters: TrailListFilters): DistanceRangeKey {
+  const match = DISTANCE_RANGES.find(
+    (range) => range.minLength === filters.minLength && range.maxLength === filters.maxLength,
+  );
+  return match ? match.key : 'all';
 }
 
 export function buildTrailListFilters(partial: {

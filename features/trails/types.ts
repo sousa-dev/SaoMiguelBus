@@ -5,6 +5,7 @@ export type TrailGeoJson = {
 
 export interface TrailSummary {
   id: number;
+  sourceRef?: string;
   name: string;
   difficulty: string;
   distanceKm: number | null;

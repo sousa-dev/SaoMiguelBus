@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { MapPin } from 'lucide-react-native';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
@@ -20,7 +20,6 @@ import { useAppTheme } from '@/lib/theme';
 export default function TrailDetailScreen() {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const trailId = Number(id);
   const trail = useTrail(trailId, Number.isFinite(trailId));
@@ -58,10 +57,26 @@ export default function TrailDetailScreen() {
     i18n.language.startsWith('pt') && data.descriptionPt
       ? data.descriptionPt
       : data.descriptionEn || data.descriptionPt || '';
-  const mapsUrl =
+  const destination =
     data.startLat != null && data.startLng != null
-      ? `https://www.google.com/maps?q=${data.startLat},${data.startLng}`
+      ? { lat: data.startLat, lng: data.startLng }
       : null;
+  const directionsUrl = destination
+    ? Platform.select({
+        ios: `http://maps.apple.com/?daddr=${destination.lat},${destination.lng}&q=${encodeURIComponent(
+          data.name,
+        )}`,
+        default: `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}`,
+      })
+    : null;
+
+  const openDirections = () => {
+    if (!directionsUrl) {
+      return;
+    }
+    track('trails', 'engage', { action: 'get_directions', trail_id: data.id });
+    void Linking.openURL(directionsUrl);
+  };
 
   const openDownload = (url: string | undefined, kind: 'gpx' | 'kml' | 'leaflet') => {
     if (!url) {
@@ -168,36 +183,11 @@ export default function TrailDetailScreen() {
           </Card>
         ) : null}
 
-        <Card style={styles.section}>
-          {mapsUrl ? (
-            <Button
-              label={t('trailsOpenMap')}
-              fullWidth
-              onPress={() => {
-                track('trails', 'map_open', { trail_id: data.id, external: true });
-                void WebBrowser.openBrowserAsync(mapsUrl);
-              }}
-              style={styles.actionBtn}
-            />
-          ) : null}
-          {data.nearestStop ? (
-            <Button
-              label={t('trailsByBus', {
-                stop: data.nearestStop.name,
-                km: data.nearestStop.distanceKm.toFixed(1),
-              })}
-              fullWidth
-              variant="secondary"
-              onPress={() => {
-                track('trails', 'engage', { action: 'get_directions', trail_id: data.id });
-                router.push({
-                  pathname: '/(tabs)/transit/directions',
-                  params: { destination: data.nearestStop!.name },
-                });
-              }}
-            />
-          ) : null}
-        </Card>
+        {directionsUrl ? (
+          <Card style={styles.section}>
+            <Button label={t('trailsGetDirections')} fullWidth onPress={openDirections} />
+          </Card>
+        ) : null}
 
         {data.attribution ? (
           <Text style={[styles.attribution, { color: theme.muted }]}>{data.attribution}</Text>

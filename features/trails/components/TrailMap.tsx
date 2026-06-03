@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as WebBrowser from 'expo-web-browser';
 import { Map } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { MapAttribution } from '@/components/MapAttribution';
 import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { TrailThumb } from '@/features/trails/components/TrailThumb';
 import { geojsonToMapCoordinates, trailCentroid, type TrailDetail } from '@/features/trails/types';
 import { iconSize, radius, space } from '@/lib/tokens';
 import type { AppTheme } from '@/lib/theme';
@@ -86,10 +87,12 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
     return (
       <View style={styles.wrap}>
         <Pressable onPress={openExternal} disabled={!externalUrl}>
-          <Image
-            source={{ uri: trail.mapImageUrl }}
-            style={[styles.media, { backgroundColor: theme.surfaceVariant }]}
+          <TrailThumb
+            uri={trail.mapImageUrl}
+            theme={theme}
+            iconSize={iconSize.xl}
             resizeMode="contain"
+            style={styles.media}
           />
         </Pressable>
         {externalUrl ? (
