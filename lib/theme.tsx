@@ -110,7 +110,8 @@ export function ThemeProvider({
   const dark = scheme === 'dark';
 
   useEffect(() => {
-    Appearance.setColorScheme(preference === 'system' ? null : preference);
+    // Android native setColorScheme rejects null; use 'unspecified' to follow system.
+    Appearance.setColorScheme(preference === 'system' ? 'unspecified' : preference);
   }, [preference]);
 
   const theme = useMemo<AppTheme>(() => {
