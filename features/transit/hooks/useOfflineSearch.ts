@@ -1,30 +1,10 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { searchTransit } from '@/lib/api';
-import {
-  hasOfflineCache,
-  loadCachedBundle,
-  offlineSearch,
-  refreshOfflineBundle,
-} from '@/lib/offline-bundle';
-import { useNetworkStatus } from '@/lib/network-status';
+import { hasOfflineCache, loadCachedBundle, offlineSearch } from '@/lib/offline-bundle';
+import { useNetwork } from '@/lib/network-provider';
 import { track } from '@/lib/analytics';
 import type { TransitSearchResult } from '@/lib/types';
-
-export function useOfflineBundleSync(enabled: boolean) {
-  const { isOnline } = useNetworkStatus();
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!enabled || !isOnline) {
-      return;
-    }
-    void refreshOfflineBundle().then(() => {
-      queryClient.invalidateQueries({ queryKey: ['transit', 'offline-cache'] });
-    });
-  }, [enabled, isOnline, queryClient]);
-}
 
 export function useOfflineCacheAvailable() {
   return useQuery({
@@ -41,9 +21,10 @@ export function useTransitSearchWithOffline(params: {
   start: string;
   enabled: boolean;
 }) {
-  const { isOnline } = useNetworkStatus();
+  // `hasOfflineBundle` is premium-gated in NetworkProvider — non-premium users
+  // get no offline capability even with a cached bundle present.
+  const { isOnline, hasOfflineBundle } = useNetwork();
   const canSearch = Boolean(params.origin && params.destination);
-  const cacheQuery = useOfflineCacheAvailable();
 
   return useQuery({
     queryKey: ['transit', 'search', params, isOnline ? 'online' : 'offline'],
@@ -64,7 +45,7 @@ export function useTransitSearchWithOffline(params: {
         });
         return results;
       }
-      const bundle = (await loadCachedBundle()) ?? (await refreshOfflineBundle());
+      const bundle = await loadCachedBundle();
       if (!bundle) {
         return [];
       }
@@ -76,19 +57,12 @@ export function useTransitSearchWithOffline(params: {
       });
       return results;
     },
-    enabled: params.enabled && canSearch && (isOnline || Boolean(cacheQuery.data)),
+    enabled: params.enabled && canSearch && (isOnline || hasOfflineBundle),
     networkMode: 'always',
   });
 }
 
 export function useCanSearchOffline() {
-  const { isOnline } = useNetworkStatus();
-  const cache = useOfflineCacheAvailable();
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    void hasOfflineCache().then(setReady);
-  }, [cache.data]);
-
-  return isOnline || ready;
+  const { isOnline, hasOfflineBundle } = useNetwork();
+  return isOnline || hasOfflineBundle;
 }

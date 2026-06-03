@@ -8,20 +8,20 @@ import { EmptyState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
 import { Bus } from 'lucide-react-native';
 
+import { Banner } from '@/components/ui/Banner';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
-import { OfflineBanner } from '@/features/transit/components/OfflineBanner';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
 import { TransitPlannerCard } from '@/features/transit/components/TransitPlannerCard';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import {
-  useOfflineBundleSync,
   useCanSearchOffline,
   useTransitSearchWithOffline,
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
-import { useNetworkStatus } from '@/lib/network-status';
+import { useNetwork } from '@/lib/network-provider';
+import { WifiOff } from 'lucide-react-native';
 import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
 import { resolveDayType } from '@/lib/transit-format';
@@ -43,7 +43,7 @@ export default function TransitScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{ origin?: string; destination?: string }>();
-  const { isOnline } = useNetworkStatus();
+  const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
@@ -74,8 +74,6 @@ export default function TransitScreen() {
   useEffect(() => {
     void migrateLegacyFavorites();
   }, []);
-
-  useOfflineBundleSync(true);
 
   const searchParams = useMemo(
     () => ({
@@ -138,7 +136,13 @@ export default function TransitScreen() {
         showsVerticalScrollIndicator={false}
       >
         <TransitWebShell>
-          {!isOnline ? <OfflineBanner /> : null}
+          {!isOnline && !canSearchOffline ? (
+            <Banner
+              variant="offline"
+              icon={WifiOff}
+              message={isPremium ? t('offlineSearchNoCacheBody') : t('offlinePremiumRequired')}
+            />
+          ) : null}
 
           <ActiveTrackingSection />
           <PinnedRoutesSection onSelect={(o, d) => applySearch(o, d)} />
