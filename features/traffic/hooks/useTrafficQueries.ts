@@ -9,7 +9,11 @@ import {
   fetchTrafficReports,
 } from '@/lib/api';
 import { track } from '@/lib/analytics';
-import type { ConfirmVote, TrafficReportWriteInput } from '@/lib/types';
+import { getNetworkOnline } from '@/lib/network-provider';
+import { enqueueDraft } from '@/lib/offline-drafts';
+import type { ConfirmVote, TrafficReport, TrafficReportWriteInput } from '@/lib/types';
+
+export type CreateTrafficResult = TrafficReport | { queued: true };
 
 export interface NearbyReportsParams {
   lat?: number;
@@ -65,8 +69,18 @@ export function useTrafficReport(reportId: number, enabled = true) {
 export function useCreateTrafficReport() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: TrafficReportWriteInput) => createTrafficReport(input),
+    mutationFn: async (input: TrafficReportWriteInput): Promise<CreateTrafficResult> => {
+      // Safety report: queue locally when offline rather than losing it.
+      if (!getNetworkOnline()) {
+        await enqueueDraft({ kind: 'traffic_report', input });
+        return { queued: true };
+      }
+      return createTrafficReport(input);
+    },
     onSuccess: (report) => {
+      if ('queued' in report) {
+        return;
+      }
       track('traffic', 'report', {
         category: report.category.slug,
         scheduled: report.status === 'scheduled',

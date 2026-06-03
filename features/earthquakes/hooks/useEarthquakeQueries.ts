@@ -2,8 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchSeismicEvent, fetchSeismicEvents, postSeismicFelt } from '@/lib/api';
 import { track } from '@/lib/analytics';
+import { getNetworkOnline } from '@/lib/network-provider';
+import { enqueueDraft } from '@/lib/offline-drafts';
 import { getOrCreateSessionId } from '@/lib/session';
-import type { SeismicFeltInput } from '@/lib/types';
+import type { FeltReportResponse, SeismicFeltInput } from '@/lib/types';
+
+type FeltResult = FeltReportResponse | { queued: true };
 
 export function useSeismicEvents(
   sinceHours = 24,
@@ -32,11 +36,19 @@ export function useSeismicEvent(eventId: number, enabled = true) {
 export function useSubmitFeltReport(eventId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: SeismicFeltInput) => {
+    mutationFn: async (input: SeismicFeltInput): Promise<FeltResult> => {
+      // Safety report: queue locally when offline rather than losing it.
+      if (!getNetworkOnline()) {
+        await enqueueDraft({ kind: 'seismic_felt', eventId, input });
+        return { queued: true };
+      }
       const sessionId = await getOrCreateSessionId();
       return postSeismicFelt(eventId, { session_id: sessionId, ...input });
     },
-    onSuccess: (_data, input) => {
+    onSuccess: (data, input) => {
+      if ('queued' in data) {
+        return;
+      }
       track('seismic', 'engage', {
         action: 'felt',
         event_id: eventId,

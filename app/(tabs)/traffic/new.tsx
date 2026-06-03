@@ -60,14 +60,13 @@ export default function NewTrafficReportScreen() {
   }, [paramCoords, coordsInitialized, userOnIsland, gpsCoords]);
 
   const onSubmit = async (input: TrafficReportWriteInput) => {
-    if (!isOnline) {
-      setError(t('offlineBanner'));
-      return;
-    }
     setError(null);
     try {
-      const report = await create.mutateAsync(input);
-      addReport(report.id);
+      // Offline submits are queued locally (safety report) and flush on reconnect.
+      const result = await create.mutateAsync(input);
+      if (!('queued' in result)) {
+        addReport(result.id);
+      }
       router.back();
     } catch {
       setError(t('trafficReportError'));

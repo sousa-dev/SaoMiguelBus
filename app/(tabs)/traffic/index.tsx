@@ -152,12 +152,14 @@ export default function TrafficScreen() {
       return;
     }
     try {
-      const report = await create.mutateAsync({
+      const result = await create.mutateAsync({
         category_slug: category.slug,
         latitude: coords.lat,
         longitude: coords.lng,
       });
-      addReport(report.id);
+      if (!('queued' in result)) {
+        addReport(result.id);
+      }
       setPickerOpen(false);
     } catch {
       setReportError(t('trafficReportError'));
