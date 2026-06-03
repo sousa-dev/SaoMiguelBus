@@ -1,9 +1,9 @@
-import { Download, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { Download, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useLayoutEffect, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
@@ -18,6 +18,7 @@ import { resolvePickerLocales } from '@/lib/i18n';
 import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
+import { usePremiumStore } from '@/lib/premium-store';
 import { space, typography } from '@/lib/tokens';
 import { type ThemePreference, useThemePrefsStore } from '@/lib/theme-prefs';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -40,6 +41,8 @@ export default function SettingsScreen() {
   const landingPageKey = useHubStore((s) => s.landingPageKey);
   const moduleOrderKeys = useHubStore((s) => s.moduleOrderKeys);
   const setLandingPageKey = useHubStore((s) => s.setLandingPageKey);
+  const premiumDevOverride = usePremiumStore((s) => s.devOverride);
+  const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
   const [dsarBanner, setDsarBanner] = useState(false);
 
   useLayoutEffect(() => {
@@ -146,6 +149,31 @@ export default function SettingsScreen() {
             onPress={() => dsarAction('delete')}
           />
         </View>
+
+        {__DEV__ ? (
+          <>
+            <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+              {t('settingsDeveloper')}
+            </Text>
+            <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <ListRow
+                icon={Sparkles}
+                title={t('settingsPremiumToggle')}
+                subtitle={t('settingsPremiumToggleHint')}
+                showChevron={false}
+                trailing={
+                  <Switch
+                    value={premiumDevOverride}
+                    onValueChange={(value) => {
+                      setPremiumDevOverride(value);
+                      void Haptics.selectionAsync();
+                    }}
+                  />
+                }
+              />
+            </View>
+          </>
+        ) : null}
 
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsAbout')}
