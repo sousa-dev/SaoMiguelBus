@@ -510,7 +510,7 @@
     "marketplaceLoadError": "Could not load services.",
     "marketplaceSearchPlaceholder": "Search services...",
     "marketplaceAllCategories": "All",
-    "marketplaceNearMe": "Near me",
+    "marketplaceNearMe": "Closest",
     "marketplacePromoted": "Featured",
     "marketplaceReviews": "Reviews",
     "marketplaceReviewCount": "{{count}} reviews",
