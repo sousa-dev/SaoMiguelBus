@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { NewsCard } from '@/features/news/components/NewsCard';
-import { NewsFilters } from '@/features/news/components/NewsFilters';
+import { NewsFilters, type NewsTabCategory } from '@/features/news/components/NewsFilters';
 import { useNewsArticles } from '@/features/news/hooks/useNewsQueries';
 import { useAppTheme } from '@/lib/theme';
 
@@ -14,10 +14,15 @@ export default function NewsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState<NewsTabCategory>('noticias');
   const [searchQ, setSearchQ] = useState('');
 
-  const articles = useNewsArticles({ category: category || undefined, q: searchQ || undefined });
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQ(query.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const articles = useNewsArticles({ category, q: searchQ || undefined });
 
   useFocusEffect(
     useCallback(() => {
