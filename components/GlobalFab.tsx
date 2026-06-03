@@ -33,6 +33,7 @@ export function GlobalFab() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const runtimeActions = useFabStore((s) => s.runtimeActions);
+  const runtimeClosedIcon = useFabStore((s) => s.runtimeClosedIcon);
 
   const [open, setOpen] = useState(false);
 
@@ -66,9 +67,12 @@ export function GlobalFab() {
   );
 
   const closedFabIcon = useMemo(() => {
+    if (runtimeClosedIcon) {
+      return runtimeClosedIcon;
+    }
     const primary = actions.find((a) => a.key !== 'feedback');
     return primary?.icon ?? getModuleIcon(pathname) ?? Zap;
-  }, [actions, pathname]);
+  }, [actions, pathname, runtimeClosedIcon]);
 
   if (isFabHidden(pathname)) {
     return null;

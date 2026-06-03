@@ -133,7 +133,7 @@ export default function ProviderDetailScreen() {
     return actions;
   }, [provider.data, isMine, providerId, t]);
 
-  useFabActions(fabActions);
+  useFabActions(fabActions, MessageCircle);
 
   const runDelete = async () => {
     setDeleteSheetOpen(false);
