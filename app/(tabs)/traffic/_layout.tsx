@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
-import { StackBackButton } from '@/components/StackBackButton';
+import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TrafficLayout() {
@@ -24,7 +24,7 @@ export default function TrafficLayout() {
         name="[id]"
         options={{
           title: t('trafficDetailTitle'),
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
+          ...stackBackScreenOptions('/(tabs)/traffic'),
         }}
       />
       <Stack.Screen
@@ -32,7 +32,7 @@ export default function TrafficLayout() {
         options={{
           title: t('trafficReportTitle'),
           presentation: 'modal',
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/traffic" />,
+          ...stackBackScreenOptions('/(tabs)/traffic'),
         }}
       />
     </Stack>

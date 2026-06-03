@@ -10,6 +10,14 @@ type StackBackButtonProps = {
   fallbackHref: Href;
 };
 
+/** Use in Stack.Screen options — hides the native back control so only StackBackButton shows. */
+export function stackBackScreenOptions(fallbackHref: Href) {
+  return {
+    headerBackVisible: false as const,
+    headerLeft: () => <StackBackButton fallbackHref={fallbackHref} />,
+  };
+}
+
 export function StackBackButton({ fallbackHref }: StackBackButtonProps) {
   const router = useRouter();
   const { t } = useTranslation();

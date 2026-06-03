@@ -76,7 +76,14 @@ export default function NewTrafficReportScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ ...screenOptions, headerShown: true, title: t('trafficReportTitle') }} />
+      <Stack.Screen
+        options={{
+          ...screenOptions,
+          headerShown: true,
+          title: t('trafficReportTitle'),
+          headerBackVisible: false,
+        }}
+      />
       <Screen>
         <TrafficReportForm
           categories={categories.data ?? []}

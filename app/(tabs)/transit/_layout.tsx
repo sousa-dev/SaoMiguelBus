@@ -6,7 +6,7 @@ import { PremiumHeaderButton } from '@/components/PremiumHeaderButton';
 import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
-import { StackBackButton } from '@/components/StackBackButton';
+import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TransitLayout() {
@@ -33,14 +33,14 @@ export default function TransitLayout() {
         name="directions"
         options={{
           title: t('directionsButton'),
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/transit" />,
+          ...stackBackScreenOptions('/(tabs)/transit'),
         }}
       />
       <Stack.Screen
         name="[tripId]"
         options={{
           title: t('routeDetails'),
-          headerLeft: () => <StackBackButton fallbackHref="/(tabs)/transit" />,
+          ...stackBackScreenOptions('/(tabs)/transit'),
         }}
       />
     </Stack>
