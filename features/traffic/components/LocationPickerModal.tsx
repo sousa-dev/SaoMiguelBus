@@ -1,11 +1,11 @@
 import { MapPin } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ElementRef } from 'react';
 import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { Marker } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
-import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { OsmMapView } from '@/components/OsmMapView';
 import { staticIslandConfig } from '@/config/island';
 import {
   clampCoordinate,
@@ -41,7 +41,7 @@ export function LocationPickerModal({
 }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<ElementRef<typeof OsmMapView>>(null);
   const [pin, setPin] = useState<Coords>(initialCoords ?? defaultPin());
 
   useEffect(() => {
@@ -91,11 +91,10 @@ export function LocationPickerModal({
           </Text>
         ) : null}
 
-        <MapView
+        <OsmMapView
           ref={mapRef}
           style={styles.map}
-          provider={PROVIDER_DEFAULT}
-          mapType="none"
+          isDark={theme.isDark}
           initialRegion={coordinateToRegion(pin)}
           showsUserLocation={userOnIsland}
           onPress={(e) => setFromMap(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude)}
@@ -106,7 +105,6 @@ export function LocationPickerModal({
             mapRef.current?.animateToRegion(clampMapRegion(region), 180);
           }}
         >
-          <OsmMapLayer isDark={theme.isDark} />
           <Marker
             coordinate={{ latitude: pin.lat, longitude: pin.lng }}
             draggable
@@ -119,7 +117,7 @@ export function LocationPickerModal({
               <MapPin size={18} color={theme.onPrimary} strokeWidth={2.5} />
             </View>
           </Marker>
-        </MapView>
+        </OsmMapView>
 
         {userOnIsland ? (
           <Button

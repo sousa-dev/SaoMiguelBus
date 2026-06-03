@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Clock, Navigation } from 'lucide-react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { Marker } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { OsmMapView } from '@/components/OsmMapView';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -111,16 +111,14 @@ export default function TrafficDetailScreen() {
 
         {Platform.OS !== 'web' ? (
           <Card elevated style={styles.mapCard}>
-            <MapView
+            <OsmMapView
               style={styles.map}
-              provider={PROVIDER_DEFAULT}
-              mapType="none"
+              isDark={theme.isDark}
               scrollEnabled={false}
               initialRegion={coordinateToRegion({ lat: r.latitude, lng: r.longitude })}
             >
-              <OsmMapLayer isDark={theme.isDark} />
               <Marker coordinate={{ latitude: r.latitude, longitude: r.longitude }} />
-            </MapView>
+            </OsmMapView>
             <Button
               label={t('marketplaceContactDirections')}
               variant="outline"

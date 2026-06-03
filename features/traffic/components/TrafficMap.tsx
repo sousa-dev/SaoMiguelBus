@@ -1,9 +1,10 @@
 import { MapPin } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps';
+import { Marker, type Region } from 'react-native-maps';
 
-import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { MapAttribution } from '@/components/MapAttribution';
+import { OsmMapView } from '@/components/OsmMapView';
 import { TrafficMapMarker } from '@/features/traffic/components/TrafficMapMarker';
 import {
   clampCoordinate,
@@ -49,7 +50,7 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
   },
   ref,
 ) {
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<React.ElementRef<typeof OsmMapView>>(null);
 
   useImperativeHandle(
     ref,
@@ -80,11 +81,10 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
 
   return (
     <View style={styles.wrap}>
-      <MapView
+      <OsmMapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        mapType="none"
+        isDark={theme.isDark}
         initialRegion={islandRegion}
         minZoomLevel={9}
         maxZoomLevel={18}
@@ -114,7 +114,6 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
             : undefined
         }
       >
-        <OsmMapLayer isDark={theme.isDark} />
         {draftPin ? (
           <Marker
             coordinate={{ latitude: draftPin.lat, longitude: draftPin.lng }}
@@ -134,7 +133,10 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
             onPress={() => onMarkerPress?.(report)}
           />
         ))}
-      </MapView>
+      </OsmMapView>
+      <View style={styles.attribution} pointerEvents="none">
+        <MapAttribution isDark={theme.isDark} />
+      </View>
     </View>
   );
 });
@@ -142,6 +144,15 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
 const styles = StyleSheet.create({
   wrap: { width: '100%', height: '100%' },
   map: { width: '100%', height: '100%' },
+  attribution: {
+    position: 'absolute',
+    right: 8,
+    bottom: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    opacity: 0.92,
+  },
   draftPin: {
     width: 44,
     height: 44,

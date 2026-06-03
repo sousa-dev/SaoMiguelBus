@@ -20,9 +20,11 @@ export function OsmMapLayer({ isDark = false }: Props) {
     <UrlTile
       urlTemplate={mapTileUrl(isDark)}
       maximumZ={19}
+      maximumNativeZ={19}
       flipY={false}
       tileSize={256}
-      zIndex={-1}
+      zIndex={1}
+      shouldReplaceMapContent={Platform.OS === 'ios'}
     />
   );
 }
