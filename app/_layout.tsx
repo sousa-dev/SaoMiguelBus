@@ -12,10 +12,13 @@ import '@/lib/dev-logging';
 import { AppSidebar } from '@/components/AppSidebar';
 import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
+import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
+import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import '@/lib/i18n';
 import { loadSavedLocale } from '@/lib/locale-prefs';
 import i18n, { normalizeLocaleCode, resources } from '@/lib/i18n';
+import { NetworkProvider } from '@/lib/network-provider';
 import { AppQueryProvider } from '@/lib/query-provider';
 import { ThemeProvider, useAppTheme } from '@/lib/theme';
 import { track } from '@/lib/analytics';
@@ -90,6 +93,8 @@ function AppShell() {
           </Stack>
           <GlobalFab />
           <AppSidebar />
+          <GlobalOfflineBanner />
+          <PremiumOfflinePrompt />
         </ConsentGate>
       </ThemeProvider>
     </SafeAreaProvider>
@@ -119,7 +124,9 @@ export default function RootLayout() {
 
   return (
     <AppQueryProvider>
-      <AppShell />
+      <NetworkProvider>
+        <AppShell />
+      </NetworkProvider>
     </AppQueryProvider>
   );
 }
