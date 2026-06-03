@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/ui/StateView';
-import { space, typography } from '@/lib/tokens';
+import { space } from '@/lib/tokens';
 import { Bus } from 'lucide-react-native';
 
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
@@ -21,7 +21,6 @@ import {
   useTransitSearchWithOffline,
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
-import { staticIslandConfig } from '@/config/island';
 import { useNetworkStatus } from '@/lib/network-status';
 import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
@@ -40,7 +39,6 @@ export default function TransitScreen() {
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
-  const islandName = bootstrap.data?.island?.name ?? staticIslandConfig.islandName;
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
   const [origin, setOrigin] = useState('');
@@ -123,8 +121,6 @@ export default function TransitScreen() {
         <TransitWebShell>
           {!isOnline ? <OfflineBanner /> : null}
 
-          <Text style={[styles.islandTitle, { color: theme.primary }]}>{islandName}</Text>
-
           <ActiveTrackingSection />
           <PinnedRoutesSection onSelect={(o, d) => applySearch(o, d)} />
 
@@ -185,10 +181,5 @@ const styles = StyleSheet.create({
     padding: space.md,
     paddingBottom: space['4xl'],
     alignItems: 'center',
-  },
-  islandTitle: {
-    ...typography.title,
-    textAlign: 'center',
-    marginBottom: space.md,
   },
 });
