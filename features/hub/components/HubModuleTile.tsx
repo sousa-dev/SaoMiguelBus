@@ -21,6 +21,43 @@ const DESC_KEYS: Partial<Record<HubModule['key'], string>> = {
   traffic: 'hubModuleTrafficDesc',
 };
 
+type ReorderButtonsProps = {
+  moveUpLabel: string;
+  moveDownLabel: string;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onUp: () => void;
+  onDown: () => void;
+};
+
+function ReorderButtons({
+  moveUpLabel,
+  moveDownLabel,
+  canMoveUp,
+  canMoveDown,
+  onUp,
+  onDown,
+}: ReorderButtonsProps) {
+  return (
+    <View style={styles.reorderCol}>
+      <IconButton
+        icon={ChevronUp}
+        size="sm"
+        accessibilityLabel={moveUpLabel}
+        disabled={!canMoveUp}
+        onPress={onUp}
+      />
+      <IconButton
+        icon={ChevronDown}
+        size="sm"
+        accessibilityLabel={moveDownLabel}
+        disabled={!canMoveDown}
+        onPress={onDown}
+      />
+    </View>
+  );
+}
+
 type HubModuleTileProps = {
   module: HubModule;
   editMode: boolean;
@@ -78,103 +115,82 @@ export function HubModuleTile({
     onTogglePin();
   };
 
-  const tileBody = (
-    <>
-      {!editMode && pinned ? (
-        <View style={[styles.pinBadge, { backgroundColor: theme.primary }]} accessibilityElementsHidden>
-          <Pin size={12} color={theme.onPrimary} fill={theme.onPrimary} />
-        </View>
-      ) : null}
-
-      {showPreview ? (
-        <View style={[styles.previewWrap, listLayout && styles.previewWrapList]}>{preview}</View>
-      ) : (
-        <View
-          style={[
-            styles.iconWrap,
-            listLayout && styles.iconWrapList,
-            { backgroundColor: withAlpha(accent, 0.12) },
-          ]}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          <Icon color={accent} size={listLayout ? 28 : 32} strokeWidth={2} />
-        </View>
-      )}
-
-      <View style={[styles.textCol, listLayout && styles.textColList]}>
-        <Text style={[typography.headline, { color: theme.text, fontSize: listLayout ? 16 : 14 }]} numberOfLines={2}>
-          {label}
-        </Text>
-        {subtitle && !listLayout ? (
-          <Text style={[typography.caption, { color: theme.muted, marginTop: 4 }]} numberOfLines={2}>
-            {subtitle}
-          </Text>
+  const editToolbar =
+    editMode ? (
+      <View
+        style={[
+          styles.editToolbar,
+          listLayout ? styles.editToolbarList : styles.editToolbarGrid,
+          !listLayout && { borderTopColor: theme.border },
+        ]}
+      >
+        <IconButton
+          icon={pinned ? Pin : PinOff}
+          size="sm"
+          accessibilityLabel={pinned ? t('hubUnpin') : t('hubPin')}
+          color={pinned ? theme.primary : theme.muted}
+          disabled={pinBlocked && !pinned}
+          onPress={handleTogglePin}
+        />
+        {showBarReorder ? (
+          <ReorderButtons
+            moveUpLabel={t('hubBarMoveUp')}
+            moveDownLabel={t('hubBarMoveDown')}
+            canMoveUp={canBarMoveUp}
+            canMoveDown={canBarMoveDown}
+            onUp={onBarReorderUp}
+            onDown={onBarReorderDown}
+          />
         ) : null}
-        {subtitle && listLayout ? (
-          <Text style={[typography.caption, { color: theme.muted, marginTop: 2 }]} numberOfLines={1}>
-            {subtitle}
-          </Text>
+        {showGridReorder ? (
+          <ReorderButtons
+            moveUpLabel={t('hubGridMoveUp')}
+            moveDownLabel={t('hubGridMoveDown')}
+            canMoveUp={canGridMoveUp}
+            canMoveDown={canGridMoveDown}
+            onUp={onGridReorderUp}
+            onDown={onGridReorderDown}
+          />
         ) : null}
       </View>
+    ) : null;
 
-      {listLayout && !editMode ? <ChevronRight color={theme.muted} size={20} /> : null}
+  const iconBlock = showPreview ? (
+    <View style={[styles.previewWrap, listLayout && styles.previewWrapList]}>{preview}</View>
+  ) : (
+    <View
+      style={[
+        styles.iconWrap,
+        listLayout && styles.iconWrapList,
+        editMode && !listLayout && styles.iconWrapEditGrid,
+        { backgroundColor: withAlpha(accent, 0.12) },
+      ]}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <Icon color={accent} size={listLayout ? 28 : editMode ? 28 : 32} strokeWidth={2} />
+    </View>
+  );
 
-      {editMode ? (
-        <View style={styles.editCol}>
-          <View style={styles.editRow}>
-            <IconButton
-              icon={pinned ? Pin : PinOff}
-              accessibilityLabel={pinned ? t('hubUnpin') : t('hubPin')}
-              color={pinned ? theme.primary : theme.muted}
-              disabled={pinBlocked && !pinned}
-              onPress={handleTogglePin}
-            />
-            {showBarReorder ? (
-              <View style={styles.reorderCol} accessibilityLabel={t('hubBarOrderLabel')}>
-                <IconButton
-                  icon={ChevronUp}
-                  accessibilityLabel={t('hubBarMoveUp')}
-                  color={theme.text}
-                  disabled={!canBarMoveUp}
-                  onPress={onBarReorderUp}
-                />
-                <IconButton
-                  icon={ChevronDown}
-                  accessibilityLabel={t('hubBarMoveDown')}
-                  color={theme.text}
-                  disabled={!canBarMoveDown}
-                  onPress={onBarReorderDown}
-                />
-              </View>
-            ) : null}
-          </View>
-          {showGridReorder ? (
-            <View style={styles.editRow}>
-              <Text style={[typography.caption, styles.gridReorderLabel, { color: theme.muted }]}>
-                {t('hubGridOrderLabel')}
-              </Text>
-              <View style={styles.reorderCol}>
-                <IconButton
-                  icon={ChevronUp}
-                  accessibilityLabel={t('hubGridMoveUp')}
-                  color={theme.text}
-                  disabled={!canGridMoveUp}
-                  onPress={onGridReorderUp}
-                />
-                <IconButton
-                  icon={ChevronDown}
-                  accessibilityLabel={t('hubGridMoveDown')}
-                  color={theme.text}
-                  disabled={!canGridMoveDown}
-                  onPress={onGridReorderDown}
-                />
-              </View>
-            </View>
-          ) : null}
-        </View>
+  const labelBlock = (
+    <View style={[styles.textCol, listLayout && styles.textColList, editMode && !listLayout && styles.textColEditGrid]}>
+      <Text
+        style={[typography.headline, { color: theme.text, fontSize: listLayout ? 16 : editMode ? 15 : 14 }]}
+        numberOfLines={2}
+      >
+        {label}
+      </Text>
+      {subtitle && !listLayout ? (
+        <Text style={[typography.caption, { color: theme.muted, marginTop: 4 }]} numberOfLines={2}>
+          {subtitle}
+        </Text>
       ) : null}
-    </>
+      {subtitle && listLayout ? (
+        <Text style={[typography.caption, { color: theme.muted, marginTop: 2 }]} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      ) : null}
+    </View>
   );
 
   return (
@@ -182,16 +198,39 @@ export function HubModuleTile({
       <Card
         onPress={editMode ? undefined : onOpen}
         elevated
-        style={[styles.card, listLayout && styles.cardList]}
+        style={[styles.card, listLayout && styles.cardList, editMode && listLayout && styles.cardEditList]}
         accessibilityLabel={editMode ? undefined : label}
       >
         <View
-          style={[styles.inner, listLayout && styles.innerList]}
+          style={[
+            styles.inner,
+            listLayout && styles.innerList,
+            editMode && !listLayout && styles.innerEditGrid,
+            editMode && listLayout && styles.innerEditList,
+          ]}
           accessibilityRole="button"
           accessibilityState={{ selected: pinned }}
           accessibilityHint={editMode ? undefined : t('hubOpensModule', { module: label })}
         >
-          {tileBody}
+          {!editMode && pinned ? (
+            <View style={[styles.pinBadge, { backgroundColor: theme.primary }]} accessibilityElementsHidden>
+              <Pin size={12} color={theme.onPrimary} fill={theme.onPrimary} />
+            </View>
+          ) : null}
+
+          {listLayout ? (
+            <>
+              {iconBlock}
+              {labelBlock}
+              {editMode ? editToolbar : <ChevronRight color={theme.muted} size={20} />}
+            </>
+          ) : (
+            <>
+              {iconBlock}
+              {labelBlock}
+              {editToolbar}
+            </>
+          )}
         </View>
       </Card>
     </View>
@@ -203,8 +242,11 @@ const styles = StyleSheet.create({
   outerList: { flex: undefined, width: '100%' },
   card: { padding: space.lg, borderRadius: radius.lg },
   cardList: { marginHorizontal: space.sm },
+  cardEditList: { paddingVertical: space.md },
   inner: { alignItems: 'center', position: 'relative' },
   innerList: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  innerEditList: { minHeight: 56 },
+  innerEditGrid: { width: '100%', gap: space.sm },
   pinBadge: {
     position: 'absolute',
     top: -space.sm,
@@ -226,15 +268,30 @@ const styles = StyleSheet.create({
     marginBottom: space.md,
   },
   iconWrapList: { marginBottom: 0, width: 48, height: 48 },
+  iconWrapEditGrid: { marginBottom: 0 },
   textCol: { alignItems: 'center' },
-  textColList: { flex: 1, alignItems: 'flex-start' },
-  editCol: { width: '100%', marginTop: space.md, gap: space.sm },
-  editRow: {
+  textColList: { flex: 1, alignItems: 'flex-start', minWidth: 0 },
+  textColEditGrid: { width: '100%' },
+  editToolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.xs,
+    gap: 2,
   },
-  gridReorderLabel: { marginRight: space.xs },
-  reorderCol: { flexDirection: 'column' },
+  editToolbarList: {
+    flexShrink: 0,
+    marginLeft: space.xs,
+  },
+  editToolbarGrid: {
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: space.xs,
+    paddingTop: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  reorderCol: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: -space.xs,
+    marginBottom: -space.xs,
+  },
 });
