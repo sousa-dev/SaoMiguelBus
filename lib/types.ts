@@ -107,6 +107,14 @@ export interface DirectionsResponse {
   error?: { code?: string; message?: string } | string;
 }
 
+export interface NewsSource {
+  id: number;
+  name: string;
+  language: string;
+  kind: string;
+  defaultCategory: string;
+}
+
 export interface NewsArticle {
   id: number;
   title: string;

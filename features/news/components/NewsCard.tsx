@@ -2,6 +2,7 @@ import { Clock, Newspaper } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
+import { formatAppDate } from '@/lib/date-format';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { NewsArticle } from '@/lib/types';
@@ -16,7 +17,7 @@ export function NewsCard({
   showSummary?: boolean;
 }) {
   const theme = useAppTheme();
-  const date = new Date(article.publishedAt).toLocaleDateString();
+  const date = formatAppDate(article.publishedAt);
   return (
     <Card onPress={onPress} elevated style={styles.card}>
       <View style={styles.row}>

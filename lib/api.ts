@@ -10,6 +10,7 @@ import type {
   TransitSearchResult,
   TripDetail,
   NewsArticle,
+  NewsSource,
   TourSummary,
   TourDetail,
   SeismicEvent,
@@ -145,6 +146,11 @@ export async function fetchDirections(params: {
     locale: params.locale ?? 'pt',
   });
   return apiFetch<DirectionsResponse>(`/api/v3/transit/directions?${query.toString()}`);
+}
+
+export async function fetchNewsSources(): Promise<NewsSource[]> {
+  const data = await apiFetch<{ sources: NewsSource[] }>('/api/v3/news/sources');
+  return data.sources;
 }
 
 export async function fetchNewsArticles(params?: {

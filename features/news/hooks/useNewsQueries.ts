@@ -1,12 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import { fetchNewsArticle, fetchNewsArticles } from '@/lib/api';
+import { fetchNewsArticle, fetchNewsArticles, fetchNewsSources } from '@/lib/api';
 import { track } from '@/lib/analytics';
+
+export function useNewsSources(enabled = true) {
+  const { i18n } = useTranslation();
+  return useQuery({
+    queryKey: ['news', 'v2', 'sources', i18n.language],
+    queryFn: () => fetchNewsSources(),
+    enabled,
+    staleTime: 1000 * 60 * 30,
+  });
+}
 
 export function useNewsArticles(params: {
   category?: string;
   q?: string;
+  source?: number;
   enabled?: boolean;
 }) {
   const { i18n } = useTranslation();
@@ -16,7 +27,7 @@ export function useNewsArticles(params: {
       const articles = await fetchNewsArticles({
         category: params.category,
         q: params.q,
-        limit: 50,
+        source: params.source,
       });
       if (params.q) {
         track('news', 'search', { query: params.q, results_count: articles.length });

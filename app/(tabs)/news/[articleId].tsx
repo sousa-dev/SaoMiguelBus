@@ -13,6 +13,7 @@ import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { useNewsArticle } from '@/features/news/hooks/useNewsQueries';
 import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
+import { formatAppDateTime } from '@/lib/date-format';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -80,7 +81,7 @@ export default function NewsArticleScreen() {
           <Text style={[typography.caption, { color: theme.muted }]}>{data.source.name}</Text>
           <Clock size={iconSize.sm} color={theme.muted} />
           <Text style={[typography.caption, { color: theme.muted }]}>
-            {new Date(data.publishedAt).toLocaleString()}
+            {formatAppDateTime(data.publishedAt)}
           </Text>
         </View>
         {data.summary ? (

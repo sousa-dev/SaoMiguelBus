@@ -9,7 +9,7 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { NewsCard } from '@/features/news/components/NewsCard';
 import { NewsFilters, type NewsTabCategory } from '@/features/news/components/NewsFilters';
-import { useNewsArticles } from '@/features/news/hooks/useNewsQueries';
+import { useNewsArticles, useNewsSources } from '@/features/news/hooks/useNewsQueries';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -19,6 +19,7 @@ export default function NewsScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<NewsTabCategory>('noticias');
+  const [sourceId, setSourceId] = useState<number | null>(null);
   const [searchQ, setSearchQ] = useState('');
 
   useEffect(() => {
@@ -26,7 +27,12 @@ export default function NewsScreen() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const articles = useNewsArticles({ category, q: searchQ || undefined });
+  const sources = useNewsSources();
+  const articles = useNewsArticles({
+    category,
+    q: searchQ || undefined,
+    source: sourceId ?? undefined,
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -45,8 +51,11 @@ export default function NewsScreen() {
       <NewsFilters
         query={query}
         category={category}
+        sources={sources.data ?? []}
+        sourceId={sourceId}
         onQueryChange={setQuery}
         onCategoryChange={setCategory}
+        onSourceChange={setSourceId}
         onSearch={() => setSearchQ(query.trim())}
       />
 
