@@ -27,7 +27,7 @@ export function StackBackButton({ fallbackHref }: StackBackButtonProps) {
     <IconButton
       icon={ChevronLeft}
       variant="ghost"
-      color={theme.headerTint}
+      color={theme.onSurface}
       accessibilityLabel={t('settingsBack')}
       onPress={() => {
         if (router.canGoBack()) {
