@@ -5,12 +5,17 @@ import { track } from '@/lib/analytics';
 import { getOrCreateSessionId } from '@/lib/session';
 import type { SeismicFeltInput } from '@/lib/types';
 
-export function useSeismicEvents(sinceHours = 24, enabled = true) {
+export function useSeismicEvents(
+  sinceHours = 24,
+  enabled = true,
+  refetchInterval: number | false = false,
+) {
   return useQuery({
     queryKey: ['seismic', 'v1', 'events', sinceHours],
     queryFn: () => fetchSeismicEvents({ limit: 50, sinceHours }),
     enabled,
     staleTime: 1000 * 60 * 5,
+    refetchInterval,
     refetchOnMount: 'always',
   });
 }

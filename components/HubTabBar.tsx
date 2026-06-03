@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TabBarBadge } from '@/components/TabBarBadge';
 import type { ModuleKey } from '@/config/island';
 import { orderedTabScreenNames } from '@/lib/hub-tab-screens';
 import { elevation, space, typography } from '@/lib/tokens';
@@ -32,9 +33,18 @@ export type HubTabBarProps = {
   };
   pinnedKeys: ModuleKey[];
   enabledKeys: ModuleKey[];
+  /** Tab screen name → live alert count (traffic active reports, seismic 24h events). */
+  badgeCounts?: Partial<Record<string, number>>;
 };
 
-export function HubTabBar({ state, descriptors, navigation, pinnedKeys, enabledKeys }: HubTabBarProps) {
+export function HubTabBar({
+  state,
+  descriptors,
+  navigation,
+  pinnedKeys,
+  enabledKeys,
+  badgeCounts = {},
+}: HubTabBarProps) {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const order = orderedTabScreenNames(pinnedKeys, enabledKeys);
@@ -94,18 +104,28 @@ export function HubTabBar({ state, descriptors, navigation, pinnedKeys, enabledK
             color,
             size: 24,
           });
+          const badgeCount = badgeCounts[screenName] ?? 0;
+          const a11yLabel =
+            typeof label === 'string'
+              ? badgeCount > 0
+                ? `${label}, ${badgeCount}`
+                : label
+              : screenName;
 
           return (
             <Pressable
               key={route.key}
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={typeof label === 'string' ? label : screenName}
+              accessibilityLabel={a11yLabel}
               onPress={onPress}
               onLongPress={onLongPress}
               style={styles.tab}
             >
-              {icon}
+              <View style={styles.iconWrap}>
+                {icon}
+                <TabBarBadge count={badgeCount} />
+              </View>
               <Text
                 style={[
                   typography.caption,
@@ -141,6 +161,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 48,
     gap: 2,
+  },
+  iconWrap: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
     fontSize: 11,

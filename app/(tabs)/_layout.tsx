@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { HubTabBar } from '@/components/HubTabBar';
 import { resolveEnabledModules, type ModuleKey } from '@/config/island';
+import { useLiveTabBadges } from '@/features/hub/hooks/useLiveTabBadges';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useHubStore } from '@/lib/hub-store';
 import { logger } from '@/lib/logger';
@@ -39,6 +40,7 @@ export default function TabLayout() {
   const { data: bootstrap, refetch } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const pinnedKeys = useHubStore((s) => s.pinnedKeys);
+  const badgeCounts = useLiveTabBadges(modules, pinnedKeys);
 
   const isEnabled = useCallback((key: ModuleKey) => modules.includes(key), [modules]);
 
@@ -81,6 +83,7 @@ export default function TabLayout() {
           navigation={props.navigation as import('@/components/HubTabBar').HubTabBarProps['navigation']}
           pinnedKeys={pinnedKeys}
           enabledKeys={modules}
+          badgeCounts={badgeCounts}
         />
       )}
     >
