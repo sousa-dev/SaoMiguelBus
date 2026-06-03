@@ -91,13 +91,27 @@ export function regionNeedsClamp(region: Region, bounds: MapBounds = saoMiguelMa
   );
 }
 
+/** Geographic extent of the Azores archipelago (all main islands). */
+export const azoresArchipelagoBounds = {
+  southWest: { lat: 36.72, lng: -31.35 },
+  northEast: { lat: 39.78, lng: -24.55 },
+} as const;
+
+/** Default map viewport framing the full Azores archipelago. */
+export function getAzoresArchipelagoRegion(): Region {
+  const { southWest, northEast } = azoresArchipelagoBounds;
+  const latSpan = northEast.lat - southWest.lat;
+  const lngSpan = northEast.lng - southWest.lng;
+  return {
+    latitude: (southWest.lat + northEast.lat) / 2,
+    longitude: (southWest.lng + northEast.lng) / 2,
+    latitudeDelta: latSpan * PAD,
+    longitudeDelta: lngSpan * PAD,
+  };
+}
+
 /** Wide Azores viewport when no events are available. */
-export const azoresSeismicFallbackRegion: Region = {
-  latitude: 38.5,
-  longitude: -28.0,
-  latitudeDelta: 6.0,
-  longitudeDelta: 8.0,
-};
+export const azoresSeismicFallbackRegion: Region = getAzoresArchipelagoRegion();
 
 /**
  * Fit map to seismic event markers (archipelago-wide). No pan clamp — events span
@@ -122,15 +136,23 @@ export function getSeismicMapRegion(
     maxLng = Math.max(maxLng, e.longitude);
   }
 
-  const pad = 1.25;
-  const latSpan = Math.max((maxLat - minLat) * pad, 0.15);
-  const lngSpan = Math.max((maxLng - minLng) * pad, 0.2);
+  const pad = 1.35;
+  const latSpan = Math.max((maxLat - minLat) * pad, 0.55);
+  const lngSpan = Math.max((maxLng - minLng) * pad, 0.85);
 
-  return {
+  const fitted: Region = {
     latitude: (minLat + maxLat) / 2,
     longitude: (minLng + maxLng) / 2,
     latitudeDelta: latSpan,
     longitudeDelta: lngSpan,
+  };
+
+  const archipelago = getAzoresArchipelagoRegion();
+  return {
+    latitude: fitted.latitude,
+    longitude: fitted.longitude,
+    latitudeDelta: Math.min(fitted.latitudeDelta, archipelago.latitudeDelta),
+    longitudeDelta: Math.min(fitted.longitudeDelta, archipelago.longitudeDelta),
   };
 }
 

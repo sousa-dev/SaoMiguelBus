@@ -1,46 +1,68 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Clock } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
+import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card';
+import { iconSize, space, typography } from '@/lib/tokens';
+import { onColorFor } from '@/lib/color-utils';
+import { magnitudeColor } from '@/lib/seismic-colors';
+import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
 export function EarthquakeCard({
   event,
-  theme,
   onPress,
 }: {
   event: SeismicEvent;
-  theme: AppTheme;
   onPress: () => void;
 }) {
+  const theme = useAppTheme();
+  const { t } = useTranslation();
   const when = new Date(event.occurredAt).toLocaleString();
+  const magColor = magnitudeColor(theme, event.magnitude);
+  const magTone = event.magnitude >= 5 ? 'danger' : event.magnitude >= 3 ? 'primary' : 'neutral';
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
-    >
-      <Text style={[styles.mag, { color: theme.primary }]}>M{event.magnitude.toFixed(1)}</Text>
-      <Text style={[styles.region, { color: theme.text }]} numberOfLines={2}>
-        {event.region || '—'}
-      </Text>
-      <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>{when}</Text>
-      {event.feltCount ? (
-        <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4 }}>
-          {event.feltCount} felt
-        </Text>
-      ) : null}
-    </Pressable>
+    <Card onPress={onPress} elevated style={styles.card}>
+      <View style={styles.row}>
+        <View style={[styles.magCircle, { backgroundColor: magColor }]}>
+          <Text
+            style={[
+              typography.headline,
+              { color: onColorFor(magColor), fontVariant: ['tabular-nums'] },
+            ]}
+          >
+            {event.magnitude.toFixed(1)}
+          </Text>
+        </View>
+        <View style={styles.textCol}>
+          <Text style={[typography.headline, { color: theme.text }]} numberOfLines={2}>
+            {event.region || '—'}
+          </Text>
+          <View style={styles.meta}>
+            <Clock size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>{when}</Text>
+          </View>
+          {event.feltCount ? (
+            <Badge label={t('seismicFeltCount', { count: event.feltCount })} tone={magTone} />
+          ) : null}
+        </View>
+      </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 10,
+  card: { marginBottom: space.md },
+  row: { flexDirection: 'row', gap: space.md },
+  magCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  mag: { fontSize: 22, fontWeight: '800' },
-  region: { fontSize: 15, fontWeight: '600', marginTop: 4 },
+  textCol: { flex: 1, gap: space.xs },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.xs },
 });

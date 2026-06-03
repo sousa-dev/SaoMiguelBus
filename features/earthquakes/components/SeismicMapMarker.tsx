@@ -2,10 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
-import {
-  markerColorForMagnitude,
-  markerSizeForMagnitude,
-} from '@/lib/island-map';
+import { markerSizeForMagnitude } from '@/lib/island-map';
+import { onColorFor } from '@/lib/color-utils';
+import { magnitudeColor } from '@/lib/seismic-colors';
+import { elevation } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent } from '@/lib/types';
 
 type Props = {
@@ -14,7 +15,9 @@ type Props = {
 };
 
 export function SeismicMapMarker({ event, onPress }: Props) {
-  const fill = markerColorForMagnitude(event.magnitude);
+  const theme = useAppTheme();
+  const fill = magnitudeColor(theme, event.magnitude);
+  const onFill = onColorFor(fill);
   const size = markerSizeForMagnitude(event.magnitude);
 
   return (
@@ -29,15 +32,17 @@ export function SeismicMapMarker({ event, onPress }: Props) {
       <View
         style={[
           styles.bubble,
+          elevation(2, theme.text),
           {
             width: size,
             height: size,
             borderRadius: size / 2,
             backgroundColor: fill,
+            borderColor: onFill,
           },
         ]}
       >
-        <Text style={[styles.label, { fontSize: size < 36 ? 11 : 13 }]}>
+        <Text style={[styles.label, { fontSize: size < 36 ? 11 : 13, color: onFill }]}>
           {event.magnitude.toFixed(1)}
         </Text>
       </View>
@@ -50,12 +55,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.28,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
   },
-  label: { color: '#fff', fontWeight: '800' },
+  label: { fontWeight: '800' },
 });

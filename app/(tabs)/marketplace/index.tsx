@@ -1,9 +1,17 @@
-import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import * as Location from 'expo-location';
+import { Plus } from 'lucide-react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Store } from 'lucide-react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import type { Href } from 'expo-router';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { useFabActions } from '@/lib/fab-store';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
+import { space } from '@/lib/tokens';
 import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
 import {
@@ -22,6 +30,20 @@ export default function MarketplaceScreen() {
   const [category, setCategory] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
+  useFabActions(
+    useMemo(
+      () => [
+        {
+          key: 'add-listing',
+          labelKey: 'marketplaceAddListing',
+          icon: Plus,
+          href: '/(tabs)/marketplace/new' as Href,
+        },
+      ],
+      [],
+    ),
+  );
+
   const categories = useMarketplaceCategories();
   const providers = useProviders({
     q: query.trim() || undefined,
@@ -37,26 +59,26 @@ export default function MarketplaceScreen() {
     }, [providers.refetch]),
   );
 
-  const toggleNearMe = useCallback(() => {
+  const toggleNearMe = useCallback(async () => {
     if (coords) {
       setCoords(null);
       return;
     }
-    const geo = (typeof navigator !== 'undefined' ? (navigator as any).geolocation : undefined);
-    if (!geo?.getCurrentPosition) {
-      return; // native without expo-location: degrade to default ordering
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({});
+      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    } catch {
+      setCoords(null);
     }
-    geo.getCurrentPosition(
-      (pos: { coords: { latitude: number; longitude: number } }) =>
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setCoords(null),
-    );
   }, [coords]);
 
   return (
     <Screen withStackHeader>
       <MarketplaceFilters
-        theme={theme}
         categories={categories.data ?? []}
         activeCategory={category}
         query={query}
@@ -66,8 +88,18 @@ export default function MarketplaceScreen() {
         onToggleNearMe={toggleNearMe}
       />
 
-      {providers.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
-      {providers.isError ? <Text style={{ color: theme.muted }}>{t('marketplaceLoadError')}</Text> : null}
+      {providers.isLoading ? (
+        <View style={{ padding: space.lg }}>
+          <CardSkeleton />
+        </View>
+      ) : null}
+      {providers.isError ? (
+        <ErrorState
+          title={t('marketplaceLoadError')}
+          actionLabel={t('searchButton')}
+          onAction={() => void providers.refetch()}
+        />
+      ) : null}
 
       <FlatList
         data={providers.data ?? []}
@@ -81,15 +113,12 @@ export default function MarketplaceScreen() {
         }
         ListEmptyComponent={
           !providers.isLoading ? (
-            <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-              {t('marketplaceEmpty')}
-            </Text>
+            <EmptyState icon={Store} title={t('marketplaceEmpty')} />
           ) : null
         }
         renderItem={({ item }) => (
           <ProviderCard
             provider={item}
-            theme={theme}
             onPress={() =>
               router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: String(item.id) } })
             }
@@ -97,27 +126,10 @@ export default function MarketplaceScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-
-      <Pressable
-        onPress={() => router.push('/(tabs)/marketplace/new')}
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-      >
-        <Text style={styles.fabText}>+ {t('marketplaceAddListing')}</Text>
-      </Pressable>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 12, paddingBottom: 90 },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 20,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    elevation: 3,
-  },
-  fabText: { color: '#fff', fontWeight: '700' },
+  list: { padding: 12, paddingBottom: 24 },
 });

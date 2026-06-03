@@ -87,7 +87,23 @@ export function getModule(key: ModuleKey): HubModule | undefined {
   return moduleByKey.get(key);
 }
 
-export function getEnabledHubModules(enabledKeys: ModuleKey[]): HubModule[] {
+/** Default hub grid order (matches HUB_MODULES declaration). */
+export const DEFAULT_MODULE_ORDER_KEYS: ModuleKey[] = HUB_MODULES.map((m) => m.key);
+
+export function sortModulesByOrder(modules: HubModule[], orderKeys: ModuleKey[]): HubModule[] {
+  const index = new Map(orderKeys.map((k, i) => [k, i]));
+  return [...modules].sort((a, b) => {
+    const ai = index.get(a.key) ?? 999;
+    const bi = index.get(b.key) ?? 999;
+    return ai - bi;
+  });
+}
+
+export function getEnabledHubModules(
+  enabledKeys: ModuleKey[],
+  orderKeys: ModuleKey[] = DEFAULT_MODULE_ORDER_KEYS,
+): HubModule[] {
   const set = new Set(enabledKeys);
-  return HUB_MODULES.filter((m) => set.has(m.key));
+  const enabled = HUB_MODULES.filter((m) => set.has(m.key));
+  return sortModulesByOrder(enabled, orderKeys);
 }

@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { ProviderForm } from '@/features/marketplace/components/ProviderForm';
-import { useProvider, useUpdateProvider } from '@/features/marketplace/hooks/useMarketplaceQueries';
+import { useProvider, useUpdateProvider, useDeleteProvider } from '@/features/marketplace/hooks/useMarketplaceQueries';
+import { useNetworkStatus } from '@/lib/network-status';
+import { useAppStackScreenOptions } from '@/lib/navigation';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import type { ProviderWriteInput } from '@/lib/types';
-import { useAppTheme } from '@/lib/theme';
 
 export default function EditListingScreen() {
-  const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const screenOptions = useAppStackScreenOptions();
+  const { isOnline } = useNetworkStatus();
   const params = useLocalSearchParams<{ id: string }>();
   const providerId = Number(params.id);
 
   const provider = useProvider(providerId);
   const update = useUpdateProvider(providerId);
+  const deleteProvider = useDeleteProvider();
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (input: ProviderWriteInput) => {
+    if (!isOnline) {
+      setError(t('offlineBanner'));
+      return;
+    }
     setError(null);
     try {
       await update.mutateAsync(input);
@@ -29,25 +37,48 @@ export default function EditListingScreen() {
     }
   };
 
-  if (provider.isLoading || !provider.data) {
+  const onDelete = async () => {
+    if (!isOnline) {
+      setError(t('offlineBanner'));
+      return;
+    }
+    try {
+      await deleteProvider.mutateAsync(providerId);
+      router.back();
+    } catch {
+      setError(t('marketplaceLoadError'));
+    }
+  };
+
+  if (provider.isLoading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.background }}>
-        {provider.isError ? (
-          <Text style={{ color: theme.muted }}>{t('marketplaceLoadError')}</Text>
-        ) : (
-          <ActivityIndicator color={theme.primary} />
-        )}
-      </View>
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
+    );
+  }
+
+  if (provider.isError || !provider.data) {
+    return (
+      <Screen withStackHeader>
+        <ErrorState title={t('marketplaceLoadError')} />
+      </Screen>
     );
   }
 
   return (
-    <ProviderForm
-      theme={theme}
-      initial={provider.data}
-      submitting={update.isPending}
-      error={error}
-      onSubmit={(input) => void onSubmit(input)}
-    />
+    <>
+      <Stack.Screen options={{ ...screenOptions, headerShown: true, title: t('marketplaceEditAction') }} />
+      <Screen>
+        <ProviderForm
+          initial={provider.data}
+          submitting={update.isPending}
+          deleting={deleteProvider.isPending}
+          error={error}
+          onSubmit={(input) => void onSubmit(input)}
+          onDelete={() => void onDelete()}
+        />
+      </Screen>
+    </>
   );
 }

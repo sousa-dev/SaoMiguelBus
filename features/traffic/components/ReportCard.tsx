@@ -1,6 +1,10 @@
+import { Check } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Card } from '@/components/ui/Card';
+import { iconSize, space, typography } from '@/lib/tokens';
+import { trafficCategoryIcon } from '@/lib/traffic-icons';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficReport } from '@/lib/types';
 
@@ -13,38 +17,31 @@ export function ReportCard({
   theme: AppTheme;
   onPress?: () => void;
 }) {
+  const Icon = trafficCategoryIcon(report.category.slug);
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
-    >
-      <Text style={styles.icon}>{report.category.icon || '⚠️'}</Text>
+    <Card onPress={onPress} style={styles.card}>
+      <Icon size={iconSize.xl} color={theme.primary} strokeWidth={2} />
       <View style={{ flex: 1 }}>
-        <Text style={[styles.name, { color: theme.text }]}>{report.category.name}</Text>
-        {report.road ? <Text style={{ color: theme.muted, fontSize: 13 }}>{report.road}</Text> : null}
+        <Text style={[typography.bodyStrong, { color: theme.text }]}>{report.category.name}</Text>
+        {report.road ? <Text style={[typography.caption, { color: theme.muted }]}>{report.road}</Text> : null}
         {report.description ? (
-          <Text style={{ color: theme.muted, fontSize: 13 }} numberOfLines={2}>
+          <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={2}>
             {report.description}
           </Text>
         ) : null}
       </View>
-      <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '700' }}>
-        ✓{report.confidence.confirm}
-      </Text>
-    </Pressable>
+      <View style={styles.confidence}>
+        <Check size={14} color={theme.success} strokeWidth={2.5} />
+        <Text style={[typography.caption, { color: theme.primary, fontWeight: '700' }]}>
+          {report.confidence.confirm}
+        </Text>
+      </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 10,
-  },
-  icon: { fontSize: 26 },
-  name: { fontSize: 15, fontWeight: '700' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.md },
+  confidence: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

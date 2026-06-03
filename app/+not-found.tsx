@@ -1,40 +1,26 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { MapPinOff } from 'lucide-react-native';
+import { Stack, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
-import { Text, View } from '@/components/Themed';
+import { Screen } from '@/components/Screen';
+import { EmptyState } from '@/components/ui/StateView';
 
 export default function NotFoundScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
-      <View style={styles.container}>
-        <Text style={styles.title}>This screen doesn't exist.</Text>
-
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen!</Text>
-        </Link>
-      </View>
+      <Stack.Screen options={{ title: t('notFoundTitle') }} />
+      <Screen>
+        <EmptyState
+          icon={MapPinOff}
+          title={t('notFoundTitle')}
+          description={t('notFoundDescription')}
+          actionLabel={t('notFoundCta')}
+          onAction={() => router.replace('/(tabs)/hub')}
+        />
+      </Screen>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#2e78b7',
-  },
-});

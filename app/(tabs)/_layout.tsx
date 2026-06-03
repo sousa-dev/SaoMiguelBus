@@ -1,9 +1,9 @@
-import { Tabs } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
+import { Tabs, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { HubTabBar } from '@/components/HubTabBar';
 import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useHubStore } from '@/lib/hub-store';
@@ -40,10 +40,7 @@ export default function TabLayout() {
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const pinnedKeys = useHubStore((s) => s.pinnedKeys);
 
-  const isEnabled = useCallback(
-    (key: ModuleKey) => modules.includes(key),
-    [modules],
-  );
+  const isEnabled = useCallback((key: ModuleKey) => modules.includes(key), [modules]);
 
   const tabHref = useCallback(
     (screenName: string) => {
@@ -70,16 +67,22 @@ export default function TabLayout() {
     logger.debug('tab modules', modules.join(','));
   }
 
-  const HubIcon = HUB_TAB.Icon;
-
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.muted,
-        headerStyle: { backgroundColor: theme.primary },
-        headerTintColor: '#fff',
+        tabBarInactiveTintColor: theme.onSurfaceMuted,
+        headerShown: false,
       }}
+      tabBar={(props) => (
+        <HubTabBar
+          state={props.state}
+          descriptors={props.descriptors as import('@/components/HubTabBar').HubTabBarProps['descriptors']}
+          navigation={props.navigation as import('@/components/HubTabBar').HubTabBarProps['navigation']}
+          pinnedKeys={pinnedKeys}
+          enabledKeys={modules}
+        />
+      )}
     >
       <Tabs.Screen
         name="hub"
@@ -87,9 +90,7 @@ export default function TabLayout() {
           title: t(HUB_TAB.labelKey),
           headerShown: false,
           href: HUB_TAB.route,
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon Icon={HubIcon} color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <TabBarIcon Icon={HUB_TAB.Icon} color={color} size={size} />,
         }}
       />
       <Tabs.Screen

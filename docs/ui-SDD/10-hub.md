@@ -8,7 +8,13 @@
 The branded front door. Every enabled island module is reachable from here as a tile; users pin up to 4 to the bottom bar and arrange the grid (grid/list, 2/3 columns). This is the screen that sets the tone for the whole rebrand.
 
 ## 2. Current state
-`FlatList` of module tiles from `getEnabledHubModules()`; `HubModuleTile` shows a lucide icon in a tinted square, label, and (edit mode) pin + reorder chevrons. `HubEditControls` switches layout/columns. Header has Edit + Settings. Functional but plain: no hero/branding, flat tiles, no greeting, edit affordances are utilitarian.
+`FlatList` of module tiles from `getEnabledHubModules(enabledKeys, moduleOrderKeys)` — grid order persisted in `useHubStore.moduleOrderKeys`. `HubHero` (greeting + island name + optional logo). **Live previews** when not in edit mode: seismic tile uses `AzoresMiniMap` (SVG archipelago + magnitude dots, 24h events); traffic tile shows per-category active counts when reports exist. Other modules use icon chip + static subtitle.
+
+**Edit mode:** `HubEditControls` (layout/columns, bar pin counter, bar vs grid hints). Each tile: pin toggle; **bar reorder** chevrons (pinned only); **grid reorder** chevrons (all tiles). Previews hidden while editing.
+
+**Tab bar:** [`HubTabBar`](../../components/HubTabBar.tsx) renders Hub first, then pinned modules in `pinnedKeys` order (not file declaration order). See [`lib/hub-tab-screens.ts`](../../lib/hub-tab-screens.ts).
+
+**Data:** [`useHubPreviews`](../../features/hub/hooks/useHubPreviews.ts) — seismic 24h query, traffic island-wide poll 60s.
 
 ## 3. Rebrand direction
 - **Branded hero header.** Top region with island name (`display`) + short greeting/subtitle (`callout`, `onSurfaceMuted`), optionally time/space-aware ("Boa tarde"). Island logo token (`logoLight/Dark` from `IslandConfig`, [`SDD/02`](../../SDD/02-multi-island-whitelabel.md) §4) when available. iOS large title can host the island name.

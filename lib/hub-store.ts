@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { ModuleKey } from '@/config/island';
 import { staticIslandConfig } from '@/config/island';
+import { DEFAULT_MODULE_ORDER_KEYS } from '@/lib/modules';
 
 export const PIN_CAP = 4;
 
@@ -18,8 +19,23 @@ export const DEFAULT_PINNED_KEYS: ModuleKey[] = [
 export type HubLayout = 'grid' | 'list';
 export type HubColumns = 2 | 3;
 
+function swapInOrder(keys: ModuleKey[], key: ModuleKey, direction: 'up' | 'down'): ModuleKey[] {
+  const idx = keys.indexOf(key);
+  if (idx < 0) {
+    return keys;
+  }
+  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapWith < 0 || swapWith >= keys.length) {
+    return keys;
+  }
+  const next = [...keys];
+  [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
+  return next;
+}
+
 interface HubState {
   pinnedKeys: ModuleKey[];
+  moduleOrderKeys: ModuleKey[];
   layout: HubLayout;
   columns: HubColumns;
   editMode: boolean;
@@ -27,6 +43,7 @@ interface HubState {
   canPinMore: () => boolean;
   togglePin: (key: ModuleKey) => boolean;
   reorderPin: (key: ModuleKey, direction: 'up' | 'down') => void;
+  reorderModule: (key: ModuleKey, direction: 'up' | 'down', enabledKeys: ModuleKey[]) => void;
   setLayout: (layout: HubLayout) => void;
   setColumns: (columns: HubColumns) => void;
   setEditMode: (editMode: boolean) => void;
@@ -36,6 +53,7 @@ export const useHubStore = create<HubState>()(
   persist(
     (set, get) => ({
       pinnedKeys: [...DEFAULT_PINNED_KEYS],
+      moduleOrderKeys: [...DEFAULT_MODULE_ORDER_KEYS],
       layout: 'grid',
       columns: 2,
       editMode: false,
@@ -60,17 +78,22 @@ export const useHubStore = create<HubState>()(
 
       reorderPin: (key, direction) => {
         const { pinnedKeys } = get();
-        const idx = pinnedKeys.indexOf(key);
-        if (idx < 0) {
+        const next = swapInOrder(pinnedKeys, key, direction);
+        if (next !== pinnedKeys) {
+          set({ pinnedKeys: next });
+        }
+      },
+
+      reorderModule: (key, direction, enabledKeys) => {
+        const enabledSet = new Set(enabledKeys);
+        const { moduleOrderKeys } = get();
+        const visibleOrder = moduleOrderKeys.filter((k) => enabledSet.has(k));
+        const nextVisible = swapInOrder(visibleOrder, key, direction);
+        if (nextVisible === visibleOrder) {
           return;
         }
-        const swapWith = direction === 'up' ? idx - 1 : idx + 1;
-        if (swapWith < 0 || swapWith >= pinnedKeys.length) {
-          return;
-        }
-        const next = [...pinnedKeys];
-        [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
-        set({ pinnedKeys: next });
+        const tail = moduleOrderKeys.filter((k) => !enabledSet.has(k));
+        set({ moduleOrderKeys: [...nextVisible, ...tail] });
       },
 
       setLayout: (layout) => set({ layout }),
@@ -79,26 +102,29 @@ export const useHubStore = create<HubState>()(
     }),
     {
       name: `azores_hub_layout_${staticIslandConfig.islandKey}`,
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         pinnedKeys: state.pinnedKeys,
+        moduleOrderKeys: state.moduleOrderKeys,
         layout: state.layout,
         columns: state.columns,
       }),
       migrate: (persisted, version) => {
         const state = persisted as {
           pinnedKeys?: ModuleKey[];
+          moduleOrderKeys?: ModuleKey[];
           layout?: HubLayout;
           columns?: HubColumns;
         };
-        if (version < 1 && (!state.pinnedKeys || state.pinnedKeys.length === 0)) {
-          return {
-            ...state,
-            pinnedKeys: [...DEFAULT_PINNED_KEYS],
-          };
+        let next = { ...state };
+        if (version < 1 && (!next.pinnedKeys || next.pinnedKeys.length === 0)) {
+          next = { ...next, pinnedKeys: [...DEFAULT_PINNED_KEYS] };
         }
-        return state;
+        if (version < 2 && (!next.moduleOrderKeys || next.moduleOrderKeys.length === 0)) {
+          next = { ...next, moduleOrderKeys: [...DEFAULT_MODULE_ORDER_KEYS] };
+        }
+        return next;
       },
     },
   ),

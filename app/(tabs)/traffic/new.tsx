@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
 import { TrafficReportForm } from '@/features/traffic/components/TrafficReportForm';
 import {
   useCreateTrafficReport,
@@ -9,8 +10,9 @@ import {
 } from '@/features/traffic/hooks/useTrafficQueries';
 import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { clampCoordinate, isWithinIslandBounds } from '@/lib/island-map';
+import { useNetworkStatus } from '@/lib/network-status';
+import { useAppStackScreenOptions } from '@/lib/navigation';
 import type { TrafficReportWriteInput } from '@/lib/types';
-import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
 
 function parseCoord(value: string | string[] | undefined) {
@@ -20,9 +22,10 @@ function parseCoord(value: string | string[] | undefined) {
 }
 
 export default function NewTrafficReportScreen() {
-  const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const screenOptions = useAppStackScreenOptions();
+  const { isOnline } = useNetworkStatus();
   const params = useLocalSearchParams<{ category?: string; lat?: string; lng?: string }>();
 
   const categories = useTrafficCategories();
@@ -57,6 +60,10 @@ export default function NewTrafficReportScreen() {
   }, [paramCoords, coordsInitialized, userOnIsland, gpsCoords]);
 
   const onSubmit = async (input: TrafficReportWriteInput) => {
+    if (!isOnline) {
+      setError(t('offlineBanner'));
+      return;
+    }
     setError(null);
     try {
       const report = await create.mutateAsync(input);
@@ -68,17 +75,22 @@ export default function NewTrafficReportScreen() {
   };
 
   return (
-    <TrafficReportForm
-      theme={theme}
-      categories={categories.data ?? []}
-      initialCategory={params.category}
-      coords={reportCoords}
-      gpsCoords={userOnIsland ? gpsCoords : null}
-      userOnIsland={userOnIsland}
-      onCoordsChange={setReportCoords}
-      submitting={create.isPending}
-      error={error}
-      onSubmit={(input) => void onSubmit(input)}
-    />
+    <>
+      <Stack.Screen options={{ ...screenOptions, headerShown: true, title: t('trafficReportTitle') }} />
+      <Screen>
+        <TrafficReportForm
+          categories={categories.data ?? []}
+          initialCategory={params.category}
+          coords={reportCoords}
+          gpsCoords={userOnIsland ? gpsCoords : null}
+          userOnIsland={userOnIsland}
+          onCoordsChange={setReportCoords}
+          submitting={create.isPending}
+          error={error}
+          offline={!isOnline}
+          onSubmit={(input) => void onSubmit(input)}
+        />
+      </Screen>
+    </>
   );
 }

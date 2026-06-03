@@ -1,83 +1,153 @@
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Download, ShieldCheck, Trash2 } from 'lucide-react-native';
+import Constants from 'expo-constants';
+import * as Haptics from 'expo-haptics';
+import { useNavigation, useRouter } from 'expo-router';
+import React, { useLayoutEffect, useState } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
-import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
-import { LANGUAGE_NAMES } from '@/lib/i18n';
+import { Banner } from '@/components/ui/Banner';
+import { ListRow } from '@/components/ui/ListRow';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import { resolvePickerLocales } from '@/lib/i18n';
 import { saveLocale } from '@/lib/locale-prefs';
+import { useNetworkStatus } from '@/lib/network-status';
+import { space, typography } from '@/lib/tokens';
+import { type ThemePreference, useThemePrefsStore } from '@/lib/theme-prefs';
+import { useAppStackScreenOptions } from '@/lib/navigation';
 import { useAppTheme } from '@/lib/theme';
+import { staticIslandConfig } from '@/config/island';
 
 export default function SettingsScreen() {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const bootstrap = useBootstrap();
-  const locales = bootstrap.data?.island?.locales ?? ['pt', 'en'];
+  const navigation = useNavigation();
+  const screenOptions = useAppStackScreenOptions();
+  const { isOnline } = useNetworkStatus();
+  const { data: bootstrap } = useBootstrapCached();
+  const locales = resolvePickerLocales(bootstrap?.island?.locales);
+  const islandName = bootstrap?.island?.name ?? staticIslandConfig.islandName;
+  const preference = useThemePrefsStore((s) => s.preference);
+  const setPreference = useThemePrefsStore((s) => s.setPreference);
+  const [dsarBanner, setDsarBanner] = useState(false);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      ...screenOptions,
+      headerShown: true,
+      title: t('settingsTitle'),
+      presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+      ...(Platform.OS === 'ios'
+        ? {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [1],
+            sheetExpandsWhenScrolledToEdge: true,
+          }
+        : {}),
+    });
+  }, [navigation, screenOptions, t]);
 
   const changeLanguage = async (code: string) => {
     await saveLocale(code);
     await i18n.changeLanguage(code);
   };
 
+  const onThemeChange = (value: ThemePreference) => {
+    setPreference(value);
+    void Haptics.selectionAsync();
+  };
+
+  const themeOptions = [
+    { value: 'system' as ThemePreference, label: t('themeSystem') },
+    { value: 'light' as ThemePreference, label: t('themeLight') },
+    { value: 'dark' as ThemePreference, label: t('themeDark') },
+  ];
+
+  const dsarAction = (kind: 'export' | 'delete') => {
+    if (!isOnline) {
+      setDsarBanner(true);
+      return;
+    }
+    Alert.alert(
+      kind === 'export' ? t('settingsExportData') : t('settingsDeleteData'),
+      kind === 'export' ? t('settingsExportComingSoon') : t('settingsDeleteComingSoon'),
+    );
+  };
+
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: theme.primary }]}>{t('settingsTitle')}</Text>
+    <Screen withStackHeader collapsable={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator
+      >
+        {!isOnline && dsarBanner ? (
+          <Banner variant="offline" message={t('settingsDsarOffline')} />
+        ) : null}
 
-        <Text style={[styles.section, { color: theme.text }]}>{t('settingsLanguage')}</Text>
-        {locales.map((code) => (
-          <Pressable
-            key={code}
-            onPress={() => changeLanguage(code)}
-            style={[
-              styles.row,
-              {
-                borderColor: theme.border,
-                backgroundColor: i18n.language === code ? theme.primary : theme.card,
-              },
-            ]}
-          >
-            <Text style={{ color: i18n.language === code ? '#fff' : theme.text, fontWeight: '600' }}>
-              {LANGUAGE_NAMES[code] ?? code}
-            </Text>
-          </Pressable>
-        ))}
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('settingsAppearance')}
+        </Text>
+        <SegmentedControl
+          options={themeOptions}
+          value={preference}
+          onChange={onThemeChange}
+          accessibilityLabel={t('themeLabel')}
+        />
 
-        <Text style={[styles.section, { color: theme.text, marginTop: 24 }]}>
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('settingsLanguage')}
+        </Text>
+        <LanguagePicker locales={locales} activeLocale={i18n.language} onSelect={changeLanguage} />
+
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsPrivacy')}
         </Text>
-        <Pressable
-          onPress={() => router.push('/onboarding/consent')}
-          style={[styles.row, { borderColor: theme.border, backgroundColor: theme.card }]}
-        >
-          <Text style={{ color: theme.text, fontWeight: '600' }}>{t('settingsManageConsent')}</Text>
-        </Pressable>
+        <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <ListRow
+            icon={ShieldCheck}
+            title={t('settingsManageConsent')}
+            onPress={() => router.push('/onboarding/consent')}
+          />
+          <ListRow
+            icon={Download}
+            title={t('settingsExportData')}
+            onPress={() => dsarAction('export')}
+          />
+          <ListRow
+            icon={Trash2}
+            title={t('settingsDeleteData')}
+            destructive
+            onPress={() => dsarAction('delete')}
+          />
+        </View>
 
-        <Pressable onPress={() => router.back()} style={[styles.backBtn, { borderColor: theme.border }]}>
-          <Text style={{ color: theme.secondary, fontWeight: '600' }}>{t('settingsBack')}</Text>
-        </Pressable>
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('settingsAbout')}
+        </Text>
+        <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <ListRow
+            title={t('settingsVersion')}
+            trailing={<Text style={{ color: theme.muted }}>{appVersion}</Text>}
+            showChevron={false}
+          />
+          <ListRow title={islandName} showChevron={false} />
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 20 },
-  title: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
-  section: { fontWeight: '700', marginBottom: 10 },
-  row: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 8,
-  },
-  backBtn: {
-    marginTop: 32,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
+  scroll: { flex: 1 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  sectionLabel: { marginTop: space['2xl'], marginBottom: space.sm },
+  group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
 });

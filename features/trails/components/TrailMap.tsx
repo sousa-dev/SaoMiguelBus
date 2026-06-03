@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_DEFAULT, UrlTile } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 
+import { MapAttribution } from '@/components/MapAttribution';
+import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { geojsonToMapCoordinates, trailCentroid, type TrailDetail } from '@/features/trails/types';
 import type { AppTheme } from '@/lib/theme';
 
@@ -77,7 +79,11 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
             }
           }}
         >
-          <Image source={{ uri: trail.mapImageUrl }} style={styles.webImage} resizeMode="contain" />
+          <Image
+            source={{ uri: trail.mapImageUrl }}
+            style={[styles.webImage, { backgroundColor: theme.surfaceVariant }]}
+            resizeMode="contain"
+          />
         </Pressable>
         {externalUrl ? (
           <Text style={{ color: theme.primary, marginTop: 8, fontSize: 13 }}>
@@ -97,17 +103,12 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
       <MapView
         style={styles.map}
         provider={PROVIDER_DEFAULT}
+        mapType="none"
         initialRegion={region}
         scrollEnabled
         zoomEnabled
       >
-        {Platform.OS === 'android' ? (
-          <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-        ) : null}
+        <OsmMapLayer isDark={theme.isDark} />
         <Polyline coordinates={coordinates} strokeColor={theme.primary} strokeWidth={4} />
         {trail.startLat != null && trail.startLng != null ? (
           <Marker
@@ -124,9 +125,7 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
           />
         ))}
       </MapView>
-      {Platform.OS === 'android' ? (
-        <Text style={[styles.osmCredit, { color: theme.muted }]}>{t('trailsOsmAttribution')}</Text>
-      ) : null}
+      <MapAttribution isDark={theme.isDark} />
     </View>
   );
 }
@@ -134,6 +133,5 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
 const styles = StyleSheet.create({
   wrap: { marginBottom: 16 },
   map: { width: '100%', height: 220, borderRadius: 12 },
-  webImage: { width: '100%', height: 220, borderRadius: 12, backgroundColor: '#eee' },
-  osmCredit: { fontSize: 10, marginTop: 4 },
+  webImage: { width: '100%', height: 220, borderRadius: 12 },
 });

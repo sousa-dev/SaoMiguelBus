@@ -1,52 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { EmptyState } from '@/components/ui/StateView';
+import { space, typography } from '@/lib/tokens';
+import { Bus } from 'lucide-react-native';
 
-import { FavoriteToggle } from '@/features/transit/components/FavoriteToggle';
-import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
+import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
 import { OfflineBanner } from '@/features/transit/components/OfflineBanner';
+import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
-import { StopPicker } from '@/features/transit/components/StopPicker';
-import { TripDetail } from '@/features/transit/components/TripDetail';
-import { useBootstrap, useStops, useTransitSearch } from '@/features/transit/hooks/useTransitQueries';
+import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
+import { TransitPlannerCard } from '@/features/transit/components/TransitPlannerCard';
+import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import {
+  useOfflineBundleSync,
+  useCanSearchOffline,
+  useTransitSearchWithOffline,
+} from '@/features/transit/hooks/useOfflineSearch';
+import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
 import { staticIslandConfig } from '@/config/island';
 import { useNetworkStatus } from '@/lib/network-status';
+import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
-import type { TransitSearchResult } from '@/lib/types';
+import { resolveDayType } from '@/lib/transit-format';
 
-type DayType = 'weekday' | 'saturday' | 'sunday';
-
-function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function resolveDayTypeFromBootstrap(
-  holidays: { date: string }[] | undefined,
-  fallback: DayType,
-): DayType {
-  const today = todayIsoDate();
-  if (holidays?.some((holiday) => holiday.date === today)) {
-    return 'sunday';
-  }
-  const weekday = new Date().getDay();
-  if (weekday === 0) {
-    return 'sunday';
-  }
-  if (weekday === 6) {
-    return 'saturday';
-  }
-  return fallback;
+function currentTime(): string {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
 export default function TransitScreen() {
@@ -54,43 +37,58 @@ export default function TransitScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { isOnline } = useNetworkStatus();
+  const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
   const islandName = bootstrap.data?.island?.name ?? staticIslandConfig.islandName;
+  const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [day, setDay] = useState<DayType>('weekday');
-  const [time, setTime] = useState('08:00');
+  const [date, setDate] = useState(() => new Date());
+  const [time, setTime] = useState(currentTime);
   const [searchEnabled, setSearchEnabled] = useState(false);
-  const [selected, setSelected] = useState<TransitSearchResult | null>(null);
+
+  const day = useMemo(
+    () => resolveDayType(date, bootstrap.data?.holidays),
+    [date, bootstrap.data?.holidays],
+  );
 
   useEffect(() => {
-    setDay(resolveDayTypeFromBootstrap(bootstrap.data?.holidays, 'weekday'));
-  }, [bootstrap.data?.holidays]);
+    void migrateLegacyFavorites();
+  }, []);
 
-  const search = useTransitSearch({
-    origin,
-    destination,
-    day,
-    start: time.replace(':', 'h'),
-    enabled: searchEnabled && Boolean(origin && destination) && isOnline,
-  });
+  useOfflineBundleSync(true);
+
+  const searchParams = useMemo(
+    () => ({
+      origin,
+      destination,
+      day,
+      start: time.replace(':', 'h'),
+      enabled: searchEnabled && Boolean(origin && destination),
+    }),
+    [origin, destination, day, time, searchEnabled],
+  );
+
+  const search = useTransitSearchWithOffline(searchParams);
+
+  useEffect(() => {
+    if (search.data && search.data.length > 0 && searchEnabled) {
+      addRecentSearch({ origin, destination, day, time });
+    }
+  }, [search.data, searchEnabled, origin, destination, day, time, addRecentSearch]);
 
   const runSearch = () => {
-    if (!origin || !destination) {
-      return;
-    }
-    if (!isOnline) {
+    if (!origin || !destination || !canSearchOffline) {
       return;
     }
     setSearchEnabled(true);
-    setSelected(null);
     search.refetch();
   };
 
   const openDirections = () => {
-    if (!origin || !destination || !isOnline) {
+    if (!isOnline) {
       return;
     }
     router.push({
@@ -104,139 +102,91 @@ export default function TransitScreen() {
     });
   };
 
-  const applyFavorite = (nextOrigin: string, nextDestination: string) => {
+  const applySearch = (nextOrigin: string, nextDestination: string) => {
     setOrigin(nextOrigin);
     setDestination(nextDestination);
     setSearchEnabled(true);
-    setSelected(null);
   };
 
-  const offlineSearchMessage = useMemo(() => {
-    if (isOnline || !searchEnabled) {
-      return null;
-    }
-    return t('offlineSearchDisabled');
-  }, [isOnline, searchEnabled, t]);
+  const showEmptyResults =
+    searchEnabled && !search.isFetching && search.data && search.data.length === 0;
+  const hasResults = Boolean(search.data && search.data.length > 0);
+  const showInstructions = !searchEnabled && !hasResults;
 
   return (
     <Screen withStackHeader>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {!isOnline ? <OfflineBanner /> : null}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <TransitWebShell>
+          {!isOnline ? <OfflineBanner /> : null}
 
-        <Text style={[styles.title, { color: theme.primary }]}>{islandName}</Text>
-        <Text style={{ color: theme.muted, marginBottom: 16 }}>{t('bannerSubtitle')}</Text>
+          <Text style={[styles.islandTitle, { color: theme.primary }]}>{islandName}</Text>
 
-        <FavoritesPanel onSelect={applyFavorite} />
+          <ActiveTrackingSection />
+          <PinnedRoutesSection onSelect={(o, d) => applySearch(o, d)} />
 
-        {stopsLoading && isOnline ? (
-          <ActivityIndicator color={theme.primary} />
-        ) : (
-          <>
-            <StopPicker
-              label={t('originLabel')}
-              placeholder={t('originPlaceholder')}
-              value={origin}
+          {!stopsLoading || !isOnline ? (
+            <TransitPlannerCard
+              origin={origin}
+              destination={destination}
+              date={date}
+              time={time}
               stops={stops}
-              onSelect={setOrigin}
+              isOnline={canSearchOffline}
+              directionsOnline={isOnline}
+              searching={search.isFetching}
+              onOriginChange={setOrigin}
+              onDestinationChange={setDestination}
+              onDateChange={setDate}
+              onTimeChange={setTime}
+              onSearch={runSearch}
+              onDirections={openDirections}
             />
-            <StopPicker
-              label={t('destinationLabel')}
-              placeholder={t('destinationPlaceholder')}
-              value={destination}
-              stops={stops}
-              onSelect={setDestination}
+          ) : (
+            <ActivityIndicator color={theme.primary} style={{ marginVertical: space.xl }} />
+          )}
+
+          {search.isFetching && !hasResults ? (
+            <ActivityIndicator color={theme.primary} style={{ marginTop: space.lg }} />
+          ) : null}
+
+          {showEmptyResults ? (
+            <EmptyState
+              icon={Bus}
+              title={t('noRoutesMessage', { origin, destination })}
+              description={t('noRoutesSubtitle')}
             />
+          ) : null}
 
-            <FavoriteToggle origin={origin} destination={destination} />
-
-            <Text style={[styles.label, { color: theme.text }]}>{t('dayLabel')}</Text>
-            <View style={styles.dayRow}>
-              {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
-                <Pressable
-                  key={d}
-                  onPress={() => setDay(d)}
-                  style={[
-                    styles.dayChip,
-                    {
-                      backgroundColor: day === d ? theme.primary : theme.card,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: day === d ? '#fff' : theme.text, fontSize: 12 }}>
-                    {t(d)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Text style={[styles.label, { color: theme.text }]}>{t('timeLabel')}</Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
-              ]}
-              value={time}
-              onChangeText={setTime}
-              placeholder="08:00"
-              placeholderTextColor={theme.muted}
-            />
-
-            <Pressable
-              onPress={runSearch}
-              style={[
-                styles.searchBtn,
-                { backgroundColor: isOnline ? theme.primary : theme.muted },
-              ]}
-              disabled={!isOnline}
-            >
-              <Text style={styles.searchBtnText}>{t('searchButton')}</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={openDirections}
-              style={[
-                styles.directionsBtn,
-                {
-                  backgroundColor: isOnline ? theme.secondary : theme.muted,
-                  opacity: isOnline ? 1 : 0.7,
-                },
-              ]}
-              disabled={!isOnline || !origin || !destination}
-            >
-              <Text style={styles.searchBtnText}>{t('directionsButton')}</Text>
-            </Pressable>
-          </>
-        )}
-
-        {offlineSearchMessage ? (
-          <Text style={{ color: theme.muted, marginTop: 12 }}>{offlineSearchMessage}</Text>
-        ) : null}
-
-        {search.isFetching ? <ActivityIndicator color={theme.primary} style={{ marginTop: 16 }} /> : null}
-        {search.data ? (
-          <>
+          {hasResults && search.data ? (
             <RouteResults
               results={search.data}
-              selectedId={selected?.id}
-              onSelect={setSelected}
+              searchDay={day}
+              origin={origin}
+              destination={destination}
+              onFavoriteSelect={(o, d) => applySearch(o, d)}
             />
-            <TripDetail trip={selected} />
-          </>
-        ) : null}
+          ) : null}
+
+          {showInstructions ? <TransitInstructionCard /> : null}
+        </TransitWebShell>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  label: { fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
-  dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  dayChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8 },
-  searchBtn: { marginTop: 8, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  directionsBtn: { marginTop: 8, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  searchBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  content: {
+    padding: space.md,
+    paddingBottom: space['4xl'],
+    alignItems: 'center',
+  },
+  islandTitle: {
+    ...typography.title,
+    textAlign: 'center',
+    marginBottom: space.md,
+  },
 });

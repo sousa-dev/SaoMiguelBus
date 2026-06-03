@@ -1,28 +1,31 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { Field } from '@/components/ui/Field';
 import type { TrailListFilters } from '@/features/trails/hooks/useTrailQueries';
-import type { AppTheme } from '@/lib/theme';
+import { space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 
 const DIFFICULTIES = ['', 'easy', 'moderate', 'hard'] as const;
 const SHAPES = ['', 'circular', 'linear'] as const;
 
 export function TrailFilters({
-  theme,
   draft,
   applied,
   onDraftChange,
   onApply,
   onReset,
 }: {
-  theme: AppTheme;
   draft: TrailListFilters;
   applied: TrailListFilters;
   onDraftChange: (next: TrailListFilters) => void;
   onApply: () => void;
   onReset: () => void;
 }) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const dirty =
     draft.difficulty !== applied.difficulty ||
@@ -32,118 +35,66 @@ export function TrailFilters({
 
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.label, { color: theme.muted }]}>{t('trailsFilterDifficulty')}</Text>
+      <Text style={[typography.overline, { color: theme.muted }]}>{t('trailsFilterDifficulty')}</Text>
       <View style={styles.chips}>
         {DIFFICULTIES.map((value) => {
-          const active = draft.difficulty === value;
-          const label = value
-            ? t(`trailsDifficulty_${value}`, { defaultValue: value })
-            : t('trailsFilterAll');
+          const label = value ? t(`trailsDifficulty_${value}`, { defaultValue: value }) : t('trailsFilterAll');
           return (
-            <Pressable
+            <Chip
               key={value || 'all-diff'}
+              label={label}
+              selected={draft.difficulty === value}
               onPress={() => onDraftChange({ ...draft, difficulty: value || undefined })}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: active ? theme.primary : theme.card,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text style={{ color: active ? '#fff' : theme.text, fontSize: 12 }}>{label}</Text>
-            </Pressable>
+            />
           );
         })}
       </View>
 
-      <Text style={[styles.label, { color: theme.muted }]}>{t('trailsFilterShape')}</Text>
+      <Text style={[typography.overline, { color: theme.muted, marginTop: space.sm }]}>{t('trailsFilterShape')}</Text>
       <View style={styles.chips}>
         {SHAPES.map((value) => {
-          const active = draft.shape === value;
           const label = value ? t(`trailsShape_${value}`) : t('trailsFilterAll');
           return (
-            <Pressable
+            <Chip
               key={value || 'all-shape'}
+              label={label}
+              selected={draft.shape === value}
               onPress={() => onDraftChange({ ...draft, shape: value || undefined })}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: active ? theme.primary : theme.card,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text style={{ color: active ? '#fff' : theme.text, fontSize: 12 }}>{label}</Text>
-            </Pressable>
+            />
           );
         })}
       </View>
 
       <View style={styles.lengthRow}>
-        <TextInput
-          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.card }]}
+        <Field
           value={draft.minLength != null ? String(draft.minLength) : ''}
           onChangeText={(text) =>
-            onDraftChange({
-              ...draft,
-              minLength: text ? Number(text) || undefined : undefined,
-            })
+            onDraftChange({ ...draft, minLength: text ? Number(text) || undefined : undefined })
           }
           placeholder={t('trailsFilterMinKm')}
-          placeholderTextColor={theme.muted}
           keyboardType="decimal-pad"
         />
-        <TextInput
-          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.card }]}
+        <Field
           value={draft.maxLength != null ? String(draft.maxLength) : ''}
           onChangeText={(text) =>
-            onDraftChange({
-              ...draft,
-              maxLength: text ? Number(text) || undefined : undefined,
-            })
+            onDraftChange({ ...draft, maxLength: text ? Number(text) || undefined : undefined })
           }
           placeholder={t('trailsFilterMaxKm')}
-          placeholderTextColor={theme.muted}
           keyboardType="decimal-pad"
         />
       </View>
 
       <View style={styles.actions}>
-        <Pressable
-          onPress={onApply}
-          disabled={!dirty}
-          style={[styles.btn, { backgroundColor: dirty ? theme.primary : theme.border }]}
-        >
-          <Text style={styles.btnText}>{t('trailsFilterApply')}</Text>
-        </Pressable>
-        <Pressable onPress={onReset} style={[styles.btn, { backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }]}>
-          <Text style={{ color: theme.text, fontWeight: '600' }}>{t('trailsFilterReset')}</Text>
-        </Pressable>
+        <Button label={t('trailsFilterApply')} onPress={onApply} disabled={!dirty} style={{ flex: 1 }} />
+        <Button label={t('trailsFilterReset')} variant="outline" onPress={onReset} style={{ flex: 1 }} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 12 },
-  label: { fontSize: 12, marginBottom: 6, marginTop: 4 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  lengthRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  actions: { flexDirection: 'row', gap: 8 },
-  btn: { flex: 1, borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700' },
+  wrap: { marginBottom: space.md, paddingHorizontal: space.md },
+  chips: { flexDirection: 'row', flexWrap: 'wrap' },
+  lengthRow: { flexDirection: 'row', gap: space.sm },
+  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
 });

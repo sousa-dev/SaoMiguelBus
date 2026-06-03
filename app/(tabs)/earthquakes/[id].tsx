@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Clock, MapPin, Waves } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
+import { onColorFor } from '@/lib/color-utils';
+import { magnitudeColor } from '@/lib/seismic-colors';
 import { useSeismicEvent } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { track } from '@/lib/analytics';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function EarthquakeDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const eventId = Number(id);
   const event = useSeismicEvent(eventId, Number.isFinite(eventId));
@@ -24,67 +33,106 @@ export default function EarthquakeDetailScreen() {
   }, [event.data?.id]);
 
   if (event.isLoading) {
-    return <ActivityIndicator color={theme.primary} style={{ marginTop: 24 }} />;
+    return (
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
+    );
   }
 
   if (!event.data) {
-    return <Text style={{ color: theme.muted, padding: 16 }}>{t('seismicNotFound')}</Text>;
+    return (
+      <Screen withStackHeader>
+        <ErrorState title={t('seismicNotFound')} />
+      </Screen>
+    );
   }
 
   const data = event.data;
-  const mapsUrl = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
   const feltYes = data.feltYesCount ?? data.feltCount ?? 0;
+
+  const openOnSeismicMap = () => {
+    track('seismic', 'view', { screen: 'map', source: 'detail', event_id: data.id });
+    router.replace({
+      pathname: '/(tabs)/earthquakes',
+      params: {
+        focusLat: String(data.latitude),
+        focusLng: String(data.longitude),
+        focusId: String(data.id),
+      },
+    });
+  };
   const feltNo = data.feltNoCount ?? 0;
-
+  const magColor = magnitudeColor(theme, data.magnitude);
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.mag, { color: theme.primary }]}>M{data.magnitude.toFixed(1)}</Text>
-      <Text style={[styles.region, { color: theme.text }]}>{data.region || '—'}</Text>
-      <Text style={{ color: theme.muted, marginBottom: 12 }}>
-        {new Date(data.occurredAt).toLocaleString()}
-      </Text>
-      <Text style={{ color: theme.text, marginBottom: 8 }}>
-        {t('seismicDepth', { depth: data.depthKm ?? '—' })}
-      </Text>
-      <Text style={{ color: theme.text, marginBottom: 16 }}>
-        {t('seismicCoords', { lat: data.latitude.toFixed(2), lng: data.longitude.toFixed(2) })}
-      </Text>
-      {feltYes > 0 || feltNo > 0 ? (
-        <Text style={{ color: theme.muted, marginBottom: 16 }}>
-          {t('seismicFeltYesCount', { count: feltYes })}
-          {feltNo > 0 ? ` · ${t('seismicFeltNoCount', { count: feltNo })}` : ''}
-        </Text>
-      ) : null}
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card elevated style={styles.hero}>
+          <View style={[styles.magRing, { backgroundColor: magColor }]}>
+            <Text style={[styles.magText, { color: onColorFor(magColor) }]}>
+              M{data.magnitude.toFixed(1)}
+            </Text>
+          </View>
+          <Text style={[typography.title, { color: theme.text, marginTop: space.lg, textAlign: 'center' }]}>
+            {data.region || '—'}
+          </Text>
+          <View style={styles.metaRow}>
+            <Clock size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>
+              {new Date(data.occurredAt).toLocaleString()}
+            </Text>
+          </View>
+          <Badge label={t('seismicDepth', { depth: data.depthKm ?? '—' })} tone="neutral" />
+        </Card>
 
-      <Pressable
-        onPress={() => WebBrowser.openBrowserAsync(mapsUrl)}
-        style={[styles.btn, { backgroundColor: theme.secondary, marginBottom: 10 }]}
-      >
-        <Text style={styles.btnText}>{t('seismicOpenMap')}</Text>
-      </Pressable>
+        <Card style={styles.mapCard}>
+          <MapPin size={iconSize.lg} color={theme.primary} />
+          <Text style={[typography.body, { color: theme.text, marginTop: space.sm }]}>
+            {t('seismicCoords', { lat: data.latitude.toFixed(2), lng: data.longitude.toFixed(2) })}
+          </Text>
+          <Button
+            label={t('seismicOpenMap')}
+            variant="outline"
+            onPress={openOnSeismicMap}
+            fullWidth
+            style={{ marginTop: space.md }}
+          />
+        </Card>
 
-      <Pressable
-        onPress={() => setFeltOpen(true)}
-        style={[styles.btn, { backgroundColor: theme.primary }]}
-      >
-        <Text style={styles.btnText}>{t('seismicFeltButton')}</Text>
-      </Pressable>
+        {(feltYes > 0 || feltNo > 0) && (
+          <Card>
+            <Waves size={iconSize.md} color={theme.muted} />
+            <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]}>
+              {t('seismicFeltYesCount', { count: feltYes })}
+              {feltNo > 0 ? ` · ${t('seismicFeltNoCount', { count: feltNo })}` : ''}
+            </Text>
+          </Card>
+        )}
 
-      <FeltVoteSheet
-        visible={feltOpen}
-        eventId={data.id}
-        event={data}
-        theme={theme}
-        onClose={() => setFeltOpen(false)}
-      />
-    </ScrollView>
+        <Button label={t('seismicFeltButton')} fullWidth onPress={() => setFeltOpen(true)} />
+
+        <FeltVoteSheet
+          visible={feltOpen}
+          eventId={data.id}
+          event={data}
+          onClose={() => setFeltOpen(false)}
+        />
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  mag: { fontSize: 36, fontWeight: '800' },
-  region: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700' },
+  content: { padding: space.lg, paddingBottom: space['4xl'], gap: space.md },
+  hero: { alignItems: 'center' },
+  magRing: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  magText: { fontSize: 28, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginVertical: space.md },
+  mapCard: { alignItems: 'center' },
 });

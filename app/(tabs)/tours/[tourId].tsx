@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
+  Dimensions,
+  FlatList,
   Image,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,10 +10,19 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-
+import { Check, Clock, ExternalLink, Star } from 'lucide-react-native';
+import { Screen } from '@/components/Screen';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { ErrorState } from '@/components/ui/StateView';
 import { trackTourBookClick, trackTourOpen, useTour } from '@/features/events/hooks/useTourQueries';
-import { openViatorExternal } from '@/features/events/viator';
+import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
+import { useNetworkStatus } from '@/lib/network-status';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 function formatDuration(
   minutes: number | null,
@@ -32,16 +41,14 @@ function formatDuration(
     : t('tourDurationHours', { hours });
 }
 
-function formatFlag(flag: string): string {
-  return flag.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 export default function TourDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const { isOnline } = useNetworkStatus();
   const { tourId } = useLocalSearchParams<{ tourId: string }>();
   const code = (tourId ?? '').trim();
   const tour = useTour(code, code.length > 0);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   useEffect(() => {
     if (tour.data) {
@@ -50,95 +57,163 @@ export default function TourDetailScreen() {
   }, [tour.data?.code]);
 
   if (tour.isLoading) {
-    return <ActivityIndicator color={theme.primary} style={{ marginTop: 24 }} />;
+    return (
+      <Screen withStackHeader>
+        <View style={{ padding: space.lg }}>
+          <CardSkeleton imageHeight={220} />
+        </View>
+      </Screen>
+    );
   }
 
   if (!tour.data) {
-    return <Text style={{ color: theme.muted, padding: 16 }}>{t('tourNotFound')}</Text>;
+    return (
+      <Screen withStackHeader>
+        <ErrorState
+          title={t('tourNotFound')}
+          actionLabel={t('toursBrowseAll')}
+          onAction={() => openViatorExternal(VIATOR_FALLBACK_URL)}
+        />
+      </Screen>
+    );
   }
 
   const data = tour.data;
-  const hero = data.heroUrl || data.thumbnailUrl;
+  const images = [data.heroUrl, data.thumbnailUrl].filter(Boolean) as string[];
   const duration = formatDuration(data.durationMinutes, t);
+  const priceLabel =
+    data.fromPrice != null
+      ? t('tourFromPrice', { price: data.fromPrice.toFixed(0), currency: data.currency })
+      : t('tourBookCta');
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      {hero ? (
-        <Image source={{ uri: hero }} style={styles.hero} resizeMode="cover" />
-      ) : (
-        <View style={[styles.heroPlaceholder, { backgroundColor: theme.border }]} />
-      )}
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {images.length > 0 ? (
+          <View>
+            <FlatList
+              data={images}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(uri, i) => `${uri}-${i}`}
+              onMomentumScrollEnd={(e) => {
+                const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                setGalleryIndex(idx);
+              }}
+              renderItem={({ item }) => (
+                <Image source={{ uri: item }} style={styles.hero} resizeMode="cover" />
+              )}
+            />
+            {images.length > 1 ? (
+              <View style={styles.dots}>
+                {images.map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.dot,
+                      { backgroundColor: i === galleryIndex ? theme.primary : theme.outline },
+                    ]}
+                  />
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <View style={[styles.hero, { backgroundColor: theme.surfaceVariant }]} />
+        )}
 
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: theme.text }]}>{data.title}</Text>
+        <View style={styles.content}>
+          <Text style={[typography.title, { color: theme.text }]}>{data.title}</Text>
 
-        <View style={styles.meta}>
-          {data.rating != null && data.rating > 0 ? (
-            <Text style={{ color: theme.muted }}>
-              ★ {data.rating.toFixed(1)}
-              {data.reviewCount != null && data.reviewCount > 0
-                ? ` · ${t('tourReviews', { count: data.reviewCount })}`
-                : ''}
+          <View style={styles.facts}>
+            {data.rating != null && data.rating > 0 ? (
+              <View style={styles.fact}>
+                <Star size={iconSize.md} color={theme.accent} fill={theme.accent} />
+                <Text style={[typography.caption, { color: theme.muted }]}>
+                  {data.rating.toFixed(1)}
+                  {data.reviewCount ? ` · ${t('tourReviews', { count: data.reviewCount })}` : ''}
+                </Text>
+              </View>
+            ) : null}
+            {duration ? (
+              <View style={styles.fact}>
+                <Clock size={iconSize.md} color={theme.muted} />
+                <Text style={[typography.caption, { color: theme.muted }]}>{duration}</Text>
+              </View>
+            ) : null}
+            {data.fromPrice != null ? <Badge label={priceLabel} tone="accent" /> : null}
+          </View>
+
+          {data.flags.length > 0 ? (
+            <View style={styles.highlights}>
+              {data.flags.map((flag) => (
+                <View key={flag} style={styles.highlightRow}>
+                  <Check size={16} color={theme.primary} />
+                  <Text style={[typography.body, { color: theme.text, flex: 1 }]}>
+                    {flag.replace(/_/g, ' ')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {data.description ? (
+            <Text style={[typography.body, { color: theme.text, lineHeight: 24, marginTop: space.lg }]}>
+              {data.description}
             </Text>
           ) : null}
-          {duration ? <Text style={{ color: theme.muted }}>{duration}</Text> : null}
         </View>
+      </ScrollView>
 
-        {data.fromPrice != null ? (
-          <Text style={[styles.price, { color: theme.primary }]}>
-            {t('tourFromPrice', { price: data.fromPrice.toFixed(0), currency: data.currency })}
-          </Text>
-        ) : null}
-
-        {data.flags.length > 0 ? (
-          <View style={styles.flags}>
-            {data.flags.map((flag) => (
-              <Text
-                key={flag}
-                style={[styles.flag, { color: theme.secondary, borderColor: theme.border }]}
-              >
-                {formatFlag(flag)}
-              </Text>
-            ))}
-          </View>
-        ) : null}
-
-        {data.description ? (
-          <Text style={[styles.description, { color: theme.text }]}>{data.description}</Text>
-        ) : null}
-
-        <Pressable
+      <View
+        style={[
+          styles.bookBar,
+          {
+            paddingBottom: space.md,
+            backgroundColor: theme.surface,
+            borderTopColor: theme.border,
+          },
+        ]}
+      >
+        <Button
+          label={`${t('tourBookCta')} · ${priceLabel}`}
+          disabled={!isOnline}
+          fullWidth
           onPress={() => {
             trackTourBookClick(data.code);
             openViatorExternal(data.bookingUrl);
           }}
-          style={[styles.btn, { backgroundColor: theme.primary }]}
-        >
-          <Text style={styles.btnText}>{t('tourBookCta')}</Text>
-        </Pressable>
+        />
+        <View style={styles.externalRow}>
+          <ExternalLink size={14} color={theme.muted} />
+          <Text style={[typography.caption, { color: theme.muted, marginLeft: 4 }]}>
+            {t('toursBrowseAll')}
+          </Text>
+        </View>
       </View>
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  hero: { width: '100%', height: 220 },
-  heroPlaceholder: { width: '100%', height: 220 },
-  content: { padding: 16 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
-  meta: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 },
-  price: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  flags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  flag: {
-    fontSize: 12,
-    fontWeight: '600',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  scroll: { paddingBottom: 96 },
+  hero: { width: SCREEN_WIDTH, height: 240 },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: space.sm },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  content: { padding: space.lg },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, marginTop: space.md, alignItems: 'center' },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  highlights: { marginTop: space.lg, gap: space.sm },
+  highlightRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  bookBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  description: { lineHeight: 22, marginBottom: 20 },
-  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  externalRow: { flexDirection: 'row', justifyContent: 'center', marginTop: space.xs },
 });

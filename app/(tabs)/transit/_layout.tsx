@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { StackBackButton } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -15,7 +17,12 @@ export default function TransitLayout() {
         name="index"
         options={{
           title: t('navBarSearchLabel'),
-          headerRight: () => <SettingsHeaderButton />,
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <ProfileHeaderButton />
+              <SettingsHeaderButton />
+            </View>
+          ),
         }}
       />
       <Stack.Screen

@@ -1,32 +1,35 @@
-import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Banner } from '@/components/ui/Banner';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
+import { Field } from '@/components/ui/Field';
 import { useMarketplaceCategories } from '@/features/marketplace/hooks/useMarketplaceQueries';
+import { space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 import type { MarketplaceProvider, ProviderWriteInput } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
-export function ProviderForm({
-  theme,
-  initial,
-  submitting,
-  error,
-  onSubmit,
-}: {
-  theme: AppTheme;
+type ProviderFormProps = {
   initial?: MarketplaceProvider;
   submitting: boolean;
   error: string | null;
   onSubmit: (input: ProviderWriteInput) => void;
-}) {
+  onDelete?: () => void;
+  deleting?: boolean;
+};
+
+export function ProviderForm({
+  initial,
+  submitting,
+  error,
+  onSubmit,
+  onDelete,
+  deleting,
+}: ProviderFormProps) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const categories = useMarketplaceCategories();
 
@@ -39,12 +42,13 @@ export function ProviderForm({
   const [whatsapp, setWhatsapp] = useState(initial?.whatsapp ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
   const [rate, setRate] = useState(initial?.hourlyRate != null ? String(initial.hourlyRate) : '');
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const selectExistingCategory = (slug: string) => {
     setUseNewCategory(false);
     setNewCategoryName('');
     setCategorySlug(slug);
+    setFieldErrors((e) => ({ ...e, category: '' }));
   };
 
   const enableNewCategory = () => {
@@ -53,21 +57,22 @@ export function ProviderForm({
   };
 
   const submit = () => {
+    const errors: Record<string, string> = {};
     if (!name.trim()) {
-      setLocalError(t('marketplaceFormError'));
-      return;
+      errors.name = t('marketplaceFormError');
     }
     if (useNewCategory) {
-      const trimmed = newCategoryName.trim();
-      if (trimmed.length < 2) {
-        setLocalError(t('marketplaceFormCategoryNameError'));
-        return;
+      if (newCategoryName.trim().length < 2) {
+        errors.category = t('marketplaceFormCategoryNameError');
       }
     } else if (!categorySlug) {
-      setLocalError(t('marketplaceFormError'));
+      errors.category = t('marketplaceFormError');
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
-    setLocalError(null);
+
     const parsedRate = rate.trim() ? Number(rate.replace(',', '.')) : null;
     const payload: ProviderWriteInput = {
       name: name.trim(),
@@ -85,136 +90,126 @@ export function ProviderForm({
     onSubmit(payload);
   };
 
+  const summaryError = error ?? (Object.keys(fieldErrors).length > 0 ? t('marketplaceFormError') : null);
+
   return (
-    <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
-      <Field theme={theme} label={t('marketplaceFormName')} value={name} onChange={setName} />
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {summaryError ? <Banner variant="danger" message={summaryError} /> : null}
 
-      <Text style={[styles.label, { color: theme.muted }]}>{t('marketplaceFormCategory')}</Text>
-      <View style={styles.chips}>
-        {(categories.data ?? []).map((cat) => {
-          const active = !useNewCategory && cat.slug === categorySlug;
-          return (
-            <Pressable
-              key={cat.slug}
-              onPress={() => selectExistingCategory(cat.slug)}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: active ? theme.primary : theme.card,
-                  borderColor: active ? theme.primary : theme.border,
-                },
-              ]}
-            >
-              <Text style={{ color: active ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
-                {cat.name}
-              </Text>
-            </Pressable>
-          );
-        })}
-        <Pressable
-          onPress={enableNewCategory}
-          style={[
-            styles.chip,
-            {
-              backgroundColor: useNewCategory ? theme.primary : theme.card,
-              borderColor: useNewCategory ? theme.primary : theme.border,
-              borderStyle: 'dashed',
-            },
-          ]}
-        >
-          <Text style={{ color: useNewCategory ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
-            + {t('marketplaceFormNewCategory')}
+        <Card elevated style={styles.section}>
+          <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
+            {t('marketplaceFormSectionBasics')}
           </Text>
-        </Pressable>
-      </View>
-
-      {useNewCategory ? (
-        <View style={{ marginBottom: 12 }}>
-          <Text style={[styles.label, { color: theme.muted }]}>{t('marketplaceFormCategoryName')}</Text>
-          <TextInput
-            value={newCategoryName}
-            onChangeText={setNewCategoryName}
-            placeholder={t('marketplaceFormCategoryNamePlaceholder')}
-            placeholderTextColor={theme.muted}
-            style={[
-              styles.input,
-              { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
-            ]}
+          <Field
+            label={t('marketplaceFormName')}
+            value={name}
+            onChangeText={setName}
+            error={fieldErrors.name}
           />
-          <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
-            {t('marketplaceFormCategoryNameHint')}
+        </Card>
+
+        <Card elevated style={styles.section}>
+          <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
+            {t('marketplaceFormCategory')}
           </Text>
-        </View>
-      ) : null}
+          <View style={styles.chips}>
+            {(categories.data ?? []).map((cat) => (
+              <Chip
+                key={cat.slug}
+                label={cat.name}
+                selected={!useNewCategory && cat.slug === categorySlug}
+                onPress={() => selectExistingCategory(cat.slug)}
+              />
+            ))}
+            <Chip
+              label={`+ ${t('marketplaceFormNewCategory')}`}
+              selected={useNewCategory}
+              onPress={enableNewCategory}
+            />
+          </View>
+          {useNewCategory ? (
+            <Field
+              label={t('marketplaceFormCategoryName')}
+              value={newCategoryName}
+              onChangeText={setNewCategoryName}
+              placeholder={t('marketplaceFormCategoryNamePlaceholder')}
+              hint={t('marketplaceFormCategoryNameHint')}
+              error={fieldErrors.category}
+            />
+          ) : fieldErrors.category ? (
+            <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>
+              {fieldErrors.category}
+            </Text>
+          ) : null}
+        </Card>
 
-      <Field theme={theme} label={t('marketplaceFormBio')} value={bio} onChange={setBio} multiline />
-      <Field theme={theme} label={t('marketplaceFormPhone')} value={phone} onChange={setPhone} keyboardType="phone-pad" />
-      <Field theme={theme} label={t('marketplaceFormWhatsapp')} value={whatsapp} onChange={setWhatsapp} keyboardType="phone-pad" />
-      <Field theme={theme} label={t('marketplaceFormEmail')} value={email} onChange={setEmail} keyboardType="email-address" />
-      <Field theme={theme} label={t('marketplaceFormRate')} value={rate} onChange={setRate} keyboardType="numeric" />
+        <Card elevated style={styles.section}>
+          <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
+            {t('marketplaceFormSectionContacts')}
+          </Text>
+          <Field
+            label={t('marketplaceFormPhone')}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          <Field
+            label={t('marketplaceFormWhatsapp')}
+            value={whatsapp}
+            onChangeText={setWhatsapp}
+            keyboardType="phone-pad"
+          />
+          <Field
+            label={t('marketplaceFormEmail')}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Field
+            label={t('marketplaceFormRate')}
+            value={rate}
+            onChangeText={setRate}
+            keyboardType="decimal-pad"
+          />
+        </Card>
 
-      {(localError || error) ? (
-        <Text style={{ color: '#c0392b', marginTop: 8 }}>{localError || error}</Text>
-      ) : null}
+        <Card elevated style={styles.section}>
+          <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
+            {t('marketplaceFormSectionDescription')}
+          </Text>
+          <Field label={t('marketplaceFormBio')} value={bio} onChangeText={setBio} multiline numberOfLines={4} />
+        </Card>
 
-      <Pressable
-        onPress={submit}
-        disabled={submitting}
-        style={[styles.submit, { backgroundColor: theme.primary }]}
-      >
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.submitText}>{t('marketplaceFormSubmit')}</Text>
-        )}
-      </Pressable>
-      <Text style={{ color: theme.muted, fontSize: 12, marginTop: 10, textAlign: 'center' }}>
-        {t('marketplaceFormPendingNotice')}
-      </Text>
-    </ScrollView>
-  );
-}
-
-function Field({
-  theme,
-  label,
-  value,
-  onChange,
-  multiline,
-  keyboardType,
-}: {
-  theme: AppTheme;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  multiline?: boolean;
-  keyboardType?: 'default' | 'numeric' | 'phone-pad' | 'email-address';
-}) {
-  return (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={[styles.label, { color: theme.muted }]}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        multiline={multiline}
-        keyboardType={keyboardType ?? 'default'}
-        autoCapitalize={keyboardType === 'email-address' ? 'none' : 'sentences'}
-        style={[
-          styles.input,
-          { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
-          multiline ? { minHeight: 70, textAlignVertical: 'top' } : null,
-        ]}
-      />
-    </View>
+        <Button label={t('marketplaceFormSubmit')} onPress={submit} loading={submitting} fullWidth />
+        {onDelete ? (
+          <Button
+            label={t('marketplaceDeleteAction')}
+            variant="danger"
+            onPress={onDelete}
+            loading={deleting}
+            fullWidth
+            style={{ marginTop: space.md }}
+          />
+        ) : null}
+        <Text style={[typography.caption, styles.notice, { color: theme.muted }]}>
+          {t('marketplaceFormPendingNotice')}
+        </Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 40 },
-  label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  chip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
-  submit: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  submitText: { color: '#fff', fontWeight: '700' },
+  flex: { flex: 1 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  section: { marginBottom: space.lg },
+  sectionTitle: { marginBottom: space.md },
+  chips: { flexDirection: 'row', flexWrap: 'wrap' },
+  notice: { textAlign: 'center', marginTop: space.md },
 });

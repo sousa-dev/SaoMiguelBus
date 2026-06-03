@@ -1,9 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Footprints } from 'lucide-react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
+import { space } from '@/lib/tokens';
 import { TrailCard } from '@/features/trails/components/TrailCard';
 import { TrailFilters } from '@/features/trails/components/TrailFilters';
 import {
@@ -60,7 +64,6 @@ export default function TrailsScreen() {
   return (
     <Screen withStackHeader>
       <TrailFilters
-        theme={theme}
         draft={draftFilters}
         applied={appliedFilters}
         onDraftChange={setDraftFilters}
@@ -68,9 +71,14 @@ export default function TrailsScreen() {
         onReset={onResetFilters}
       />
 
-      {trails.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
+      {trails.isLoading ? (
+        <View style={{ padding: space.lg }}>
+          <CardSkeleton />
+          <CardSkeleton />
+        </View>
+      ) : null}
       {trails.isError ? (
-        <Text style={{ color: theme.muted }}>{t('trailsLoadError')}</Text>
+        <ErrorState title={t('trailsLoadError')} actionLabel={t('searchButton')} onAction={() => void trails.refetch()} />
       ) : null}
 
       <FlatList
@@ -85,9 +93,7 @@ export default function TrailsScreen() {
         }
         ListEmptyComponent={
           !trails.isLoading ? (
-            <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-              {t('trailsEmpty')}
-            </Text>
+            <EmptyState icon={Footprints} title={t('trailsEmpty')} />
           ) : null
         }
         ListFooterComponent={
@@ -100,7 +106,6 @@ export default function TrailsScreen() {
         renderItem={({ item }) => (
           <TrailCard
             trail={item}
-            theme={theme}
             onPress={() =>
               router.push({
                 pathname: '/(tabs)/trails/[id]',

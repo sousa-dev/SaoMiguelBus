@@ -65,26 +65,40 @@ export interface TripDetail {
   dislikesPercent?: number;
 }
 
+export interface DirectionsTimeValue {
+  value?: number;
+  text?: string;
+}
+
 export interface DirectionsStep {
   travel_mode: string;
   html_instructions?: string;
   duration?: { value: number; text: string };
   distance?: { value: number; text: string };
+  polyline?: { points?: string };
   transit_details?: {
-    line?: { short_name?: string; name?: string };
+    line?: { short_name?: string; name?: string; color?: string; vehicle?: { type?: string } };
     departure_stop?: { name?: string };
     arrival_stop?: { name?: string };
+    departure_time?: DirectionsTimeValue;
+    arrival_time?: DirectionsTimeValue;
   };
 }
 
 export interface DirectionsLeg {
   duration?: { value: number; text: string };
+  distance?: { value: number; text: string };
+  departure_time?: DirectionsTimeValue;
+  arrival_time?: DirectionsTimeValue;
+  start_address?: string;
+  end_address?: string;
   steps?: DirectionsStep[];
 }
 
 export interface DirectionsRoute {
   summary?: string;
   legs?: DirectionsLeg[];
+  overview_polyline?: { points?: string };
 }
 
 export interface DirectionsResponse {

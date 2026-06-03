@@ -1,12 +1,13 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Chip } from '@/components/ui/Chip';
+import { SearchField } from '@/components/ui/SearchField';
+import { space } from '@/lib/tokens';
 import type { ServiceCategory } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
 export function MarketplaceFilters({
-  theme,
   categories,
   activeCategory,
   query,
@@ -15,7 +16,6 @@ export function MarketplaceFilters({
   onSelectCategory,
   onToggleNearMe,
 }: {
-  theme: AppTheme;
   categories: ServiceCategory[];
   activeCategory: string | null;
   query: string;
@@ -28,32 +28,24 @@ export function MarketplaceFilters({
 
   return (
     <View style={styles.wrap}>
-      <TextInput
+      <SearchField
         value={query}
         onChangeText={onChangeQuery}
         placeholder={t('marketplaceSearchPlaceholder')}
-        placeholderTextColor={theme.muted}
-        style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.card }]}
+        accessibilityLabel={t('marketplaceSearchPlaceholder')}
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         <Chip
-          theme={theme}
           label={t('marketplaceAllCategories')}
-          active={activeCategory === null}
+          selected={activeCategory === null}
           onPress={() => onSelectCategory(null)}
         />
-        <Chip
-          theme={theme}
-          label={t('marketplaceNearMe')}
-          active={nearMe}
-          onPress={onToggleNearMe}
-        />
+        <Chip label={t('marketplaceNearMe')} selected={nearMe} onPress={onToggleNearMe} />
         {categories.map((cat) => (
           <Chip
             key={cat.slug}
-            theme={theme}
             label={cat.name}
-            active={activeCategory === cat.slug}
+            selected={activeCategory === cat.slug}
             onPress={() => onSelectCategory(activeCategory === cat.slug ? null : cat.slug)}
           />
         ))}
@@ -62,38 +54,7 @@ export function MarketplaceFilters({
   );
 }
 
-function Chip({
-  theme,
-  label,
-  active,
-  onPress,
-}: {
-  theme: AppTheme;
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.chip,
-        {
-          backgroundColor: active ? theme.primary : theme.card,
-          borderColor: active ? theme.primary : theme.border,
-        },
-      ]}
-    >
-      <Text style={{ color: active ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 8 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 8 },
-  chips: { gap: 8, paddingVertical: 2 },
-  chip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
+  wrap: { marginBottom: space.sm, paddingHorizontal: space.md, paddingTop: space.md },
+  chips: { paddingVertical: space.sm },
 });

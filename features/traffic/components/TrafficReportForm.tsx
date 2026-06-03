@@ -1,22 +1,21 @@
-import React, { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
+import { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Banner } from '@/components/ui/Banner';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
+import { Field } from '@/components/ui/Field';
 import { ReportLocationField } from '@/features/traffic/components/ReportLocationField';
-import type { AppTheme } from '@/lib/theme';
+import { trafficCategoryIcon } from '@/lib/traffic-icons';
+import { isWithinIslandBounds } from '@/lib/island-map';
+import { space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 import type { TrafficCategory, TrafficReportWriteInput } from '@/lib/types';
 
 type Props = {
-  theme: AppTheme;
   categories: TrafficCategory[];
   initialCategory?: string;
   coords: { lat: number; lng: number } | null;
@@ -25,16 +24,11 @@ type Props = {
   onCoordsChange: (coords: { lat: number; lng: number }) => void;
   submitting: boolean;
   error: string | null;
+  offline?: boolean;
   onSubmit: (input: TrafficReportWriteInput) => void;
 };
 
-/**
- * Detailed report form. Category is required; everything else optional.
- * Scheduling fields appear only for schedulable categories (e.g. radar) and
- * use an hours-from-now offset to avoid a native date-picker dependency.
- */
 export function TrafficReportForm({
-  theme,
   categories,
   initialCategory,
   coords,
@@ -43,24 +37,35 @@ export function TrafficReportForm({
   onCoordsChange,
   submitting,
   error,
+  offline,
   onSubmit,
 }: Props) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const [slug, setSlug] = useState<string | null>(initialCategory ?? null);
   const [road, setRoad] = useState('');
   const [description, setDescription] = useState('');
   const [scheduled, setScheduled] = useState(false);
-  const [startHours, setStartHours] = useState(1);
-  const [durationHours, setDurationHours] = useState(2);
+  const [startAt, setStartAt] = useState(() => new Date(Date.now() + 3600_000));
+  const [endAt, setEndAt] = useState(() => new Date(Date.now() + 3 * 3600_000));
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
   const selected = useMemo(() => categories.find((c) => c.slug === slug), [categories, slug]);
   const canSchedule = !!selected?.isSchedulable;
-  const canSubmit = !!slug && !!coords && !submitting;
+  const coordsValid = coords ? isWithinIslandBounds(coords.lat, coords.lng) : false;
+  const canSubmit = !!slug && coordsValid && !submitting && !offline;
 
   const submit = () => {
-    if (!slug || !coords) {
+    if (!slug) {
+      setCategoryError(t('trafficCategoryRequired'));
       return;
     }
+    if (!coords || !coordsValid) {
+      return;
+    }
+    setCategoryError(null);
     const input: TrafficReportWriteInput = {
       category_slug: slug,
       latitude: coords.lat,
@@ -69,150 +74,186 @@ export function TrafficReportForm({
       road: road.trim() || undefined,
     };
     if (canSchedule && scheduled) {
-      const from = new Date(Date.now() + startHours * 3600_000);
-      const until = new Date(from.getTime() + durationHours * 3600_000);
-      input.active_from = from.toISOString();
-      input.active_until = until.toISOString();
+      input.active_from = startAt.toISOString();
+      input.active_until = endAt.toISOString();
     }
     onSubmit(input);
   };
 
+  const formatWhen = (d: Date) =>
+    d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+
   return (
-    <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
-      <Text style={[styles.label, { color: theme.text }]}>{t('trafficCategory')}</Text>
-      <View style={styles.grid}>
-        {categories.map((c) => {
-          const active = c.slug === slug;
-          return (
-            <Pressable
-              key={c.id}
-              onPress={() => setSlug(c.slug)}
-              style={[
-                styles.chip,
-                {
-                  borderColor: active ? theme.primary : theme.border,
-                  backgroundColor: active ? theme.primary : theme.card,
-                },
-              ]}
-            >
-              <Text style={styles.chipIcon}>{c.icon || '⚠️'}</Text>
-              <Text style={{ color: active ? '#fff' : theme.text, fontSize: 12, fontWeight: '600' }}>
-                {c.name}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {offline ? <Banner variant="offline" message={t('offlineBanner')} /> : null}
+        {error ? <Banner variant="danger" message={error} /> : null}
 
-      <ReportLocationField
-        theme={theme}
-        coords={coords}
-        gpsCoords={gpsCoords}
-        userOnIsland={userOnIsland}
-        onCoordsChange={onCoordsChange}
-      />
-
-      <Text style={[styles.label, { color: theme.text }]}>{t('trafficRoad')}</Text>
-      <TextInput
-        value={road}
-        onChangeText={setRoad}
-        placeholder={t('trafficRoadPlaceholder')}
-        placeholderTextColor={theme.muted}
-        style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
-      />
-
-      <Text style={[styles.label, { color: theme.text }]}>{t('trafficDescription')}</Text>
-      <TextInput
-        value={description}
-        onChangeText={setDescription}
-        placeholder={t('trafficDescriptionPlaceholder')}
-        placeholderTextColor={theme.muted}
-        multiline
-        style={[
-          styles.input,
-          styles.multiline,
-          { color: theme.text, borderColor: theme.border, backgroundColor: theme.card },
-        ]}
-      />
-
-      {canSchedule ? (
-        <View style={styles.scheduleBox}>
-          <View style={styles.scheduleRow}>
-            <Text style={{ color: theme.text, fontWeight: '600' }}>{t('trafficScheduleToggle')}</Text>
-            <Switch value={scheduled} onValueChange={setScheduled} />
+        <Card elevated>
+          <Text style={[typography.overline, { color: theme.muted, marginBottom: space.md }]}>
+            {t('trafficCategory')}
+          </Text>
+          <View style={styles.grid}>
+            {categories.map((c) => {
+              const Icon = trafficCategoryIcon(c.slug);
+              const active = c.slug === slug;
+              return (
+                <Pressable
+                  key={c.id}
+                  onPress={() => {
+                    setSlug(c.slug);
+                    setCategoryError(null);
+                  }}
+                  style={[
+                    styles.categoryTile,
+                    {
+                      borderColor: active ? theme.primary : theme.border,
+                      backgroundColor: active ? theme.primary : theme.card,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={c.name}
+                >
+                  <Icon size={22} color={active ? theme.onPrimary : theme.primary} strokeWidth={2} />
+                  <Text
+                    style={[
+                      typography.caption,
+                      { color: active ? theme.onPrimary : theme.text, marginTop: 4, textAlign: 'center' },
+                    ]}
+                  >
+                    {c.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
-          {scheduled ? (
-            <>
-              <Stepper
-                theme={theme}
-                label={t('trafficStartIn', { hours: startHours })}
-                onDec={() => setStartHours((h) => Math.max(1, h - 1))}
-                onInc={() => setStartHours((h) => Math.min(72, h + 1))}
-              />
-              <Stepper
-                theme={theme}
-                label={t('trafficDuration', { hours: durationHours })}
-                onDec={() => setDurationHours((h) => Math.max(1, h - 1))}
-                onInc={() => setDurationHours((h) => Math.min(24, h + 1))}
-              />
-            </>
+          {categoryError ? (
+            <Text style={[typography.caption, { color: theme.danger, marginTop: space.sm }]}>{categoryError}</Text>
           ) : null}
-        </View>
-      ) : null}
+        </Card>
 
-      {error ? <Text style={{ color: '#c0392b', marginTop: 12 }}>{error}</Text> : null}
+        <ReportLocationField
+          coords={coords}
+          gpsCoords={gpsCoords}
+          userOnIsland={userOnIsland}
+          onCoordsChange={onCoordsChange}
+        />
 
-      <Pressable
-        disabled={!canSubmit}
-        onPress={submit}
-        style={[styles.submit, { backgroundColor: theme.primary, opacity: canSubmit ? 1 : 0.5 }]}
-      >
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.submitText}>{t('trafficSubmit')}</Text>
-        )}
-      </Pressable>
-    </ScrollView>
-  );
-}
+        <Card elevated style={styles.section}>
+          <Field
+            label={t('trafficRoad')}
+            value={road}
+            onChangeText={setRoad}
+            placeholder={t('trafficRoadPlaceholder')}
+          />
+          <Field
+            label={t('trafficDescription')}
+            value={description}
+            onChangeText={setDescription}
+            placeholder={t('trafficDescriptionPlaceholder')}
+            multiline
+            numberOfLines={4}
+          />
+        </Card>
 
-function Stepper({
-  theme,
-  label,
-  onDec,
-  onInc,
-}: {
-  theme: AppTheme;
-  label: string;
-  onDec: () => void;
-  onInc: () => void;
-}) {
-  return (
-    <View style={styles.stepper}>
-      <Pressable onPress={onDec} style={[styles.stepBtn, { borderColor: theme.border }]}>
-        <Text style={{ color: theme.text, fontSize: 18 }}>−</Text>
-      </Pressable>
-      <Text style={{ color: theme.text, flex: 1, textAlign: 'center' }}>{label}</Text>
-      <Pressable onPress={onInc} style={[styles.stepBtn, { borderColor: theme.border }]}>
-        <Text style={{ color: theme.text, fontSize: 18 }}>＋</Text>
-      </Pressable>
-    </View>
+        {canSchedule ? (
+          <Card elevated style={styles.section}>
+            <View style={styles.scheduleRow}>
+              <Text style={[typography.bodyStrong, { color: theme.text }]}>{t('trafficScheduleToggle')}</Text>
+              <Switch
+                value={scheduled}
+                onValueChange={setScheduled}
+                trackColor={{ false: theme.outline, true: theme.primary }}
+              />
+            </View>
+            {scheduled ? (
+              <>
+                <Text style={[typography.label, { color: theme.text, marginTop: space.md }]}>
+                  {t('trafficScheduleStart')}
+                </Text>
+                <Pressable onPress={() => setShowStartPicker(true)} style={[styles.timeField, { borderColor: theme.border }]}>
+                  <Text style={[typography.body, { color: theme.text }]}>{formatWhen(startAt)}</Text>
+                </Pressable>
+                {showStartPicker ? (
+                  <ThemedDateTimePicker
+                    value={startAt}
+                    mode="datetime"
+                    onChange={(_, date) => {
+                      if (Platform.OS === 'android') {
+                        setShowStartPicker(false);
+                      }
+                      if (date) {
+                        setStartAt(date);
+                        if (date >= endAt) {
+                          setEndAt(new Date(date.getTime() + 3600_000));
+                        }
+                      }
+                    }}
+                  />
+                ) : null}
+
+                <Text style={[typography.label, { color: theme.text, marginTop: space.md }]}>
+                  {t('trafficScheduleEnd')}
+                </Text>
+                <Pressable onPress={() => setShowEndPicker(true)} style={[styles.timeField, { borderColor: theme.border }]}>
+                  <Text style={[typography.body, { color: theme.text }]}>{formatWhen(endAt)}</Text>
+                </Pressable>
+                {showEndPicker ? (
+                  <ThemedDateTimePicker
+                    value={endAt}
+                    mode="datetime"
+                    minimumDate={startAt}
+                    onChange={(_, date) => {
+                      if (Platform.OS === 'android') {
+                        setShowEndPicker(false);
+                      }
+                      if (date) {
+                        setEndAt(date);
+                      }
+                    }}
+                  />
+                ) : null}
+              </>
+            ) : null}
+          </Card>
+        ) : null}
+
+        <Button
+          label={t('trafficSubmit')}
+          onPress={submit}
+          disabled={!canSubmit}
+          loading={submitting}
+          fullWidth
+          style={{ marginTop: space.lg }}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 48 },
-  label: { fontSize: 14, fontWeight: '700', marginTop: 16, marginBottom: 8 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { width: 90, paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
-  chipIcon: { fontSize: 24, marginBottom: 4 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
-  multiline: { minHeight: 80, textAlignVertical: 'top' },
-  scheduleBox: { marginTop: 16 },
+  flex: { flex: 1 },
+  content: { padding: space.lg, paddingBottom: space['4xl'] },
+  section: { marginTop: space.md },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  categoryTile: {
+    width: 88,
+    paddingVertical: space.md,
+    paddingHorizontal: space.xs,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+  },
   scheduleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
-  stepBtn: { width: 44, height: 44, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  submit: { marginTop: 24, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  submitText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  timeField: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+    padding: space.md,
+    marginTop: space.sm,
+  },
 });

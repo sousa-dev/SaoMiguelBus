@@ -3,24 +3,32 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '@/lib/dev-logging';
 
 import { ConsentGate } from '@/components/ConsentGate';
+import { GlobalFab } from '@/components/GlobalFab';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import '@/lib/i18n';
 import { loadSavedLocale } from '@/lib/locale-prefs';
-import i18n, { resources } from '@/lib/i18n';
+import i18n, { normalizeLocaleCode, resources } from '@/lib/i18n';
 import { AppQueryProvider } from '@/lib/query-provider';
-import { ThemeProvider } from '@/lib/theme';
+import { ThemeProvider, useAppTheme } from '@/lib/theme';
 import { track } from '@/lib/analytics';
 import { useConsentStore } from '@/lib/consent-store';
+import { rehydrateThemePrefs } from '@/lib/theme-prefs';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
+
+function AppStatusBar() {
+  const theme = useAppTheme();
+  return <StatusBar style={theme.isDark ? 'light' : 'dark'} />;
+}
 
 function AppShell() {
   const { data: bootstrap } = useBootstrap();
@@ -29,9 +37,14 @@ function AppShell() {
   const requireReconsent = useConsentStore((s) => s.requireReconsent);
 
   useEffect(() => {
+    void rehydrateThemePrefs();
     void loadSavedLocale().then((saved) => {
-      if (saved && saved in resources) {
-        void i18n.changeLanguage(saved);
+      if (!saved) {
+        return;
+      }
+      const code = normalizeLocaleCode(saved);
+      if (code in resources) {
+        void i18n.changeLanguage(code);
       }
     });
   }, []);
@@ -55,13 +68,26 @@ function AppShell() {
   return (
     <SafeAreaProvider>
       <ThemeProvider bootstrap={bootstrap ?? null}>
-        <StatusBar style="auto" />
+        <AppStatusBar />
         <ConsentGate>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+            <Stack.Screen
+              name="settings"
+              options={{
+                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+              }}
+            />
+            <Stack.Screen
+              name="profile"
+              options={{
+                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+              }}
+            />
             <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
           </Stack>
+          <GlobalFab />
         </ConsentGate>
       </ThemeProvider>
     </SafeAreaProvider>

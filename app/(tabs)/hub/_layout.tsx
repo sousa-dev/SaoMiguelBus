@@ -1,31 +1,33 @@
 import { Stack } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Check, Pencil } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { IconButton } from '@/components/ui/IconButton';
 import { useHubStore } from '@/lib/hub-store';
 import { useAppStackScreenOptions } from '@/lib/navigation';
+import { useAppTheme } from '@/lib/theme';
 
 function HubEditHeaderButton() {
   const { t } = useTranslation();
+  const theme = useAppTheme();
   const editMode = useHubStore((s) => s.editMode);
   const setEditMode = useHubStore((s) => s.setEditMode);
 
   return (
-    <Pressable
-      onPress={() => setEditMode(!editMode)}
-      style={styles.editBtn}
+    <IconButton
+      icon={editMode ? Check : Pencil}
       accessibilityLabel={editMode ? t('hubDone') : t('hubEdit')}
-      hitSlop={8}
-    >
-      <Text style={styles.editText}>{editMode ? t('hubDone') : t('hubEdit')}</Text>
-    </Pressable>
+      color={theme.onSurface}
+      onPress={() => setEditMode(!editMode)}
+    />
   );
 }
 
 export default function HubLayout() {
   const { t } = useTranslation();
-  const screenOptions = useAppStackScreenOptions();
+  const screenOptions = useAppStackScreenOptions('hub/index');
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -47,6 +49,4 @@ export default function HubLayout() {
 
 const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center' },
-  editBtn: { marginRight: 8, paddingVertical: 6, paddingHorizontal: 4 },
-  editText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });

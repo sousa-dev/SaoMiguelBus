@@ -1,21 +1,18 @@
+import { Ticket } from 'lucide-react-native';
 import { useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/Button';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { TourCard } from '@/features/events/components/TourCard';
 import { useTours } from '@/features/events/hooks/useTourQueries';
 import { VIATOR_FALLBACK_URL, openViatorExternal } from '@/features/events/viator';
 import { track } from '@/lib/analytics';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function ToursScreen() {
@@ -42,17 +39,25 @@ export default function ToursScreen() {
 
   return (
     <Screen withStackHeader>
-      <View style={styles.header}>
-        <Text style={[styles.subtitle, { color: theme.muted }]}>{t('toursSubtitle')}</Text>
-      </View>
+      <Text style={[typography.body, styles.subtitle, { color: theme.muted }]}>{t('toursSubtitle')}</Text>
 
-      {tours.isLoading ? <ActivityIndicator color={theme.primary} style={styles.loader} /> : null}
+      {tours.isLoading ? (
+        <View style={styles.list}>
+          <CardSkeleton imageHeight={160} />
+          <CardSkeleton imageHeight={160} />
+        </View>
+      ) : null}
+
       {tours.isError ? (
-        <Text style={[styles.message, { color: theme.muted }]}>{t('toursLoadError')}</Text>
+        <ErrorState
+          title={t('toursLoadError')}
+          actionLabel={t('toursBrowseAll')}
+          onAction={() => openViatorExternal(VIATOR_FALLBACK_URL)}
+        />
       ) : null}
 
       <FlatList
-        data={tours.data ?? []}
+        data={tours.isLoading ? [] : (tours.data ?? [])}
         keyExtractor={(item) => item.code}
         refreshControl={
           <RefreshControl
@@ -62,35 +67,29 @@ export default function ToursScreen() {
           />
         }
         ListEmptyComponent={
-          !tours.isLoading ? (
-            <View style={styles.empty}>
-              <Text style={{ color: theme.muted, textAlign: 'center' }}>{t('toursEmpty')}</Text>
-              <Pressable
-                onPress={() => openViatorExternal(VIATOR_FALLBACK_URL)}
-                style={styles.fallbackLink}
-              >
-                <Text style={{ color: theme.primary, fontWeight: '600' }}>
-                  {t('toursFallbackLinkLabel')}
-                </Text>
-              </Pressable>
-            </View>
+          !tours.isLoading && !tours.isError ? (
+            <EmptyState
+              icon={Ticket}
+              title={t('toursEmpty')}
+              actionLabel={t('toursFallbackLinkLabel')}
+              onAction={() => openViatorExternal(VIATOR_FALLBACK_URL)}
+            />
           ) : null
         }
         ListFooterComponent={
           (tours.data?.length ?? 0) > 0 ? (
-            <View style={styles.footer}>
-              <Pressable onPress={() => openViatorExternal(VIATOR_FALLBACK_URL)}>
-                <Text style={{ color: theme.primary, textAlign: 'center', fontWeight: '600' }}>
-                  {t('toursBrowseAll')}
-                </Text>
-              </Pressable>
-            </View>
+            <Button
+              label={`${t('toursBrowseAll')} ↗`}
+              variant="outline"
+              onPress={() => openViatorExternal(VIATOR_FALLBACK_URL)}
+              fullWidth
+              style={styles.footerBtn}
+            />
           ) : null
         }
         renderItem={({ item }) => (
           <TourCard
             tour={item}
-            theme={theme}
             fromPriceLabel={fromPriceLabel}
             reviewsLabel={reviewsLabel}
             onPress={() =>
@@ -108,38 +107,7 @@ export default function ToursScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  subtitle: {
-    fontSize: 15,
-    textAlign: 'center',
-  },
-  loader: {
-    marginVertical: 12,
-  },
-  message: {
-    textAlign: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  list: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  empty: {
-    marginTop: 24,
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-  },
-  fallbackLink: {
-    marginTop: 8,
-  },
-  footer: {
-    marginTop: 8,
-    paddingVertical: 12,
-  },
+  subtitle: { textAlign: 'center', paddingHorizontal: space.lg, paddingBottom: space.sm },
+  list: { padding: space.lg, paddingBottom: space['2xl'] },
+  footerBtn: { marginTop: space.md },
 });

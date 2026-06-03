@@ -1,12 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Newspaper } from 'lucide-react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { CardSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { NewsCard } from '@/features/news/components/NewsCard';
 import { NewsFilters, type NewsTabCategory } from '@/features/news/components/NewsFilters';
 import { useNewsArticles } from '@/features/news/hooks/useNewsQueries';
+import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function NewsScreen() {
@@ -34,10 +38,11 @@ export default function NewsScreen() {
     void articles.refetch();
   }, [articles.refetch]);
 
+  const data = articles.data ?? [];
+
   return (
     <Screen withStackHeader>
       <NewsFilters
-        theme={theme}
         query={query}
         category={category}
         onQueryChange={setQuery}
@@ -45,13 +50,18 @@ export default function NewsScreen() {
         onSearch={() => setSearchQ(query.trim())}
       />
 
-      {articles.isLoading ? <ActivityIndicator color={theme.primary} /> : null}
+      {articles.isLoading ? (
+        <View style={{ padding: space.lg }}>
+          <CardSkeleton />
+        </View>
+      ) : null}
+
       {articles.isError ? (
-        <Text style={{ color: theme.muted }}>{t('newsLoadError')}</Text>
+        <ErrorState title={t('newsLoadError')} actionLabel={t('searchButton')} onAction={() => void articles.refetch()} />
       ) : null}
 
       <FlatList
-        data={articles.data ?? []}
+        data={articles.isLoading ? [] : data}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
           <RefreshControl
@@ -61,16 +71,14 @@ export default function NewsScreen() {
           />
         }
         ListEmptyComponent={
-          !articles.isLoading ? (
-            <Text style={{ color: theme.muted, textAlign: 'center', marginTop: 24 }}>
-              {t('newsEmpty')}
-            </Text>
+          !articles.isLoading && !articles.isError ? (
+            <EmptyState icon={Newspaper} title={t('newsEmpty')} />
           ) : null
         }
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <NewsCard
             article={item}
-            theme={theme}
+            featured={index === 0}
             onPress={() =>
               router.push({
                 pathname: '/(tabs)/news/[articleId]',
@@ -86,5 +94,5 @@ export default function NewsScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 16, paddingBottom: 32 },
+  list: { padding: space.lg, paddingBottom: space['2xl'] },
 });

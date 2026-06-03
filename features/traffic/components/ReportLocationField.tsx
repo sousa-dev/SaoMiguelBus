@@ -1,94 +1,85 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { MapPin } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Field } from '@/components/ui/Field';
 import { LocationPickerModal } from '@/features/traffic/components/LocationPickerModal';
-import type { AppTheme } from '@/lib/theme';
+import { isWithinIslandBounds } from '@/lib/island-map';
+import { iconSize, space, typography } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 
 type Coords = { lat: number; lng: number };
 
 type Props = {
-  theme: AppTheme;
   coords: Coords | null;
   gpsCoords?: Coords | null;
   userOnIsland?: boolean;
   onCoordsChange: (coords: Coords) => void;
 };
 
-export function ReportLocationField({
-  theme,
-  coords,
-  gpsCoords,
-  userOnIsland,
-  onCoordsChange,
-}: Props) {
+export function ReportLocationField({ coords, gpsCoords, userOnIsland, onCoordsChange }: Props) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const useGps = () => {
-    if (gpsCoords) {
-      onCoordsChange(gpsCoords);
-    }
-  };
+  const outOfBounds = coords ? !isWithinIslandBounds(coords.lat, coords.lng) : false;
+  const coordLabel = coords
+    ? t('trafficLocationSelected', { lat: coords.lat.toFixed(4), lng: coords.lng.toFixed(4) })
+    : '';
 
   return (
-    <View style={styles.wrap}>
-      <Text style={[styles.label, { color: theme.text }]}>{t('trafficLocationLabel')}</Text>
-      {coords ? (
-        <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 10 }}>
-          {t('trafficLocationSelected', {
-            lat: coords.lat.toFixed(4),
-            lng: coords.lng.toFixed(4),
-          })}
-        </Text>
-      ) : (
-        <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 10 }}>
-          {t('trafficPickLocationHint')}
-        </Text>
-      )}
+    <Card style={styles.card}>
+      <View style={styles.header}>
+        <MapPin size={iconSize.md} color={theme.primary} />
+        <Text style={[typography.label, { color: theme.text }]}>{t('trafficLocationLabel')}</Text>
+      </View>
 
-      <View style={styles.row}>
+      <Field
+        value={coordLabel}
+        editable={false}
+        placeholder={t('trafficPickLocationHint')}
+        error={
+          outOfBounds
+            ? t('trafficLocationOutOfBounds')
+            : !coords
+              ? t('trafficLocationNeeded')
+              : undefined
+        }
+      />
+
+      <View style={styles.actions}>
         {userOnIsland && gpsCoords ? (
-          <Pressable
-            onPress={useGps}
-            style={[styles.btn, { borderColor: theme.border, backgroundColor: theme.card }]}
-          >
-            <Text style={{ color: theme.text, fontWeight: '600', fontSize: 13 }}>
-              {t('trafficUseMyLocation')}
-            </Text>
-          </Pressable>
+          <Button
+            label={t('trafficUseMyLocation')}
+            variant="outline"
+            onPress={() => onCoordsChange(gpsCoords)}
+            style={styles.actionBtn}
+          />
         ) : null}
-        <Pressable
+        <Button
+          label={t('trafficPickOnMap')}
           onPress={() => setPickerOpen(true)}
-          style={[styles.btn, { borderColor: theme.primary, backgroundColor: theme.card, flex: 1 }]}
-        >
-          <Text style={{ color: theme.primary, fontWeight: '700', fontSize: 13 }}>
-            {t('trafficPickOnMap')}
-          </Text>
-        </Pressable>
+          style={styles.actionBtn}
+        />
       </View>
 
       <LocationPickerModal
         visible={pickerOpen}
-        theme={theme}
         initialCoords={coords}
         userCoords={gpsCoords}
         onConfirm={onCoordsChange}
         onClose={() => setPickerOpen(false)}
       />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 8 },
-  label: { fontSize: 14, fontWeight: '700', marginBottom: 6 },
-  row: { flexDirection: 'row', gap: 8 },
-  btn: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
+  card: { marginTop: space.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.md },
+  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
+  actionBtn: { flex: 1 },
 });

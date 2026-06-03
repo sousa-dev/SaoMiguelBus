@@ -1,7 +1,9 @@
+import { MapPin } from 'lucide-react-native';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, UrlTile, type Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps';
 
+import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { TrafficMapMarker } from '@/features/traffic/components/TrafficMapMarker';
 import {
   clampCoordinate,
@@ -64,6 +66,7 @@ export function TrafficMap({
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_DEFAULT}
+        mapType="none"
         initialRegion={islandRegion}
         minZoomLevel={9}
         maxZoomLevel={18}
@@ -93,21 +96,15 @@ export function TrafficMap({
             : undefined
         }
       >
-        {Platform.OS === 'android' ? (
-          <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-        ) : null}
+        <OsmMapLayer isDark={theme.isDark} />
         {draftPin ? (
           <Marker
             coordinate={{ latitude: draftPin.lat, longitude: draftPin.lng }}
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 1 }}
           >
-            <View style={[styles.draftPin, { backgroundColor: theme.secondary }]}>
-              <Text style={styles.draftPinIcon}>📍</Text>
+            <View style={[styles.draftPin, { backgroundColor: theme.secondary, borderColor: theme.onSecondary }]}>
+              <MapPin size={22} color={theme.onSecondary} strokeWidth={2.5} />
             </View>
           </Marker>
         ) : null}
@@ -134,10 +131,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#fff',
     elevation: 6,
   },
-  draftPinIcon: { fontSize: 22 },
 });
 
 // Bounds exported for tests / callers that need explicit limits

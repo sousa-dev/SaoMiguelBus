@@ -1,74 +1,61 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
+import { trafficCategoryIcon } from '@/lib/traffic-icons';
+import { onColorFor } from '@/lib/color-utils';
+import { elevation } from '@/lib/tokens';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficReport } from '@/lib/types';
 
-/** Distinct marker colors per category slug (seeded defaults + fallback). */
-const CATEGORY_MARKER_COLORS: Record<string, string> = {
-  acidente: '#C62828',
-  transito: '#E65100',
-  radar: '#6A1B9A',
-  policia: '#1565C0',
-  obras: '#F9A825',
-  desvio: '#00695C',
-  inundacao: '#0277BD',
-  perigo: '#AD1457',
-  tempo: '#546E7A',
+const CATEGORY_COLORS: Record<string, keyof AppTheme> = {
+  acidente: 'danger',
+  transito: 'warning',
+  radar: 'secondary',
+  policia: 'info',
+  obras: 'accent',
+  desvio: 'success',
+  inundacao: 'info',
+  perigo: 'danger',
+  tempo: 'muted',
 };
 
-export function markerColorForCategory(slug: string, theme: AppTheme) {
-  return CATEGORY_MARKER_COLORS[slug] ?? theme.primary;
-}
-
-type Props = {
+export function TrafficMapMarker({
+  report,
+  theme,
+  onPress,
+}: {
   report: TrafficReport;
   theme: AppTheme;
   onPress?: () => void;
-};
-
-export function TrafficMapMarker({ report, theme, onPress }: Props) {
-  const { category } = report;
-  const fill = markerColorForCategory(category.slug, theme);
-  const scheduled = report.status === 'scheduled';
+}) {
+  const slug = report.category.slug;
+  const colorKey = CATEGORY_COLORS[slug] ?? 'primary';
+  const bg = theme[colorKey] as string;
+  const onBg = onColorFor(bg);
+  const Icon = trafficCategoryIcon(slug);
 
   return (
     <Marker
       coordinate={{ latitude: report.latitude, longitude: report.longitude }}
-      title={`${category.icon} ${category.name}`}
-      description={report.description || report.road || undefined}
       onPress={onPress}
       tracksViewChanges={false}
       anchor={{ x: 0.5, y: 0.5 }}
     >
-      <View
-        style={[
-          styles.bubble,
-          { backgroundColor: fill },
-          scheduled && { borderColor: theme.accent, borderWidth: 3 },
-        ]}
-      >
-        <Text style={styles.icon}>{category.icon || '⚠️'}</Text>
+      <View style={[styles.marker, elevation(2, theme.text), { backgroundColor: bg, borderColor: onBg }]}>
+        <Icon size={18} color={onBg} strokeWidth={2.5} />
       </View>
     </Marker>
   );
 }
 
 const styles = StyleSheet.create({
-  bubble: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  marker: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.28,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
   },
-  icon: { fontSize: 20, lineHeight: 24 },
 });

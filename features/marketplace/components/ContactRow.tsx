@@ -1,65 +1,73 @@
-import React from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
+import { Mail, MessageCircle, Navigation, Phone } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
+import { IconButton } from '@/components/ui/IconButton';
 import { track } from '@/lib/analytics';
+import { space } from '@/lib/tokens';
+import { useAppTheme } from '@/lib/theme';
 import type { MarketplaceProvider } from '@/lib/types';
-import type { AppTheme } from '@/lib/theme';
 
 function digits(value: string): string {
   return value.replace(/[^\d+]/g, '');
 }
 
-export function ContactRow({
-  provider,
-  theme,
-}: {
-  provider: MarketplaceProvider;
-  theme: AppTheme;
-}) {
+export function ContactRow({ provider }: { provider: MarketplaceProvider }) {
+  const theme = useAppTheme();
   const { t } = useTranslation();
 
-  const open = (action: 'call' | 'whatsapp' | 'email', url: string) => {
+  const open = (action: 'call' | 'whatsapp' | 'email' | 'directions', url: string) => {
     track('marketplace', 'engage', { action, provider_id: provider.id });
     void Linking.openURL(url);
   };
 
-  const actions: { key: 'call' | 'whatsapp' | 'email'; label: string; url: string }[] = [];
-  if (provider.phone) {
-    actions.push({ key: 'call', label: t('marketplaceContactCall'), url: `tel:${digits(provider.phone)}` });
-  }
-  if (provider.whatsapp) {
-    actions.push({
-      key: 'whatsapp',
-      label: t('marketplaceContactWhatsapp'),
-      url: `https://wa.me/${digits(provider.whatsapp).replace('+', '')}`,
-    });
-  }
-  if (provider.email) {
-    actions.push({ key: 'email', label: t('marketplaceContactEmail'), url: `mailto:${provider.email}` });
-  }
-
-  if (actions.length === 0) {
-    return null;
-  }
+  const hasLocation = provider.latitude != null && provider.longitude != null;
 
   return (
     <View style={styles.row}>
-      {actions.map((a) => (
-        <Pressable
-          key={a.key}
-          onPress={() => open(a.key, a.url)}
-          style={[styles.btn, { backgroundColor: theme.secondary }]}
-        >
-          <Text style={styles.btnText}>{a.label}</Text>
-        </Pressable>
-      ))}
+      {provider.phone ? (
+        <IconButton
+          icon={Phone}
+          color={theme.primary}
+          accessibilityLabel={t('marketplaceContactCall')}
+          onPress={() => open('call', `tel:${digits(provider.phone)}`)}
+        />
+      ) : null}
+      {provider.whatsapp ? (
+        <IconButton
+          icon={MessageCircle}
+          color={theme.primary}
+          accessibilityLabel={t('marketplaceContactWhatsapp')}
+          onPress={() =>
+            open('whatsapp', `https://wa.me/${digits(provider.whatsapp).replace('+', '')}`)
+          }
+        />
+      ) : null}
+      {provider.email ? (
+        <IconButton
+          icon={Mail}
+          color={theme.primary}
+          accessibilityLabel={t('marketplaceContactEmail')}
+          onPress={() => open('email', `mailto:${provider.email}`)}
+        />
+      ) : null}
+      {hasLocation ? (
+        <IconButton
+          icon={Navigation}
+          color={theme.primary}
+          accessibilityLabel={t('marketplaceContactDirections')}
+          onPress={() =>
+            open(
+              'directions',
+              `https://www.google.com/maps?q=${provider.latitude},${provider.longitude}`,
+            )
+          }
+        />
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 12 },
-  btn: { borderRadius: 10, paddingVertical: 12, paddingHorizontal: 16, flexGrow: 1, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '700' },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, marginVertical: space.md },
 });

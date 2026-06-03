@@ -51,6 +51,14 @@ Consistent, native navigation: a branded bottom tab bar (Hub + up to 4 user-pinn
 - Header icon buttons labeled; min hit target enforced.
 - Status bar style follows theme (light icons on dark/green, dark icons on light) via `expo-status-bar`.
 
+## 7b. Global floating action button (FAB)
+
+A single **speed-dial FAB** is mounted once at the root in [`app/_layout.tsx`](../../app/_layout.tsx) via [`components/GlobalFab.tsx`](../../components/GlobalFab.tsx) and appears on every screen (hidden only on form/modal routes: `feedback`, `settings`, `onboarding`, and the marketplace/traffic create forms — see `isFabHidden` in [`lib/fab-registry.ts`](../../lib/fab-registry.ts)).
+
+- **Smart menu.** Actions are route-aware: static per-route actions come from `getStaticActions(pathname)` ([`lib/fab-registry.ts`](../../lib/fab-registry.ts)); stateful screens inject their own via `useFabActions()` ([`lib/fab-store.ts`](../../lib/fab-store.ts)) while focused (e.g. traffic "Report traffic" opens the category sheet; marketplace "Add listing"). A permanent **"Send feedback"** action is always appended last.
+- **Feedback.** "Send feedback" routes to [`app/feedback.tsx`](../../app/feedback.tsx) (modal) with the originating route + label as params. The form composes a mail draft to `info@sousadev.com` via `expo-mail-composer` (with a `mailto:` fallback) — no backend.
+- **Positioning.** Absolute, bottom-right, offset above the tab bar by `insets.bottom + tabBarHeight + space.lg`. Reuses the `Fab` look (`primary` bg, `elevation(3)`, `radius.full`).
+
 ## 8. Acceptance checklist
 - [ ] One source of truth for header style in `useAppStackScreenOptions()`; all modules consume it.
 - [ ] Tab bar uses tokens; works light/dark, iOS blur + Android elevation, safe-area correct.

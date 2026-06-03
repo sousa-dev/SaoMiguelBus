@@ -1,58 +1,96 @@
-import React, { useMemo, useState } from 'react';
+import { MapPin, Star } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { IconButton } from '@/components/ui/IconButton';
+import { radius, space, typography } from '@/lib/tokens';
+import { useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
 
 type Props = {
-  label: string;
   placeholder: string;
   value: string;
   stops: Stop[];
   onSelect: (name: string) => void;
+  pinColor?: string;
 };
 
-export function StopPicker({ label, placeholder, value, stops, onSelect }: Props) {
+export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Props) {
   const theme = useAppTheme();
   const [query, setQuery] = useState(value);
+  const favoriteStops = useProfileStore((s) => s.favoriteStops);
+  const isFavoriteStop = useProfileStore((s) => s.isFavoriteStop);
+  const toggleFavoriteStop = useProfileStore((s) => s.toggleFavoriteStop);
+  const iconColor = pinColor ?? theme.muted;
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
 
   const filtered = useMemo(() => {
+    const favIds = new Set(favoriteStops.map((s) => s.id));
     const q = query.trim().toLowerCase();
-    if (!q) {
-      return stops.slice(0, 40);
-    }
-    return stops.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 40);
-  }, [query, stops]);
+    const base = q ? stops.filter((s) => s.name.toLowerCase().includes(q)) : stops;
+    return [...base]
+      .sort((a, b) => {
+        const af = favIds.has(a.id) ? 0 : 1;
+        const bf = favIds.has(b.id) ? 0 : 1;
+        return af - bf || a.name.localeCompare(b.name);
+      })
+      .slice(0, 40);
+  }, [query, stops, favoriteStops]);
 
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
-      <TextInput
+      <View
         style={[
-          styles.input,
-          { borderColor: theme.border, color: theme.text, backgroundColor: theme.card },
+          styles.field,
+          {
+            borderColor: theme.border,
+            backgroundColor: theme.surfaceVariant,
+          },
         ]}
-        placeholder={placeholder}
-        placeholderTextColor={theme.muted}
-        value={query}
-        onChangeText={(text) => {
-          setQuery(text);
-          onSelect(text);
-        }}
-      />
+      >
+        <MapPin size={20} color={iconColor} style={styles.pin} />
+        <TextInput
+          style={[styles.input, { color: theme.text }]}
+          placeholder={placeholder}
+          placeholderTextColor={theme.muted}
+          value={query}
+          onChangeText={(text) => {
+            setQuery(text);
+            onSelect(text);
+          }}
+        />
+      </View>
       {query.length > 0 && filtered.length > 0 ? (
-        <View style={[styles.suggestions, { borderColor: theme.border, backgroundColor: theme.card }]}>
+        <View
+          style={[
+            styles.suggestions,
+            { borderColor: theme.border, backgroundColor: theme.card },
+          ]}
+        >
           {filtered.map((item, index) => (
-            <Pressable
-              key={`${item.id}-${index}`}
-              onPress={() => {
-                setQuery(item.name);
-                onSelect(item.name);
-              }}
-              style={styles.suggestionRow}
-            >
-              <Text style={{ color: theme.text }}>{item.name}</Text>
-            </Pressable>
+            <View key={`${item.id}-${index}`} style={styles.suggestionRow}>
+              <Pressable
+                style={styles.suggestionPress}
+                onPress={() => {
+                  setQuery(item.name);
+                  onSelect(item.name);
+                }}
+              >
+                <Text style={[typography.body, { color: theme.text }]}>{item.name}</Text>
+              </Pressable>
+              <IconButton
+                icon={Star}
+                size="sm"
+                variant="ghost"
+                color={isFavoriteStop(item.id) ? theme.warning : theme.muted}
+                accessibilityLabel="favorite stop"
+                onPress={() => toggleFavoriteStop({ id: item.id, name: item.name })}
+              />
+            </View>
           ))}
         </View>
       ) : null}
@@ -61,15 +99,29 @@ export function StopPicker({ label, placeholder, value, stops, onSelect }: Props
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 12 },
-  label: { fontWeight: '600', marginBottom: 6 },
-  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
+  wrap: { marginBottom: space.xs },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.full,
+    paddingRight: space.md,
+  },
+  pin: { marginLeft: space.md },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: space.sm,
+    fontSize: 16,
+  },
   suggestions: {
     marginTop: 4,
-    maxHeight: 160,
-    borderWidth: 1,
-    borderRadius: 8,
+    maxHeight: 140,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
     overflow: 'hidden',
+    zIndex: 10,
   },
-  suggestionRow: { paddingHorizontal: 12, paddingVertical: 10 },
+  suggestionRow: { flexDirection: 'row', alignItems: 'center' },
+  suggestionPress: { flex: 1, paddingHorizontal: space.md, paddingVertical: space.sm },
 });

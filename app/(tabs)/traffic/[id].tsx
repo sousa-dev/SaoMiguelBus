@@ -1,13 +1,24 @@
-import React from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Clock } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
+import { Screen } from '@/components/Screen';
+import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import {
   useConfirmTrafficReport,
   useDeleteTrafficReport,
   useTrafficReport,
 } from '@/features/traffic/hooks/useTrafficQueries';
+import { coordinateToRegion } from '@/lib/island-map';
+import { trafficCategoryIcon } from '@/lib/traffic-icons';
+import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import { useTrafficStore } from '@/lib/traffic-store';
 
@@ -17,6 +28,7 @@ export default function TrafficDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const reportId = Number(params.id);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const report = useTrafficReport(reportId);
   const confirm = useConfirmTrafficReport(reportId);
@@ -24,96 +36,125 @@ export default function TrafficDetailScreen() {
   const isMine = useTrafficStore((s) => s.isMine(reportId));
   const removeFromStore = useTrafficStore((s) => s.removeReport);
 
-  const confirmDelete = () => {
-    Alert.alert(t('trafficDeleteAction'), t('trafficDeleteConfirm'), [
-      { text: t('trafficCancel'), style: 'cancel' },
-      {
-        text: t('trafficDeleteAction'),
-        style: 'destructive',
-        onPress: async () => {
-          await remove.mutateAsync(reportId);
-          removeFromStore(reportId);
-          router.back();
-        },
-      },
-    ]);
+  const runDelete = async () => {
+    await remove.mutateAsync(reportId);
+    removeFromStore(reportId);
+    router.back();
   };
 
   if (report.isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <ActivityIndicator color={theme.primary} />
-      </View>
+      <Screen withStackHeader>
+        <LoadingState />
+      </Screen>
     );
   }
 
   if (report.isError || !report.data) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.muted }}>{t('trafficLoadError')}</Text>
-      </View>
+      <Screen withStackHeader>
+        <ErrorState title={t('trafficLoadError')} />
+      </Screen>
     );
   }
 
   const r = report.data;
+  const Icon = trafficCategoryIcon(r.category.slug);
+  const statusTone = r.status === 'active' ? 'primary' : r.status === 'scheduled' ? 'accent' : 'neutral';
 
   return (
-    <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Text style={styles.icon}>{r.category.icon || '⚠️'}</Text>
-        <Text style={[styles.name, { color: theme.text }]}>{r.category.name}</Text>
-      </View>
-      {r.status === 'scheduled' ? (
-        <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-          <Text style={styles.badgeText}>{t('trafficScheduledBadge')}</Text>
-        </View>
-      ) : null}
+    <Screen withStackHeader>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Card elevated>
+          <View style={styles.headerRow}>
+            <Icon size={iconSize.xl} color={theme.primary} strokeWidth={2} />
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.headline, { color: theme.text }]}>{r.category.name}</Text>
+              <View style={styles.badges}>
+                <Badge label={r.status} tone={statusTone} />
+                {r.status === 'scheduled' ? <Badge label={t('trafficScheduledBadge')} tone="accent" /> : null}
+              </View>
+            </View>
+          </View>
+          <View style={styles.meta}>
+            <Clock size={iconSize.sm} color={theme.muted} />
+            <Text style={[typography.caption, { color: theme.muted }]}>
+              {new Date(r.createdAt).toLocaleString()}
+            </Text>
+          </View>
+          {r.road ? <Text style={[typography.body, { color: theme.text, marginTop: space.md }]}>{r.road}</Text> : null}
+          {r.description ? (
+            <Text style={[typography.body, { color: theme.text, marginTop: space.sm, lineHeight: 22 }]}>
+              {r.description}
+            </Text>
+          ) : null}
+        </Card>
 
-      {r.road ? <Text style={{ color: theme.text, marginTop: 12 }}>{r.road}</Text> : null}
-      {r.description ? (
-        <Text style={{ color: theme.text, marginTop: 8, lineHeight: 20 }}>{r.description}</Text>
-      ) : null}
+        {Platform.OS !== 'web' ? (
+          <Card elevated style={styles.mapCard}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_DEFAULT}
+              mapType="none"
+              scrollEnabled={false}
+              initialRegion={coordinateToRegion({ lat: r.latitude, lng: r.longitude })}
+            >
+              <OsmMapLayer isDark={theme.isDark} />
+              <Marker coordinate={{ latitude: r.latitude, longitude: r.longitude }} />
+            </MapView>
+            <Button
+              label={t('marketplaceContactDirections')}
+              variant="outline"
+              onPress={() => Linking.openURL(`https://www.google.com/maps?q=${r.latitude},${r.longitude}`)}
+              fullWidth
+              style={{ marginTop: space.md }}
+            />
+          </Card>
+        ) : null}
 
-      <Text style={{ color: theme.muted, marginTop: 16 }}>
-        {t('trafficConfidence', { confirm: r.confidence.confirm, deny: r.confidence.deny })}
-      </Text>
+        <Card>
+          <Text style={[typography.caption, { color: theme.muted }]}>
+            {t('trafficConfidence', { confirm: r.confidence.confirm, deny: r.confidence.deny })}
+          </Text>
+          <View style={styles.voteRow}>
+            <Button
+              label={t('trafficStillThere')}
+              onPress={() => confirm.mutate('still_there')}
+              disabled={confirm.isPending}
+              style={{ flex: 1 }}
+            />
+            <Button
+              label={t('trafficGone')}
+              variant="outline"
+              onPress={() => confirm.mutate('gone')}
+              disabled={confirm.isPending}
+              style={{ flex: 1 }}
+            />
+          </View>
+        </Card>
 
-      <View style={styles.voteRow}>
-        <Pressable
-          disabled={confirm.isPending}
-          onPress={() => confirm.mutate('still_there')}
-          style={[styles.voteBtn, { backgroundColor: theme.primary }]}
-        >
-          <Text style={styles.voteText}>{t('trafficStillThere')}</Text>
-        </Pressable>
-        <Pressable
-          disabled={confirm.isPending}
-          onPress={() => confirm.mutate('gone')}
-          style={[styles.voteBtn, { borderColor: theme.border, borderWidth: 1 }]}
-        >
-          <Text style={{ color: theme.text, fontWeight: '700' }}>{t('trafficGone')}</Text>
-        </Pressable>
-      </View>
-
-      {isMine ? (
-        <Pressable onPress={confirmDelete} style={[styles.deleteBtn, { borderColor: '#c0392b' }]}>
-          <Text style={{ color: '#c0392b', fontWeight: '600' }}>{t('trafficDeleteAction')}</Text>
-        </Pressable>
-      ) : null}
-    </ScrollView>
+        {isMine ? (
+          confirmDelete ? (
+            <Card>
+              <Text style={[typography.body, { color: theme.muted }]}>{t('trafficDeleteConfirm')}</Text>
+              <Button label={t('trafficDeleteAction')} variant="danger" onPress={() => void runDelete()} fullWidth style={{ marginTop: space.md }} />
+              <Button label={t('trafficCancel')} variant="ghost" onPress={() => setConfirmDelete(false)} fullWidth />
+            </Card>
+          ) : (
+            <Button label={t('trafficDeleteAction')} variant="danger" onPress={() => setConfirmDelete(true)} fullWidth />
+          )
+        ) : null}
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: 16, paddingBottom: 40 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  icon: { fontSize: 30 },
-  name: { fontSize: 22, fontWeight: '800', flexShrink: 1 },
-  badge: { alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8 },
-  badgeText: { color: '#1a1a1a', fontSize: 11, fontWeight: '700' },
-  voteRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  voteBtn: { flexGrow: 1, alignItems: 'center', borderRadius: 10, paddingVertical: 12 },
-  voteText: { color: '#fff', fontWeight: '700' },
-  deleteBtn: { marginTop: 20, borderWidth: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  content: { padding: space.lg, paddingBottom: space['4xl'], gap: space.md },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, marginTop: space.sm },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.md },
+  mapCard: { overflow: 'hidden' },
+  map: { height: 160, borderRadius: 12 },
+  voteRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
 });

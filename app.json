@@ -34,7 +34,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true

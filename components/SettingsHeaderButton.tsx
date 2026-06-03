@@ -1,33 +1,23 @@
-import { useRouter } from 'expo-router';
 import { Settings } from 'lucide-react-native';
-import { Pressable, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-/** Gear icon for stack headerRight — opens settings modal. */
+import { IconButton } from '@/components/ui/IconButton';
+import { useAppTheme } from '@/lib/theme';
+
 export function SettingsHeaderButton() {
-  const { t } = useTranslation();
   const router = useRouter();
+  const { t } = useTranslation();
+  const theme = useAppTheme();
 
   return (
-    <Pressable
-      onPress={() => router.push('/settings')}
-      style={[styles.btn, { borderColor: 'rgba(255,255,255,0.35)' }]}
+    <IconButton
+      icon={Settings}
+      variant="ghost"
+      color={theme.onSurface}
       accessibilityLabel={t('settingsTitle')}
-      hitSlop={8}
-    >
-      <Settings color="#fff" size={20} strokeWidth={2} />
-    </Pressable>
+      onPress={() => router.push('/settings')}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  btn: {
-    borderWidth: 1,
-    borderRadius: 8,
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 4,
-  },
-});
