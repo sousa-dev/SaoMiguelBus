@@ -64,7 +64,10 @@ export function IconButton({
       ]}
       {...rest}
     >
-      <View pointerEvents="none">
+      <View
+        pointerEvents="none"
+        style={{ width: dim, height: dim, alignItems: 'center', justifyContent: 'center' }}
+      >
         <Icon size={dim} color={iconColor} strokeWidth={2} />
       </View>
     </Pressable>

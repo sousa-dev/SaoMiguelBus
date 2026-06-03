@@ -126,7 +126,7 @@ export function GlobalFab() {
             { backgroundColor: theme.primary, opacity: pressed ? 0.92 : 1 },
           ]}
         >
-          <View pointerEvents="none">
+          <View pointerEvents="none" style={styles.fabIconSlot}>
             <FabIcon size={iconSize.lg} color={theme.onPrimary} strokeWidth={2.5} />
           </View>
         </Pressable>
@@ -140,12 +140,17 @@ const styles = StyleSheet.create({
   container: { position: 'absolute', alignItems: 'flex-end' },
   actions: { alignItems: 'flex-end', marginBottom: space.md },
   fab: {
-    minWidth: hitSlop.minTouch,
-    minHeight: hitSlop.minTouch,
+    width: hitSlop.minTouch,
+    height: hitSlop.minTouch,
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
     alignSelf: 'flex-end',
+  },
+  fabIconSlot: {
+    width: iconSize.lg,
+    height: iconSize.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
