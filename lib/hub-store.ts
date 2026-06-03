@@ -4,7 +4,10 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { ModuleKey } from '@/config/island';
 import { staticIslandConfig } from '@/config/island';
+import { DEFAULT_LANDING_PAGE_KEY, type LandingPageKey } from '@/lib/landing-page';
 import { DEFAULT_MODULE_ORDER_KEYS } from '@/lib/modules';
+
+export type { LandingPageKey };
 
 export const PIN_CAP = 4;
 
@@ -36,6 +39,7 @@ function swapInOrder(keys: ModuleKey[], key: ModuleKey, direction: 'up' | 'down'
 interface HubState {
   pinnedKeys: ModuleKey[];
   moduleOrderKeys: ModuleKey[];
+  landingPageKey: LandingPageKey;
   layout: HubLayout;
   columns: HubColumns;
   editMode: boolean;
@@ -46,6 +50,7 @@ interface HubState {
   reorderModule: (key: ModuleKey, direction: 'up' | 'down', enabledKeys: ModuleKey[]) => void;
   setLayout: (layout: HubLayout) => void;
   setColumns: (columns: HubColumns) => void;
+  setLandingPageKey: (key: LandingPageKey) => void;
   setEditMode: (editMode: boolean) => void;
 }
 
@@ -54,6 +59,7 @@ export const useHubStore = create<HubState>()(
     (set, get) => ({
       pinnedKeys: [...DEFAULT_PINNED_KEYS],
       moduleOrderKeys: [...DEFAULT_MODULE_ORDER_KEYS],
+      landingPageKey: DEFAULT_LANDING_PAGE_KEY,
       layout: 'grid',
       columns: 2,
       editMode: false,
@@ -98,15 +104,17 @@ export const useHubStore = create<HubState>()(
 
       setLayout: (layout) => set({ layout }),
       setColumns: (columns) => set({ columns }),
+      setLandingPageKey: (landingPageKey) => set({ landingPageKey }),
       setEditMode: (editMode) => set({ editMode }),
     }),
     {
       name: `azores_hub_layout_${staticIslandConfig.islandKey}`,
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         pinnedKeys: state.pinnedKeys,
         moduleOrderKeys: state.moduleOrderKeys,
+        landingPageKey: state.landingPageKey,
         layout: state.layout,
         columns: state.columns,
       }),
@@ -114,6 +122,7 @@ export const useHubStore = create<HubState>()(
         const state = persisted as {
           pinnedKeys?: ModuleKey[];
           moduleOrderKeys?: ModuleKey[];
+          landingPageKey?: LandingPageKey;
           layout?: HubLayout;
           columns?: HubColumns;
         };
@@ -123,6 +132,9 @@ export const useHubStore = create<HubState>()(
         }
         if (version < 2 && (!next.moduleOrderKeys || next.moduleOrderKeys.length === 0)) {
           next = { ...next, moduleOrderKeys: [...DEFAULT_MODULE_ORDER_KEYS] };
+        }
+        if (version < 3 && !next.landingPageKey) {
+          next = { ...next, landingPageKey: DEFAULT_LANDING_PAGE_KEY };
         }
         return next;
       },

@@ -88,7 +88,11 @@ export default function HubScreen() {
       <>
         {!editMode ? <HubHero islandName={islandName} logoUri={logoUri} /> : null}
         {editMode ? (
-          <HubEditControls pinnedCount={pinnedKeys.length} showBarFull={barFull} />
+          <HubEditControls
+            enabledKeys={enabledKeys}
+            pinnedCount={pinnedKeys.length}
+            showBarFull={barFull}
+          />
         ) : null}
       </>
     );

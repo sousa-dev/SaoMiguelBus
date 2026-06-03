@@ -44,6 +44,7 @@ export function LanguagePicker({ locales, activeLocale, onSelect }: LanguagePick
           leading={<LocaleFlag locale={selectedCode} size={28} />}
           title={getLanguageDisplayName(selectedCode)}
           onPress={() => setOpen(true)}
+          showChevron={false}
           trailing={<ChevronDown size={iconSize.md} color={theme.muted} strokeWidth={2} />}
           accessibilityLabel={t('settingsLanguage')}
         />

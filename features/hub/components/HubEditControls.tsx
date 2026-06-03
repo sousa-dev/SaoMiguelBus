@@ -5,22 +5,28 @@ import { Badge } from '@/components/ui/Badge';
 import { Banner } from '@/components/ui/Banner';
 import { Card } from '@/components/ui/Card';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
+import type { ModuleKey } from '@/config/island';
 import { PIN_CAP, useHubStore, type HubColumns, type HubLayout } from '@/lib/hub-store';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type HubEditControlsProps = {
+  enabledKeys: ModuleKey[];
   pinnedCount: number;
   showBarFull: boolean;
 };
 
-export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsProps) {
+export function HubEditControls({ enabledKeys, pinnedCount, showBarFull }: HubEditControlsProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const layout = useHubStore((s) => s.layout);
   const columns = useHubStore((s) => s.columns);
+  const moduleOrderKeys = useHubStore((s) => s.moduleOrderKeys);
+  const landingPageKey = useHubStore((s) => s.landingPageKey);
   const setLayout = useHubStore((s) => s.setLayout);
   const setColumns = useHubStore((s) => s.setColumns);
+  const setLandingPageKey = useHubStore((s) => s.setLandingPageKey);
 
   const layoutOptions = [
     { value: 'grid' as HubLayout, label: t('hubLayoutGrid') },
@@ -42,7 +48,9 @@ export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsPro
 
       <Card style={styles.card}>
         <View style={styles.headerRow}>
-          <Text style={[typography.label, styles.flex]}>{t('hubPinHint', { count: pinnedCount, max: PIN_CAP })}</Text>
+          <Text style={[typography.label, styles.flex, { color: theme.text }]}>
+            {t('hubPinHint', { count: pinnedCount, max: PIN_CAP })}
+          </Text>
           <Badge label={t('hubBarCounter', { count: pinnedCount, max: PIN_CAP })} tone="primary" />
         </View>
 
@@ -53,7 +61,9 @@ export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsPro
           {t('hubGridOrderHint')}
         </Text>
 
-        <Text style={[typography.overline, styles.sectionLabel]}>{t('hubLayoutLabel')}</Text>
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('hubLayoutLabel')}
+        </Text>
         <SegmentedControl
           options={layoutOptions}
           value={layout}
@@ -63,7 +73,9 @@ export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsPro
 
         {layout === 'grid' ? (
           <>
-            <Text style={[typography.overline, styles.sectionLabel]}>{t('hubColumnsLabel')}</Text>
+            <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+              {t('hubColumnsLabel')}
+            </Text>
             <SegmentedControl
               options={columnOptions}
               value={String(columns) as '2' | '3'}
@@ -72,6 +84,18 @@ export function HubEditControls({ pinnedCount, showBarFull }: HubEditControlsPro
             />
           </>
         ) : null}
+
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('hubLandingPageLabel')}
+        </Text>
+        <LandingPagePicker
+          enabledKeys={enabledKeys}
+          moduleOrderKeys={moduleOrderKeys}
+          value={landingPageKey}
+          onChange={setLandingPageKey}
+          hint={t('hubLandingPageHint')}
+          inset
+        />
       </Card>
     </View>
   );

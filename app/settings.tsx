@@ -6,13 +6,16 @@ import React, { useLayoutEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
 import { ListRow } from '@/components/ui/ListRow';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import { resolveEnabledModules } from '@/config/island';
 import { resolvePickerLocales } from '@/lib/i18n';
+import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
 import { space, typography } from '@/lib/tokens';
@@ -33,6 +36,10 @@ export default function SettingsScreen() {
   const islandName = bootstrap?.island?.name ?? staticIslandConfig.islandName;
   const preference = useThemePrefsStore((s) => s.preference);
   const setPreference = useThemePrefsStore((s) => s.setPreference);
+  const enabledKeys = resolveEnabledModules(bootstrap?.island?.enabledModules);
+  const landingPageKey = useHubStore((s) => s.landingPageKey);
+  const moduleOrderKeys = useHubStore((s) => s.moduleOrderKeys);
+  const setLandingPageKey = useHubStore((s) => s.setLandingPageKey);
   const [dsarBanner, setDsarBanner] = useState(false);
 
   useLayoutEffect(() => {
@@ -106,6 +113,17 @@ export default function SettingsScreen() {
           {t('settingsLanguage')}
         </Text>
         <LanguagePicker locales={locales} activeLocale={i18n.language} onSelect={changeLanguage} />
+
+        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+          {t('settingsHub')}
+        </Text>
+        <LandingPagePicker
+          enabledKeys={enabledKeys}
+          moduleOrderKeys={moduleOrderKeys}
+          value={landingPageKey}
+          onChange={setLandingPageKey}
+          hint={t('hubLandingPageHint')}
+        />
 
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsPrivacy')}
