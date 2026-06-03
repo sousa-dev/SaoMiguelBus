@@ -19,14 +19,17 @@ type Props = {
 export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Props) {
   const theme = useAppTheme();
   const [query, setQuery] = useState(value);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const favoriteStops = useProfileStore((s) => s.favoriteStops);
   const isFavoriteStop = useProfileStore((s) => s.isFavoriteStop);
   const toggleFavoriteStop = useProfileStore((s) => s.toggleFavoriteStop);
   const iconColor = pinColor ?? theme.muted;
 
   useEffect(() => {
+    if (value === query) return;
     setQuery(value);
-  }, [value]);
+    setSuggestionsOpen(false);
+  }, [value, query]);
 
   const filtered = useMemo(() => {
     const favIds = new Set(favoriteStops.map((s) => s.id));
@@ -58,13 +61,15 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
           placeholder={placeholder}
           placeholderTextColor={theme.muted}
           value={query}
+          onFocus={() => setSuggestionsOpen(true)}
           onChangeText={(text) => {
             setQuery(text);
             onSelect(text);
+            setSuggestionsOpen(true);
           }}
         />
       </View>
-      {query.length > 0 && filtered.length > 0 ? (
+      {suggestionsOpen && query.length > 0 && filtered.length > 0 ? (
         <View
           style={[
             styles.suggestions,
@@ -78,6 +83,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
                 onPress={() => {
                   setQuery(item.name);
                   onSelect(item.name);
+                  setSuggestionsOpen(false);
                 }}
               >
                 <Text style={[typography.body, { color: theme.text }]}>{item.name}</Text>
