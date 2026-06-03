@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   Newspaper,
   Store,
+  CloudSun,
   Ticket,
   TriangleAlert,
   type LucideIcon,
@@ -78,6 +79,13 @@ export const HUB_MODULES: HubModule[] = [
     labelKey: 'navBarToursLabel',
     Icon: Ticket,
     accent: '#0891b2',
+  },
+  {
+    key: 'weather',
+    route: '/weather' as Href,
+    labelKey: 'navBarWeatherLabel',
+    Icon: CloudSun,
+    accent: '#0ea5e9',
   },
 ];
 

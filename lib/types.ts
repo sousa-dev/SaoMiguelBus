@@ -328,3 +328,36 @@ export interface TrailsListResponse {
   trails: TrailSummary[];
   attribution: string;
 }
+
+export interface WeatherCurrent {
+  temperature: number | null;
+  weatherCode: number | null;
+  windSpeed: number | null;
+  humidity: number | null;
+  precipitation: number | null;
+  time: string | null;
+}
+
+export interface WeatherDaily {
+  date: string;
+  weatherCode: number | null;
+  tempMax: number | null;
+  tempMin: number | null;
+  precipitationProbabilityMax: number | null;
+}
+
+export interface ParishWeather {
+  slug: string;
+  name: string;
+  concelho: string;
+  latitude: number;
+  longitude: number;
+  current: WeatherCurrent;
+  daily: WeatherDaily[];
+  attribution: string;
+}
+
+export interface WeatherParishesResponse {
+  parishes: ParishWeather[];
+  attribution: string;
+}

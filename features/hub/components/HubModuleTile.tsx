@@ -19,6 +19,7 @@ const DESC_KEYS: Partial<Record<HubModule['key'], string>> = {
   trails: 'hubModuleTrailsDesc',
   marketplace: 'hubModuleMarketplaceDesc',
   traffic: 'hubModuleTrafficDesc',
+  weather: 'hubModuleWeatherDesc',
 };
 
 type ReorderButtonsProps = {

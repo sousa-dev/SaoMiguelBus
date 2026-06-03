@@ -20,6 +20,7 @@ const SCREEN_MODULE_KEY: Record<string, ModuleKey> = {
   marketplace: 'marketplace',
   traffic: 'traffic',
   tours: 'events',
+  weather: 'weather',
 };
 
 function TabBarIcon({
@@ -176,6 +177,18 @@ export default function TabLayout() {
           href: tabHref('tours'),
           tabBarIcon: ({ color, size }) => {
             const mod = HUB_MODULES.find((m) => m.key === 'events');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="weather"
+        options={{
+          title: t('navBarWeatherLabel'),
+          headerShown: false,
+          href: tabHref('weather'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'weather');
             return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
           },
         }}

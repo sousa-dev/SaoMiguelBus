@@ -7,7 +7,8 @@ export type ModuleKey =
   | 'marketplace'
   | 'trails'
   | 'traffic'
-  | 'events';
+  | 'events'
+  | 'weather';
 
 export interface IslandTheme {
   primaryColor: string;

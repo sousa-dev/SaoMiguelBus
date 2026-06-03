@@ -26,6 +26,8 @@ import type {
   TrafficReport,
   TrafficReportWriteInput,
   ConfirmVote,
+  WeatherParishesResponse,
+  ParishWeather,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -206,6 +208,14 @@ export async function fetchTour(
   }
   const suffix = query.toString() ? `?${query.toString()}` : '';
   return apiFetch<TourDetail>(`/api/v3/events/tours/${encodeURIComponent(code)}${suffix}`);
+}
+
+export async function fetchWeatherParishes(): Promise<WeatherParishesResponse> {
+  return apiFetch<WeatherParishesResponse>('/api/v3/weather/parishes');
+}
+
+export async function fetchWeatherParish(slug: string): Promise<ParishWeather> {
+  return apiFetch<ParishWeather>(`/api/v3/weather/parishes/${encodeURIComponent(slug)}`);
 }
 
 export async function fetchSeismicEvents(params?: {
