@@ -185,6 +185,11 @@ export interface ServiceCategory {
   userSuggested?: boolean;
 }
 
+export interface SocialLink {
+  label: string;
+  url: string;
+}
+
 export interface MarketplaceProvider {
   id: number;
   name: string;
@@ -194,6 +199,8 @@ export interface MarketplaceProvider {
   phone: string;
   whatsapp: string;
   email: string;
+  website?: string;
+  socials?: SocialLink[];
   latitude: number | null;
   longitude: number | null;
   isPromoted: boolean;
@@ -224,6 +231,8 @@ export interface ProviderWriteInput {
   phone?: string;
   whatsapp?: string;
   email?: string;
+  website?: string;
+  socials?: SocialLink[];
   claimed_owner?: boolean;
   internal_email?: string;
   internal_phone?: string;

@@ -15,6 +15,12 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Field } from '@/components/ui/Field';
+import {
+  buildSocialLinksFromRows,
+  SocialLinksEditor,
+  useSocialLinksState,
+  validateSocialRows,
+} from '@/features/marketplace/components/SocialLinksEditor';
 import { useMarketplaceCategories } from '@/features/marketplace/hooks/useMarketplaceQueries';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -49,6 +55,8 @@ export function ProviderForm({
   const [phone, setPhone] = useState(initial?.phone ?? '');
   const [whatsapp, setWhatsapp] = useState(initial?.whatsapp ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
+  const [website, setWebsite] = useState(initial?.website ?? '');
+  const socialState = useSocialLinksState(initial?.socials);
   const [rate, setRate] = useState(initial?.hourlyRate != null ? String(initial.hourlyRate) : '');
   const [isOwner, setIsOwner] = useState(initial?.claimedOwner ?? false);
   const [ownerEmail, setOwnerEmail] = useState(initial?.internalEmail ?? '');
@@ -89,6 +97,10 @@ export function ProviderForm({
     if (isOwner && !ownerEmail.trim() && !ownerPhone.trim()) {
       errors.ownerContact = t('marketplaceFormOwnerContactRequired');
     }
+    const socialErr = validateSocialRows(socialState.rows, t);
+    if (socialErr) {
+      errors.socials = socialErr;
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -101,6 +113,8 @@ export function ProviderForm({
       phone: phone.trim(),
       whatsapp: whatsapp.trim(),
       email: email.trim(),
+      website: website.trim(),
+      socials: buildSocialLinksFromRows(socialState.rows),
       hourly_rate: Number.isFinite(parsedRate as number) ? parsedRate : null,
     };
     if (useNewCategory) {
@@ -199,6 +213,27 @@ export function ProviderForm({
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+          />
+          <Field
+            label={t('marketplaceFormWebsite')}
+            value={website}
+            onChangeText={setWebsite}
+            keyboardType="url"
+            autoCapitalize="none"
+          />
+          <SocialLinksEditor
+            rows={socialState.rows}
+            addRow={socialState.addRow}
+            removeRow={socialState.removeRow}
+            updateRow={socialState.updateRow}
+            error={fieldErrors.socials}
+            onChange={() =>
+              setFieldErrors((e) => {
+                const next = { ...e };
+                delete next.socials;
+                return next;
+              })
+            }
           />
           {fieldErrors.contact ? (
             <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>
