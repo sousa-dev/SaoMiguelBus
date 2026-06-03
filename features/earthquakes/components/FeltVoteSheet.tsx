@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Sheet } from '@/components/ui/Sheet';
 import { useSubmitFeltReport } from '@/features/earthquakes/hooks/useEarthquakeQueries';
+import { seismicEventHeadline } from '@/lib/seismic-display';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent, SeismicFeltInput } from '@/lib/types';
@@ -30,6 +31,7 @@ export function FeltVoteSheet({
   const mutation = useSubmitFeltReport(eventId);
   const [error, setError] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>('binary');
+  const headline = event ? seismicEventHeadline(event, t) : null;
 
   useEffect(() => {
     if (visible) {
@@ -57,9 +59,11 @@ export function FeltVoteSheet({
         {event ? (
           <View style={{ marginBottom: space.md }}>
             <Text style={[typography.display, { color: theme.primary, fontSize: 24 }]}>M{event.magnitude.toFixed(1)}</Text>
-            <Text style={[typography.bodyStrong, { color: theme.text }]} numberOfLines={2}>
-              {event.region || '—'}
-            </Text>
+            {headline ? (
+              <Text style={[typography.bodyStrong, { color: theme.text }]} numberOfLines={2}>
+                {headline}
+              </Text>
+            ) : null}
           </View>
         ) : null}
 

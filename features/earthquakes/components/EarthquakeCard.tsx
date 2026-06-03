@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { onColorFor } from '@/lib/color-utils';
+import { formatRelativeTime } from '@/lib/format-time';
 import { magnitudeColor } from '@/lib/seismic-colors';
+import { seismicEventHeadline, seismicMagnitudeLabel } from '@/lib/seismic-display';
 import { useAppTheme } from '@/lib/theme';
 import type { SeismicEvent } from '@/lib/types';
 
@@ -18,10 +20,20 @@ export function EarthquakeCard({
   onPress: () => void;
 }) {
   const theme = useAppTheme();
-  const { t } = useTranslation();
-  const when = new Date(event.occurredAt).toLocaleString();
+  const { t, i18n } = useTranslation();
+  const headline = seismicEventHeadline(event, t);
+  const when = formatRelativeTime(event.occurredAt, i18n.language);
   const magColor = magnitudeColor(theme, event.magnitude);
   const magTone = event.magnitude >= 5 ? 'danger' : event.magnitude >= 3 ? 'primary' : 'neutral';
+  const magLabel = seismicMagnitudeLabel(event.magnitude, t);
+
+  const metaParts: string[] = [];
+  if (when) {
+    metaParts.push(when);
+  }
+  if (event.depthKm != null) {
+    metaParts.push(t('seismicDepthShort', { depth: Math.round(event.depthKm) }));
+  }
 
   return (
     <Card onPress={onPress} elevated style={styles.card}>
@@ -37,13 +49,20 @@ export function EarthquakeCard({
           </Text>
         </View>
         <View style={styles.textCol}>
-          <Text style={[typography.headline, { color: theme.text }]} numberOfLines={2}>
-            {event.region || '—'}
-          </Text>
-          <View style={styles.meta}>
-            <Clock size={iconSize.sm} color={theme.muted} />
-            <Text style={[typography.caption, { color: theme.muted }]}>{when}</Text>
-          </View>
+          {headline ? (
+            <Text style={[typography.headline, { color: theme.text }]} numberOfLines={2}>
+              {headline}
+            </Text>
+          ) : null}
+          <Text style={[typography.caption, { color: theme.muted }]}>{magLabel}</Text>
+          {metaParts.length ? (
+            <View style={styles.meta}>
+              <Clock size={iconSize.sm} color={theme.muted} />
+              <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
+                {metaParts.join('  ·  ')}
+              </Text>
+            </View>
+          ) : null}
           {event.feltCount ? (
             <Badge label={t('seismicFeltCount', { count: event.feltCount })} tone={magTone} />
           ) : null}

@@ -145,6 +145,13 @@ export interface TourDetail extends TourSummary {
   flags: string[];
 }
 
+export interface SeismicNearestIsland {
+  key: string;
+  name: string;
+  distanceKm: number;
+  bearing: string;
+}
+
 export interface SeismicEvent {
   id: number;
   emscId: string;
@@ -154,6 +161,7 @@ export interface SeismicEvent {
   longitude: number;
   occurredAt: string;
   region: string;
+  nearestIsland?: SeismicNearestIsland | null;
   feltCount?: number;
   feltYesCount?: number;
   feltNoCount?: number;

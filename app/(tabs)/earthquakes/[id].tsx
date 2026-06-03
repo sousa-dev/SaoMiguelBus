@@ -12,7 +12,9 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { FeltVoteSheet } from '@/features/earthquakes/components/FeltVoteSheet';
 import { onColorFor } from '@/lib/color-utils';
+import { formatRelativeTime } from '@/lib/format-time';
 import { magnitudeColor } from '@/lib/seismic-colors';
+import { seismicEventHeadline } from '@/lib/seismic-display';
 import { useSeismicEvent } from '@/features/earthquakes/hooks/useEarthquakeQueries';
 import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
@@ -21,7 +23,7 @@ import { useAppTheme } from '@/lib/theme';
 
 export default function EarthquakeDetailScreen() {
   const theme = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const eventId = Number(id);
@@ -46,12 +48,13 @@ export default function EarthquakeDetailScreen() {
         icon: Share2,
         onPress: () => {
           const when = new Date(data.occurredAt).toLocaleString();
-          const message = `M${data.magnitude.toFixed(1)} — ${data.region || '—'} (${when})`;
-          void Share.share({ message, title: data.region || 'Earthquake' });
+          const headline = seismicEventHeadline(data, t) ?? data.region ?? '—';
+          const message = `M${data.magnitude.toFixed(1)} — ${headline} (${when})`;
+          void Share.share({ message, title: headline });
         },
       },
     ];
-  }, [event.data]);
+  }, [event.data, t]);
 
   useFabActions(fabActions);
 
@@ -78,6 +81,7 @@ export default function EarthquakeDetailScreen() {
   }
 
   const data = event.data;
+  const headline = seismicEventHeadline(data, t);
   const feltYes = data.feltYesCount ?? data.feltCount ?? 0;
 
   const openOnSeismicMap = () => {
@@ -102,13 +106,16 @@ export default function EarthquakeDetailScreen() {
               M{data.magnitude.toFixed(1)}
             </Text>
           </View>
-          <Text style={[typography.title, { color: theme.text, marginTop: space.lg, textAlign: 'center' }]}>
-            {data.region || '—'}
-          </Text>
+          {headline ? (
+            <Text style={[typography.title, { color: theme.text, marginTop: space.lg, textAlign: 'center' }]}>
+              {headline}
+            </Text>
+          ) : null}
           <View style={styles.metaRow}>
             <Clock size={iconSize.sm} color={theme.muted} />
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {new Date(data.occurredAt).toLocaleString()}
+              {formatRelativeTime(data.occurredAt, i18n.language) ||
+                new Date(data.occurredAt).toLocaleString()}
             </Text>
           </View>
           <Badge label={t('seismicDepth', { depth: data.depthKm ?? '—' })} tone="neutral" />
