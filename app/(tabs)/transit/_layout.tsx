@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { PremiumHeaderButton } from '@/components/PremiumHeaderButton';
 import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
@@ -23,6 +24,7 @@ export default function TransitLayout() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ProfileHeaderButton />
               <SettingsHeaderButton />
+              <PremiumHeaderButton />
             </View>
           ),
         }}
