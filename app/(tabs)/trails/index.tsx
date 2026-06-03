@@ -10,11 +10,7 @@ import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
 import { TrailCard } from '@/features/trails/components/TrailCard';
 import { TrailFilters } from '@/features/trails/components/TrailFilters';
-import {
-  trackTrailFilter,
-  useTrails,
-  type TrailListFilters,
-} from '@/features/trails/hooks/useTrailQueries';
+import { trackTrailFilter, useTrails, type TrailListFilters } from '@/features/trails/hooks/useTrailQueries';
 import { staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { track } from '@/lib/analytics';
@@ -29,9 +25,8 @@ export default function TrailsScreen() {
   const { data: bootstrap } = useBootstrap();
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;
   const showTrails = modules.includes('trails');
-  const [draftFilters, setDraftFilters] = useState<TrailListFilters>(EMPTY_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState<TrailListFilters>(EMPTY_FILTERS);
-  const trails = useTrails(appliedFilters, showTrails);
+  const [filters, setFilters] = useState<TrailListFilters>(EMPTY_FILTERS);
+  const trails = useTrails(filters, showTrails);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,60 +42,53 @@ export default function TrailsScreen() {
     void trails.refetch();
   }, [trails.refetch]);
 
-  const onApplyFilters = useCallback(() => {
-    setAppliedFilters(draftFilters);
-    trackTrailFilter(draftFilters);
-  }, [draftFilters]);
-
-  const onResetFilters = useCallback(() => {
-    setDraftFilters(EMPTY_FILTERS);
-    setAppliedFilters(EMPTY_FILTERS);
+  const onClearFilters = useCallback(() => {
+    setFilters(EMPTY_FILTERS);
+    trackTrailFilter(EMPTY_FILTERS);
   }, []);
 
   if (!showTrails) {
     return null;
   }
 
+  const listHeader = (
+    <TrailFilters filters={filters} onChange={setFilters} onClear={onClearFilters} />
+  );
+
   return (
     <Screen withStackHeader>
-      <TrailFilters
-        draft={draftFilters}
-        applied={appliedFilters}
-        onDraftChange={setDraftFilters}
-        onApply={onApplyFilters}
-        onReset={onResetFilters}
-      />
-
-      {trails.isLoading ? (
-        <View style={{ padding: space.lg }}>
-          <CardSkeleton />
-          <CardSkeleton />
-        </View>
-      ) : null}
       {trails.isError ? (
-        <ErrorState title={t('trailsLoadError')} actionLabel={t('searchButton')} onAction={() => void trails.refetch()} />
+        <ErrorState
+          title={t('trailsLoadError')}
+          actionLabel={t('trailsRetry')}
+          onAction={() => void trails.refetch()}
+        />
       ) : null}
 
       <FlatList
-        data={trails.data?.trails ?? []}
+        data={trails.isLoading ? [] : (trails.data?.trails ?? [])}
         keyExtractor={(item) => String(item.id)}
+        ListHeaderComponent={listHeader}
         refreshControl={
           <RefreshControl
-            refreshing={trails.isRefetching}
+            refreshing={trails.isRefetching && !trails.isLoading}
             onRefresh={onRefresh}
             tintColor={theme.primary}
           />
         }
         ListEmptyComponent={
-          !trails.isLoading ? (
+          trails.isLoading ? (
+            <View style={styles.skeletons}>
+              <CardSkeleton />
+              <CardSkeleton />
+            </View>
+          ) : !trails.isError ? (
             <EmptyState icon={Footprints} title={t('trailsEmpty')} />
           ) : null
         }
         ListFooterComponent={
           trails.data?.attribution ? (
-            <Text style={{ color: theme.muted, fontSize: 11, lineHeight: 16, marginTop: 8 }}>
-              {trails.data.attribution}
-            </Text>
+            <Text style={[styles.attribution, { color: theme.muted }]}>{trails.data.attribution}</Text>
           ) : null
         }
         renderItem={({ item }) => (
@@ -121,5 +109,7 @@ export default function TrailsScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 12, paddingBottom: 24 },
+  list: { paddingHorizontal: space.lg, paddingBottom: space['2xl'] },
+  skeletons: { gap: space.md, paddingTop: space.sm },
+  attribution: { fontSize: 11, lineHeight: 16, marginTop: space.sm },
 });

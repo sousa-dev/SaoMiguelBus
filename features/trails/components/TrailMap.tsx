@@ -2,12 +2,16 @@ import React, { useMemo } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as WebBrowser from 'expo-web-browser';
+import { Map } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { MapAttribution } from '@/components/MapAttribution';
 import { OsmMapLayer } from '@/components/OsmMapLayer';
 import { geojsonToMapCoordinates, trailCentroid, type TrailDetail } from '@/features/trails/types';
+import { iconSize, radius, space } from '@/lib/tokens';
 import type { AppTheme } from '@/lib/theme';
+
+const MAP_HEIGHT = 240;
 
 type TrailMapProps = {
   trail: Pick<
@@ -50,6 +54,18 @@ function mapRegion(
   };
 }
 
+function externalMapsUrl(
+  geojson: TrailDetail['geojson'],
+  startLat?: number | null,
+  startLng?: number | null,
+): string | null {
+  if (startLat != null && startLng != null) {
+    return `https://www.google.com/maps?q=${startLat},${startLng}`;
+  }
+  const centroid = trailCentroid(geojson);
+  return centroid ? `https://www.google.com/maps?q=${centroid.lat},${centroid.lng}` : null;
+}
+
 export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
   const { t } = useTranslation();
   const coordinates = useMemo(() => geojsonToMapCoordinates(trail.geojson), [trail.geojson]);
@@ -57,39 +73,49 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
     () => mapRegion(coordinates, trail.startLat, trail.startLng),
     [coordinates, trail.startLat, trail.startLng],
   );
-  const centroid = trailCentroid(trail.geojson);
-  const externalUrl =
-    trail.startLat != null && trail.startLng != null
-      ? `https://www.google.com/maps?q=${trail.startLat},${trail.startLng}`
-      : centroid
-        ? `https://www.google.com/maps?q=${centroid.lat},${centroid.lng}`
-        : null;
+  const externalUrl = externalMapsUrl(trail.geojson, trail.startLat, trail.startLng);
+
+  const openExternal = () => {
+    onMapOpen?.();
+    if (externalUrl) {
+      void WebBrowser.openBrowserAsync(externalUrl);
+    }
+  };
+
+  if (trail.mapImageUrl) {
+    return (
+      <View style={styles.wrap}>
+        <Pressable onPress={openExternal} disabled={!externalUrl}>
+          <Image
+            source={{ uri: trail.mapImageUrl }}
+            style={[styles.media, { backgroundColor: theme.surfaceVariant }]}
+            resizeMode="contain"
+          />
+        </Pressable>
+        {externalUrl ? (
+          <Text style={[styles.openLink, { color: theme.primary }]}>{t('trailsOpenMap')}</Text>
+        ) : null}
+      </View>
+    );
+  }
 
   if (Platform.OS === 'web') {
-    if (!trail.mapImageUrl) {
+    if (!externalUrl) {
       return null;
     }
     return (
       <View style={styles.wrap}>
         <Pressable
-          onPress={() => {
-            onMapOpen?.();
-            if (externalUrl) {
-              void WebBrowser.openBrowserAsync(externalUrl);
-            }
-          }}
+          onPress={openExternal}
+          style={[
+            styles.media,
+            styles.webPlaceholder,
+            { backgroundColor: theme.surfaceVariant, borderColor: theme.border },
+          ]}
         >
-          <Image
-            source={{ uri: trail.mapImageUrl }}
-            style={[styles.webImage, { backgroundColor: theme.surfaceVariant }]}
-            resizeMode="contain"
-          />
+          <Map size={iconSize.xl} color={theme.muted} />
+          <Text style={[styles.webPlaceholderText, { color: theme.text }]}>{t('trailsOpenMap')}</Text>
         </Pressable>
-        {externalUrl ? (
-          <Text style={{ color: theme.primary, marginTop: 8, fontSize: 13 }}>
-            {t('trailsOpenMap')}
-          </Text>
-        ) : null}
       </View>
     );
   }
@@ -98,40 +124,62 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
     return null;
   }
 
+  const useAppleMaps = Platform.OS === 'ios';
+
   return (
     <View style={styles.wrap}>
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        mapType="none"
-        initialRegion={region}
-        scrollEnabled
-        zoomEnabled
-      >
-        <OsmMapLayer isDark={theme.isDark} />
-        <Polyline coordinates={coordinates} strokeColor={theme.primary} strokeWidth={4} />
-        {trail.startLat != null && trail.startLng != null ? (
-          <Marker
-            coordinate={{ latitude: trail.startLat, longitude: trail.startLng }}
-            title={trail.name}
-            pinColor={theme.primary}
-          />
-        ) : null}
-        {(trail.waypoints ?? []).map((waypoint) => (
-          <Marker
-            key={`${waypoint.name}-${waypoint.lat}-${waypoint.lng}`}
-            coordinate={{ latitude: waypoint.lat, longitude: waypoint.lng }}
-            title={waypoint.name}
-          />
-        ))}
-      </MapView>
-      <MapAttribution isDark={theme.isDark} />
+      <Pressable onPress={openExternal} disabled={!externalUrl}>
+        <MapView
+          style={styles.media}
+          provider={PROVIDER_DEFAULT}
+          mapType={useAppleMaps ? 'standard' : 'none'}
+          initialRegion={region}
+          scrollEnabled={false}
+          zoomEnabled={false}
+          rotateEnabled={false}
+          pitchEnabled={false}
+          pointerEvents="none"
+        >
+          {!useAppleMaps ? <OsmMapLayer isDark={theme.isDark} /> : null}
+          <Polyline coordinates={coordinates} strokeColor={theme.primary} strokeWidth={4} />
+          {trail.startLat != null && trail.startLng != null ? (
+            <Marker
+              coordinate={{ latitude: trail.startLat, longitude: trail.startLng }}
+              title={trail.name}
+              pinColor={theme.primary}
+            />
+          ) : null}
+          {(trail.waypoints ?? []).map((waypoint) => (
+            <Marker
+              key={`${waypoint.name}-${waypoint.lat}-${waypoint.lng}`}
+              coordinate={{ latitude: waypoint.lat, longitude: waypoint.lng }}
+              title={waypoint.name}
+            />
+          ))}
+        </MapView>
+      </Pressable>
+      {!useAppleMaps ? <MapAttribution isDark={theme.isDark} /> : null}
+      {externalUrl ? (
+        <Text style={[styles.openLink, { color: theme.primary }]}>{t('trailsOpenMap')}</Text>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 16 },
-  map: { width: '100%', height: 220, borderRadius: 12 },
-  webImage: { width: '100%', height: 220, borderRadius: 12 },
+  wrap: { marginBottom: space.lg },
+  media: {
+    width: '100%',
+    height: MAP_HEIGHT,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  openLink: { marginTop: space.sm, fontSize: 13 },
+  webPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: space.sm,
+  },
+  webPlaceholderText: { fontSize: 14, fontWeight: '600' },
 });

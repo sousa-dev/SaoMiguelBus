@@ -10,6 +10,7 @@ export interface TrailSummary {
   distanceKm: number | null;
   shape?: string;
   durationMin?: number | null;
+  mapImageUrl?: string;
 }
 
 export interface TrailWaypoint {

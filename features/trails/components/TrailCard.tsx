@@ -1,5 +1,5 @@
 import { Clock, Footprints, Mountain } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/Badge';
@@ -34,11 +34,16 @@ export function TrailCard({
   const difficultyLabel = trail.difficulty
     ? t(`trailsDifficulty_${trail.difficulty}`, { defaultValue: trail.difficulty })
     : '—';
+  const hasMapImage = Boolean(trail.mapImageUrl?.trim());
 
   return (
     <Card onPress={onPress} elevated style={styles.card}>
       <View style={[styles.cover, { backgroundColor: theme.surfaceVariant }]}>
-        <Mountain size={32} color={theme.muted} />
+        {hasMapImage ? (
+          <Image source={{ uri: trail.mapImageUrl! }} style={styles.coverImage} resizeMode="cover" />
+        ) : (
+          <Mountain size={32} color={theme.muted} />
+        )}
       </View>
       <View style={styles.body}>
         <Text style={[typography.headline, { color: theme.text }]} numberOfLines={2}>
@@ -75,7 +80,8 @@ export function TrailCard({
 
 const styles = StyleSheet.create({
   card: { marginBottom: space.md, padding: 0, overflow: 'hidden', borderRadius: radius.lg },
-  cover: { height: 100, alignItems: 'center', justifyContent: 'center' },
+  cover: { height: 120, alignItems: 'center', justifyContent: 'center' },
+  coverImage: { width: '100%', height: '100%' },
   body: { padding: space.lg, gap: space.sm },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, marginTop: space.xs },
   metric: { flexDirection: 'row', alignItems: 'center', gap: 4 },

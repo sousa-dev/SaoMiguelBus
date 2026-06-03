@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MapPin } from 'lucide-react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
@@ -10,10 +11,9 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TrailMap } from '@/features/trails/components/TrailMap';
-import { space } from '@/lib/tokens';
+import { space, typography } from '@/lib/tokens';
 import { TrailWeather } from '@/features/trails/components/TrailWeather';
 import { useTrail } from '@/features/trails/hooks/useTrailQueries';
-import { trailCentroid } from '@/features/trails/types';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -58,13 +58,10 @@ export default function TrailDetailScreen() {
     i18n.language.startsWith('pt') && data.descriptionPt
       ? data.descriptionPt
       : data.descriptionEn || data.descriptionPt || '';
-  const centroid = trailCentroid(data.geojson);
   const mapsUrl =
     data.startLat != null && data.startLng != null
       ? `https://www.google.com/maps?q=${data.startLat},${data.startLng}`
-      : centroid
-        ? `https://www.google.com/maps?q=${centroid.lat},${centroid.lng}`
-        : null;
+      : null;
 
   const openDownload = (url: string | undefined, kind: 'gpx' | 'kml' | 'leaflet') => {
     if (!url) {
@@ -74,111 +71,151 @@ export default function TrailDetailScreen() {
     void WebBrowser.openBrowserAsync(url);
   };
 
+  const hasDownloads = Boolean(data.gpxUrl || data.kmlUrl || data.leafletUrl);
+  const hasWaypoints = (data.waypoints?.length ?? 0) > 0;
+
   return (
     <Screen withStackHeader>
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.text }]}>{data.name}</Text>
-
-      <View style={styles.badges}>
-        <Badge label={t('trailsDifficultyLabel', { difficulty: difficultyLabel })} tone="primary" />
-        {data.shape ? (
-          <Badge label={t(`trailsShape_${data.shape}`, { defaultValue: data.shape })} tone="neutral" />
-        ) : null}
-        {data.durationMin != null ? (
-          <Badge
-            label={t('trailsDuration', {
-              hours: Math.floor(data.durationMin / 60),
-              minutes: data.durationMin % 60,
-            })}
-            tone="neutral"
-          />
-        ) : null}
-      </View>
-
-      {data.distanceKm != null ? (
-        <Text style={{ color: theme.text, marginBottom: 12 }}>
-          {t('trailsDistance', { km: data.distanceKm.toFixed(1) })}
-        </Text>
-      ) : null}
-
-      {description ? (
-        <Text style={{ color: theme.text, lineHeight: 22, marginBottom: 16 }}>{description}</Text>
-      ) : null}
-
-      <TrailMap
-        trail={data}
-        theme={theme}
-        onMapOpen={() => track('trails', 'map_open', { trail_id: data.id })}
-      />
-
-      <TrailWeather lat={data.startLat} lng={data.startLng} theme={theme} />
-
-      {(data.waypoints?.length ?? 0) > 0 ? (
-        <View style={{ marginBottom: 16 }}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('trailsWaypoints')}</Text>
-          {data.waypoints!.map((waypoint) => (
-            <Text key={`${waypoint.name}-${waypoint.lat}`} style={{ color: theme.muted, marginBottom: 4 }}>
-              • {waypoint.name}
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.background }]}
+        contentContainerStyle={styles.content}
+      >
+        <Card style={styles.section}>
+          <Text style={[typography.title, { color: theme.text }]}>{data.name}</Text>
+          <View style={styles.badges}>
+            {data.difficulty ? (
+              <Badge label={t('trailsDifficultyLabel', { difficulty: difficultyLabel })} tone="primary" />
+            ) : null}
+            {data.shape ? (
+              <Badge label={t(`trailsShape_${data.shape}`, { defaultValue: data.shape })} tone="neutral" />
+            ) : null}
+            {data.durationMin != null ? (
+              <Badge
+                label={t('trailsDuration', {
+                  hours: Math.floor(data.durationMin / 60),
+                  minutes: data.durationMin % 60,
+                })}
+                tone="neutral"
+              />
+            ) : null}
+          </View>
+          {data.distanceKm != null ? (
+            <Text style={[typography.body, { color: theme.text }]}>
+              {t('trailsDistance', { km: data.distanceKm.toFixed(1) })}
             </Text>
-          ))}
-        </View>
-      ) : null}
+          ) : null}
+          {description ? (
+            <Text style={[typography.body, styles.description, { color: theme.text }]}>{description}</Text>
+          ) : null}
+        </Card>
 
-      <View style={styles.downloads}>
-        {data.gpxUrl ? (
-          <Button label={t('trailsDownloadGpx')} variant="secondary" fullWidth onPress={() => openDownload(data.gpxUrl, 'gpx')} style={{ marginBottom: space.sm }} />
+        <Card style={[styles.section, styles.mapCard]}>
+          <TrailMap
+            trail={data}
+            theme={theme}
+            onMapOpen={() => track('trails', 'map_open', { trail_id: data.id })}
+          />
+        </Card>
+
+        <TrailWeather lat={data.startLat} lng={data.startLng} theme={theme} />
+
+        {hasWaypoints ? (
+          <Card style={styles.section}>
+            <Text style={[typography.headline, styles.sectionTitle, { color: theme.text }]}>
+              {t('trailsWaypoints')}
+            </Text>
+            {data.waypoints!.map((waypoint) => (
+              <View key={`${waypoint.name}-${waypoint.lat}`} style={styles.waypointRow}>
+                <MapPin size={16} color={theme.primary} />
+                <Text style={[typography.body, { color: theme.text, flex: 1 }]}>{waypoint.name}</Text>
+              </View>
+            ))}
+          </Card>
         ) : null}
-        {data.kmlUrl ? (
-          <Button label={t('trailsDownloadKml')} variant="secondary" fullWidth onPress={() => openDownload(data.kmlUrl, 'kml')} style={{ marginBottom: space.sm }} />
+
+        {hasDownloads ? (
+          <Card style={styles.section}>
+            <Text style={[typography.headline, styles.sectionTitle, { color: theme.text }]}>
+              {t('trailsDownloadsTitle')}
+            </Text>
+            {data.gpxUrl ? (
+              <Button
+                label={t('trailsDownloadGpx')}
+                variant="secondary"
+                fullWidth
+                onPress={() => openDownload(data.gpxUrl, 'gpx')}
+                style={styles.actionBtn}
+              />
+            ) : null}
+            {data.kmlUrl ? (
+              <Button
+                label={t('trailsDownloadKml')}
+                variant="secondary"
+                fullWidth
+                onPress={() => openDownload(data.kmlUrl, 'kml')}
+                style={styles.actionBtn}
+              />
+            ) : null}
+            {data.leafletUrl ? (
+              <Button
+                label={t('trailsDownloadLeaflet')}
+                variant="secondary"
+                fullWidth
+                onPress={() => openDownload(data.leafletUrl, 'leaflet')}
+                style={styles.actionBtn}
+              />
+            ) : null}
+          </Card>
         ) : null}
-        {data.leafletUrl ? (
-          <Button label={t('trailsDownloadLeaflet')} variant="secondary" fullWidth onPress={() => openDownload(data.leafletUrl, 'leaflet')} style={{ marginBottom: space.sm }} />
+
+        <Card style={styles.section}>
+          {mapsUrl ? (
+            <Button
+              label={t('trailsOpenMap')}
+              fullWidth
+              onPress={() => {
+                track('trails', 'map_open', { trail_id: data.id, external: true });
+                void WebBrowser.openBrowserAsync(mapsUrl);
+              }}
+              style={styles.actionBtn}
+            />
+          ) : null}
+          {data.nearestStop ? (
+            <Button
+              label={t('trailsByBus', {
+                stop: data.nearestStop.name,
+                km: data.nearestStop.distanceKm.toFixed(1),
+              })}
+              fullWidth
+              variant="secondary"
+              onPress={() => {
+                track('trails', 'engage', { action: 'get_directions', trail_id: data.id });
+                router.push({
+                  pathname: '/(tabs)/transit/directions',
+                  params: { destination: data.nearestStop!.name },
+                });
+              }}
+            />
+          ) : null}
+        </Card>
+
+        {data.attribution ? (
+          <Text style={[styles.attribution, { color: theme.muted }]}>{data.attribution}</Text>
         ) : null}
-      </View>
-
-      {mapsUrl ? (
-        <Button
-          label={t('trailsOpenMap')}
-          fullWidth
-          onPress={() => {
-            track('trails', 'map_open', { trail_id: data.id, external: true });
-            void WebBrowser.openBrowserAsync(mapsUrl);
-          }}
-          style={{ marginBottom: space.sm }}
-        />
-      ) : null}
-
-      {data.nearestStop ? (
-        <Button
-          label={t('trailsByBus', {
-            stop: data.nearestStop.name,
-            km: data.nearestStop.distanceKm.toFixed(1),
-          })}
-          fullWidth
-          onPress={() => {
-            track('trails', 'engage', { action: 'get_directions', trail_id: data.id });
-            router.push({
-              pathname: '/(tabs)/transit/directions',
-              params: { destination: data.nearestStop!.name },
-            });
-          }}
-          style={{ marginBottom: space.lg }}
-        />
-      ) : null}
-
-      {data.attribution ? (
-        <Text style={{ color: theme.muted, fontSize: 11, lineHeight: 16 }}>{data.attribution}</Text>
-      ) : null}
-    </ScrollView>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 22, fontWeight: '800', marginBottom: 8 },
-  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  badge: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 4 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  downloads: { marginBottom: 4 },
+  container: { flex: 1 },
+  content: { padding: space.lg, paddingBottom: space['3xl'], gap: space.md },
+  section: { marginBottom: 0 },
+  mapCard: { padding: 0, overflow: 'hidden' },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.sm, marginBottom: space.sm },
+  description: { lineHeight: 22, marginTop: space.sm },
+  sectionTitle: { marginBottom: space.sm },
+  waypointRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.sm },
+  actionBtn: { marginBottom: space.sm },
+  attribution: { fontSize: 11, lineHeight: 16 },
 });
