@@ -61,6 +61,13 @@ export function ProviderForm({
     if (!name.trim()) {
       errors.name = t('marketplaceFormError');
     }
+    if (!bio.trim()) {
+      errors.bio = t('marketplaceFormBioRequired');
+    }
+    const hasContact = phone.trim() || whatsapp.trim() || email.trim();
+    if (!hasContact) {
+      errors.contact = t('marketplaceFormContactRequired');
+    }
     if (useNewCategory) {
       if (newCategoryName.trim().length < 2) {
         errors.category = t('marketplaceFormCategoryNameError');
@@ -171,8 +178,13 @@ export function ProviderForm({
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          {fieldErrors.contact ? (
+            <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>
+              {fieldErrors.contact}
+            </Text>
+          ) : null}
           <Field
-            label={t('marketplaceFormRate')}
+            label={t('marketplaceFormRateOptional')}
             value={rate}
             onChangeText={setRate}
             keyboardType="decimal-pad"
@@ -183,7 +195,14 @@ export function ProviderForm({
           <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
             {t('marketplaceFormSectionDescription')}
           </Text>
-          <Field label={t('marketplaceFormBio')} value={bio} onChangeText={setBio} multiline numberOfLines={4} />
+          <Field
+            label={t('marketplaceFormBio')}
+            value={bio}
+            onChangeText={setBio}
+            multiline
+            numberOfLines={4}
+            error={fieldErrors.bio}
+          />
         </Card>
 
         <Button label={t('marketplaceFormSubmit')} onPress={submit} loading={submitting} fullWidth />
