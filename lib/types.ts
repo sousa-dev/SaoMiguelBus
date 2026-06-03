@@ -200,6 +200,10 @@ export interface MarketplaceProvider {
   rating: number;
   reviewCount: number;
   status?: string;
+  claimedOwner?: boolean;
+  internalEmail?: string;
+  internalPhone?: string;
+  verifiedByOwner?: boolean;
 }
 
 export interface MarketplaceReview {
@@ -220,6 +224,9 @@ export interface ProviderWriteInput {
   phone?: string;
   whatsapp?: string;
   email?: string;
+  claimed_owner?: boolean;
+  internal_email?: string;
+  internal_phone?: string;
   latitude?: number | null;
   longitude?: number | null;
 }

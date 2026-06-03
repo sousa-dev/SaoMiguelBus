@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Banner } from '@/components/ui/Banner';
@@ -42,6 +50,9 @@ export function ProviderForm({
   const [whatsapp, setWhatsapp] = useState(initial?.whatsapp ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
   const [rate, setRate] = useState(initial?.hourlyRate != null ? String(initial.hourlyRate) : '');
+  const [isOwner, setIsOwner] = useState(initial?.claimedOwner ?? false);
+  const [ownerEmail, setOwnerEmail] = useState(initial?.internalEmail ?? '');
+  const [ownerPhone, setOwnerPhone] = useState(initial?.internalPhone ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const selectExistingCategory = (slug: string) => {
@@ -75,6 +86,9 @@ export function ProviderForm({
     } else if (!categorySlug) {
       errors.category = t('marketplaceFormError');
     }
+    if (isOwner && !ownerEmail.trim() && !ownerPhone.trim()) {
+      errors.ownerContact = t('marketplaceFormOwnerContactRequired');
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -93,6 +107,14 @@ export function ProviderForm({
       payload.category_name = newCategoryName.trim();
     } else {
       payload.category_slug = categorySlug;
+    }
+    payload.claimed_owner = isOwner;
+    if (isOwner) {
+      payload.internal_email = ownerEmail.trim();
+      payload.internal_phone = ownerPhone.trim();
+    } else {
+      payload.internal_email = '';
+      payload.internal_phone = '';
     }
     onSubmit(payload);
   };
@@ -189,6 +211,41 @@ export function ProviderForm({
             onChangeText={setRate}
             keyboardType="decimal-pad"
           />
+          <View style={styles.ownerRow}>
+            <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>
+              {t('marketplaceFormIsOwner')}
+            </Text>
+            <Switch
+              value={isOwner}
+              onValueChange={setIsOwner}
+              trackColor={{ false: theme.outline, true: theme.primary }}
+            />
+          </View>
+          {isOwner ? (
+            <>
+              <Text style={[typography.caption, { color: theme.muted, marginBottom: space.sm }]}>
+                {t('marketplaceFormOwnerContactHint')}
+              </Text>
+              <Field
+                label={t('marketplaceFormOwnerEmail')}
+                value={ownerEmail}
+                onChangeText={setOwnerEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <Field
+                label={t('marketplaceFormOwnerPhone')}
+                value={ownerPhone}
+                onChangeText={setOwnerPhone}
+                keyboardType="phone-pad"
+              />
+              {fieldErrors.ownerContact ? (
+                <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>
+                  {fieldErrors.ownerContact}
+                </Text>
+              ) : null}
+            </>
+          ) : null}
         </Card>
 
         <Card elevated style={styles.section}>
@@ -230,5 +287,12 @@ const styles = StyleSheet.create({
   section: { marginBottom: space.lg },
   sectionTitle: { marginBottom: space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap' },
+  ownerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: space.md,
+    marginBottom: space.sm,
+  },
   notice: { textAlign: 'center', marginTop: space.md },
 });
