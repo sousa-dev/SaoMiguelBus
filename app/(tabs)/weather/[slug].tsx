@@ -110,9 +110,7 @@ export default function WeatherDetailScreen() {
           </View>
         ))}
 
-        {parish.attribution ? (
-          <Text style={[styles.attribution, { color: theme.muted }]}>{parish.attribution}</Text>
-        ) : null}
+        <Text style={[styles.attribution, { color: theme.muted }]}>{t('weatherAttribution')}</Text>
       </ScrollView>
     </Screen>
   );

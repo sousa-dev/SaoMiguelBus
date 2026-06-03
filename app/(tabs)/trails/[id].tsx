@@ -190,7 +190,13 @@ export default function TrailDetailScreen() {
         ) : null}
 
         {data.attribution ? (
-          <Text style={[styles.attribution, { color: theme.muted }]}>{data.attribution}</Text>
+          <Text style={[styles.attribution, { color: theme.muted }]}>
+            {t(
+              data.attribution.toLowerCase().includes('visitazores')
+                ? 'trailsAttribution'
+                : 'trailsAttributionOpenData',
+            )}
+          </Text>
         ) : null}
       </ScrollView>
     </Screen>

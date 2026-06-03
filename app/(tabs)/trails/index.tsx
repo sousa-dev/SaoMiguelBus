@@ -134,7 +134,13 @@ export default function TrailsScreen() {
         }
         ListFooterComponent={
           trails.data?.attribution ? (
-            <Text style={[styles.attribution, { color: theme.muted }]}>{trails.data.attribution}</Text>
+            <Text style={[styles.attribution, { color: theme.muted }]}>
+              {t(
+                trails.data.attribution.toLowerCase().includes('visitazores')
+                  ? 'trailsAttribution'
+                  : 'trailsAttributionOpenData',
+              )}
+            </Text>
           ) : null
         }
         renderItem={({ item }) => {
