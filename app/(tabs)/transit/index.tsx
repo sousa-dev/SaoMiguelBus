@@ -158,6 +158,8 @@ export default function TransitScreen() {
               icon={Bus}
               title={t('noRoutesMessage', { origin, destination })}
               description={t('noRoutesSubtitle')}
+              actionLabel={isOnline ? t('tryDirectionsButton') : undefined}
+              onAction={isOnline ? openDirections : undefined}
             />
           ) : null}
 
