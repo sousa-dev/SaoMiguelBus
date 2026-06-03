@@ -14,6 +14,7 @@ import { TrailMap } from '@/features/trails/components/TrailMap';
 import { space, typography } from '@/lib/tokens';
 import { TrailWeather } from '@/features/trails/components/TrailWeather';
 import { useTrail } from '@/features/trails/hooks/useTrailQueries';
+import { pickTrailDescription } from '@/features/trails/trailDescription';
 import type { FabAction } from '@/lib/fab-registry';
 import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
@@ -95,10 +96,7 @@ export default function TrailDetailScreen() {
   const difficultyLabel = data.difficulty
     ? t(`trailsDifficulty_${data.difficulty}`, { defaultValue: data.difficulty })
     : '—';
-  const description =
-    i18n.language.startsWith('pt') && data.descriptionPt
-      ? data.descriptionPt
-      : data.descriptionEn || data.descriptionPt || '';
+  const description = pickTrailDescription(i18n.language, data.descriptionPt, data.descriptionEn);
   const destination =
     data.startLat != null && data.startLng != null
       ? { lat: data.startLat, lng: data.startLng }
