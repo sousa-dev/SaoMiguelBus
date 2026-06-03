@@ -168,7 +168,7 @@
     "trailsOsmAttribution": "© OpenStreetMap contributors",
     "trailsAttribution": "Trilhos oficiais — Visit Azores (trails.visitazores.com). Dados abertos — Região Autónoma dos Açores via dados.gov.pt (CC BY 4.0).",
     "trailsAttributionOpenData": "Dados abertos — Região Autónoma dos Açores via dados.gov.pt (CC BY 4.0).",
-    "noRoutesMessage": "Nenhuma rota encontrada de {origin} para {destination}. Por favor, tente novamente com diferentes parâmetros.",
+    "noRoutesMessage": "Nenhuma rota encontrada de {{origin}} para {{destination}}. Por favor, tente novamente com diferentes parâmetros.",
     "noRoutesSubtitle": "Tente mudar a sua origem ou destino, ou selecione um dia diferente.",
     "routesPopularTitle": "Rotas Populares",
     "advertiseTitle": "Anuncie em São Miguel Bus",

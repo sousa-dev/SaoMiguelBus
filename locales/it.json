@@ -60,7 +60,7 @@
     "timeLabel": "A che ora?",
     "optionalLabel": "Opzionale",
     "searchButton": "Cerca",
-    "noRoutesMessage": "Nessun percorso trovato da {origin} a {destination}. Riprova con parametri diversi.",
+    "noRoutesMessage": "Nessun percorso trovato da {{origin}} a {{destination}}. Riprova con parametri diversi.",
     "noRoutesSubtitle": "Prova a cambiare origine o destinazione, o seleziona un giorno diverso.",
     "routesPopularTitle": "Percorsi Popolari",
     "advertiseTitle": "Pubblicizza su São Miguel Bus",

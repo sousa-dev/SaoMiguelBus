@@ -168,7 +168,7 @@
     "trailsOsmAttribution": "© OpenStreetMap contributors",
     "trailsAttribution": "Official trails — Visit Azores (trails.visitazores.com). Open data — Autonomous Region of the Azores via dados.gov.pt (CC BY 4.0).",
     "trailsAttributionOpenData": "Open data — Autonomous Region of the Azores via dados.gov.pt (CC BY 4.0).",
-    "noRoutesMessage": "No routes found from {origin} to {destination}. Please try again with different parameters.",
+    "noRoutesMessage": "No routes found from {{origin}} to {{destination}}. Please try again with different parameters.",
     "noRoutesSubtitle": "Try changing your origin or destination, or select a different day.",
     "routesPopularTitle": "Popular Routes",
     "advertiseTitle": "Advertise on São Miguel Bus",

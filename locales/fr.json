@@ -60,7 +60,7 @@
     "timeLabel": "À quelle heure?",
     "optionalLabel": "Optionnel",
     "searchButton": "Rechercher",
-    "noRoutesMessage": "Aucun itinéraire trouvé de {origin} à {destination}. Veuillez réessayer avec des paramètres différents.",
+    "noRoutesMessage": "Aucun itinéraire trouvé de {{origin}} à {{destination}}. Veuillez réessayer avec des paramètres différents.",
     "noRoutesSubtitle": "Essayez de changer votre origine ou votre destination, ou sélectionnez un jour différent.",
     "routesPopularTitle": "Itinéraires Populaires",
     "advertiseTitle": "Annoncer sur São Miguel Bus",

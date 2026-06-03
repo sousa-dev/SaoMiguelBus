@@ -60,7 +60,7 @@
     "timeLabel": "О котрій годині?",
     "optionalLabel": "Необов'язково",
     "searchButton": "Шукати",
-    "noRoutesMessage": "Маршрути з {origin} до {destination} не знайдено. Спробуйте знову з іншими параметрами.",
+    "noRoutesMessage": "Маршрути з {{origin}} до {{destination}} не знайдено. Спробуйте знову з іншими параметрами.",
     "noRoutesSubtitle": "Спробуйте змінити точку відправлення або призначення, або виберіть інший день.",
     "routesPopularTitle": "Популярні Маршрути",
     "advertiseTitle": "Рекламуйтеся на São Miguel Bus",
