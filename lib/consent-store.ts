@@ -48,6 +48,25 @@ function persistDecision(
   });
 }
 
+/**
+ * First-party SMB banners (compat `/api/v1/ad`) are intentionally NOT gated on
+ * `purposes.ads`. They are shown to every non-premium user, matching the legacy
+ * webapp. The `ads` purpose is reserved for future third-party ad SDKs
+ * (AdMob/AdSense) — see `canShowExternalAds()`.
+ */
+export function canShowFirstPartyAds(isPremium: boolean): boolean {
+  return !isPremium;
+}
+
+/**
+ * Consent gate for FUTURE third-party ad SDKs only. First-party banners must
+ * never call this — use `canShowFirstPartyAds()` instead.
+ */
+export function canShowExternalAds(): boolean {
+  const { decided, purposes } = useConsentStore.getState();
+  return decided && purposes.ads;
+}
+
 export const useConsentStore = create<ConsentState>()(
   persist(
     (set, get) => ({
