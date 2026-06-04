@@ -14,6 +14,7 @@ import {
   resolveVoteVerb,
   useProfileStore,
   type TripVote,
+  type TripVoteMeta,
 } from '@/lib/profile-store';
 import type { BootstrapResponse, TransitSearchResult } from '@/lib/types';
 
@@ -121,9 +122,11 @@ export function useTripVote() {
     mutationFn: async ({
       tripId,
       intent,
+      meta,
     }: {
       tripId: number;
       intent: TripVote;
+      meta?: TripVoteMeta;
     }) => {
       const current = getVote(tripId);
       const verb = resolveVoteVerb(current, intent);
@@ -134,7 +137,7 @@ export function useTripVote() {
           : verb === 'switch_to_like' || verb === 'like'
             ? 'like'
             : 'dislike';
-      setVote(tripId, nextVote);
+      setVote(tripId, nextVote, meta);
       track('transit', 'vote', { trip_id: tripId, direction: intent, verb });
       return detail;
     },

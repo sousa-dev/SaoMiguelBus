@@ -17,6 +17,8 @@ type ListRowProps = {
   showChevron?: boolean;
   destructive?: boolean;
   accessibilityLabel?: string;
+  /** Bottom hairline divider. Set false for the last row in a grouped card. */
+  divider?: boolean;
 };
 
 export function ListRow({
@@ -29,9 +31,11 @@ export function ListRow({
   showChevron = Boolean(onPress),
   destructive,
   accessibilityLabel,
+  divider = true,
 }: ListRowProps) {
   const theme = useAppTheme();
   const titleColor = destructive ? theme.danger : theme.text;
+  const borderBottomWidth = divider ? StyleSheet.hairlineWidth : 0;
 
   const content = (
     <>
@@ -54,7 +58,9 @@ export function ListRow({
   );
 
   if (!onPress) {
-    return <View style={[styles.row, { borderBottomColor: theme.border }]}>{content}</View>;
+    return (
+      <View style={[styles.row, { borderBottomColor: theme.border, borderBottomWidth }]}>{content}</View>
+    );
   }
 
   return (
@@ -65,7 +71,12 @@ export function ListRow({
       android_ripple={Platform.OS === 'android' ? { color: theme.outline } : undefined}
       style={({ pressed }) => [
         styles.row,
-        { borderBottomColor: theme.border, opacity: pressed ? 0.85 : 1, minHeight: hitSlop.minTouch },
+        {
+          borderBottomColor: theme.border,
+          borderBottomWidth,
+          opacity: pressed ? 0.85 : 1,
+          minHeight: hitSlop.minTouch,
+        },
       ]}
     >
       {content}
@@ -79,7 +90,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: space.md,
     paddingHorizontal: space.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     gap: space.md,
   },
   leadingWrap: {

@@ -27,6 +27,16 @@ export interface RecentSearch {
 
 export type TripVote = 'like' | 'dislike';
 
+export interface TripVoteEntry {
+  vote: TripVote;
+  routeNumber: string;
+  origin: string;
+  destination: string;
+  votedAt: string;
+}
+
+export type TripVoteMeta = Pick<TripVoteEntry, 'routeNumber' | 'origin' | 'destination'>;
+
 export interface ActiveTrack {
   id: string;
   tripId: number;
@@ -95,7 +105,7 @@ interface ProfileState {
   favoriteRoutes: FavoriteRoute[];
   favoriteStops: FavoriteStop[];
   recentSearches: RecentSearch[];
-  votes: Record<number, TripVote>;
+  votes: Record<number, TripVoteEntry>;
   tracking: TrackingState;
   setDisplayName: (name: string | null) => void;
   isFavoriteRoute: (origin: string, destination: string) => boolean;
@@ -107,7 +117,7 @@ interface ProfileState {
   addRecentSearch: (search: Omit<RecentSearch, 'at'>) => void;
   clearRecentSearches: () => void;
   getVote: (tripId: number) => TripVote | undefined;
-  setVote: (tripId: number, vote: TripVote | undefined) => void;
+  setVote: (tripId: number, vote: TripVote | undefined, meta?: TripVoteMeta) => void;
   clearVotes: () => void;
   startTracking: (input: Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'>) => boolean;
   stopTracking: (trackId: string) => void;
@@ -203,12 +213,19 @@ export const useProfileStore = create<ProfileState>()(
 
       clearRecentSearches: () => set({ recentSearches: [] }),
 
-      getVote: (tripId) => get().votes[tripId],
+      getVote: (tripId) => get().votes[tripId]?.vote,
 
-      setVote: (tripId, vote) => {
+      setVote: (tripId, vote, meta) => {
         const next = { ...get().votes };
         if (vote) {
-          next[tripId] = vote;
+          const existing = next[tripId];
+          next[tripId] = {
+            vote,
+            routeNumber: meta?.routeNumber ?? existing?.routeNumber ?? '',
+            origin: meta?.origin ?? existing?.origin ?? '',
+            destination: meta?.destination ?? existing?.destination ?? '',
+            votedAt: new Date().toISOString(),
+          };
         } else {
           delete next[tripId];
         }
@@ -319,7 +336,33 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: profileStorageKey(),
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        type PersistedSlice = Pick<
+          ProfileState,
+          'displayName' | 'favoriteRoutes' | 'favoriteStops' | 'recentSearches' | 'votes' | 'tracking'
+        >;
+        const state = persisted as PersistedSlice;
+        if (version >= 2 || !state.votes) {
+          return persisted as PersistedSlice;
+        }
+        const migrated: Record<number, TripVoteEntry> = {};
+        for (const [key, value] of Object.entries(state.votes)) {
+          const tripId = Number(key);
+          if (typeof value === 'string' && (value === 'like' || value === 'dislike')) {
+            migrated[tripId] = {
+              vote: value,
+              routeNumber: '',
+              origin: '',
+              destination: '',
+              votedAt: new Date(0).toISOString(),
+            };
+          } else if (value && typeof value === 'object' && 'vote' in value) {
+            migrated[tripId] = value as TripVoteEntry;
+          }
+        }
+        return { ...state, votes: migrated };
+      },
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
           return;

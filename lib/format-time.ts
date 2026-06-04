@@ -34,3 +34,19 @@ export function formatRelativeTime(iso: string, locale?: string): string {
 
   return '';
 }
+
+/** Local clock time from ISO timestamp, e.g. "16:52". */
+export function formatLocalTime(iso: string, locale?: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const resolvedLocale = locale ?? (typeof navigator !== 'undefined' ? navigator.language : 'en');
+  try {
+    return new Intl.DateTimeFormat(resolvedLocale, { hour: '2-digit', minute: '2-digit' }).format(date);
+  } catch {
+    const h = date.getHours().toString().padStart(2, '0');
+    const m = date.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
+  }
+}

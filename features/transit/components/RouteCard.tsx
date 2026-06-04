@@ -99,7 +99,17 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
 
       <View style={styles.voteRow}>
         <Pressable
-          onPress={() => vote.mutate({ tripId: trip.id, intent: 'dislike' })}
+          onPress={() =>
+            vote.mutate({
+              tripId: trip.id,
+              intent: 'dislike',
+              meta: {
+                routeNumber: displayRouteNumber(trip.route),
+                origin: firstStop?.name ?? trip.origin,
+                destination: lastStop?.name ?? trip.destination,
+              },
+            })
+          }
           style={styles.voteBtn}
           accessibilityLabel={t('transitDislikeAction')}
         >
@@ -124,7 +134,17 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
 
         <Text style={[typography.caption, { color: theme.muted }]}>{trip.likesPercent}%</Text>
         <Pressable
-          onPress={() => vote.mutate({ tripId: trip.id, intent: 'like' })}
+          onPress={() =>
+            vote.mutate({
+              tripId: trip.id,
+              intent: 'like',
+              meta: {
+                routeNumber: displayRouteNumber(trip.route),
+                origin: firstStop?.name ?? trip.origin,
+                destination: lastStop?.name ?? trip.destination,
+              },
+            })
+          }
           style={styles.voteBtn}
           accessibilityLabel={t('transitLikeAction')}
         >
