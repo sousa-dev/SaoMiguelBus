@@ -1,5 +1,5 @@
 {
-  "name": "azores-hub",
+  "name": "saomiguel-hub",
   "main": "expo-router/entry",
   "version": "5.1.0",
   "dependencies": {
@@ -11,6 +11,7 @@
     "@tanstack/react-query-persist-client": "^5.100.14",
     "expo": "~56.0.8",
     "expo-blur": "~56.0.3",
+    "expo-build-properties": "~56.0.16",
     "expo-constants": "~56.0.16",
     "expo-crypto": "^56.0.4",
     "expo-font": "~56.0.5",
@@ -46,10 +47,13 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "postinstall": "bash scripts/patch-expo-native-build.sh",
+    "ios:prebuild": "npx expo prebuild --platform ios && node scripts/fix-ios-xcode-paths.mjs",
     "start": "expo start --clear",
     "start:verbose": "EXPO_DEBUG=1 expo start --clear",
     "android": "expo start --android --clear",
-    "ios": "expo start --ios --clear",
+    "ios": "expo run:ios",
+    "ios:start": "expo start --ios --clear",
     "web": "expo start --web --clear"
   },
   "private": true

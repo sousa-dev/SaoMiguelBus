@@ -5,15 +5,16 @@
     "version": "5.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "azoreshub",
+    "scheme": "saomiguelhub",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hsousa-apps.Autocarros"
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#7AA377",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -36,7 +37,17 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-mail-composer"
+      "expo-mail-composer",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "buildReactNativeFromSource": true,
+            "usePrecompiledModules": false
+          }
+        }
+      ],
+      "./plugins/withIosBuildFixes"
     ],
     "experiments": {
       "typedRoutes": true
