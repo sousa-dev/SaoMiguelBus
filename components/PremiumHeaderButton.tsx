@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Crown } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React from 'react';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { PremiumLaunchModal } from '@/features/transit/components/PremiumLaunchModal';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { withAlpha } from '@/lib/color-utils';
 import { usePremium } from '@/lib/premium-store';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
@@ -16,41 +16,52 @@ export function PremiumHeaderButton() {
   const theme = useAppTheme();
   const router = useRouter();
   const isPremium = usePremium();
-  const [open, setOpen] = useState(false);
+  const { openPaywall } = usePaywall();
 
-  const label = isPremium ? t('premiumHeaderButtonActive') : t('premiumHeaderButton');
+  const label = isPremium ? t('premiumHeaderButtonActive') : t('premiumGoPremium');
+  const iconColor = isPremium ? theme.onAccent : theme.accent;
+  const textColor = iconColor;
 
   return (
-    <>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={() => {
-          if (Platform.OS !== 'web') {
-            void Haptics.selectionAsync();
-          }
-          if (isPremium) {
-            router.push('/settings');
-          } else {
-            setOpen(true);
-          }
-        }}
-        style={({ pressed }) => [
-          styles.pill,
-          {
-            backgroundColor: theme.accent,
-            borderColor: withAlpha(theme.onAccent, 0.12),
-            opacity: pressed ? 0.88 : 1,
-          },
-        ]}
-      >
-        <Crown size={iconSize.sm} color={theme.onAccent} strokeWidth={2.25} fill={withAlpha(theme.onAccent, 0.2)} />
-        <Text style={[typography.caption, styles.label, { color: theme.onAccent }]} numberOfLines={1}>
-          {label}
-        </Text>
-      </Pressable>
-      <PremiumLaunchModal visible={open} onClose={() => setOpen(false)} />
-    </>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: isPremium }}
+      onPress={() => {
+        if (Platform.OS !== 'web') {
+          void Haptics.selectionAsync();
+        }
+        if (isPremium) {
+          router.push('/settings');
+        } else {
+          void openPaywall();
+        }
+      }}
+      style={({ pressed }) => [
+        styles.pill,
+        isPremium ? styles.pillActive : styles.pillUpsell,
+        isPremium
+          ? {
+              backgroundColor: theme.accent,
+              borderColor: withAlpha(theme.onAccent, 0.12),
+            }
+          : {
+              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+              borderColor: theme.accent,
+            },
+        { opacity: pressed ? 0.88 : 1 },
+      ]}
+    >
+      <Crown
+        size={iconSize.sm}
+        color={iconColor}
+        strokeWidth={2.25}
+        fill={isPremium ? withAlpha(theme.onAccent, 0.25) : 'transparent'}
+      />
+      <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -62,8 +73,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingVertical: 6,
     borderRadius: radius.full,
-    borderWidth: StyleSheet.hairlineWidth,
     marginLeft: space.xs,
   },
+  pillActive: { borderWidth: StyleSheet.hairlineWidth },
+  pillUpsell: { borderWidth: 1 },
   label: { fontWeight: '700', letterSpacing: 0.3 },
 });

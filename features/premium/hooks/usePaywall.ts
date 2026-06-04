@@ -7,7 +7,12 @@ import { useReconcileEntitlement } from '@/features/premium/hooks/useReconcileEn
 import { setPendingPaywall } from '@/features/premium/lib/paywall-intent';
 import { useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
-import { isRevenueCatConfigured, PREMIUM_ENTITLEMENT_ID } from '@/lib/revenuecat';
+import {
+  isRevenueCatConfigured,
+  PREMIUM_ENTITLEMENT_ID,
+  revenueCatSetupHint,
+  revenueCatSetupIssue,
+} from '@/lib/revenuecat';
 
 /**
  * Imperative RevenueCat paywall presentation.
@@ -38,7 +43,8 @@ export function usePaywall() {
 
   const present = useCallback(async (): Promise<PAYWALL_RESULT | null> => {
     if (!isRevenueCatConfigured()) {
-      logger.debug('Paywall: RevenueCat not configured — skipping');
+      const issue = revenueCatSetupIssue();
+      logger.debug('Paywall: RevenueCat not configured —', issue, revenueCatSetupHint(issue));
       return null;
     }
     try {
@@ -52,6 +58,8 @@ export function usePaywall() {
 
   const presentIfNeeded = useCallback(async (): Promise<PAYWALL_RESULT | null> => {
     if (!isRevenueCatConfigured()) {
+      const issue = revenueCatSetupIssue();
+      logger.debug('Paywall: RevenueCat not configured —', issue, revenueCatSetupHint(issue));
       return null;
     }
     try {

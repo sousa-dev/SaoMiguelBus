@@ -38,6 +38,33 @@ export function isRevenueCatConfigured(): boolean {
   return configured;
 }
 
+/** Why purchases/paywall are disabled — for logs and dev diagnostics. */
+export function revenueCatSetupIssue(): 'ok' | 'web' | 'missing_key' | 'configure_failed' {
+  if (Platform.OS === 'web') {
+    return 'web';
+  }
+  if (configured) {
+    return 'ok';
+  }
+  if (!resolveApiKey()) {
+    return 'missing_key';
+  }
+  return 'configure_failed';
+}
+
+export function revenueCatSetupHint(issue: ReturnType<typeof revenueCatSetupIssue>): string {
+  switch (issue) {
+    case 'ok':
+      return '';
+    case 'web':
+      return 'IAP is not supported on web.';
+    case 'missing_key':
+      return 'Add EXPO_PUBLIC_REVENUECAT_IOS_API_KEY (appl_…) or EXPO_PUBLIC_REVENUECAT_TEST_API_KEY (test_…) to .env, then restart Metro with --clear.';
+    case 'configure_failed':
+      return 'Purchases.configure() failed — use a dev build (npm run ios), not Expo Go.';
+  }
+}
+
 /**
  * Stable App User ID bound to the backend account. This is the cross-repo
  * coordination point: the API webhook maps this id back to a `billing.Entitlement`.
@@ -61,7 +88,7 @@ export function configureRevenueCat(): void {
   }
   const apiKey = resolveApiKey();
   if (!apiKey) {
-    logger.debug('RevenueCat: no API key for this platform — purchases disabled');
+    logger.debug('RevenueCat:', revenueCatSetupHint('missing_key'));
     return;
   }
   try {

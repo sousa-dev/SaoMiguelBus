@@ -3,6 +3,7 @@ import {
   Activity,
   Bus,
   CircleUser,
+  Crown,
   Footprints,
   LayoutGrid,
   MessageSquarePlus,
@@ -121,6 +122,9 @@ export function getEnabledHubModules(
 
 export type SidebarSectionId = 'hub' | 'modules' | 'app';
 
+/** Sidebar rows that run app logic instead of `router.push(route)`. */
+export type SidebarNavAction = 'premium';
+
 export type SidebarNavItem = {
   key: string;
   route: Href;
@@ -130,6 +134,7 @@ export type SidebarNavItem = {
   section: SidebarSectionId;
   /** Feature module key when `section === 'modules'`. */
   moduleKey?: ModuleKey;
+  action?: SidebarNavAction;
 };
 
 export type SidebarSection = {
@@ -157,7 +162,18 @@ const moduleNavItems: SidebarNavItem[] = HUB_MODULES.map((m) => ({
   moduleKey: m.key,
 }));
 
+const PREMIUM_ACCENT = '#ca8a04';
+
 const appNavItems: SidebarNavItem[] = [
+  {
+    key: 'premium',
+    route: '/settings',
+    labelKey: 'premiumGoPremium',
+    Icon: Crown,
+    accent: PREMIUM_ACCENT,
+    section: 'app',
+    action: 'premium',
+  },
   {
     key: 'settings',
     route: '/settings',

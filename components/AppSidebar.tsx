@@ -18,7 +18,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { resolveEnabledModules } from '@/config/island';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import { usePremium } from '@/lib/premium-store';
 import { isSidebarItemActive } from '@/lib/sidebar-active';
 import { useSidebarStore } from '@/lib/sidebar-store';
 import { withAlpha } from '@/lib/color-utils';
@@ -47,6 +49,8 @@ export function AppSidebar() {
     [bootstrap?.island?.enabledModules],
   );
   const enabledSet = useMemo(() => new Set(enabledKeys), [enabledKeys]);
+  const isPremium = usePremium();
+  const { openPaywall } = usePaywall();
 
   const width = panelWidth();
   const [mounted, setMounted] = useState(open);
@@ -99,6 +103,14 @@ export function AppSidebar() {
 
   const onNavigate = (item: SidebarNavItem) => {
     closeSidebar();
+    if (item.action === 'premium') {
+      if (isPremium) {
+        router.push('/settings');
+      } else {
+        void openPaywall();
+      }
+      return;
+    }
     router.push(item.route);
   };
 
@@ -155,7 +167,18 @@ export function AppSidebar() {
                 </Text>
               ) : null}
               {section.items.map((item) => {
-                const active = isSidebarItemActive(pathname, item);
+                const labelKey =
+                  item.key === 'premium'
+                    ? isPremium
+                      ? 'premiumHeaderButtonActive'
+                      : 'premiumGoPremium'
+                    : item.labelKey;
+                const active =
+                  item.key === 'premium' && isPremium
+                    ? isSidebarItemActive(pathname, item)
+                    : item.action
+                      ? false
+                      : isSidebarItemActive(pathname, item);
                 const disabledHint =
                   item.moduleKey != null && !enabledSet.has(item.moduleKey);
                 const accent = item.accent ?? theme.primary;
@@ -166,7 +189,7 @@ export function AppSidebar() {
                     key={item.key}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
-                    accessibilityLabel={t(item.labelKey)}
+                    accessibilityLabel={t(labelKey)}
                     onPress={() => onNavigate(item)}
                     style={({ pressed }) => [
                       styles.row,
@@ -192,7 +215,7 @@ export function AppSidebar() {
                       ]}
                       numberOfLines={2}
                     >
-                      {t(item.labelKey)}
+                      {t(labelKey)}
                     </Text>
                     {disabledHint ? (
                       <View
