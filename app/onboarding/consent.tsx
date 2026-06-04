@@ -6,13 +6,13 @@ import { BarChart3, Lock, Megaphone, ShieldCheck, Sparkles } from 'lucide-react-
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { StackBackButton } from '@/components/StackBackButton';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { ListRow } from '@/components/ui/ListRow';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { useNetworkStatus } from '@/lib/network-status';
-import { useAppStackScreenOptions } from '@/lib/navigation';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { ConsentPurposes } from '@/lib/types';
@@ -22,7 +22,6 @@ export default function ConsentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
-  const screenOptions = useAppStackScreenOptions();
   const { isOnline } = useNetworkStatus();
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectNonEssential = useConsentStore((s) => s.rejectNonEssential);
@@ -60,28 +59,39 @@ export default function ConsentScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      ...screenOptions,
-      headerShown: true,
-      title: t('consentTitle'),
+      headerShown: false,
       presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
       ...(Platform.OS === 'ios'
         ? {
             sheetGrabberVisible: true,
             sheetAllowedDetents: [1],
-            sheetExpandsWhenScrolledToEdge: true,
+            sheetExpandsWhenScrolledToEdge: false,
           }
         : {}),
     });
-  }, [navigation, screenOptions, t]);
+  }, [navigation]);
 
   return (
-    <Screen withStackHeader collapsable={false}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          <View style={[styles.hero, { backgroundColor: theme.surfaceVariant }]}>
-            <ShieldCheck size={48} color={theme.primary} strokeWidth={1.5} />
+    <Screen collapsable={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+          {decided ? (
+            <View style={styles.topBar}>
+              <StackBackButton fallbackHref="/settings" />
+            </View>
+          ) : null}
+          <View style={styles.heroWrap}>
+            <View style={[styles.heroRing, { backgroundColor: theme.surfaceVariant }]}>
+              <View style={[styles.hero, { backgroundColor: theme.primary }]}>
+                <ShieldCheck size={44} color={theme.onPrimary} strokeWidth={2} />
+              </View>
+            </View>
           </View>
-          <Text style={[typography.display, { color: theme.primary, marginTop: space.lg }]}>{t('consentTitle')}</Text>
-          <Text style={[typography.body, { color: theme.text, marginVertical: space.lg }]}>{t('consentIntro')}</Text>
+          <Text style={[typography.display, styles.title, { color: theme.primary }]}>{t('consentTitle')}</Text>
+          <Text style={[typography.body, styles.intro, { color: theme.muted }]}>{t('consentIntro')}</Text>
 
           {!isOnline ? <Banner variant="offline" message={t('consentOfflineBanner')} /> : null}
 
@@ -181,14 +191,41 @@ function PurposeRow({
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { padding: space.lg, paddingBottom: space['4xl'] },
-  hero: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  content: {
+    padding: space.lg,
+    paddingBottom: space['4xl'],
+  },
+  topBar: {
+    alignSelf: 'flex-start',
+    marginBottom: space.sm,
+    marginLeft: -space.sm,
+  },
+  heroWrap: {
+    alignItems: 'center',
+    marginTop: space.sm,
+  },
+  heroRing: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
+  },
+  hero: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    textAlign: 'center',
+    marginTop: space.lg,
+  },
+  intro: {
+    textAlign: 'center',
+    marginTop: space.md,
+    marginBottom: space.lg,
   },
   group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
 });
