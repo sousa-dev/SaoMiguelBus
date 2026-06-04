@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -15,6 +16,12 @@ type Props = {
 export function PremiumLaunchModal({ visible, onClose }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const { openPaywall } = usePaywall();
+
+  const onGoPremium = () => {
+    onClose();
+    void openPaywall();
+  };
 
   return (
     <Sheet visible={visible} onClose={onClose} title={t('premiumLaunchModalTitle')}>
@@ -23,7 +30,14 @@ export function PremiumLaunchModal({ visible, onClose }: Props) {
         <Text style={[typography.body, styles.paragraph, { color: theme.text }]}>
           {t('premiumLaunchModalGrandfather')}
         </Text>
-        <Button label={t('settingsBack')} onPress={onClose} fullWidth style={styles.button} />
+        <Button label={t('premiumGoPremium')} onPress={onGoPremium} fullWidth style={styles.button} />
+        <Button
+          label={t('settingsBack')}
+          variant="ghost"
+          onPress={onClose}
+          fullWidth
+          style={styles.secondaryButton}
+        />
       </View>
     </Sheet>
   );
@@ -33,4 +47,5 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: space.lg },
   paragraph: { marginTop: space.md },
   button: { marginTop: space.xl },
+  secondaryButton: { marginTop: space.sm },
 });

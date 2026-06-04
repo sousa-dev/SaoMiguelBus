@@ -14,7 +14,7 @@ import type { Entitlement } from '@/lib/types';
 export function useEntitlementSync() {
   const token = useAuthStore((s) => s.token);
   const hydrated = useAuthStore((s) => s.hydrated);
-  const setEntitlement = useEntitlementStore((s) => s.setEntitlement);
+  const reconcileFromBackend = useEntitlementStore((s) => s.reconcileFromBackend);
   const clearEntitlement = useEntitlementStore((s) => s.clearEntitlement);
 
   const query = useQuery({
@@ -36,9 +36,9 @@ export function useEntitlementSync() {
 
   useEffect(() => {
     if (query.data) {
-      setEntitlement(query.data);
+      reconcileFromBackend(query.data);
     }
-  }, [query.data, setEntitlement]);
+  }, [query.data, reconcileFromBackend]);
 
   return query;
 }

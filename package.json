@@ -36,6 +36,8 @@
     "react-i18next": "^17.0.8",
     "react-native": "0.85.3",
     "react-native-maps": "1.27.2",
+    "react-native-purchases": "^10.2.2",
+    "react-native-purchases-ui": "^10.2.2",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",

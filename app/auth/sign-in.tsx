@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { SocialSignInButtons } from '@/features/account/components/SocialSignInButtons';
 import { useAuth } from '@/features/account/hooks/useAuth';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
+import { consumePendingPaywall } from '@/features/premium/lib/paywall-intent';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -22,6 +24,15 @@ export default function SignInScreen() {
   const navigation = useNavigation();
   const screenOptions = useAppStackScreenOptions();
   const { login, register } = useAuth();
+  const { present } = usePaywall();
+
+  // Resume into the paywall when sign-in was triggered from an upsell.
+  const finishAuth = () => {
+    router.back();
+    if (consumePendingPaywall()) {
+      void present();
+    }
+  };
 
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -48,7 +59,7 @@ export default function SignInScreen() {
       } else {
         await login.mutateAsync({ email: email.trim(), password });
       }
-      router.back();
+      finishAuth();
     } catch {
       setError(mode === 'register' ? t('authRegisterError') : t('authLoginError'));
     }
@@ -116,7 +127,7 @@ export default function SignInScreen() {
           />
         </View>
 
-        <SocialSignInButtons onError={() => setError(t('authSocialError'))} onSuccess={() => router.back()} />
+        <SocialSignInButtons onError={() => setError(t('authSocialError'))} onSuccess={finishAuth} />
       </ScrollView>
     </Screen>
   );

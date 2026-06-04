@@ -864,5 +864,18 @@
     "premiumManageAppStore": "Gérer dans l'App Store",
     "premiumManagePlayStore": "Gérer dans Google Play",
     "premiumManageStripe": "Géré via la facturation web",
-    "premiumManageNone": "Accordé par São Miguel Hub"
+    "premiumManageNone": "Accordé par São Miguel Hub",
+    "settingsPremium": "Premium",
+    "premiumHeaderButtonActive": "Premium",
+    "premiumGoPremium": "Passer à premium",
+    "premiumManageSubscription": "Gérer l'abonnement",
+    "premiumRestore": "Restaurer les achats",
+    "premiumRestoreTitle": "Restaurer les achats",
+    "premiumRestoreSuccess": "Votre abonnement premium a été restauré.",
+    "premiumRestoreNone": "Aucun achat précédent trouvé pour ce compte.",
+    "premiumPurchaseError": "Un problème est survenu lors de votre achat. Veuillez réessayer.",
+    "premiumPurchaseNetworkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+    "premiumPurchaseStoreError": "La boutique est indisponible pour le moment. Veuillez réessayer plus tard.",
+    "premiumPurchasePending": "Votre achat est en attente d'approbation.",
+    "premiumPurchaseAlreadyOwned": "Vous possédez déjà cet abonnement. Essayez de restaurer les achats."
 }

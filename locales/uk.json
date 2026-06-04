@@ -789,5 +789,18 @@
     "premiumManageAppStore": "Керувати в App Store",
     "premiumManagePlayStore": "Керувати в Google Play",
     "premiumManageStripe": "Керується через вебоплату",
-    "premiumManageNone": "Надано São Miguel Hub"
+    "premiumManageNone": "Надано São Miguel Hub",
+    "settingsPremium": "Premium",
+    "premiumHeaderButtonActive": "Premium",
+    "premiumGoPremium": "Отримати преміум",
+    "premiumManageSubscription": "Керувати підпискою",
+    "premiumRestore": "Відновити покупки",
+    "premiumRestoreTitle": "Відновити покупки",
+    "premiumRestoreSuccess": "Вашу преміум-підписку відновлено.",
+    "premiumRestoreNone": "Для цього облікового запису не знайдено попередніх покупок.",
+    "premiumPurchaseError": "Під час покупки сталася помилка. Спробуйте ще раз.",
+    "premiumPurchaseNetworkError": "Помилка мережі. Перевірте з'єднання та спробуйте ще раз.",
+    "premiumPurchaseStoreError": "Магазин зараз недоступний. Спробуйте пізніше.",
+    "premiumPurchasePending": "Ваша покупка очікує підтвердження.",
+    "premiumPurchaseAlreadyOwned": "Ви вже маєте цю підписку. Спробуйте відновити покупки."
 }

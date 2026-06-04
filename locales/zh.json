@@ -789,5 +789,18 @@
     "premiumManageAppStore": "在 App Store 中管理",
     "premiumManagePlayStore": "在 Google Play 中管理",
     "premiumManageStripe": "通过网页账单管理",
-    "premiumManageNone": "由 São Miguel Hub 授予"
+    "premiumManageNone": "由 São Miguel Hub 授予",
+    "settingsPremium": "高级会员",
+    "premiumHeaderButtonActive": "高级会员",
+    "premiumGoPremium": "升级高级会员",
+    "premiumManageSubscription": "管理订阅",
+    "premiumRestore": "恢复购买",
+    "premiumRestoreTitle": "恢复购买",
+    "premiumRestoreSuccess": "您的高级订阅已恢复。",
+    "premiumRestoreNone": "未找到此账户的历史购买记录。",
+    "premiumPurchaseError": "购买时出现问题，请重试。",
+    "premiumPurchaseNetworkError": "网络错误。请检查网络连接后重试。",
+    "premiumPurchaseStoreError": "商店暂时不可用，请稍后再试。",
+    "premiumPurchasePending": "您的购买正在等待批准。",
+    "premiumPurchaseAlreadyOwned": "您已拥有此订阅。请尝试恢复购买。"
 }

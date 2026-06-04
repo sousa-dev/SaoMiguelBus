@@ -15,6 +15,7 @@ import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
+import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useAuthStore } from '@/lib/auth-store';
 import '@/lib/i18n';
@@ -47,6 +48,7 @@ function AppShell() {
     void useAuthStore.getState().hydrate();
   }, []);
   useEntitlementSync();
+  useRevenueCatBootstrap();
 
   useEffect(() => {
     void rehydrateThemePrefs();

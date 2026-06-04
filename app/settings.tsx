@@ -8,6 +8,7 @@ import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'rea
 import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
+import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
 import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
@@ -106,6 +107,8 @@ export default function SettingsScreen() {
         ) : null}
 
         <AccountSection />
+
+        <PremiumSettingsSection />
 
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsAppearance')}

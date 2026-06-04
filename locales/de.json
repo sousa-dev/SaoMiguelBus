@@ -864,5 +864,18 @@
     "premiumManageAppStore": "Im App Store verwalten",
     "premiumManagePlayStore": "In Google Play verwalten",
     "premiumManageStripe": "Über Web-Abrechnung verwaltet",
-    "premiumManageNone": "Von São Miguel Hub gewährt"
+    "premiumManageNone": "Von São Miguel Hub gewährt",
+    "settingsPremium": "Premium",
+    "premiumHeaderButtonActive": "Premium",
+    "premiumGoPremium": "Premium holen",
+    "premiumManageSubscription": "Abo verwalten",
+    "premiumRestore": "Käufe wiederherstellen",
+    "premiumRestoreTitle": "Käufe wiederherstellen",
+    "premiumRestoreSuccess": "Dein Premium-Abo wurde wiederhergestellt.",
+    "premiumRestoreNone": "Für dieses Konto wurden keine früheren Käufe gefunden.",
+    "premiumPurchaseError": "Bei deinem Kauf ist etwas schiefgelaufen. Bitte versuche es erneut.",
+    "premiumPurchaseNetworkError": "Netzwerkfehler. Überprüfe deine Verbindung und versuche es erneut.",
+    "premiumPurchaseStoreError": "Der Store ist derzeit nicht verfügbar. Bitte versuche es später erneut.",
+    "premiumPurchasePending": "Dein Kauf wartet auf Bestätigung.",
+    "premiumPurchaseAlreadyOwned": "Du besitzt dieses Abo bereits. Versuche, Käufe wiederherzustellen."
 }
