@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
 import type {
+  AdPayload,
   AuthResponse,
   AuthUser,
   Entitlement,
@@ -88,6 +89,38 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function getApiBase(): string {
   return API_BASE;
+}
+
+// --- First-party ads (compat /api/v1/ad) --- //
+
+/**
+ * Fetch a first-party ad for a slot. Compat returns 404 when no ad is eligible;
+ * we resolve `null` rather than throwing so callers render nothing (no error UI).
+ */
+export async function fetchAd(params: { on: string; platform: string }): Promise<AdPayload | null> {
+  const query = new URLSearchParams({ on: params.on, platform: params.platform });
+  const url = `${API_BASE}/api/v1/ad?${query.toString()}`;
+  try {
+    const response = await fetch(url, { headers: islandHeaders() });
+    if (!response.ok) {
+      // 404 (empty inventory) and any other non-2xx → no ad, no error UI.
+      return null;
+    }
+    return (await response.json()) as AdPayload;
+  } catch (error) {
+    logger.warn('ad fetch failed', error);
+    return null;
+  }
+}
+
+/** Fire-and-forget ad click counter. Never throws. */
+export async function recordAdClick(id: number): Promise<void> {
+  const url = `${API_BASE}/api/v1/ad/click?id=${encodeURIComponent(String(id))}`;
+  try {
+    await fetch(url, { method: 'POST', headers: islandHeaders() });
+  } catch (error) {
+    logger.warn('ad click failed', error);
+  }
 }
 
 // --- Accounts & premium entitlement --- //

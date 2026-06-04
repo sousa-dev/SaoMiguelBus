@@ -394,6 +394,29 @@ export interface WeatherParishesResponse {
   attribution: string;
 }
 
+// --- First-party ads (compat /api/v1/ad) --- //
+
+/**
+ * First-party SMB ad payload, shaped exactly as compat `GET /api/v1/ad` returns
+ * it (snake_case fields preserved). `action === 'directions'` means `target` is
+ * a place name to open in Maps; otherwise `target` is a plain URL.
+ */
+export interface AdPayload {
+  id: number;
+  entity: string;
+  description: string;
+  media: string;
+  start: string | null;
+  end: string | null;
+  action: string | null;
+  target: string | null;
+  advertise_on?: string;
+  platform?: string;
+  status?: string;
+  seen?: number;
+  clicked?: number;
+}
+
 // --- Accounts & premium entitlement --- //
 
 export type SocialProvider = 'apple' | 'google';
