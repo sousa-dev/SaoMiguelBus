@@ -10,7 +10,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.hsousa-apps.Autocarros",
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "appleTeamId": "28NZ2LLDF5"
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
