@@ -14,7 +14,9 @@ import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
+import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useAuthStore } from '@/lib/auth-store';
 import '@/lib/i18n';
 import { loadSavedLocale } from '@/lib/locale-prefs';
 import i18n, { normalizeLocaleCode, resources } from '@/lib/i18n';
@@ -39,6 +41,12 @@ function AppShell() {
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);
+
+  // Load the secure auth token at boot, then keep entitlement in sync.
+  useEffect(() => {
+    void useAuthStore.getState().hydrate();
+  }, []);
+  useEntitlementSync();
 
   useEffect(() => {
     void rehydrateThemePrefs();
@@ -90,6 +98,12 @@ function AppShell() {
             />
             <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
             <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
+            <Stack.Screen
+              name="auth/sign-in"
+              options={{
+                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+              }}
+            />
           </Stack>
           <GlobalFab />
           <AppSidebar />

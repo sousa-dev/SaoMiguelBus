@@ -7,6 +7,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AccountSection } from '@/features/account/components/AccountSection';
 import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
@@ -103,6 +104,8 @@ export default function SettingsScreen() {
         {!isOnline && dsarBanner ? (
           <Banner variant="offline" message={t('settingsDsarOffline')} />
         ) : null}
+
+        <AccountSection />
 
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsAppearance')}

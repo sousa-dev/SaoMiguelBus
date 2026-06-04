@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hsousa-apps.Autocarros"
+      "bundleIdentifier": "com.hsousa-apps.Autocarros",
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
@@ -47,7 +48,9 @@
           }
         }
       ],
-      "./plugins/withIosBuildFixes"
+      "./plugins/withIosBuildFixes",
+      "expo-secure-store",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true

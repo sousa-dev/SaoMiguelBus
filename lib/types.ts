@@ -393,3 +393,33 @@ export interface WeatherParishesResponse {
   parishes: ParishWeather[];
   attribution: string;
 }
+
+// --- Accounts & premium entitlement --- //
+
+export type SocialProvider = 'apple' | 'google';
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  displayName: string;
+  dateJoined: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
+export type EntitlementTier = 'free' | 'premium';
+export type EntitlementSource = 'legacy_email' | 'manual' | 'revenuecat' | 'stripe';
+/** Where the user manages/cancels their subscription. */
+export type ManageVia = 'app_store' | 'play_store' | 'stripe' | 'none';
+
+export interface Entitlement {
+  tier: EntitlementTier;
+  source: EntitlementSource | null;
+  status: string | null;
+  currentPeriodEnd: string | null;
+  features: string[];
+  manageVia: ManageVia;
+}

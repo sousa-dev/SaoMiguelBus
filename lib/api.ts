@@ -1,8 +1,13 @@
 import { staticIslandConfig } from '@/config/island';
+import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
 import type {
+  AuthResponse,
+  AuthUser,
+  Entitlement,
+  SocialProvider,
   BootstrapResponse,
   ConsentPurposes,
   DirectionsResponse,
@@ -40,6 +45,12 @@ function islandHeaders(): HeadersInit {
   };
 }
 
+/** Authorization header for the signed-in user, if any. */
+function authHeaders(): HeadersInit {
+  const token = getAuthToken();
+  return token ? { Authorization: `Token ${token}` } : {};
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const method = init?.method ?? 'GET';
   const url = `${API_BASE}${path}`;
@@ -51,6 +62,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...init,
       headers: {
         ...islandHeaders(),
+        ...authHeaders(),
         ...(init?.headers ?? {}),
       },
     });
@@ -60,6 +72,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    // A 401 on a token-bearing request means the token is stale — drop the session.
+    if (response.status === 401 && getAuthToken()) {
+      void useAuthStore.getState().clearSession();
+    }
     const body = await response.text();
     logger.error('API ✗', response.status, method, url, body.slice(0, 300));
     throw new Error(`API ${response.status}: ${body}`);
@@ -71,6 +87,62 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function getApiBase(): string {
   return API_BASE;
+}
+
+// --- Accounts & premium entitlement --- //
+
+export async function registerAccount(input: {
+  email: string;
+  password: string;
+  displayName?: string;
+}): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>('/api/v3/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: input.email,
+      password: input.password,
+      display_name: input.displayName ?? '',
+    }),
+  });
+}
+
+export async function loginAccount(input: {
+  email: string;
+  password: string;
+}): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>('/api/v3/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function socialAuth(input: {
+  provider: SocialProvider;
+  identityToken: string;
+  nonce?: string;
+  displayName?: string;
+}): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>('/api/v3/auth/social', {
+    method: 'POST',
+    body: JSON.stringify({
+      provider: input.provider,
+      identity_token: input.identityToken,
+      nonce: input.nonce,
+      display_name: input.displayName ?? '',
+    }),
+  });
+}
+
+export async function fetchMe(): Promise<AuthUser> {
+  return apiFetch<AuthUser>('/api/v3/auth/me');
+}
+
+export async function logoutAccount(): Promise<void> {
+  await apiFetch<{ status: string }>('/api/v3/auth/logout', { method: 'POST' });
+}
+
+export async function fetchEntitlement(): Promise<Entitlement> {
+  return apiFetch<Entitlement>('/api/v3/billing/entitlement');
 }
 
 export async function fetchBootstrap(): Promise<BootstrapResponse> {
