@@ -223,6 +223,8 @@
     "advertiseSubtitle": "Advertise your business for residents and tourists on São Miguel Bus.",
     "adBannerTitle": "ADVERTISE HERE",
     "adBannerSubtitle": "Learn more at ad.saomiguelbus.com",
+    "transitAdLabel": "Ad",
+    "transitAdAccessibilityHint": "Opens the advertiser's link",
     "advertisingOpportunity": "Advertising Opportunity",
     "advertisingOpportunityDescription": "Advertise your business for residents and tourists on São Miguel Bus.",
     "exactTargeting": "Exact Targeting",
