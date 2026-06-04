@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
 import React, { useLayoutEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useNavigation, useRouter } from 'expo-router';
 import { BarChart3, Lock, Megaphone, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { ListRow } from '@/components/ui/ListRow';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
+import { LEGAL_URLS } from '@/lib/legal-urls';
 import { useNetworkStatus } from '@/lib/network-status';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -92,6 +94,16 @@ export default function ConsentScreen() {
           </View>
           <Text style={[typography.display, styles.title, { color: theme.primary }]}>{t('consentTitle')}</Text>
           <Text style={[typography.body, styles.intro, { color: theme.muted }]}>{t('consentIntro')}</Text>
+
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.privacy)}
+            style={styles.policyLink}
+          >
+            <Text style={[typography.body, { color: theme.primary, textDecorationLine: 'underline' }]}>
+              {t('privacyPolicy')}
+            </Text>
+          </Pressable>
 
           {!isOnline ? <Banner variant="offline" message={t('consentOfflineBanner')} /> : null}
 
@@ -225,7 +237,12 @@ const styles = StyleSheet.create({
   intro: {
     textAlign: 'center',
     marginTop: space.md,
+    marginBottom: space.sm,
+  },
+  policyLink: {
+    alignSelf: 'center',
     marginBottom: space.lg,
+    paddingVertical: space.xs,
   },
   group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
 });

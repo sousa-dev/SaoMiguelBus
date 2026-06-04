@@ -1,6 +1,7 @@
 import { Download, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useLayoutEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
@@ -15,6 +16,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
 import { resolvePickerLocales } from '@/lib/i18n';
+import { LEGAL_URLS } from '@/lib/legal-urls';
 import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
@@ -185,6 +187,14 @@ export default function SettingsScreen() {
             showChevron={false}
           />
           <ListRow title={islandName} showChevron={false} />
+          <ListRow
+            title={t('termsAndConditions')}
+            onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.terms)}
+          />
+          <ListRow
+            title={t('privacyPolicy')}
+            onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.privacy)}
+          />
         </View>
       </ScrollView>
     </Screen>
