@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { space } from '@/lib/tokens';
 import { Bus } from 'lucide-react-native';
 
 import { Banner } from '@/components/ui/Banner';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
@@ -42,6 +44,7 @@ export default function TransitScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ origin?: string; destination?: string }>();
   const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
@@ -100,6 +103,8 @@ export default function TransitScreen() {
     }
     setSearchEnabled(true);
     search.refetch();
+    // Rotate the top banner on each new search (webapp re-calls loadAdBanner).
+    void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
   };
 
   const openDirections = () => {
@@ -181,6 +186,8 @@ export default function TransitScreen() {
               onAction={isOnline ? openDirections : undefined}
             />
           ) : null}
+
+          {hasResults ? <AdBanner on="home" slot="top" /> : null}
 
           {hasResults && search.data ? (
             <RouteResults
