@@ -21,8 +21,51 @@ const GOOGLE_ENABLED = Object.values(GOOGLE_IDS).some(Boolean);
 
 type Props = {
   onSuccess?: () => void;
-  onError?: () => void;
+  onError?: (error: unknown) => void;
 };
+
+/**
+ * Google sign-in is isolated in its own component because
+ * `Google.useIdTokenAuthRequest` throws when no client IDs are configured. We
+ * only mount this when `GOOGLE_ENABLED`, so the hook never runs without IDs.
+ * `GOOGLE_ENABLED` is a module constant, so the mount decision is stable across
+ * renders and does not violate the rules of hooks.
+ */
+function GoogleSignInButton({ onSuccess, onError }: Props) {
+  const { social } = useAuth();
+  const [, googleResponse, promptGoogle] = Google.useIdTokenAuthRequest(GOOGLE_IDS);
+
+  useEffect(() => {
+    if (!googleResponse) return;
+    if (googleResponse.type === 'success') {
+      const idToken =
+        googleResponse.params?.id_token ?? googleResponse.authentication?.idToken ?? null;
+      if (!idToken) {
+        onError?.(new Error('google_missing_id_token'));
+        return;
+      }
+      social
+        .mutateAsync({ provider: 'google', identityToken: idToken })
+        .then(() => onSuccess?.())
+        .catch((err) => {
+          logger.error('Google sign-in failed', err);
+          onError?.(err);
+        });
+    } else if (googleResponse.type === 'error') {
+      onError?.(new Error('google_auth_error'));
+    }
+  }, [googleResponse]);
+
+  return (
+    <Button
+      variant="outline"
+      label="Continue with Google"
+      onPress={() => void promptGoogle()}
+      loading={social.isPending}
+      fullWidth
+    />
+  );
+}
 
 export function SocialSignInButtons({ onSuccess, onError }: Props) {
   const theme = useAppTheme();
@@ -35,30 +78,6 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
     }
   }, []);
 
-  // Hooks must run unconditionally; the request is null when no client IDs exist.
-  const [, googleResponse, promptGoogle] = Google.useIdTokenAuthRequest(GOOGLE_IDS);
-
-  useEffect(() => {
-    if (!googleResponse) return;
-    if (googleResponse.type === 'success') {
-      const idToken =
-        googleResponse.params?.id_token ?? googleResponse.authentication?.idToken ?? null;
-      if (!idToken) {
-        onError?.();
-        return;
-      }
-      social
-        .mutateAsync({ provider: 'google', identityToken: idToken })
-        .then(() => onSuccess?.())
-        .catch((err) => {
-          logger.error('Google sign-in failed', err);
-          onError?.();
-        });
-    } else if (googleResponse.type === 'error') {
-      onError?.();
-    }
-  }, [googleResponse]);
-
   const onApple = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -68,7 +87,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
         ],
       });
       if (!credential.identityToken) {
-        onError?.();
+        onError?.(new Error('apple_missing_identity_token'));
         return;
       }
       const name = credential.fullName
@@ -84,7 +103,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
       // User-cancelled is not an error.
       if ((err as { code?: string })?.code === 'ERR_REQUEST_CANCELED') return;
       logger.error('Apple sign-in failed', err);
-      onError?.();
+      onError?.(err);
     }
   };
 
@@ -113,13 +132,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
       ) : null}
 
       {GOOGLE_ENABLED ? (
-        <Button
-          variant="outline"
-          label="Continue with Google"
-          onPress={() => void promptGoogle()}
-          loading={social.isPending}
-          fullWidth
-        />
+        <GoogleSignInButton onSuccess={onSuccess} onError={onError} />
       ) : null}
     </View>
   );

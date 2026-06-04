@@ -1,4 +1,5 @@
 import { staticIslandConfig } from '@/config/island';
+import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
@@ -78,7 +79,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     }
     const body = await response.text();
     logger.error('API ✗', response.status, method, url, body.slice(0, 300));
-    throw new Error(`API ${response.status}: ${body}`);
+    throw new ApiRequestError(response.status, body, parseApiErrorBody(body));
   }
 
   logger.debug('API ←', response.status, method, url);

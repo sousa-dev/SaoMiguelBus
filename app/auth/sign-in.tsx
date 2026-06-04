@@ -4,6 +4,11 @@ import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SocialSignInButtons } from '@/features/account/components/SocialSignInButtons';
+import {
+  authErrorFromUnknown,
+  formatAuthErrorMessage,
+  type AuthUiError,
+} from '@/features/account/lib/auth-errors';
 import { useAuth } from '@/features/account/hooks/useAuth';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { consumePendingPaywall } from '@/features/premium/lib/paywall-intent';
@@ -38,7 +43,12 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AuthUiError | null>(null);
+
+  const errorText = error ? formatAuthErrorMessage(error, t) : undefined;
+  const emailError = error?.field === 'email' ? errorText : undefined;
+  const passwordError = error?.field === 'password' ? errorText : undefined;
+  const generalError = error?.field === null ? errorText : undefined;
 
   const pending = login.isPending || register.isPending;
 
@@ -60,8 +70,8 @@ export default function SignInScreen() {
         await login.mutateAsync({ email: email.trim(), password });
       }
       finishAuth();
-    } catch {
-      setError(mode === 'register' ? t('authRegisterError') : t('authLoginError'));
+    } catch (err) {
+      setError(authErrorFromUnknown(err));
     }
   };
 
@@ -109,6 +119,7 @@ export default function SignInScreen() {
             keyboardType="email-address"
             autoComplete="email"
             textContentType="emailAddress"
+            error={emailError}
           />
           <Field
             label={t('authPasswordLabel')}
@@ -117,8 +128,11 @@ export default function SignInScreen() {
             secureTextEntry
             autoCapitalize="none"
             textContentType={mode === 'register' ? 'newPassword' : 'password'}
-            error={error ?? undefined}
+            error={passwordError}
           />
+          {generalError ? (
+            <Text style={[typography.caption, { color: theme.danger }]}>{generalError}</Text>
+          ) : null}
           <Button
             label={mode === 'register' ? t('authCreateAccount') : t('authSignIn')}
             onPress={onSubmit}
@@ -127,7 +141,10 @@ export default function SignInScreen() {
           />
         </View>
 
-        <SocialSignInButtons onError={() => setError(t('authSocialError'))} onSuccess={finishAuth} />
+        <SocialSignInButtons
+          onError={(err) => setError(authErrorFromUnknown(err))}
+          onSuccess={finishAuth}
+        />
       </ScrollView>
     </Screen>
   );
