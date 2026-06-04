@@ -2,7 +2,7 @@
   "expo": {
     "name": "São Miguel Hub",
     "slug": "sao-miguel-bus",
-    "version": "1.0.0",
+    "version": "5.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "azoreshub",

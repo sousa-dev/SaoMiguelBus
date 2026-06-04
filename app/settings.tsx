@@ -88,7 +88,7 @@ export default function SettingsScreen() {
     );
   };
 
-  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+  const appVersion = Constants.expoConfig?.version ?? '5.1.0';
 
   return (
     <Screen withStackHeader collapsable={false}>
