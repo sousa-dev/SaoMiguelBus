@@ -1,9 +1,10 @@
 import { Bus, ChevronDown, ChevronUp, Footprints, MapPin, Shuffle } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { RouteMap } from '@/features/transit/components/RouteMap';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -201,11 +202,19 @@ export function DirectionsResults({ data, origin, destination }: Props) {
     );
   }
 
+  const routes = data.routes;
   return (
     <View style={styles.list}>
-      {data.routes.map((route, routeIndex) => (
-        <RouteDirectionCard key={`route-${routeIndex}`} route={route} index={routeIndex} />
-      ))}
+      {routes.map((route, routeIndex) => {
+        // Webapp parity: inline ad after every 2 routes (never after the last).
+        const showInlineAd = (routeIndex + 1) % 2 === 0 && routeIndex < routes.length - 1;
+        return (
+          <Fragment key={`route-${routeIndex}`}>
+            <RouteDirectionCard route={route} index={routeIndex} />
+            {showInlineAd ? <AdBanner on="routes" slot={`inline-${routeIndex}`} /> : null}
+          </Fragment>
+        );
+      })}
     </View>
   );
 }

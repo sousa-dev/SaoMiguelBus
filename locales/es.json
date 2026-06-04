@@ -92,6 +92,8 @@
     "advertiseSubtitle": "Anuncie su negocio para residentes y turistas de la isla de São Miguel.",
     "adBannerTitle": "ANUNCIE AQUÍ",
     "adBannerSubtitle": "Más información en ad.saomiguelbus.com",
+    "transitAdLabel": "Anuncio",
+    "transitAdAccessibilityHint": "Abre el enlace del anunciante",
     "advertisingOpportunity": "Oportunidad de Publicidad",
     "advertisingOpportunityDescription": "Anuncie su negocio para residentes y turistas de la isla de São Miguel.",
     "exactTargeting": "Segmentación Precisa",

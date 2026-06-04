@@ -6,15 +6,18 @@ import { useTranslation } from 'react-i18next';
 import { IconButton } from '@/components/ui/IconButton';
 import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
+import { usePremium } from '@/lib/premium-store';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export function ActiveTrackingSection() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const isPremium = usePremium();
   const { active, stopTracking } = useBusTracking();
 
-  if (active.length === 0) {
+  // Webapp parity: the active-tracking widget is premium-only.
+  if (!isPremium || active.length === 0) {
     return null;
   }
 

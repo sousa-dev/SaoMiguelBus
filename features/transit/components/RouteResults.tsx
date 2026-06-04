@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
 import { RouteCard } from '@/features/transit/components/RouteCard';
 import { RouteResultsToolbar } from '@/features/transit/components/RouteResultsToolbar';
@@ -30,9 +31,17 @@ export function RouteResults({ results, searchDay, origin, destination, onFavori
         onShowFavorites={() => setShowFavorites(true)}
       />
       {showFavorites ? <FavoritesPanel onSelect={onFavoriteSelect} /> : null}
-      {results.map((trip) => (
-        <RouteCard key={trip.id} trip={trip} searchDay={searchDay} />
-      ))}
+      {results.map((trip, index) => {
+        // Mirror the webapp: insert an inline ad after every 2 result cards
+        // (never after the last one). Premium/offline users render nothing.
+        const showInlineAd = (index + 1) % 2 === 0 && index < results.length - 1;
+        return (
+          <Fragment key={trip.id}>
+            <RouteCard trip={trip} searchDay={searchDay} />
+            {showInlineAd ? <AdBanner on="home" slot={`inline-${index}`} /> : null}
+          </Fragment>
+        );
+      })}
     </View>
   );
 }
