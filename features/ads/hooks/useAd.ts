@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect } from 'react';
 import { Linking } from 'react-native';
 
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
@@ -22,8 +22,17 @@ import type { AdPayload } from '@/lib/types';
 export function useAd(on: string, slot: string | number = 'top') {
   const isPremium = usePremium();
   const { isOnline } = useNetwork();
+  const queryClient = useQueryClient();
   const platform = getAnalyticsPlatform();
   const enabled = canShowFirstPartyAds(isPremium) && isOnline;
+
+  // Drop cached creatives when ads are suppressed (premium / offline). Otherwise
+  // React Query keeps stale `data` while `enabled` is false and banners still render.
+  useEffect(() => {
+    if (!enabled) {
+      queryClient.removeQueries({ queryKey: ['ad'] });
+    }
+  }, [enabled, queryClient]);
 
   const query = useQuery<AdPayload | null>({
     queryKey: ['ad', on, platform, slot],
@@ -33,7 +42,7 @@ export function useAd(on: string, slot: string | number = 'top') {
     retry: false,
   });
 
-  const ad = query.data ?? null;
+  const ad = enabled ? (query.data ?? null) : null;
 
   const openAd = useCallback(async () => {
     if (!ad) {

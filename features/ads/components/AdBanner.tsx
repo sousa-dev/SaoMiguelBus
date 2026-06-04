@@ -22,11 +22,12 @@ type Props = {
 export function AdBanner({ on, slot }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { ad, openAd } = useAd(on, slot);
+  const { ad, openAd, enabled } = useAd(on, slot);
   const [aspectRatio, setAspectRatio] = useState(4);
+  const show = enabled && ad != null;
 
   useEffect(() => {
-    if (!ad?.media) {
+    if (!show || !ad?.media) {
       return;
     }
     let cancelled = false;
@@ -42,15 +43,16 @@ export function AdBanner({ on, slot }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ad?.media]);
+  }, [ad?.media, show]);
 
   useEffect(() => {
-    if (ad?.id != null) {
-      track('transit', 'ad_impression', { on, adId: ad.id });
+    if (!show || ad?.id == null) {
+      return;
     }
-  }, [ad?.id, on]);
+    track('transit', 'ad_impression', { on, adId: ad.id });
+  }, [ad?.id, on, show]);
 
-  if (!ad) {
+  if (!show || !ad) {
     return null;
   }
 
