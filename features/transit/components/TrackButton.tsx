@@ -3,6 +3,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
+import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
 import { useProfileStore } from '@/lib/profile-store';
 import { space } from '@/lib/tokens';
@@ -19,6 +20,7 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { canStartMore, startFromTrip, stopTracking, pinFromTrip, isTrackingTrip } = useBusTracking();
+  const { guardPremiumAction } = usePremiumGate();
   const active = useProfileStore((s) => s.tracking.active);
   const tracking = isTrackingTrip(trip.id, trip.origin, trip.destination);
   const activeId = active.find(
@@ -26,18 +28,25 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   )?.id;
 
   const onTrack = () => {
+    // Stopping an active track is always allowed; starting is premium-gated.
     if (tracking && activeId) {
       stopTracking(activeId);
       return;
     }
-    if (!canStartMore) {
-      Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
-      return;
-    }
-    const ok = startFromTrip(trip, searchDay);
-    if (!ok) {
-      Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
-    }
+    void guardPremiumAction(() => {
+      if (!canStartMore) {
+        Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
+        return;
+      }
+      const ok = startFromTrip(trip, searchDay);
+      if (!ok) {
+        Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
+      }
+    });
+  };
+
+  const onPin = () => {
+    void guardPremiumAction(() => pinFromTrip(trip, searchDay));
   };
 
   return (
@@ -55,7 +64,7 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
           variant="tonal"
           color={theme.accent}
           accessibilityLabel={t('transitPinRoute')}
-          onPress={() => pinFromTrip(trip, searchDay)}
+          onPress={onPin}
         />
       ) : null}
     </View>
