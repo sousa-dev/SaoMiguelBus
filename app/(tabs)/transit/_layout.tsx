@@ -20,7 +20,7 @@ export default function TransitLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: t('navBarSearchLabel'),
+          headerTitle: '',
           headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
