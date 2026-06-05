@@ -154,3 +154,32 @@ export function onCustomerInfoUpdate(cb: (info: CustomerInfo) => void): () => vo
   Purchases.addCustomerInfoUpdateListener(cb);
   return () => Purchases.removeCustomerInfoUpdateListener(cb);
 }
+
+/**
+ * Map app i18n codes to RevenueCat paywall locale tags.
+ * App catalogs use base codes (`pt`); RC dashboard uses `pt_PT` for Portugal.
+ */
+export function toRevenueCatLocale(i18nCode: string): string {
+  const base = i18nCode.split(/[-_]/)[0]?.toLowerCase() ?? i18nCode;
+  if (base === 'pt') {
+    return 'pt_PT';
+  }
+  return base;
+}
+
+/**
+ * Sync RevenueCat UI locale with the in-app language setting.
+ * Without this, hosted paywalls follow the device system locale, not i18n.
+ */
+export async function syncRevenueCatLocale(i18nCode: string): Promise<void> {
+  if (!configured) {
+    return;
+  }
+  try {
+    const locale = toRevenueCatLocale(i18nCode);
+    await Purchases.overridePreferredLocale(locale);
+    logger.debug('RevenueCat: locale synced', locale);
+  } catch (error) {
+    logger.error('RevenueCat: locale sync failed', error);
+  }
+}

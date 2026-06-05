@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 
 import { useReconcileEntitlement } from '@/features/premium/hooks/useReconcileEntitlement';
 import { useAuthStore } from '@/lib/auth-store';
+import i18n from '@/lib/i18n';
 import {
   bindRevenueCatIdentity,
   configureRevenueCat,
   onCustomerInfoUpdate,
+  syncRevenueCatLocale,
 } from '@/lib/revenuecat';
 
 /**
@@ -21,9 +23,21 @@ export function useRevenueCatBootstrap() {
 
   useEffect(() => {
     configureRevenueCat();
-    return onCustomerInfoUpdate((info) => {
+    void syncRevenueCatLocale(i18n.language);
+
+    const onLanguageChanged = (lng: string) => {
+      void syncRevenueCatLocale(lng);
+    };
+    i18n.on('languageChanged', onLanguageChanged);
+
+    const removeCustomerInfoListener = onCustomerInfoUpdate((info) => {
       void reconcile(info);
     });
+
+    return () => {
+      i18n.off('languageChanged', onLanguageChanged);
+      removeCustomerInfoListener();
+    };
   }, [reconcile]);
 
   useEffect(() => {
