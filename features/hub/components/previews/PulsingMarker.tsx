@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { Circle } from 'react-native-svg';
+import { Circle, G } from 'react-native-svg';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -58,9 +58,11 @@ export function PulsingMarker({
   }));
 
   return (
-    <>
-      {animate ? <AnimatedCircle cx={cx} cy={cy} fill={color} animatedProps={haloProps} /> : null}
+    <G>
+      {animate ? (
+        <AnimatedCircle cx={cx} cy={cy} r={r} fill={color} animatedProps={haloProps} />
+      ) : null}
       <Circle cx={cx} cy={cy} r={r} fill={color} opacity={0.95} />
-    </>
+    </G>
   );
 }

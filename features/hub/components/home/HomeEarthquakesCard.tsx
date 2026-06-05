@@ -34,7 +34,7 @@ export function HomeEarthquakesCard({ data }: { data: HomeData['seismic'] }) {
           {t('homeEarthquakesTitle')}
         </Text>
       </View>
-      <AzoresMiniMap points={points} magnitudes={magnitudes} height={72} />
+      <AzoresMiniMap points={points} magnitudes={magnitudes} color={accent} height={72} />
       <Text style={[typography.caption, styles.footer, { color: theme.onSurfaceMuted }]}>
         {events.length > 0 ? t('hubSeismicPreviewCount', { count: events.length }) : t('hubSeismicCalm')}
       </Text>
