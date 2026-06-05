@@ -12,11 +12,17 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sousadev.saomiguelhub",
       "usesAppleSignIn": true,
-      "appleTeamId": "28NZ2LLDF5"
+      "appleTeamId": "28NZ2LLDF5",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
-      "versionCode": 40,
+      "versionCode": 41,
       "adaptiveIcon": {
         "backgroundColor": "#7AA377",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
