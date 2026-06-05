@@ -255,7 +255,7 @@ export async function searchTransit(params: {
   const data = await apiFetch<{ results: TransitSearchResult[] }>(
     `/api/v3/transit/search?${query.toString()}`,
   );
-  return data.results;
+  return data.results ?? [];
 }
 
 export async function voteTrip(

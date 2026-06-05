@@ -28,10 +28,8 @@ import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
 import { resolveDayType } from '@/lib/transit-format';
 
-function currentTime(): string {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
+/** Legacy webapp treats an unset time as midnight and returns the full day schedule. */
+const DEFAULT_SEARCH_TIME = '00:00';
 
 function searchParam(value: string | string[] | undefined): string {
   if (value == null) {
@@ -55,7 +53,7 @@ export default function TransitScreen() {
   const [origin, setOrigin] = useState(() => searchParam(params.origin));
   const [destination, setDestination] = useState(() => searchParam(params.destination));
   const [date, setDate] = useState(() => new Date());
-  const [time, setTime] = useState(currentTime);
+  const [time, setTime] = useState(DEFAULT_SEARCH_TIME);
   const [searchEnabled, setSearchEnabled] = useState(false);
 
   useEffect(() => {

@@ -1,11 +1,6 @@
-import {
-  needsRouteConfirmation,
-  timeStringToMinutes,
-  travelDurationHours,
-} from '@/lib/transit-format';
+import { needsRouteConfirmation, timeStringToMinutes } from '@/lib/transit-format';
 import type { TransitSearchResult } from '@/lib/types';
 
-const MAX_SEGMENT_TRAVEL_HOURS = 12;
 const NEAR_DEPARTURE_DEDUP_MINUTES = 3;
 
 export function normalizeSearchResult(row: TransitSearchResult): TransitSearchResult {
@@ -14,10 +9,6 @@ export function normalizeSearchResult(row: TransitSearchResult): TransitSearchRe
     likesPercent: row.likesPercent ?? 0,
     dislikesPercent: row.dislikesPercent ?? 0,
   };
-}
-
-function exceedsMaxTravelTime(trip: TransitSearchResult): boolean {
-  return travelDurationHours(trip.start, trip.end) > MAX_SEGMENT_TRAVEL_HOURS;
 }
 
 /** Mirror webapp createRouteDiv: prefer higher-confidence trips within 3 minutes. */
@@ -56,8 +47,8 @@ function dedupNearDepartures(results: TransitSearchResult[]): TransitSearchResul
   return kept;
 }
 
-/** Apply legacy webapp post-filters: normalize percents, drop >12h segments, dedup. */
+/** Normalize vote percents and apply legacy near-departure dedup only. */
 export function processTransitResults(results: TransitSearchResult[]): TransitSearchResult[] {
-  const normalized = results.map(normalizeSearchResult).filter((trip) => !exceedsMaxTravelTime(trip));
+  const normalized = (results ?? []).map(normalizeSearchResult);
   return dedupNearDepartures(normalized);
 }
