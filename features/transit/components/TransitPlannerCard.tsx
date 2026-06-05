@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { PremiumSearchCta } from '@/features/ads/components/PremiumSearchCta';
 import { StopPicker } from '@/features/transit/components/StopPicker';
 import { formatDateLabel } from '@/lib/transit-format';
 import { elevation, radius, space, typography } from '@/lib/tokens';
@@ -107,6 +108,9 @@ export function TransitPlannerCard({
         elevation(2, theme.text),
       ]}
     >
+      <PremiumSearchCta />
+
+      <View style={styles.body}>
       <StopPicker
         placeholder={t('originPlaceholder')}
         value={origin}
@@ -249,6 +253,7 @@ export function TransitPlannerCard({
           <Route size={20} color={theme.onPrimary} />
         </Pressable>
       </View>
+      </View>
     </View>
   );
 }
@@ -257,8 +262,10 @@ const styles = StyleSheet.create({
   shell: {
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
-    padding: space.md,
     overflow: 'hidden',
+  },
+  body: {
+    padding: space.md,
   },
   swapRow: { alignItems: 'flex-end', marginVertical: 2 },
   swapBtn: {

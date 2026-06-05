@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
 import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
+import { PremiumSearchCta } from '@/features/ads/components/PremiumSearchCta';
 import { StopPicker } from '@/features/transit/components/StopPicker';
 import { formatDateLabel } from '@/lib/transit-format';
 import { elevation, radius, space, typography } from '@/lib/tokens';
@@ -103,6 +104,9 @@ export function DirectionsPlannerForm({
         elevation(2, theme.text),
       ]}
     >
+      <PremiumSearchCta />
+
+      <View style={styles.body}>
       <StopPicker
         placeholder={t('originPlaceholder')}
         value={origin}
@@ -217,6 +221,7 @@ export function DirectionsPlannerForm({
         fullWidth
         style={{ marginTop: space.md }}
       />
+      </View>
     </View>
   );
 }
@@ -225,9 +230,11 @@ const styles = StyleSheet.create({
   shell: {
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
-    padding: space.md,
     width: '100%',
     overflow: 'hidden',
+  },
+  body: {
+    padding: space.md,
   },
   swapRow: { alignItems: 'flex-end', marginVertical: 2 },
   swapBtn: {
