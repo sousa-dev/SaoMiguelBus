@@ -2,6 +2,13 @@
 # Patches Expo/RN iOS deps for Xcode 26 (Swift 6) and paths with spaces. Re-run after npm install.
 set -euo pipefail
 
+# EAS Android (and other Linux CI) runs npm postinstall on Ubuntu/GNU sed.
+# This script only touches iOS native sources and uses BSD sed -i '' syntax.
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  echo "skip expo iOS native patches (non-macOS host)"
+  exit 0
+fi
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # --- expo-modules-jsi (Swift 6) ---
