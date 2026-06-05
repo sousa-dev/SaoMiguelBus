@@ -146,40 +146,44 @@ export default function FeedbackScreen() {
               {t('feedbackCategoryLabel')}
             </Text>
             <View style={styles.grid}>
-              {CATEGORIES.map((c) => {
-                const Icon = c.icon;
-                const active = c.value === category;
-                return (
-                  <Pressable
-                    key={c.value}
-                    onPress={() => setCategory(c.value)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={t(c.labelKey)}
-                    style={[
-                      styles.categoryTile,
-                      {
-                        borderColor: active ? theme.primary : theme.border,
-                        backgroundColor: active ? theme.primary : theme.card,
-                      },
-                    ]}
-                  >
-                    <Icon size={22} color={active ? theme.onPrimary : theme.primary} strokeWidth={2} />
-                    <Text
-                      style={[
-                        typography.caption,
-                        {
-                          color: active ? theme.onPrimary : theme.text,
-                          marginTop: 4,
-                          textAlign: 'center',
-                        },
-                      ]}
-                    >
-                      {t(c.labelKey)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              {[0, 1].map((row) => (
+                <View key={row} style={styles.gridRow}>
+                  {CATEGORIES.slice(row * 2, row * 2 + 2).map((c) => {
+                    const Icon = c.icon;
+                    const active = c.value === category;
+                    return (
+                      <Pressable
+                        key={c.value}
+                        onPress={() => setCategory(c.value)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        accessibilityLabel={t(c.labelKey)}
+                        style={[
+                          styles.categoryTile,
+                          {
+                            borderColor: active ? theme.primary : theme.border,
+                            backgroundColor: active ? theme.primary : theme.card,
+                          },
+                        ]}
+                      >
+                        <Icon size={22} color={active ? theme.onPrimary : theme.primary} strokeWidth={2} />
+                        <Text
+                          style={[
+                            typography.caption,
+                            {
+                              color: active ? theme.onPrimary : theme.text,
+                              marginTop: 4,
+                              textAlign: 'center',
+                            },
+                          ]}
+                        >
+                          {t(c.labelKey)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ))}
             </View>
           </Card>
 
@@ -259,9 +263,10 @@ const styles = StyleSheet.create({
   },
   content: { padding: space.lg, paddingBottom: space['4xl'] },
   section: { marginTop: space.md },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  grid: { gap: space.sm },
+  gridRow: { flexDirection: 'row', gap: space.sm },
   categoryTile: {
-    width: 88,
+    flex: 1,
     paddingVertical: space.md,
     paddingHorizontal: space.xs,
     borderRadius: 12,
