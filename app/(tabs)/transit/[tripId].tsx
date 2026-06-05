@@ -15,10 +15,32 @@ import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransit
 import { useFabActions } from '@/lib/fab-store';
 import { resolveInfo } from '@/lib/infos';
 import { useNetworkStatus } from '@/lib/network-status';
+import { computeVotePercents } from '@/lib/transit-format';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
-import type { TransitSearchResult } from '@/lib/types';
+import type { TransitSearchResult, TripDetail as TripDetailData } from '@/lib/types';
 import { Text } from 'react-native';
+
+function tripFromDetail(detail: TripDetailData): TransitSearchResult {
+  const percents =
+    detail.likesPercent != null && detail.dislikesPercent != null
+      ? { likesPercent: detail.likesPercent, dislikesPercent: detail.dislikesPercent }
+      : computeVotePercents(detail.likes, detail.dislikes);
+
+  return {
+    id: detail.id,
+    route: detail.route,
+    origin: detail.stops[0]?.name ?? '',
+    destination: detail.stops[detail.stops.length - 1]?.name ?? '',
+    start: detail.stops[0]?.time ?? '',
+    end: detail.stops[detail.stops.length - 1]?.time ?? '',
+    typeOfDay: detail.typeOfDay,
+    likesPercent: percents.likesPercent,
+    dislikesPercent: percents.dislikesPercent,
+    information: detail.information,
+    stops: detail.stops,
+  };
+}
 
 export default function TripDetailScreen() {
   const theme = useAppTheme();
@@ -50,19 +72,7 @@ export default function TripDetailScreen() {
     if (!detail) {
       return [];
     }
-    const trip: TransitSearchResult = {
-      id: detail.id,
-      route: detail.route,
-      origin: detail.stops[0]?.name ?? '',
-      destination: detail.stops[detail.stops.length - 1]?.name ?? '',
-      start: detail.stops[0]?.time ?? '',
-      end: detail.stops[detail.stops.length - 1]?.time ?? '',
-      typeOfDay: detail.typeOfDay,
-      likesPercent: detail.likesPercent ?? 0,
-      dislikesPercent: detail.dislikesPercent ?? 0,
-      information: detail.information,
-      stops: detail.stops,
-    };
+    const trip = tripFromDetail(detail);
     return [
       {
         key: 'share-trip',
@@ -96,19 +106,7 @@ export default function TripDetailScreen() {
   }
 
   const detail = tripQuery.data;
-  const trip: TransitSearchResult = {
-    id: detail.id,
-    route: detail.route,
-    origin: detail.stops[0]?.name ?? '',
-    destination: detail.stops[detail.stops.length - 1]?.name ?? '',
-    start: detail.stops[0]?.time ?? '',
-    end: detail.stops[detail.stops.length - 1]?.time ?? '',
-    typeOfDay: detail.typeOfDay,
-    likesPercent: detail.likesPercent ?? 0,
-    dislikesPercent: detail.dislikesPercent ?? 0,
-    information: detail.information,
-    stops: detail.stops,
-  };
+  const trip = tripFromDetail(detail);
 
   const infoNotice =
     bootstrap.data?.infos?.find((info) => {

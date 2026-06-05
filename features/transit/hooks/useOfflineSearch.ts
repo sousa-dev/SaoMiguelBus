@@ -4,6 +4,7 @@ import { searchTransit } from '@/lib/api';
 import { hasOfflineCache, loadCachedBundle, offlineSearch } from '@/lib/offline-bundle';
 import { useNetwork } from '@/lib/network-provider';
 import { track } from '@/lib/analytics';
+import { processTransitResults } from '@/lib/transit-results';
 import type { TransitSearchResult } from '@/lib/types';
 
 export function useOfflineCacheAvailable() {
@@ -36,20 +37,21 @@ export function useTransitSearchWithOffline(params: {
           day: params.day,
           start: params.start,
         });
+        const processed = processTransitResults(results);
         track('transit', 'search', {
           origin: params.origin,
           destination: params.destination,
           day_type: params.day,
           start_time: params.start,
-          results_count: results.length,
+          results_count: processed.length,
         });
-        return results;
+        return processed;
       }
       const bundle = await loadCachedBundle();
       if (!bundle) {
         return [];
       }
-      const results = offlineSearch(bundle, params);
+      const results = processTransitResults(offlineSearch(bundle, params));
       track('transit', 'offline_search', {
         origin: params.origin,
         destination: params.destination,

@@ -11,7 +11,7 @@ import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
 import {
   countTransfers,
   displayRouteNumber,
-  isCharterRoute,
+  needsRouteConfirmation,
 } from '@/lib/transit-format';
 import { useProfileStore } from '@/lib/profile-store';
 import { elevation, radius, space, typography } from '@/lib/tokens';
@@ -32,7 +32,7 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
   const getVote = useProfileStore((s) => s.getVote);
   const [expanded, setExpanded] = useState(expandedByDefault);
   const currentVote = getVote(trip.id);
-  const charter = isCharterRoute(trip.route);
+  const needsConfirmation = needsRouteConfirmation(trip.likesPercent);
   const transfers = countTransfers(trip.route, trip.stops.length);
   const firstStop = trip.stops[0];
   const lastStop = trip.stops[trip.stops.length - 1];
@@ -74,7 +74,7 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
           ) : null}
         </View>
 
-        {charter ? (
+        {needsConfirmation ? (
           <Pressable
             onPress={openCharterInfo}
             style={[styles.charterBanner, { backgroundColor: theme.warningSurface, borderColor: theme.warning }]}

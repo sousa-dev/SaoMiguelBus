@@ -56,8 +56,56 @@ export function displayRouteNumber(route: string): string {
   return route.replace(/C/gi, '');
 }
 
+/** Legacy webapp/API encodes low-confidence trips with a `C` route prefix. */
 export function isCharterRoute(route: string): boolean {
   return route.includes('C');
+}
+
+/** Matches legacy search.py / webapp confirmation threshold. */
+export const CONFIRMATION_LIKES_THRESHOLD = 60;
+
+export function needsRouteConfirmation(likesPercent: number): boolean {
+  return likesPercent < CONFIRMATION_LIKES_THRESHOLD;
+}
+
+export function computeVotePercents(
+  likes: number,
+  dislikes: number,
+): { likesPercent: number; dislikesPercent: number } {
+  const total = likes + dislikes;
+  if (total <= 0) {
+    return { likesPercent: 0, dislikesPercent: 0 };
+  }
+  return {
+    likesPercent: Math.floor((likes / total) * 100),
+    dislikesPercent: Math.floor((dislikes / total) * 100),
+  };
+}
+
+/** Parse `08h30` / `08:30` into minutes since midnight. */
+export function timeStringToMinutes(timeString: string): number {
+  const normalized = normalizeTripTime(timeString);
+  const [hours, minutes] = normalized.split('h').map((part) => parseInt(part, 10));
+  return (hours ?? 0) * 60 + (minutes ?? 0);
+}
+
+/** Segment travel duration in hours (handles overnight segments). */
+export function travelDurationHours(firstStopTime: string, lastStopTime: string): number {
+  const parse = (raw: string) => {
+    const t = normalizeTripTime(raw).split('h');
+    const hours = parseInt(t[0] ?? '0', 10);
+    const minutes = parseInt(t[1] ?? '0', 10);
+    return new Date(0, 0, 0, hours, minutes, 0);
+  };
+
+  const firstDate = parse(firstStopTime);
+  const lastDate = parse(lastStopTime);
+  if (lastDate.getTime() < firstDate.getTime()) {
+    lastDate.setDate(lastDate.getDate() + 1);
+  }
+
+  const diffMs = lastDate.getTime() - firstDate.getTime();
+  return diffMs / (1000 * 60 * 60);
 }
 
 export type DayType = 'weekday' | 'saturday' | 'sunday';
