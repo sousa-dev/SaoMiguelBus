@@ -78,7 +78,7 @@ No WebView / `react-native-webview` — native cards only; commission via server
 - `EXPO_PUBLIC_ISLAND_KEY` — active tenant.
 - All requests send `X-Island` header.
 - **No secrets in client** — Google Maps key and proxy `AUTH_KEY` stay server-side (legacy leaks both in client source — [`11`](./11-security-auth.md)).
-- **App identity (`app.json`):** display name **São Miguel Hub**; Android `package` pinned to `com.hsousa_apps.Autocarros` so the Expo build ships as an in-place update to the existing Play Store listing (see [`12`](./12-risks-open-questions.md) §3.1).
+- **App identity (`app.json`):** display name **São Miguel Hub**; iOS `bundleIdentifier` **`com.sousadev.saomiguelhub`** (new App Store listing); Android `package` pinned to `com.hsousa_apps.Autocarros` so the Expo build ships as an in-place update to the existing Play Store listing (see [`12`](./12-risks-open-questions.md) §3.1).
 - **Native deps:** pin `@react-native-async-storage/async-storage` to the Expo SDK bundled version (e.g. `2.2.0` for SDK 56) via `npx expo install` — v3.x breaks in Expo Go.
 
 ## 6. Offline strategy

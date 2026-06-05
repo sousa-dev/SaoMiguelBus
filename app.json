@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hsousa-apps.Autocarros",
+      "bundleIdentifier": "com.sousadev.saomiguelhub",
       "usesAppleSignIn": true,
       "appleTeamId": "28NZ2LLDF5"
     },
