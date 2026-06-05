@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "São Miguel Hub",
-    "slug": "sao-miguel-bus",
+    "slug": "sao-miguel-hub",
+    "owner": "sousa-dev",
     "version": "5.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -58,7 +59,11 @@
     },
     "extra": {
       "EXPO_PUBLIC_API_URL": "http://127.0.0.1:8000",
-      "EXPO_PUBLIC_ISLAND_KEY": "sao-miguel"
+      "EXPO_PUBLIC_ISLAND_KEY": "sao-miguel",
+      "router": {},
+      "eas": {
+        "projectId": "17a513ef-847e-4c04-94c9-ff1d55ca2fda"
+      }
     }
   }
 }
