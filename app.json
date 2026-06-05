@@ -16,6 +16,7 @@
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
+      "versionCode": 40,
       "adaptiveIcon": {
         "backgroundColor": "#7AA377",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
