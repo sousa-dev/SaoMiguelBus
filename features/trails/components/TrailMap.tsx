@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
+import { Marker, Polyline } from 'react-native-maps';
 import * as WebBrowser from 'expo-web-browser';
 import { Map } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
-import { MapAttribution } from '@/components/MapAttribution';
-import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { OsmMapView } from '@/components/OsmMapView';
 import { TrailThumb } from '@/features/trails/components/TrailThumb';
 import { geojsonToMapCoordinates, trailCentroid, type TrailDetail } from '@/features/trails/types';
 import { iconSize, radius, space } from '@/lib/tokens';
@@ -127,15 +126,13 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
     return null;
   }
 
-  const useAppleMaps = Platform.OS === 'ios';
-
   return (
     <View style={styles.wrap}>
       <Pressable onPress={openExternal} disabled={!externalUrl}>
-        <MapView
+        <OsmMapView
           style={styles.media}
-          provider={PROVIDER_DEFAULT}
-          mapType={useAppleMaps ? 'standard' : 'none'}
+          isDark={theme.isDark}
+          showLoadingIndicator={false}
           initialRegion={region}
           scrollEnabled={false}
           zoomEnabled={false}
@@ -143,7 +140,6 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
           pitchEnabled={false}
           pointerEvents="none"
         >
-          {!useAppleMaps ? <OsmMapLayer isDark={theme.isDark} /> : null}
           <Polyline coordinates={coordinates} strokeColor={theme.primary} strokeWidth={4} />
           {trail.startLat != null && trail.startLng != null ? (
             <Marker
@@ -159,9 +155,8 @@ export function TrailMap({ trail, theme, onMapOpen }: TrailMapProps) {
               title={waypoint.name}
             />
           ))}
-        </MapView>
+        </OsmMapView>
       </Pressable>
-      {!useAppleMaps ? <MapAttribution isDark={theme.isDark} /> : null}
       {externalUrl ? (
         <Text style={[styles.openLink, { color: theme.primary }]}>{t('trailsOpenMap')}</Text>
       ) : null}

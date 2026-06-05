@@ -1,7 +1,9 @@
 import React, { useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import { Marker, Polyline } from 'react-native-maps';
+import type { ElementRef } from 'react';
 
+import { OsmMapView } from '@/components/OsmMapView';
 import { decodePolyline, type LatLng } from '@/lib/polyline';
 import { radius, space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -24,7 +26,7 @@ type Props = {
 
 export function RouteMap({ route }: Props) {
   const theme = useAppTheme();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<ElementRef<typeof OsmMapView>>(null);
 
   const leg = route.legs?.[0];
 
@@ -71,7 +73,7 @@ export function RouteMap({ route }: Props) {
 
   return (
     <View style={[styles.wrap, { borderColor: theme.border }]}>
-      <MapView
+      <OsmMapView
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialRegion={FALLBACK_REGION}
@@ -88,7 +90,7 @@ export function RouteMap({ route }: Props) {
           <Marker coordinate={start} title={leg?.start_address?.split(',')[0]} pinColor="green" />
         ) : null}
         {end ? <Marker coordinate={end} title={leg?.end_address?.split(',')[0]} pinColor="red" /> : null}
-      </MapView>
+      </OsmMapView>
     </View>
   );
 }

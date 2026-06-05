@@ -8,9 +8,15 @@ export const saoMiguelMapBounds = {
   northEast: { lat: 37.865, lng: -25.07 },
 } as const;
 
-export type MapBounds = typeof saoMiguelMapBounds;
+export type MapBounds = {
+  southWest: { lat: number; lng: number };
+  northEast: { lat: number; lng: number };
+};
 
 const PAD = 1.04;
+
+/** Looser zoom/pan viewport for traffic (radares) — pins and GPS still use strict `saoMiguelMapBounds`. */
+export const trafficMapViewportPad = 1.32;
 
 export function isWithinIslandBounds(lat: number, lng: number, bounds: MapBounds = saoMiguelMapBounds) {
   return (
@@ -46,21 +52,28 @@ export function coordinateToRegion(
 }
 
 /** Region that frames the full island (used as default map viewport). */
-export function getIslandMapRegion(bounds: MapBounds = saoMiguelMapBounds): Region {
+export function getIslandMapRegion(
+  bounds: MapBounds = saoMiguelMapBounds,
+  viewportPad = PAD,
+): Region {
   const center = staticIslandConfig.mapCenter;
   const latSpan = bounds.northEast.lat - bounds.southWest.lat;
   const lngSpan = bounds.northEast.lng - bounds.southWest.lng;
   return {
     latitude: center.lat,
     longitude: center.lng,
-    latitudeDelta: latSpan * PAD,
-    longitudeDelta: lngSpan * PAD,
+    latitudeDelta: latSpan * viewportPad,
+    longitudeDelta: lngSpan * viewportPad,
   };
 }
 
-export function clampMapRegion(region: Region, bounds: MapBounds = saoMiguelMapBounds): Region {
-  const maxLatDelta = (bounds.northEast.lat - bounds.southWest.lat) * PAD;
-  const maxLngDelta = (bounds.northEast.lng - bounds.southWest.lng) * PAD;
+export function clampMapRegion(
+  region: Region,
+  bounds: MapBounds = saoMiguelMapBounds,
+  viewportPad = PAD,
+): Region {
+  const maxLatDelta = (bounds.northEast.lat - bounds.southWest.lat) * viewportPad;
+  const maxLngDelta = (bounds.northEast.lng - bounds.southWest.lng) * viewportPad;
 
   const latitudeDelta = Math.min(Math.max(region.latitudeDelta, 0.01), maxLatDelta);
   const longitudeDelta = Math.min(Math.max(region.longitudeDelta, 0.01), maxLngDelta);
@@ -81,8 +94,12 @@ export function clampMapRegion(region: Region, bounds: MapBounds = saoMiguelMapB
   };
 }
 
-export function regionNeedsClamp(region: Region, bounds: MapBounds = saoMiguelMapBounds) {
-  const clamped = clampMapRegion(region, bounds);
+export function regionNeedsClamp(
+  region: Region,
+  bounds: MapBounds = saoMiguelMapBounds,
+  viewportPad = PAD,
+) {
+  const clamped = clampMapRegion(region, bounds, viewportPad);
   return (
     Math.abs(clamped.latitude - region.latitude) > 1e-6 ||
     Math.abs(clamped.longitude - region.longitude) > 1e-6 ||
@@ -96,6 +113,10 @@ export const azoresArchipelagoBounds = {
   southWest: { lat: 36.72, lng: -31.35 },
   northEast: { lat: 39.78, lng: -24.55 },
 } as const;
+
+export function isWithinAzoresBounds(lat: number, lng: number) {
+  return isWithinIslandBounds(lat, lng, azoresArchipelagoBounds);
+}
 
 /** Default map viewport framing the full Azores archipelago. */
 export function getAzoresArchipelagoRegion(): Region {

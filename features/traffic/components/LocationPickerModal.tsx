@@ -13,6 +13,8 @@ import {
   coordinateToRegion,
   isWithinIslandBounds,
   regionNeedsClamp,
+  saoMiguelMapBounds,
+  trafficMapViewportPad,
 } from '@/lib/island-map';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -94,15 +96,18 @@ export function LocationPickerModal({
         <OsmMapView
           ref={mapRef}
           style={styles.map}
-          isDark={theme.isDark}
           initialRegion={coordinateToRegion(pin)}
           showsUserLocation={userOnIsland}
+          centerCoordinate={userOnIsland ? userCoords : null}
           onPress={(e) => setFromMap(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude)}
           onRegionChangeComplete={(region) => {
-            if (!regionNeedsClamp(region)) {
+            if (!regionNeedsClamp(region, saoMiguelMapBounds, trafficMapViewportPad)) {
               return;
             }
-            mapRef.current?.animateToRegion(clampMapRegion(region), 180);
+            mapRef.current?.animateToRegion(
+              clampMapRegion(region, saoMiguelMapBounds, trafficMapViewportPad),
+              180,
+            );
           }}
         >
           <Marker

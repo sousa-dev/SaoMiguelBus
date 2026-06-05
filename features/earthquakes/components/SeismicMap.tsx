@@ -1,11 +1,17 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, type ElementRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import MapView, { PROVIDER_DEFAULT, type Region } from 'react-native-maps';
+import type { Region } from 'react-native-maps';
 
-import { OsmMapLayer } from '@/components/OsmMapLayer';
+import { OsmMapView } from '@/components/OsmMapView';
 import { SeismicMapMarker } from '@/features/earthquakes/components/SeismicMapMarker';
-import { coordinateToRegion, getAzoresArchipelagoRegion, getSeismicMapRegion } from '@/lib/island-map';
+import { seismicMarkerOverlay } from '@/features/earthquakes/lib/seismic-marker-overlay';
 import { useAppTheme } from '@/lib/theme';
+import {
+  coordinateToRegion,
+  getAzoresArchipelagoRegion,
+  getSeismicMapRegion,
+  isWithinAzoresBounds,
+} from '@/lib/island-map';
 import type { SeismicEvent } from '@/lib/types';
 
 export type SeismicMapFocus = { lat: number; lng: number };
@@ -25,10 +31,24 @@ const FOCUS_DELTA = 0.28;
 
 export function SeismicMap({ events, userCoords, focus, onMarkerPress }: SeismicMapProps) {
   const theme = useAppTheme();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<ElementRef<typeof OsmMapView>>(null);
   const initialRegion = useMemo(
     () => (events.length > 0 ? getSeismicMapRegion(events) : getAzoresArchipelagoRegion()),
     [events],
+  );
+  const userInAzores = useMemo(
+    () => (userCoords ? isWithinAzoresBounds(userCoords.lat, userCoords.lng) : false),
+    [userCoords],
+  );
+
+  const androidOverlays = useMemo(
+    () => ({
+      markers: events.map((event) =>
+        seismicMarkerOverlay(event, theme, () => onMarkerPress?.(event)),
+      ),
+      polylines: [],
+    }),
+    [events, theme, onMarkerPress],
   );
 
   useEffect(() => {
@@ -48,28 +68,29 @@ export function SeismicMap({ events, userCoords, focus, onMarkerPress }: Seismic
 
   return (
     <View style={styles.wrap}>
-      <MapView
+      <OsmMapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        mapType="none"
         initialRegion={initialRegion}
+        androidOverlays={androidOverlays}
         minZoomLevel={4}
         maxZoomLevel={16}
-        showsUserLocation={Boolean(userCoords)}
+        showsUserLocation={userInAzores}
+        centerCoordinate={userInAzores ? userCoords : null}
         scrollEnabled
         zoomEnabled
         rotateEnabled={false}
       >
-        <OsmMapLayer isDark={theme.isDark} />
-        {events.map((event) => (
-          <SeismicMapMarker
-            key={event.id}
-            event={event}
-            onPress={() => onMarkerPress?.(event)}
-          />
-        ))}
-      </MapView>
+        {Platform.OS === 'ios'
+          ? events.map((event) => (
+              <SeismicMapMarker
+                key={event.id}
+                event={event}
+                onPress={() => onMarkerPress?.(event)}
+              />
+            ))
+          : null}
+      </OsmMapView>
     </View>
   );
 }

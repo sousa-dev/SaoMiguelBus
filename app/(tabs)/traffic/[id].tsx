@@ -114,7 +114,6 @@ export default function TrafficDetailScreen() {
           <Card elevated style={styles.mapCard}>
             <OsmMapView
               style={styles.map}
-              isDark={theme.isDark}
               scrollEnabled={false}
               initialRegion={coordinateToRegion({ lat: r.latitude, lng: r.longitude })}
             >

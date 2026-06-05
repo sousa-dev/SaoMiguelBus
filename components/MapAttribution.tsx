@@ -1,4 +1,4 @@
-import { StyleSheet, Text } from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 
 import { mapTileAttribution } from '@/lib/map-tiles';
 import { typography } from '@/lib/tokens';
@@ -10,7 +10,11 @@ type Props = {
 
 export function MapAttribution({ isDark }: Props) {
   const theme = useAppTheme();
-  const dark = isDark ?? theme.isDark;
+  const dark = isDark ?? false;
+
+  if (Platform.OS !== 'android') {
+    return null;
+  }
 
   return (
     <Text style={[styles.credit, typography.caption, { color: theme.muted }]}>

@@ -1,0 +1,96 @@
+import React from 'react';
+import { Marker, Polyline } from 'react-native-maps';
+
+export type MapMarkerOverlay = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  pinColor?: string;
+  title?: string;
+  draggable?: boolean;
+  onPress?: () => void;
+  onDragEnd?: (coordinate: { latitude: number; longitude: number }) => void;
+};
+
+export type MapPolylineOverlay = {
+  id: string;
+  coordinates: { latitude: number; longitude: number }[];
+  strokeColor?: string;
+  strokeWidth?: number;
+};
+
+export type MapOverlaySpec = {
+  markers: MapMarkerOverlay[];
+  polylines: MapPolylineOverlay[];
+};
+
+/** Reads direct Marker / Polyline children (RouteMap, LocationPicker, marketplace). */
+export function mapOverlaysFromChildren(children: React.ReactNode): MapOverlaySpec {
+  const markers: MapMarkerOverlay[] = [];
+  const polylines: MapPolylineOverlay[] = [];
+  let markerIndex = 0;
+  let polylineIndex = 0;
+
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) {
+      return;
+    }
+
+    if (child.type === Marker) {
+      const props = child.props as {
+        coordinate?: { latitude: number; longitude: number };
+        pinColor?: string;
+        title?: string;
+        draggable?: boolean;
+        onPress?: () => void;
+        onDragEnd?: (event: {
+          nativeEvent: { coordinate: { latitude: number; longitude: number } };
+        }) => void;
+      };
+      if (!props.coordinate) {
+        return;
+      }
+      markers.push({
+        id: `marker-${markerIndex}`,
+        latitude: props.coordinate.latitude,
+        longitude: props.coordinate.longitude,
+        pinColor: props.pinColor,
+        title: props.title,
+        draggable: props.draggable,
+        onPress: props.onPress,
+        onDragEnd: props.onDragEnd
+          ? (coordinate) => props.onDragEnd?.({ nativeEvent: { coordinate } })
+          : undefined,
+      });
+      markerIndex += 1;
+      return;
+    }
+
+    if (child.type === Polyline) {
+      const props = child.props as {
+        coordinates?: { latitude: number; longitude: number }[];
+        strokeColor?: string;
+        strokeWidth?: number;
+      };
+      if (!props.coordinates?.length) {
+        return;
+      }
+      polylines.push({
+        id: `polyline-${polylineIndex}`,
+        coordinates: props.coordinates,
+        strokeColor: props.strokeColor,
+        strokeWidth: props.strokeWidth,
+      });
+      polylineIndex += 1;
+    }
+  });
+
+  return { markers, polylines };
+}
+
+export function mergeMapOverlays(...specs: MapOverlaySpec[]): MapOverlaySpec {
+  return {
+    markers: specs.flatMap((spec) => spec.markers),
+    polylines: specs.flatMap((spec) => spec.polylines),
+  };
+}

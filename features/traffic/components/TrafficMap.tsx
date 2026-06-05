@@ -3,9 +3,9 @@ import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } 
 import { Platform, StyleSheet, View } from 'react-native';
 import { Marker, type Region } from 'react-native-maps';
 
-import { MapAttribution } from '@/components/MapAttribution';
 import { OsmMapView } from '@/components/OsmMapView';
 import { TrafficMapMarker } from '@/features/traffic/components/TrafficMapMarker';
+import { trafficMarkerOverlay } from '@/features/traffic/lib/traffic-marker-overlay';
 import {
   clampCoordinate,
   clampMapRegion,
@@ -14,6 +14,7 @@ import {
   isWithinIslandBounds,
   regionNeedsClamp,
   saoMiguelMapBounds,
+  trafficMapViewportPad,
 } from '@/lib/island-map';
 import type { AppTheme } from '@/lib/theme';
 import type { TrafficReport } from '@/lib/types';
@@ -61,19 +62,41 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
     }),
     [],
   );
-  const islandRegion = useMemo(() => getIslandMapRegion(), []);
+  const islandRegion = useMemo(() => getIslandMapRegion(saoMiguelMapBounds, trafficMapViewportPad), []);
   const userOnIsland = useMemo(
     () => (userCoords ? isWithinIslandBounds(userCoords.lat, userCoords.lng) : false),
     [userCoords],
   );
 
   const onRegionChangeComplete = useCallback((next: Region) => {
-    if (!regionNeedsClamp(next)) {
+    if (!regionNeedsClamp(next, saoMiguelMapBounds, trafficMapViewportPad)) {
       return;
     }
-    const clamped = clampMapRegion(next);
+    const clamped = clampMapRegion(next, saoMiguelMapBounds, trafficMapViewportPad);
     mapRef.current?.animateToRegion(clamped, 180);
   }, []);
+
+  const androidOverlays = useMemo(
+    () => ({
+      markers: [
+        ...reports.map((report) =>
+          trafficMarkerOverlay(report, theme, () => onMarkerPress?.(report)),
+        ),
+        ...(draftPin
+          ? [
+              {
+                id: 'draft-pin',
+                latitude: draftPin.lat,
+                longitude: draftPin.lng,
+                pinColor: theme.secondary,
+              },
+            ]
+          : []),
+      ],
+      polylines: [],
+    }),
+    [reports, draftPin, theme, onMarkerPress],
+  );
 
   if (Platform.OS === 'web') {
     return null;
@@ -84,11 +107,12 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
       <OsmMapView
         ref={mapRef}
         style={styles.map}
-        isDark={theme.isDark}
         initialRegion={islandRegion}
-        minZoomLevel={9}
+        androidOverlays={androidOverlays}
+        minZoomLevel={8}
         maxZoomLevel={18}
         showsUserLocation={userOnIsland}
+        centerCoordinate={userOnIsland ? userCoords : null}
         scrollEnabled
         zoomEnabled
         onRegionChangeComplete={onRegionChangeComplete}
@@ -114,7 +138,7 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
             : undefined
         }
       >
-        {draftPin ? (
+        {Platform.OS === 'ios' && draftPin ? (
           <Marker
             coordinate={{ latitude: draftPin.lat, longitude: draftPin.lng }}
             tracksViewChanges={false}
@@ -125,18 +149,17 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
             </View>
           </Marker>
         ) : null}
-        {reports.map((report) => (
-          <TrafficMapMarker
-            key={report.id}
-            report={report}
-            theme={theme}
-            onPress={() => onMarkerPress?.(report)}
-          />
-        ))}
+        {Platform.OS === 'ios'
+          ? reports.map((report) => (
+              <TrafficMapMarker
+                key={report.id}
+                report={report}
+                theme={theme}
+                onPress={() => onMarkerPress?.(report)}
+              />
+            ))
+          : null}
       </OsmMapView>
-      <View style={styles.attribution} pointerEvents="none">
-        <MapAttribution isDark={theme.isDark} />
-      </View>
     </View>
   );
 });
@@ -144,15 +167,6 @@ export const TrafficMap = forwardRef<TrafficMapHandle, TrafficMapProps>(function
 const styles = StyleSheet.create({
   wrap: { width: '100%', height: '100%' },
   map: { width: '100%', height: '100%' },
-  attribution: {
-    position: 'absolute',
-    right: 8,
-    bottom: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    opacity: 0.92,
-  },
   draftPin: {
     width: 44,
     height: 44,
