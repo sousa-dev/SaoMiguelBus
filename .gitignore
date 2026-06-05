@@ -66,3 +66,5 @@ src/saomiguelbus/ios/Podfile.lock
 src/saomiguelbus/macos/Pods/
 src/saomiguelbus/macos/Podfile.lock
 src/android-project/app/.idea/
+
+android.keystore
