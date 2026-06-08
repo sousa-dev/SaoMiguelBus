@@ -60,7 +60,8 @@
     "android": "expo start --android --clear",
     "ios": "expo run:ios",
     "ios:start": "expo start --ios --clear",
-    "web": "expo start --web --clear"
+    "web": "expo start --web --clear",
+    "test:unit": "npx tsx --test __tests__/lib/*.test.ts"
   },
   "private": true
 }

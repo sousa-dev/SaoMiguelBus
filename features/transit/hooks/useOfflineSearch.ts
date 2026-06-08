@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { searchTransit } from '@/lib/api';
@@ -6,6 +7,8 @@ import { useNetwork } from '@/lib/network-provider';
 import { track } from '@/lib/analytics';
 import { processTransitResults } from '@/lib/transit-results';
 import type { TransitSearchResult } from '@/lib/types';
+
+const FULL_DAY_START = '00h00';
 
 export function useOfflineCacheAvailable() {
   return useQuery({
@@ -19,39 +22,45 @@ export function useTransitSearchWithOffline(params: {
   origin: string;
   destination: string;
   day: string;
-  start: string;
+  userTime: string;
   enabled: boolean;
 }) {
-  // `hasOfflineBundle` is premium-gated in NetworkProvider — non-premium users
-  // get no offline capability even with a cached bundle present.
   const { isOnline, hasOfflineBundle } = useNetwork();
   const canSearch = Boolean(params.origin && params.destination);
 
-  return useQuery({
-    queryKey: ['transit', 'search', params, isOnline ? 'online' : 'offline'],
+  const rawQuery = useQuery({
+    queryKey: [
+      'transit',
+      'search',
+      { origin: params.origin, destination: params.destination, day: params.day },
+      isOnline ? 'online' : 'offline',
+    ],
     queryFn: async (): Promise<TransitSearchResult[]> => {
       if (isOnline) {
         const results = await searchTransit({
           origin: params.origin,
           destination: params.destination,
           day: params.day,
-          start: params.start,
+          start: FULL_DAY_START,
         });
-        const processed = processTransitResults(results);
         track('transit', 'search', {
           origin: params.origin,
           destination: params.destination,
           day_type: params.day,
-          start_time: params.start,
-          results_count: processed.length,
+          start_time: FULL_DAY_START,
+          results_count: results.length,
         });
-        return processed;
+        return results;
       }
       const bundle = await loadCachedBundle();
       if (!bundle) {
         return [];
       }
-      const results = processTransitResults(offlineSearch(bundle, params));
+      const results = offlineSearch(bundle, {
+        origin: params.origin,
+        destination: params.destination,
+        day: params.day,
+      });
       track('transit', 'offline_search', {
         origin: params.origin,
         destination: params.destination,
@@ -62,6 +71,21 @@ export function useTransitSearchWithOffline(params: {
     enabled: params.enabled && canSearch && (isOnline || hasOfflineBundle),
     networkMode: 'always',
   });
+
+  const data = useMemo(
+    () =>
+      processTransitResults(rawQuery.data ?? [], {
+        origin: params.origin,
+        destination: params.destination,
+        userTime: params.userTime,
+      }),
+    [rawQuery.data, params.origin, params.destination, params.userTime],
+  );
+
+  return {
+    ...rawQuery,
+    data,
+  };
 }
 
 export function useCanSearchOffline() {

@@ -206,12 +206,10 @@ export function offlineSearch(
     origin: string;
     destination: string;
     day: string;
-    start: string;
   },
 ): TransitSearchResult[] {
   const originKey = normalizeStopKey(params.origin);
   const destKey = normalizeStopKey(params.destination);
-  const inputTime = params.start.replace(':', 'h');
   const dayOfWeek = dayTypeToWeekday(params.day, bundle.holidays);
 
   return bundle.routes
@@ -225,8 +223,7 @@ export function offlineSearch(
       if (row.weekday !== dayOfWeek) {
         return false;
       }
-      const routeTime = row.times[originIndex] ?? '';
-      return routeTime >= inputTime;
+      return true;
     })
     .map((row) => {
       const stopKeys = row.stops.map(normalizeStopKey);

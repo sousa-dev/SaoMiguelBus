@@ -16,6 +16,13 @@ const BUNDLE_SCRIPT_OLD =
 const BUNDLE_SCRIPT_NEW =
   'RN_XCODE_SCRIPT=\\"$(\\"$NODE_BINARY\\" --print \\"require(\'path\').dirname(require.resolve(\'react-native/package.json\')) + \'/scripts/react-native-xcode.sh\'\\")\\"\\n/bin/sh \\"$RN_XCODE_SCRIPT\\"\\n\\n';
 
+// bash -l -c "$PATH/script.sh" word-splits the -c string at spaces in PROJECT paths
+// (e.g. "Sousa Dev"), so invoke the script directly instead.
+const EXCONSTANTS_SCRIPT_OLD =
+  'bash -l -c \\"$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh\\"';
+const EXCONSTANTS_SCRIPT_NEW =
+  'bash -l \\"$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh\\"';
+
 function findPbxproj() {
   if (!fs.existsSync(iosDir)) return null;
   for (const name of fs.readdirSync(iosDir)) {
@@ -48,4 +55,14 @@ if (fs.existsSync(iosDir)) {
     ].join('\n'),
   );
   console.log('wrote', path.relative(root, envLocal));
+}
+
+const podsPbxPath = path.join(iosDir, 'Pods', 'Pods.xcodeproj', 'project.pbxproj');
+if (fs.existsSync(podsPbxPath)) {
+  let podsContents = fs.readFileSync(podsPbxPath, 'utf8');
+  if (podsContents.includes(EXCONSTANTS_SCRIPT_OLD)) {
+    podsContents = podsContents.replaceAll(EXCONSTANTS_SCRIPT_OLD, EXCONSTANTS_SCRIPT_NEW);
+    fs.writeFileSync(podsPbxPath, podsContents);
+    console.log('fixed EXConstants app.config script in Pods.xcodeproj');
+  }
 }

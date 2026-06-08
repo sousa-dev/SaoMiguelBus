@@ -81,7 +81,7 @@ export default function TransitScreen() {
       origin,
       destination,
       day,
-      start: time.replace(':', 'h'),
+      userTime: time.replace(':', 'h'),
       enabled: searchEnabled && Boolean(origin && destination),
     }),
     [origin, destination, day, time, searchEnabled],

@@ -1,6 +1,7 @@
 import { CreditCard, Crown, RotateCcw, Sparkles } from 'lucide-react-native';
+import * as WebBrowser from 'expo-web-browser';
 import React from 'react';
-import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { ListRow } from '@/components/ui/ListRow';
@@ -11,6 +12,7 @@ import { usePremiumPurchases } from '@/features/premium/hooks/usePremiumPurchase
 import { presentCustomerCenter } from '@/features/premium/lib/customer-center';
 import { NATIVE_SUBSCRIPTIONS_URL, resolveManageAction } from '@/features/premium/lib/manage-action';
 import { isPurchaseCancelled, purchaseErrorMessageKey } from '@/features/premium/lib/purchase-errors';
+import { LEGAL_URLS } from '@/lib/legal-urls';
 import { usePremium } from '@/lib/premium-store';
 import { CUSTOMER_CENTER_ENABLED, hasPremiumEntitlement } from '@/lib/revenuecat';
 import { useAppTheme } from '@/lib/theme';
@@ -121,8 +123,35 @@ export function PremiumSettingsSection() {
           title={t('premiumRestore')}
           onPress={() => void onRestore()}
           showChevron={false}
-          divider={false}
+          divider={!isPremium}
         />
+
+        {isPremium ? null : (
+          <View style={styles.legalBlock}>
+            <Text style={[typography.caption, styles.legalText, { color: theme.muted }]}>
+              {t('premiumTerms')}
+            </Text>
+            <View style={styles.legalLinks}>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.terms)}
+              >
+                <Text style={[typography.caption, styles.legalLink, { color: theme.primary }]}>
+                  {t('termsAndConditions')}
+                </Text>
+              </Pressable>
+              <Text style={[typography.caption, { color: theme.muted }]}> · </Text>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.privacy)}
+              >
+                <Text style={[typography.caption, styles.legalLink, { color: theme.primary }]}>
+                  {t('privacyPolicy')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </View>
     </>
   );
@@ -131,4 +160,14 @@ export function PremiumSettingsSection() {
 const styles = StyleSheet.create({
   sectionLabel: { marginTop: space['2xl'], marginBottom: space.sm },
   group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  legalBlock: { paddingHorizontal: space.md, paddingVertical: space.md },
+  legalText: { textAlign: 'center', lineHeight: 18 },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: space.xs,
+    flexWrap: 'wrap',
+  },
+  legalLink: { textDecorationLine: 'underline' },
 });

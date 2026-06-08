@@ -1,4 +1,5 @@
 import { formatAppDate } from '@/lib/date-format';
+import type { TransitSearchResult, TripStop } from '@/lib/types';
 
 /** Time strings from API are usually `08h30` or `08:30`. */
 export function normalizeTripTime(time: string): string {
@@ -133,4 +134,87 @@ export function resolveDayType(
 
 export function formatDateLabel(date: Date, _locale: string): string {
   return formatAppDate(date);
+}
+
+const ACCENT_FROM = 'áàâãäéèêëíìîïóòôõöúùûüç';
+const ACCENT_TO = 'aaaaaeeeeiiiiooooouuuuc';
+
+/** Accent-fold and lowercase for legacy stop word matching. */
+export function foldStopName(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/[-áàâãäéèêëíìîïóòôõöúùûüç]/g, (match) => {
+      if (match === '-') {
+        return '';
+      }
+      const idx = ACCENT_FROM.indexOf(match);
+      return idx >= 0 ? ACCENT_TO[idx] : match;
+    });
+}
+
+export function normalizeStopWords(name: string): string[] {
+  return foldStopName(name).split(' ').filter((word) => word.trim() !== '');
+}
+
+function stopMatchesQuery(query: string, stopName: string): boolean {
+  const queryWords = normalizeStopWords(query);
+  const stopWords = normalizeStopWords(stopName);
+  if (queryWords.length === 0) {
+    return false;
+  }
+  return queryWords.every((word) => stopWords.includes(word));
+}
+
+/**
+ * Trim a full-route search result to the origin→destination segment.
+ * Mirrors legacy webapp `createRouteDiv` stop filtering.
+ */
+export function extractTripSegment(
+  trip: TransitSearchResult,
+  origin?: string,
+  destination?: string,
+): TransitSearchResult | null {
+  const originQuery = trip.origin || origin || '';
+  const destQuery = trip.destination || destination || '';
+  if (!originQuery || !destQuery || !trip.stops?.length) {
+    return null;
+  }
+
+  let foundOrigin = false;
+  let foundDestination = false;
+  const segmentStops: TripStop[] = [];
+
+  for (const stop of trip.stops) {
+    if (foundOrigin) {
+      segmentStops.push(stop);
+    } else if (stopMatchesQuery(originQuery, stop.name)) {
+      foundOrigin = true;
+      segmentStops.push(stop);
+    }
+
+    if (stopMatchesQuery(destQuery, stop.name)) {
+      if (!foundOrigin) {
+        return null;
+      }
+      foundDestination = true;
+      const last = segmentStops[segmentStops.length - 1];
+      if (!last || last.name !== stop.name || last.time !== stop.time) {
+        segmentStops.push(stop);
+      }
+      break;
+    }
+  }
+
+  if (!foundOrigin || !foundDestination || segmentStops.length === 0) {
+    return null;
+  }
+
+  const first = segmentStops[0];
+  const last = segmentStops[segmentStops.length - 1];
+  return {
+    ...trip,
+    start: first.time,
+    end: last.time,
+    stops: segmentStops,
+  };
 }
