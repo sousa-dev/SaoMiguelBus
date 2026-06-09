@@ -155,6 +155,8 @@ export async function socialAuth(input: {
   identityToken: string;
   nonce?: string;
   displayName?: string;
+  /** Apple-only: native authorization code, used server-side to enable token revocation. */
+  authorizationCode?: string;
 }): Promise<AuthResponse> {
   return apiFetch<AuthResponse>('/api/v3/auth/social', {
     method: 'POST',
@@ -163,6 +165,7 @@ export async function socialAuth(input: {
       identity_token: input.identityToken,
       nonce: input.nonce,
       display_name: input.displayName ?? '',
+      authorization_code: input.authorizationCode ?? '',
     }),
   });
 }
