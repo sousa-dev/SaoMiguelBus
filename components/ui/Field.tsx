@@ -1,6 +1,9 @@
-import React, { type ReactNode } from 'react';
+import { Eye, EyeOff } from 'lucide-react-native';
+import React, { useState, type ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
+import { IconButton } from '@/components/ui/IconButton';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -11,8 +14,30 @@ type FieldProps = TextInputProps & {
   trailing?: ReactNode;
 };
 
-export function Field({ label, hint, error, trailing, style, ...inputProps }: FieldProps) {
+export function Field({
+  label,
+  hint,
+  error,
+  trailing,
+  style,
+  secureTextEntry,
+  ...inputProps
+}: FieldProps) {
   const theme = useAppTheme();
+  const { t } = useTranslation();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const isPasswordField = secureTextEntry === true;
+  const resolvedSecureEntry = isPasswordField ? !passwordVisible : secureTextEntry;
+  const passwordToggle =
+    isPasswordField && !trailing ? (
+      <IconButton
+        icon={passwordVisible ? EyeOff : Eye}
+        size="sm"
+        color={theme.muted}
+        accessibilityLabel={passwordVisible ? t('authHidePassword') : t('authShowPassword')}
+        onPress={() => setPasswordVisible((visible) => !visible)}
+      />
+    ) : null;
 
   return (
     <View style={styles.wrap}>
@@ -21,9 +46,10 @@ export function Field({ label, hint, error, trailing, style, ...inputProps }: Fi
         <TextInput
           placeholderTextColor={theme.muted}
           style={[styles.input, typography.body, { color: theme.text }, style]}
+          secureTextEntry={resolvedSecureEntry}
           {...inputProps}
         />
-        {trailing}
+        {trailing ?? passwordToggle}
       </View>
       {error ? (
         <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>{error}</Text>

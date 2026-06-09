@@ -18,7 +18,8 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open."
+        "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
+        "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,
@@ -87,7 +88,7 @@
           "locationWhenInUsePermission": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
           "locationAlwaysPermission": false,
           "locationAlwaysAndWhenInUsePermission": false,
-          "motionUsagePermission": false,
+          "motionUsagePermission": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map.",
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidMotionActivityEnabled": false

@@ -872,6 +872,8 @@
     "authNameLabel": "Nom",
     "authEmailLabel": "E-mail",
     "authPasswordLabel": "Mot de passe",
+    "authShowPassword": "Afficher le mot de passe",
+    "authHidePassword": "Masquer le mot de passe",
     "authErrorEmailTaken": "Cet e-mail est déjà enregistré. Connectez-vous.",
     "authErrorInvalidCredentials": "E-mail ou mot de passe incorrect.",
     "authErrorInvalidSocialToken": "Connexion non vérifiée. Réessayez.",

@@ -804,6 +804,8 @@
     "authNameLabel": "Nome",
     "authEmailLabel": "Email",
     "authPasswordLabel": "Password",
+    "authShowPassword": "Mostra password",
+    "authHidePassword": "Nascondi password",
     "authErrorEmailTaken": "Questa email è già registrata. Accedi.",
     "authErrorInvalidCredentials": "Email o password non corretti.",
     "authErrorInvalidSocialToken": "Accesso non verificato. Riprova.",

@@ -797,6 +797,8 @@
     "authNameLabel": "Ім'я",
     "authEmailLabel": "Електронна пошта",
     "authPasswordLabel": "Пароль",
+    "authShowPassword": "Показати пароль",
+    "authHidePassword": "Приховати пароль",
     "authErrorEmailTaken": "Цю пошту вже зареєстровано. Увійдіть.",
     "authErrorInvalidCredentials": "Невірна пошта або пароль.",
     "authErrorInvalidSocialToken": "Не вдалося перевірити вхід.",

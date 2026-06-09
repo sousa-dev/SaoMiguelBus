@@ -915,6 +915,8 @@
     "authNameLabel": "Nome",
     "authEmailLabel": "Email",
     "authPasswordLabel": "Palavra-passe",
+    "authShowPassword": "Mostrar palavra-passe",
+    "authHidePassword": "Ocultar palavra-passe",
     "authErrorEmailTaken": "Este email já está registado. Inicie sessão.",
     "authErrorInvalidCredentials": "Email ou palavra-passe incorretos.",
     "authErrorInvalidSocialToken": "Não foi possível verificar o início de sessão. Tente novamente.",

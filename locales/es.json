@@ -872,6 +872,8 @@
     "authNameLabel": "Nombre",
     "authEmailLabel": "Correo",
     "authPasswordLabel": "Contraseña",
+    "authShowPassword": "Mostrar contraseña",
+    "authHidePassword": "Ocultar contraseña",
     "authErrorEmailTaken": "Este correo ya está registrado. Inicia sesión.",
     "authErrorInvalidCredentials": "Correo o contraseña incorrectos.",
     "authErrorInvalidSocialToken": "No se pudo verificar el inicio de sesión.",

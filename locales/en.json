@@ -915,6 +915,8 @@
     "authNameLabel": "Name",
     "authEmailLabel": "Email",
     "authPasswordLabel": "Password",
+    "authShowPassword": "Show password",
+    "authHidePassword": "Hide password",
     "authErrorEmailTaken": "This email is already registered. Sign in instead.",
     "authErrorInvalidCredentials": "Incorrect email or password.",
     "authErrorInvalidSocialToken": "Could not verify your sign-in. Try again.",
