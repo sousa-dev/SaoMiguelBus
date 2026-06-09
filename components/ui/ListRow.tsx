@@ -16,6 +16,8 @@ type ListRowProps = {
   onPress?: () => void;
   showChevron?: boolean;
   destructive?: boolean;
+  /** Blocks presses and dims the row (e.g. while an async action is in flight). */
+  disabled?: boolean;
   accessibilityLabel?: string;
   /** Bottom hairline divider. Set false for the last row in a grouped card. */
   divider?: boolean;
@@ -30,6 +32,7 @@ export function ListRow({
   onPress,
   showChevron = Boolean(onPress),
   destructive,
+  disabled = false,
   accessibilityLabel,
   divider = true,
 }: ListRowProps) {
@@ -67,14 +70,16 @@ export function ListRow({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityState={{ disabled }}
       onPress={onPress}
+      disabled={disabled}
       android_ripple={Platform.OS === 'android' ? { color: theme.outline } : undefined}
       style={({ pressed }) => [
         styles.row,
         {
           borderBottomColor: theme.border,
           borderBottomWidth,
-          opacity: pressed ? 0.85 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
           minHeight: hitSlop.minTouch,
         },
       ]}

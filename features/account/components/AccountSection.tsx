@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { LogIn, LogOut, UserCircle } from 'lucide-react-native';
+import { LogIn, LogOut, Trash2, UserCircle } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { PremiumBadge } from '@/features/account/components/PremiumBadge';
@@ -15,9 +15,29 @@ export function AccountSection() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { user, isSignedIn, logout } = useAuth();
+  const { user, isSignedIn, logout, deleteAccount } = useAuth();
 
   const groupStyle = [styles.group, { backgroundColor: theme.card, borderColor: theme.border }];
+
+  const confirmDeleteAccount = () => {
+    Alert.alert(
+      t('authDeleteAccountConfirmTitle'),
+      t('authDeleteAccountConfirmMessage'),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('authDeleteAccountConfirm'),
+          style: 'destructive',
+          onPress: () => {
+            deleteAccount.mutate(undefined, {
+              onError: () => Alert.alert(t('authDeleteAccountErrorTitle'), t('authErrorUnknown')),
+            });
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
 
   return (
     <>
@@ -39,7 +59,17 @@ export function AccountSection() {
             title={t('authSignOut')}
             destructive
             showChevron={false}
+            disabled={logout.isPending || deleteAccount.isPending}
             onPress={() => logout.mutate()}
+          />
+          <ListRow
+            icon={Trash2}
+            title={t('authDeleteAccount')}
+            subtitle={t('authDeleteAccountSubtitle')}
+            destructive
+            showChevron={false}
+            disabled={deleteAccount.isPending}
+            onPress={confirmDeleteAccount}
           />
         </View>
       ) : (

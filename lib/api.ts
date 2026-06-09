@@ -175,6 +175,11 @@ export async function logoutAccount(): Promise<void> {
   await apiFetch<{ status: string }>('/api/v3/auth/logout', { method: 'POST' });
 }
 
+/** Permanently delete the signed-in user's account (App Store Guideline 5.1.1(v)). */
+export async function deleteAccount(): Promise<void> {
+  await apiFetch<{ status: string }>('/api/v3/auth/account', { method: 'DELETE' });
+}
+
 export async function fetchEntitlement(): Promise<Entitlement> {
   return apiFetch<Entitlement>('/api/v3/billing/entitlement');
 }
