@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { LogIn, LogOut, Trash2, UserCircle } from 'lucide-react-native';
 import React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { PremiumBadge } from '@/features/account/components/PremiumBadge';
 import { useAuth } from '@/features/account/hooks/useAuth';
 import { ListRow } from '@/components/ui/ListRow';
+import { confirmAction, notify } from '@/lib/confirm';
 import { useAppTheme } from '@/lib/theme';
 import { space, typography } from '@/lib/tokens';
 
@@ -19,24 +20,20 @@ export function AccountSection() {
 
   const groupStyle = [styles.group, { backgroundColor: theme.card, borderColor: theme.border }];
 
-  const confirmDeleteAccount = () => {
-    Alert.alert(
-      t('authDeleteAccountConfirmTitle'),
-      t('authDeleteAccountConfirmMessage'),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('authDeleteAccountConfirm'),
-          style: 'destructive',
-          onPress: () => {
-            deleteAccount.mutate(undefined, {
-              onError: () => Alert.alert(t('authDeleteAccountErrorTitle'), t('authErrorUnknown')),
-            });
-          },
-        },
-      ],
-      { cancelable: true },
-    );
+  const confirmDeleteAccount = async () => {
+    const confirmed = await confirmAction({
+      title: t('authDeleteAccountConfirmTitle'),
+      message: t('authDeleteAccountConfirmMessage'),
+      confirmLabel: t('authDeleteAccountConfirm'),
+      cancelLabel: t('cancel'),
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    deleteAccount.mutate(undefined, {
+      onError: () => notify(t('authDeleteAccountErrorTitle'), t('authErrorUnknown')),
+    });
   };
 
   return (
@@ -69,7 +66,7 @@ export function AccountSection() {
             destructive
             showChevron={false}
             disabled={deleteAccount.isPending}
-            onPress={confirmDeleteAccount}
+            onPress={() => void confirmDeleteAccount()}
           />
         </View>
       ) : (
