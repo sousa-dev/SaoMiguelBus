@@ -394,6 +394,23 @@ export interface WeatherParishesResponse {
   attribution: string;
 }
 
+export interface WeatherHourlySlot {
+  time: string;
+  temperature: number | null;
+  weatherCode: number | null;
+  windSpeed: number | null;
+  humidity: number | null;
+  precipitation: number | null;
+  precipitationProbability: number | null;
+}
+
+export interface ParishWeatherHourly {
+  slug: string;
+  date: string;
+  hours: WeatherHourlySlot[];
+  attribution: string;
+}
+
 // --- First-party ads (compat /api/v1/ad) --- //
 
 /**
