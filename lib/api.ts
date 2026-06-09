@@ -36,6 +36,7 @@ import type {
   ConfirmVote,
   WeatherParishesResponse,
   ParishWeather,
+  ParishWeatherHourly,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -373,6 +374,16 @@ export async function fetchWeatherParishes(): Promise<WeatherParishesResponse> {
 
 export async function fetchWeatherParish(slug: string): Promise<ParishWeather> {
   return apiFetch<ParishWeather>(`/api/v3/weather/parishes/${encodeURIComponent(slug)}`);
+}
+
+export async function fetchWeatherParishHourly(
+  slug: string,
+  date: string,
+): Promise<ParishWeatherHourly> {
+  const query = new URLSearchParams({ date });
+  return apiFetch<ParishWeatherHourly>(
+    `/api/v3/weather/parishes/${encodeURIComponent(slug)}/hourly?${query.toString()}`,
+  );
 }
 
 export async function fetchSeismicEvents(params?: {
