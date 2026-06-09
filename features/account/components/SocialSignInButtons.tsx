@@ -97,6 +97,8 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
         provider: 'apple',
         identityToken: credential.identityToken,
         displayName: name,
+        // Sent to the backend so it can revoke the Apple grant on account deletion.
+        authorizationCode: credential.authorizationCode ?? undefined,
       });
       onSuccess?.();
     } catch (err) {

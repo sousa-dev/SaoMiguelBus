@@ -124,6 +124,8 @@ interface ProfileState {
   pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => boolean;
   unpinRoute: (pinId: string) => void;
   pruneTracking: (now?: number) => void;
+  /** Wipe all on-device profile data (used by the GDPR "delete my data" flow). */
+  resetAll: () => void;
 }
 
 const defaultTracking = (): TrackingState => ({
@@ -330,6 +332,17 @@ export const useProfileStore = create<ProfileState>()(
             active,
             lastCleanup: now,
           },
+        });
+      },
+
+      resetAll: () => {
+        set({
+          displayName: null,
+          favoriteRoutes: [],
+          favoriteStops: [],
+          recentSearches: [],
+          votes: {},
+          tracking: defaultTracking(),
         });
       },
     }),

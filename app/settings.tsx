@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useLayoutEffect, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
@@ -17,12 +17,18 @@ import { ListRow } from '@/components/ui/ListRow';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
+import { deleteMyData, exportMyData } from '@/lib/api';
+import { confirmAction, notify } from '@/lib/confirm';
+import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
+import { shareJsonExport } from '@/lib/data-export';
 import { resolvePickerLocales } from '@/lib/i18n';
 import { LEGAL_URLS } from '@/lib/legal-urls';
 import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
 import { usePremiumStore } from '@/lib/premium-store';
+import { useProfileStore } from '@/lib/profile-store';
+import { getOrCreateSessionId } from '@/lib/session';
 import { space, typography } from '@/lib/tokens';
 import { type ThemePreference, useThemePrefsStore } from '@/lib/theme-prefs';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -48,6 +54,7 @@ export default function SettingsScreen() {
   const premiumDevOverride = usePremiumStore((s) => s.devOverride);
   const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
   const [dsarBanner, setDsarBanner] = useState(false);
+  const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -81,15 +88,73 @@ export default function SettingsScreen() {
     { value: 'dark' as ThemePreference, label: t('themeDark') },
   ];
 
-  const dsarAction = (kind: 'export' | 'delete') => {
+  const exportData = async () => {
     if (!isOnline) {
       setDsarBanner(true);
       return;
     }
-    Alert.alert(
-      kind === 'export' ? t('settingsExportData') : t('settingsDeleteData'),
-      kind === 'export' ? t('settingsExportComingSoon') : t('settingsDeleteComingSoon'),
-    );
+    setDsarBusy('export');
+    try {
+      const sessionId = await getOrCreateSessionId();
+      const server = await exportMyData(sessionId);
+      const profile = useProfileStore.getState();
+      const consent = useConsentStore.getState();
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        island: staticIslandConfig.islandKey,
+        server,
+        device: {
+          displayName: profile.displayName,
+          favoriteRoutes: profile.favoriteRoutes,
+          favoriteStops: profile.favoriteStops,
+          recentSearches: profile.recentSearches,
+          votes: profile.votes,
+          tracking: profile.tracking,
+          consent: {
+            decided: consent.decided,
+            purposes: consent.purposes,
+            policyVersion: consent.policyVersion,
+          },
+        },
+      };
+      await shareJsonExport('saomiguelhub-data-export.json', payload, t('settingsExportData'));
+    } catch {
+      notify(t('settingsDataExportErrorTitle'), t('settingsDataExportError'));
+    } finally {
+      setDsarBusy(null);
+    }
+  };
+
+  const deleteData = async () => {
+    if (!isOnline) {
+      setDsarBanner(true);
+      return;
+    }
+    const confirmed = await confirmAction({
+      title: t('settingsDeleteDataConfirmTitle'),
+      message: t('settingsDeleteDataConfirmMessage'),
+      confirmLabel: t('settingsDeleteDataConfirm'),
+      cancelLabel: t('cancel'),
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    setDsarBusy('delete');
+    try {
+      const sessionId = await getOrCreateSessionId();
+      await deleteMyData(sessionId);
+      // Wipe on-device data and reset consent to the protective default (consent
+      // was erased server-side). We keep `decided` so the consent gate doesn't
+      // redirect — re-arming it here while the Settings modal is open loops.
+      useProfileStore.getState().resetAll();
+      useConsentStore.getState().setPurposes(defaultPurposes);
+      notify(t('settingsDataDeletedTitle'), t('settingsDataDeleted'));
+    } catch {
+      notify(t('settingsDataDeleteErrorTitle'), t('settingsDataDeleteError'));
+    } finally {
+      setDsarBusy(null);
+    }
   };
 
   const appVersion = Constants.expoConfig?.version ?? '5.1.0';
@@ -148,13 +213,16 @@ export default function SettingsScreen() {
           <ListRow
             icon={Download}
             title={t('settingsExportData')}
-            onPress={() => dsarAction('export')}
+            disabled={dsarBusy !== null}
+            onPress={() => void exportData()}
           />
           <ListRow
             icon={Trash2}
             title={t('settingsDeleteData')}
+            subtitle={t('settingsDeleteDataSubtitle')}
             destructive
-            onPress={() => dsarAction('delete')}
+            disabled={dsarBusy !== null}
+            onPress={() => void deleteData()}
           />
         </View>
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
+  deleteAccount,
   loginAccount,
   logoutAccount,
   registerAccount,
@@ -41,5 +42,23 @@ export function useAuth() {
     },
   });
 
-  return { user, isSignedIn: Boolean(token), register, login, social, logout };
+  const deleteAccountMutation = useMutation({
+    mutationFn: deleteAccount,
+    onSuccess: async () => {
+      // Account is gone server-side; drop the local session + cached entitlement.
+      useEntitlementStore.getState().clearEntitlement();
+      await clearSession();
+      await queryClient.invalidateQueries({ queryKey: ['billing', 'entitlement'] });
+    },
+  });
+
+  return {
+    user,
+    isSignedIn: Boolean(token),
+    register,
+    login,
+    social,
+    logout,
+    deleteAccount: deleteAccountMutation,
+  };
 }
