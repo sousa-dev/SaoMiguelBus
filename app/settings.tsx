@@ -19,7 +19,7 @@ import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
 import { deleteMyData, exportMyData } from '@/lib/api';
 import { confirmAction, notify } from '@/lib/confirm';
-import { useConsentStore } from '@/lib/consent-store';
+import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { shareJsonExport } from '@/lib/data-export';
 import { resolvePickerLocales } from '@/lib/i18n';
 import { LEGAL_URLS } from '@/lib/legal-urls';
@@ -144,9 +144,11 @@ export default function SettingsScreen() {
     try {
       const sessionId = await getOrCreateSessionId();
       await deleteMyData(sessionId);
-      // Wipe on-device data and re-trigger the consent prompt (consent was erased).
+      // Wipe on-device data and reset consent to the protective default (consent
+      // was erased server-side). We keep `decided` so the consent gate doesn't
+      // redirect — re-arming it here while the Settings modal is open loops.
       useProfileStore.getState().resetAll();
-      useConsentStore.getState().requireReconsent();
+      useConsentStore.getState().setPurposes(defaultPurposes);
       notify(t('settingsDataDeletedTitle'), t('settingsDataDeleted'));
     } catch {
       notify(t('settingsDataDeleteErrorTitle'), t('settingsDataDeleteError'));
