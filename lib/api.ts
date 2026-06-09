@@ -180,6 +180,38 @@ export async function deleteAccount(): Promise<void> {
   await apiFetch<{ status: string }>('/api/v3/auth/account', { method: 'DELETE' });
 }
 
+// --- GDPR / DSAR (data subject access requests) --- //
+
+export interface DsarExportBundle {
+  session_hash: string;
+  consent: unknown[];
+  analytics_events: unknown[];
+  note?: string;
+}
+
+export interface DsarDeleteResult {
+  session_hash: string;
+  consent_records_deleted: number;
+  analytics_events_anonymized: number;
+  note?: string;
+}
+
+/** Export the data this device's session has shared with the backend (consent + analytics). */
+export async function exportMyData(sessionId: string): Promise<DsarExportBundle> {
+  return apiFetch<DsarExportBundle>('/api/v3/privacy/dsar/export', {
+    method: 'POST',
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+}
+
+/** Erase/anonymize the data this device's session has shared with the backend. */
+export async function deleteMyData(sessionId: string): Promise<DsarDeleteResult> {
+  return apiFetch<DsarDeleteResult>('/api/v3/privacy/dsar/delete', {
+    method: 'POST',
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+}
+
 export async function fetchEntitlement(): Promise<Entitlement> {
   return apiFetch<Entitlement>('/api/v3/billing/entitlement');
 }
