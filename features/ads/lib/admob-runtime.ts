@@ -4,7 +4,13 @@ export function isAdMobInitialized(): boolean {
   return false;
 }
 
+export function isAdMobCanRequestAds(): boolean {
+  return false;
+}
+
 export { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
+
+export async function showAdPrivacyOptionsForm(): Promise<void> {}
 
 export async function initializeAdMob(): Promise<void> {}
 

@@ -14,5 +14,5 @@ export function getAnalyticsPlatform(): AnalyticsPlatform {
 }
 
 export function getAppVersion(): string {
-  return Constants.expoConfig?.version ?? '5.1.0';
+  return Constants.expoConfig?.version ?? '5.1.2';
 }

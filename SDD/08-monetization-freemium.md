@@ -50,7 +50,9 @@ Legacy reference pricing (from webapp): weekly €0.99 / monthly €1.99 / yearl
 | **First-party `Ad`** | migrated legacy campaigns (geo/route-targeted, `seen`/`clicked`, actions: open/directions/call/sms/email/whatsapp) |
 
 Rules:
-- Ads only load when `Entitlement.tier == "free"` **and** the `ads` consent purpose is granted; otherwise no ad SDK initializes.
+- **Free tier is ad-supported:** first-party ads + AdMob fallback (NPA when `ads` purpose is off; personalized when on and UMP allows).
+- AdMob initializes after CMP decision for non-premium users; Google UMP `canRequestAds` is the legal floor for third-party ad tags.
+- The `ads` consent purpose gates **personalized** AdMob only — not whether ads appear on the free tier.
 - First-party ads are served via `GET /api/v3/ads?slot=&platform=` (compat: `/api/v1/ad`), targeting by `StopGroup`/route, scoped to island.
 - Premium users: ad slots are removed (not just hidden) and ad SDKs never initialize.
 

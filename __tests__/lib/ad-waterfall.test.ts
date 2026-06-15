@@ -52,6 +52,18 @@ describe('resolveAdSlotKind', () => {
     );
   });
 
+  it('falls back to AdMob for free users without personalized ads consent', () => {
+    assert.equal(
+      resolveAdSlotKind({
+        enabled: true,
+        firstParty: null,
+        fetched: true,
+        canShowAdMob: true,
+      }),
+      'admob',
+    );
+  });
+
   it('returns null when first-party is empty and AdMob is not allowed', () => {
     assert.equal(
       resolveAdSlotKind({

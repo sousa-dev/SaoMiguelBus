@@ -18,6 +18,9 @@ module.exports = ({ config }) => {
       {
         androidAppId,
         iosAppId,
+        delayAppMeasurementInit: true,
+        userTrackingUsageDescription:
+          'Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.',
       },
     ]);
   }

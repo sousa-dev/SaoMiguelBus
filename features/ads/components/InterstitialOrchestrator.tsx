@@ -20,7 +20,7 @@ import {
 } from '@/features/ads/lib/interstitial-storage';
 import { track } from '@/lib/analytics';
 import { fetchAd } from '@/lib/api';
-import { canShowExternalAds, canShowFirstPartyAds } from '@/lib/consent-store';
+import { canShowFirstPartyAds } from '@/lib/consent-store';
 import { getAnalyticsPlatform } from '@/lib/platform';
 import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
@@ -87,7 +87,6 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
 
         const canAdMob =
           Platform.OS !== 'web' &&
-          canShowExternalAds() &&
           isAdMobNativeAvailable() &&
           isAdMobInitialized() &&
           isInterstitialAdLoaded();
@@ -98,7 +97,7 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
           return;
         }
 
-        if (Platform.OS !== 'web' && canShowExternalAds()) {
+        if (Platform.OS !== 'web') {
           setShowUpsell(true);
         }
       } finally {

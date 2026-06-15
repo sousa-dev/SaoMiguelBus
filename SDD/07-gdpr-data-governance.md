@@ -28,7 +28,11 @@ First launch → CMP screen (before GA/Umami/AdMob/AdSense load, before any Anal
   Actions: Accept all · Reject all (non-essential) · Customize
 ```
 
-Backend `ConsentRecord` (`consent` app — `src/consent/`) stores the granular choices, `policy_version`, timestamps. Every `AnalyticsEvent` carries a `consent_state` snapshot. Withdrawal is one tap and propagates immediately (subsequent events respect it; third-party SDKs are torn down).
+**Free-tier ads:** The free app is ad-supported (first-party SMB + AdMob NPA fallback). Rejecting non-essential does **not** remove ads. The `ads` purpose opts into **personalized** AdMob only; non-personalized ads may still load when Google UMP grants `canRequestAds`. Premium is the only ad-free path.
+
+Google UMP (`AdsConsent`) runs at AdMob init and is the legal gate for third-party ad requests. Settings exposes `showPrivacyOptionsForm()` for ad preference changes.
+
+Backend `ConsentRecord` (`consent` app — `src/consent/`) stores the granular choices, `policy_version`, timestamps. Every `AnalyticsEvent` carries a `consent_state` snapshot. Withdrawal is one tap and propagates immediately (subsequent events respect it; analytics SDKs tear down; AdMob re-inits in NPA mode when personalization is withdrawn).
 
 **Policy pages:** reuse boilerplate `legal` app (`src/legal/data/privacy_policy.json`, `terms_of_service.json`) — update JSON for Azores Hub; link from CMP and settings.
 
@@ -73,4 +77,4 @@ The schema is built so a subject's data is findable and deletable:
 
 ## 6. Third-party processors
 
-GA, Umami, AdMob/AdSense, Stripe, RevenueCat, Viator, Google Maps, EMSC, dados.gov.pt — each documented in a processor register with its purpose, consent dependency, and data shared. GA/Umami/Ads are **consent-gated**; functional processors (Maps proxy, billing) operate on legitimate-interest/contract basis with minimization.
+GA, Umami, AdMob/AdSense, Stripe, RevenueCat, Viator, Google Maps, EMSC, dados.gov.pt — each documented in a processor register with its purpose, consent dependency, and data shared. GA/Umami are **consent-gated**; AdMob loads for free users after CMP (personalized only with `ads` purpose + UMP); functional processors (Maps proxy, billing) operate on legitimate-interest/contract basis with minimization.

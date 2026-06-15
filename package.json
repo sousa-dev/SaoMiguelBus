@@ -1,7 +1,7 @@
 {
   "name": "saomiguel-hub",
   "main": "expo-router/entry",
-  "version": "5.1.0",
+  "version": "5.1.2",
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",

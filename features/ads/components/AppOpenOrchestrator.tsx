@@ -9,6 +9,7 @@ import {
 import { loadLastFullScreenAdAt, markFullScreenAdShown } from '@/features/ads/lib/app-open-storage';
 import {
   initializeAdMob,
+  isAdMobCanRequestAds,
   isAdMobInitialized,
   isAdMobNativeAvailable,
   isAppOpenAdLoaded,
@@ -19,7 +20,7 @@ import {
 } from '@/features/ads/lib/admob-runtime';
 import { isFirstPartyInterstitialVisible } from '@/features/ads/lib/fullscreen-ad-state';
 import { track } from '@/lib/analytics';
-import { canShowExternalAds, canShowFirstPartyAds, useConsentStore } from '@/lib/consent-store';
+import { canInitAdMob, useConsentStore } from '@/lib/consent-store';
 import { usePremium } from '@/lib/premium-store';
 
 const LOAD_TIMEOUT_MS = 3_000;
@@ -30,13 +31,8 @@ type Props = {
   onSplashDismiss: () => void;
 };
 
-function isEligible(isPremium: boolean, canShowAds: boolean): boolean {
-  return (
-    Platform.OS !== 'web' &&
-    isAdMobNativeAvailable() &&
-    !isPremium &&
-    canShowAds
-  );
+function isEligible(isPremium: boolean): boolean {
+  return Platform.OS !== 'web' && isAdMobNativeAvailable() && canInitAdMob(isPremium);
 }
 
 async function waitForAppOpenLoaded(timeoutMs: number): Promise<boolean> {
@@ -53,7 +49,6 @@ async function waitForAppOpenLoaded(timeoutMs: number): Promise<boolean> {
 export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
   const isPremium = usePremium();
   const consentDecided = useConsentStore((s) => s.decided);
-  const adsConsent = useConsentStore((s) => s.purposes.ads);
   const segments = useSegments();
   const onConsentScreen = segments[0] === 'onboarding';
 
@@ -61,8 +56,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
   const coldStartDoneRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  const canShowAds = consentDecided && adsConsent;
-  const eligible = isEligible(isPremium, canShowAds);
+  const eligible = isEligible(isPremium);
 
   const attemptShow = useCallback(
     async (trigger: AppOpenTrigger, dismissSplashOnComplete: boolean) => {
@@ -96,7 +90,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         const decision = evaluateAppOpenPolicy(
           {
             isPremium,
-            canShowExternalAds: canShowExternalAds(),
+            canRequestAds: isAdMobCanRequestAds(),
             consentDecided,
             onConsentScreen,
             isAdMobReady: isAdMobInitialized(),
@@ -135,13 +129,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         runningRef.current = false;
       }
     },
-    [
-      eligible,
-      isPremium,
-      consentDecided,
-      onConsentScreen,
-      onSplashDismiss,
-    ],
+    [eligible, isPremium, consentDecided, onConsentScreen, onSplashDismiss],
   );
 
   useEffect(() => {
@@ -167,14 +155,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
     coldStartDoneRef.current = true;
     void attemptShow('cold_start', true);
-  }, [
-    appReady,
-    consentDecided,
-    onConsentScreen,
-    eligible,
-    attemptShow,
-    onSplashDismiss,
-  ]);
+  }, [appReady, consentDecided, onConsentScreen, eligible, attemptShow, onSplashDismiss]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {

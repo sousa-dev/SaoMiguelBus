@@ -12,7 +12,7 @@ const now = 1_000_000;
 function baseContext(overrides: Partial<AppOpenPolicyContext> = {}): AppOpenPolicyContext {
   return {
     isPremium: false,
-    canShowExternalAds: true,
+    canRequestAds: true,
     consentDecided: true,
     onConsentScreen: false,
     isAdMobReady: true,
@@ -33,13 +33,18 @@ describe('evaluateAppOpenPolicy', () => {
     assert.equal(decision.reason, 'premium');
   });
 
-  it('blocks when ads consent is missing', () => {
+  it('blocks when UMP denies ad requests', () => {
+    const decision = evaluateAppOpenPolicy(baseContext({ canRequestAds: false }), now);
+    assert.equal(decision.show, false);
+    assert.equal(decision.reason, 'ump_denied');
+  });
+
+  it('allows when personalized ads consent is off but UMP permits ads', () => {
     const decision = evaluateAppOpenPolicy(
-      baseContext({ canShowExternalAds: false }),
+      baseContext({ canRequestAds: true }),
       now,
     );
-    assert.equal(decision.show, false);
-    assert.equal(decision.reason, 'no_ads_consent');
+    assert.equal(decision.show, true);
   });
 
   it('blocks when consent is undecided', () => {

@@ -3,6 +3,10 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { postConsent } from '@/lib/api';
+import {
+  canInitAdMobFromState,
+  canShowPersonalizedAdsFromState,
+} from '@/lib/consent-gates';
 import { getOrCreateSessionId } from '@/lib/session';
 import type { ConsentPurposes } from '@/lib/types';
 
@@ -49,27 +53,33 @@ function persistDecision(
 }
 
 /**
- * First-party SMB banners (compat `/api/v1/ad`) are intentionally NOT gated on
- * `purposes.ads`. They are shown to every non-premium user, matching the legacy
- * webapp. The `ads` purpose is reserved for future third-party ad SDKs
- * (AdMob/AdSense) — see `canShowExternalAds()`.
+ * First-party SMB banners (compat `/api/v1/ad`) are shown to every non-premium
+ * user regardless of `purposes.ads`. The free tier is ad-supported by design.
  */
 export function canShowFirstPartyAds(isPremium: boolean): boolean {
   return !isPremium;
 }
 
-/**
- * Consent gate for FUTURE third-party ad SDKs only. First-party banners must
- * never call this — use `canShowFirstPartyAds()` instead.
- */
-export function canShowExternalAds(): boolean {
-  const { decided, purposes } = useConsentStore.getState();
-  return decided && purposes.ads;
+/** Whether AdMob may initialize for a non-premium user after CMP decision. */
+export function canInitAdMob(isPremium: boolean): boolean {
+  const { decided } = useConsentStore.getState();
+  return canInitAdMobFromState(decided, isPremium);
 }
 
-/** Whether AdMob SDK init and external ad slots are allowed. */
+/** Product-layer opt-in to personalized AdMob ads (`purposes.ads`). */
+export function canShowPersonalizedAds(): boolean {
+  const { decided, purposes } = useConsentStore.getState();
+  return canShowPersonalizedAdsFromState(decided, purposes.ads);
+}
+
+/** @deprecated Use `canShowPersonalizedAds()` — kept for transitional imports. */
+export function canShowExternalAds(): boolean {
+  return canShowPersonalizedAds();
+}
+
+/** Whether AdMob SDK init is allowed (alias of `canInitAdMob`). */
 export function shouldInitAdMob(isPremium: boolean): boolean {
-  return !isPremium && canShowExternalAds();
+  return canInitAdMob(isPremium);
 }
 
 export const useConsentStore = create<ConsentState>()(

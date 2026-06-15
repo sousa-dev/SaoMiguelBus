@@ -7,7 +7,7 @@ import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-runtime';
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
 import { track } from '@/lib/analytics';
 import { fetchAd, recordAdClick } from '@/lib/api';
-import { canShowExternalAds, canShowFirstPartyAds } from '@/lib/consent-store';
+import { canInitAdMob, canShowFirstPartyAds } from '@/lib/consent-store';
 import { logger } from '@/lib/logger';
 import { useNetwork } from '@/lib/network-provider';
 import { getAnalyticsPlatform } from '@/lib/platform';
@@ -28,7 +28,7 @@ export function useAd(on: string, slot: string | number = 'top') {
   const platform = getAnalyticsPlatform();
   const enabled = canShowFirstPartyAds(isPremium) && isOnline;
   const canShowAdMob =
-    enabled && canShowExternalAds() && Platform.OS !== 'web' && isAdMobNativeAvailable();
+    enabled && canInitAdMob(isPremium) && Platform.OS !== 'web' && isAdMobNativeAvailable();
 
   useEffect(() => {
     if (!enabled) {

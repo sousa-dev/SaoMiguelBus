@@ -5,7 +5,7 @@ export type AppOpenTrigger = 'cold_start' | 'foreground';
 
 export type AppOpenPolicyContext = {
   isPremium: boolean;
-  canShowExternalAds: boolean;
+  canRequestAds: boolean;
   consentDecided: boolean;
   onConsentScreen: boolean;
   isAdMobReady: boolean;
@@ -32,8 +32,8 @@ export function evaluateAppOpenPolicy(
   if (!context.consentDecided) {
     return { show: false, reason: 'consent_undecided' };
   }
-  if (!context.canShowExternalAds) {
-    return { show: false, reason: 'no_ads_consent' };
+  if (!context.canRequestAds) {
+    return { show: false, reason: 'ump_denied' };
   }
   if (context.onConsentScreen) {
     return { show: false, reason: 'consent_screen' };

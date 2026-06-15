@@ -1,3 +1,4 @@
+import { getAdMobRequestOptions } from '@/features/ads/lib/admob-request-options';
 import { getAdMobModule } from '@/features/ads/lib/admob-native';
 import {
   getAdMobAppOpenUnitId,
@@ -18,6 +19,7 @@ const APP_OPEN_MAX_AGE_MS = 4 * 60 * 60 * 1000;
 
 let initialized = false;
 let initPromise: Promise<void> | null = null;
+let umpCanRequestAds = false;
 
 let interstitial: InterstitialAdInstance | null = null;
 let interstitialLoaded = false;
@@ -114,7 +116,8 @@ function createInterstitialAd(): InterstitialAdInstance | null {
   if (!mod || !unitId) {
     return null;
   }
-  const ad = mod.InterstitialAd.createForAdRequest(unitId);
+  const requestOptions = getAdMobRequestOptions();
+  const ad = mod.InterstitialAd.createForAdRequest(unitId, requestOptions);
   attachInterstitialListeners(ad);
   return ad;
 }
@@ -125,7 +128,8 @@ function createAppOpenAd(): AppOpenAdInstance | null {
   if (!mod || !unitId) {
     return null;
   }
-  const ad = mod.AppOpenAd.createForAdRequest(unitId);
+  const requestOptions = getAdMobRequestOptions();
+  const ad = mod.AppOpenAd.createForAdRequest(unitId, requestOptions);
   attachAppOpenListeners(ad);
   return ad;
 }
@@ -134,7 +138,23 @@ export function isAdMobInitialized(): boolean {
   return initialized;
 }
 
+export function isAdMobCanRequestAds(): boolean {
+  return umpCanRequestAds;
+}
+
 export { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
+
+export async function showAdPrivacyOptionsForm(): Promise<void> {
+  const mod = getAdMobModule();
+  if (!mod || !isAdMobSupportedPlatform()) {
+    return;
+  }
+  try {
+    await mod.AdsConsent.showPrivacyOptionsForm();
+  } catch (error) {
+    logger.warn('AdMob privacy options form failed', error);
+  }
+}
 
 export async function initializeAdMob(): Promise<void> {
   const mod = getAdMobModule();
@@ -157,12 +177,21 @@ export async function initializeAdMob(): Promise<void> {
       ) {
         await mod.AdsConsent.showForm();
       }
+
+      const updatedConsent = await mod.AdsConsent.getConsentInfo();
+      umpCanRequestAds = updatedConsent.canRequestAds;
+      if (!umpCanRequestAds) {
+        initPromise = null;
+        return;
+      }
+
       await mod.MobileAds().initialize();
       initialized = true;
       preloadInterstitialAd();
       preloadAppOpenAd();
     } catch (error) {
       logger.warn('AdMob init failed', error);
+      umpCanRequestAds = false;
       initPromise = null;
     }
   })();
@@ -194,6 +223,7 @@ export function teardownAdMob(): void {
   appOpenShowing = false;
   initialized = false;
   initPromise = null;
+  umpCanRequestAds = false;
   closedListeners.clear();
   appOpenClosedListeners.clear();
 }

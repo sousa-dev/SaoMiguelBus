@@ -5,7 +5,9 @@
 ---
 
 ## 1. Purpose
-First-run (and re-consent) privacy gate: explain data use, let the user Accept all / Reject non-essential / customize purposes, before GA/Umami/Ads initialize. Legal + first impression.
+First-run (and re-consent) privacy gate: explain data use, let the user Accept all / Reject non-essential / customize purposes, before GA/Umami initialize. Legal + first impression.
+
+**Ad model:** The free app is ad-supported. The `ads` toggle opts into **personalized** AdMob only — non-personalized ads still appear on the free tier when personalization is off. Premium removes ads entirely.
 
 ## 2. Current state
 `ScrollView` with title, intro, four `PurposeRow`s (Switch) — strictly necessary (locked), analytics, ads, personalization — and three buttons (Accept all / Reject non-essential / Save choices). **Copy is hardcoded English** ("Privacy & consent", etc.) — violates the i18n rule; rebrand fixes this. Otherwise functional.
@@ -27,6 +29,7 @@ First-run (and re-consent) privacy gate: explain data use, let the user Accept a
 - **Busy:** buttons disabled + loading while persisting + syncing `ConsentRecord`.
 - **Offline:** allow local decision; sync deferred; show subtle `Banner` that choices save locally and sync later.
 - **Re-consent (policy change):** same screen, pre-filled with stored purposes; entry from Settings.
+- **Google ad preferences:** Settings → "Manage ad preferences" → `AdsConsent.showPrivacyOptionsForm()` (native builds only).
 
 ## 7. Motion & haptics
 - Gentle hero/content fade-in; haptic on commit.

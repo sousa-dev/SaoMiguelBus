@@ -67,10 +67,10 @@ No WebView / `react-native-webview` — native cards only; commission via server
 
 ## 4. Consent gate (CMP)
 
-- `ConsentGate` wraps the app; on first launch (or policy change) it shows `onboarding/consent.tsx` **before** initializing GA/Umami/AdMob/AdSense or sending any `AnalyticsEvent`.
+- `ConsentGate` wraps the app; on first launch (or policy change) it shows `onboarding/consent.tsx` **before** initializing GA/Umami or sending any `AnalyticsEvent`.
 - Consent stored locally + synced to backend `ConsentRecord`.
-- Analytics/Ads SDKs are lazy-initialized only for granted purposes and torn down on withdrawal.
-- Settings has a "Privacy" screen for re-consent, data export, and deletion (DSAR — [`07`](./07-gdpr-data-governance.md)).
+- Analytics SDKs lazy-init only when `analytics` purpose is granted. AdMob lazy-inits for **non-premium** users after CMP decision; Google UMP decides NPA vs personalized. SDK tears down on premium upgrade or when UMP denies `canRequestAds`.
+- Settings has consent re-prompt, Google ad preferences (`showPrivacyOptionsForm`), data export, and deletion (DSAR — [`07`](./07-gdpr-data-governance.md)).
 
 ## 5. Configuration (fixes legacy hardcoding)
 

@@ -1,4 +1,4 @@
-import { Download, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
+import { Download, Megaphone, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
@@ -8,6 +8,8 @@ import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
+import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
+import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
 import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
@@ -157,7 +159,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const appVersion = Constants.expoConfig?.version ?? '5.1.0';
+  const appVersion = Constants.expoConfig?.version ?? '5.1.2';
 
   return (
     <Screen withStackHeader collapsable={false}>
@@ -210,6 +212,13 @@ export default function SettingsScreen() {
             title={t('settingsManageConsent')}
             onPress={() => router.push('/onboarding/consent')}
           />
+          {isAdMobNativeAvailable() ? (
+            <ListRow
+              icon={Megaphone}
+              title={t('settingsManageAdPreferences')}
+              onPress={() => void showAdPrivacyOptionsForm()}
+            />
+          ) : null}
           <ListRow
             icon={Download}
             title={t('settingsExportData')}

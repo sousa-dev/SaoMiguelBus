@@ -3,6 +3,7 @@ title: "feat: Transit first-party ads + webapp premium gating"
 type: feat
 status: active
 date: 2026-06-04
+superseded_admob_gating: docs/plans/2026-06-15-001-feat-admob-npa-mandatory-free-tier-plan.md
 ---
 
 # feat: Transit first-party ads + webapp premium gating
