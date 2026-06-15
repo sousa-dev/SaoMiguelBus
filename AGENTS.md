@@ -12,3 +12,8 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 - App Open ads show on cold start (post-consent) and foreground return for non-premium users with `ads` consent; dev builds use Google test App Open units.
 - Defaults reuse the legacy Android AdMob account IDs from the old native app.
 - QA: `eas build --profile development` or `npx expo run:ios` / `run:android` after prebuild.
+
+## Premium / monetization copy
+
+- Never hardcode subscription prices in CTA labels or upsell banner/modal copy — RevenueCat's hosted paywall owns pricing (store-managed, can change remotely).
+- Tour affiliate prices from the Viator API on book buttons/cards are exempt.
