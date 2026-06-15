@@ -1,11 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 
+import { resolveAdSlotKind } from '@/features/ads/lib/ad-slot';
+import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-runtime';
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
 import { track } from '@/lib/analytics';
 import { fetchAd, recordAdClick } from '@/lib/api';
-import { canShowFirstPartyAds } from '@/lib/consent-store';
+import { canShowExternalAds, canShowFirstPartyAds } from '@/lib/consent-store';
 import { logger } from '@/lib/logger';
 import { useNetwork } from '@/lib/network-provider';
 import { getAnalyticsPlatform } from '@/lib/platform';
@@ -13,7 +15,7 @@ import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 /**
- * Fetch a single first-party ad for a slot and expose a tap handler.
+ * Fetch a single ad slot with first-party priority and AdMob banner fallback.
  *
  * Suppressed (no network call) for premium users and while offline. Each slot
  * gets its own query key so multiple banners on the same surface rotate
@@ -25,9 +27,9 @@ export function useAd(on: string, slot: string | number = 'top') {
   const queryClient = useQueryClient();
   const platform = getAnalyticsPlatform();
   const enabled = canShowFirstPartyAds(isPremium) && isOnline;
+  const canShowAdMob =
+    enabled && canShowExternalAds() && Platform.OS !== 'web' && isAdMobNativeAvailable();
 
-  // Drop cached creatives when ads are suppressed (premium / offline). Otherwise
-  // React Query keeps stale `data` while `enabled` is false and banners still render.
   useEffect(() => {
     if (!enabled) {
       queryClient.removeQueries({ queryKey: ['ad'] });
@@ -43,6 +45,12 @@ export function useAd(on: string, slot: string | number = 'top') {
   });
 
   const ad = enabled ? (query.data ?? null) : null;
+  const kind = resolveAdSlotKind({
+    enabled,
+    firstParty: ad,
+    fetched: query.isFetched,
+    canShowAdMob,
+  });
 
   const openAd = useCallback(async () => {
     if (!ad) {
@@ -61,5 +69,5 @@ export function useAd(on: string, slot: string | number = 'top') {
     }
   }, [ad, on]);
 
-  return { ad, openAd, enabled };
+  return { kind, ad, openAd, enabled, on, slot };
 }

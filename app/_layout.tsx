@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,6 +14,8 @@ import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
+import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
+import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
@@ -37,11 +39,20 @@ function AppStatusBar() {
   return <StatusBar style={theme.isDark ? 'light' : 'dark'} />;
 }
 
-function AppShell() {
+function AppShell({ appReady }: { appReady: boolean }) {
   const { data: bootstrap } = useBootstrap();
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);
+  const splashDismissedRef = React.useRef(false);
+
+  const dismissSplash = React.useCallback(() => {
+    if (splashDismissedRef.current) {
+      return;
+    }
+    splashDismissedRef.current = true;
+    void SplashScreen.hideAsync();
+  }, []);
 
   // Load the secure auth token at boot, then keep entitlement in sync.
   useEffect(() => {
@@ -49,6 +60,7 @@ function AppShell() {
   }, []);
   useEntitlementSync();
   useRevenueCatBootstrap();
+  useAdMobInit();
 
   useEffect(() => {
     void rehydrateThemePrefs();
@@ -112,6 +124,7 @@ function AppShell() {
           <GlobalOfflineBanner />
           <PremiumOfflinePrompt />
         </ConsentGate>
+        <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
       </ThemeProvider>
     </SafeAreaProvider>
   );
@@ -128,12 +141,6 @@ export default function RootLayout() {
     }
   }, [error]);
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
   if (!loaded) {
     return null;
   }
@@ -141,7 +148,7 @@ export default function RootLayout() {
   return (
     <AppQueryProvider>
       <NetworkProvider>
-        <AppShell />
+        <AppShell appReady={loaded} />
       </NetworkProvider>
     </AppQueryProvider>
   );

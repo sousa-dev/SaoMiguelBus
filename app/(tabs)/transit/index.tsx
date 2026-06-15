@@ -11,6 +11,7 @@ import { Bus } from 'lucide-react-native';
 
 import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
+import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
@@ -55,6 +56,7 @@ export default function TransitScreen() {
   const [date, setDate] = useState(() => new Date());
   const [time, setTime] = useState(DEFAULT_SEARCH_TIME);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [interstitialTrigger, setInterstitialTrigger] = useState(0);
 
   useEffect(() => {
     const nextOrigin = searchParam(params.origin);
@@ -94,6 +96,13 @@ export default function TransitScreen() {
       addRecentSearch({ origin, destination, day, time });
     }
   }, [search.data, searchEnabled, origin, destination, day, time, addRecentSearch]);
+
+  useEffect(() => {
+    if (!searchEnabled || search.isFetching) {
+      return;
+    }
+    setInterstitialTrigger((value) => value + 1);
+  }, [searchEnabled, search.isFetching, search.status]);
 
   const runSearch = () => {
     if (!origin || !destination || !canSearchOffline) {
@@ -150,6 +159,8 @@ export default function TransitScreen() {
           <ActiveTrackingSection />
           <PinnedRoutesSection onSelect={(o, d) => applySearch(o, d)} />
 
+          <AdBanner on="home" slot="top" />
+
           {!stopsLoading || !isOnline ? (
             <TransitPlannerCard
               origin={origin}
@@ -185,8 +196,6 @@ export default function TransitScreen() {
             />
           ) : null}
 
-          {hasResults ? <AdBanner on="home" slot="top" /> : null}
-
           {hasResults && search.data ? (
             <RouteResults
               results={search.data}
@@ -200,6 +209,10 @@ export default function TransitScreen() {
           {showInstructions ? <TransitInstructionCard /> : null}
         </TransitWebShell>
       </ScrollView>
+      <InterstitialOrchestrator
+        trigger={interstitialTrigger}
+        ready={searchEnabled && !search.isFetching}
+      />
     </Screen>
   );
 }

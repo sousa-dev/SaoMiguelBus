@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AdMobBanner } from '@/features/ads/components/AdMobBanner';
 import { useAd } from '@/features/ads/hooks/useAd';
 import { track } from '@/lib/analytics';
 import { radius, space, typography } from '@/lib/tokens';
@@ -15,19 +16,18 @@ type Props = {
 };
 
 /**
- * First-party SMB banner: image + outbound link only. No dismiss control, no
- * subscribe CTA, no interstitial. Renders nothing for premium users, offline,
- * or when no ad is available — so it never reserves layout space.
+ * Hybrid SMB banner: first-party image when available, otherwise AdMob adaptive
+ * banner. Renders nothing for premium users, offline, or when neither source
+ * has fill — so it never reserves layout space.
  */
 export function AdBanner({ on, slot }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { ad, openAd, enabled } = useAd(on, slot);
+  const { kind, ad, openAd } = useAd(on, slot);
   const [aspectRatio, setAspectRatio] = useState(4);
-  const show = enabled && ad != null;
 
   useEffect(() => {
-    if (!show || !ad?.media) {
+    if (kind !== 'first-party' || !ad?.media) {
       return;
     }
     let cancelled = false;
@@ -43,16 +43,20 @@ export function AdBanner({ on, slot }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ad?.media, show]);
+  }, [ad?.media, kind]);
 
   useEffect(() => {
-    if (!show || ad?.id == null) {
+    if (kind !== 'first-party' || ad?.id == null) {
       return;
     }
     track('transit', 'ad_impression', { on, adId: ad.id });
-  }, [ad?.id, on, show]);
+  }, [ad?.id, kind, on]);
 
-  if (!show || !ad) {
+  if (kind === 'admob') {
+    return <AdMobBanner on={on} slot={slot} />;
+  }
+
+  if (kind !== 'first-party' || !ad) {
     return null;
   }
 

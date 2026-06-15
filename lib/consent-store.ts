@@ -67,6 +67,11 @@ export function canShowExternalAds(): boolean {
   return decided && purposes.ads;
 }
 
+/** Whether AdMob SDK init and external ad slots are allowed. */
+export function shouldInitAdMob(isPremium: boolean): boolean {
+  return !isPremium && canShowExternalAds();
+}
+
 export const useConsentStore = create<ConsentState>()(
   persist(
     (set, get) => ({

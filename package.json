@@ -35,6 +35,7 @@
     "react-dom": "19.2.3",
     "react-i18next": "^17.0.8",
     "react-native": "0.85.3",
+    "react-native-google-mobile-ads": "^16.3.3",
     "react-native-maps": "1.27.2",
     "react-native-purchases": "^10.2.2",
     "react-native-purchases-ui": "^10.2.2",

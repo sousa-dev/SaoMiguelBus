@@ -18,7 +18,7 @@ export function PremiumHeaderButton() {
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
 
-  const label = isPremium ? t('premiumHeaderButtonActive') : t('premiumGoPremium');
+  const label = isPremium ? t('premiumHeaderButtonActive') : t('removeAdsButton');
   const iconColor = isPremium ? theme.onAccent : theme.accent;
   const textColor = iconColor;
 
