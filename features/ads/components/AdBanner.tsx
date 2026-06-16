@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AdMobBanner } from '@/features/ads/components/AdMobBanner';
+import { InternalAdBanner } from '@/features/ads/components/InternalAdBanner';
 import { useAd } from '@/features/ads/hooks/useAd';
 import { track } from '@/lib/analytics';
 import { radius, space, typography } from '@/lib/tokens';
@@ -16,14 +17,13 @@ type Props = {
 };
 
 /**
- * Hybrid SMB banner: first-party image when available, otherwise AdMob adaptive
- * banner. Renders nothing for premium users, offline, or when neither source
- * has fill — so it never reserves layout space.
+ * Hybrid SMB banner: first-party image → AdMob → internal fallback.
+ * Renders nothing for premium users or when no tier has fill.
  */
 export function AdBanner({ on, slot }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { kind, ad, openAd } = useAd(on, slot);
+  const { kind, ad, internalCreative, openAd } = useAd(on, slot);
   const [aspectRatio, setAspectRatio] = useState(4);
 
   useEffect(() => {
@@ -54,6 +54,10 @@ export function AdBanner({ on, slot }: Props) {
 
   if (kind === 'admob') {
     return <AdMobBanner on={on} slot={slot} />;
+  }
+
+  if (kind === 'internal' && internalCreative) {
+    return <InternalAdBanner creative={internalCreative} on={on} slot={slot} />;
   }
 
   if (kind !== 'first-party' || !ad) {

@@ -1,16 +1,9 @@
 import { Crown } from 'lucide-react-native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Image,
-  Linking,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Image, Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ModalSafeArea } from '@/components/ui/ModalSafeArea';
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
@@ -52,19 +45,29 @@ export function FirstPartyInterstitialModal({ visible, ad, onDismiss }: Props) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
-      <View style={styles.backdrop}>
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Pressable
-            onPress={onDismiss}
-            accessibilityRole="button"
-            accessibilityLabel={t('close')}
-            style={styles.closeBtn}
-          >
-            <Text style={[styles.closeText, { color: theme.muted }]}>×</Text>
-          </Pressable>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onDismiss}
+    >
+      <View style={[styles.fullscreen, { backgroundColor: theme.background }]}>
+        <ModalSafeArea style={styles.safe}>
+          <View style={styles.header}>
+            <View style={[styles.adBadge, { backgroundColor: theme.primary }]}>
+              <Text style={[styles.adBadgeText, { color: theme.onPrimary }]}>{t('transitAdLabel')}</Text>
+            </View>
+            <Pressable
+              onPress={onDismiss}
+              accessibilityRole="button"
+              accessibilityLabel={t('close')}
+              style={styles.closeBtn}
+            >
+              <Text style={[styles.closeText, { color: theme.muted }]}>×</Text>
+            </Pressable>
+          </View>
 
-          <Pressable onPress={onAdPress} accessibilityRole="link">
+          <Pressable onPress={onAdPress} accessibilityRole="link" style={styles.imageWrap}>
             <Image
               source={{ uri: ad.media }}
               style={styles.banner}
@@ -73,9 +76,9 @@ export function FirstPartyInterstitialModal({ visible, ad, onDismiss }: Props) {
             />
           </Pressable>
 
-          <View style={styles.ctaBlock}>
+          <View style={styles.footer}>
             <View style={styles.crownRow}>
-              <Crown size={18} color="#F59E0B" strokeWidth={2.5} />
+              <Crown size={22} color="#F59E0B" strokeWidth={2.5} />
               <Text style={[styles.title, { color: theme.text }]}>{t('upgradeForBetterTitle')}</Text>
             </View>
             <Text style={[styles.body, { color: theme.muted }]}>{t('interstitialAdDescription')}</Text>
@@ -94,42 +97,57 @@ export function FirstPartyInterstitialModal({ visible, ad, onDismiss }: Props) {
               </Text>
             </Pressable>
           </View>
-        </View>
+        </ModalSafeArea>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  fullscreen: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'center',
-    padding: space.lg,
   },
-  card: {
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-    padding: space.md,
-    gap: space.md,
+  safe: {
+    flex: 1,
+    paddingHorizontal: space.lg,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  adBadge: {
+    paddingHorizontal: space.xs,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+  adBadgeText: { ...typography.overline, fontSize: 9, letterSpacing: 0.8 },
   closeBtn: {
-    alignSelf: 'flex-end',
-    padding: space.xs,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
-    fontSize: 28,
-    lineHeight: 28,
+    fontSize: 32,
+    lineHeight: 32,
+    fontWeight: '300',
+  },
+  imageWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    marginVertical: space.md,
   },
   banner: {
     width: '100%',
-    height: 120,
+    height: '100%',
+    maxHeight: 420,
     borderRadius: radius.md,
   },
-  ctaBlock: {
+  footer: {
     gap: space.sm,
     alignItems: 'center',
+    paddingBottom: space.md,
   },
   crownRow: {
     flexDirection: 'row',
@@ -138,25 +156,27 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.label,
+    fontSize: 16,
     textAlign: 'center',
   },
   body: {
     ...typography.body,
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
   },
   primaryBtn: {
     width: '100%',
     borderRadius: radius.md,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     alignItems: 'center',
     marginTop: space.xs,
   },
   primaryBtnText: {
     ...typography.label,
+    fontSize: 16,
   },
   secondaryBtn: {
-    paddingVertical: space.xs,
+    paddingVertical: space.sm,
   },
   secondaryBtnText: {
     ...typography.caption,

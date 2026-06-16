@@ -23,8 +23,25 @@ describe('resolveAdSlotKind', () => {
         firstParty: sampleAd,
         fetched: true,
         canShowAdMob: true,
+        isOnline: true,
+        offlineInternalEligible: false,
       }),
       null,
+    );
+  });
+
+  it('prefers forced internal in DEV QA mode', () => {
+    assert.equal(
+      resolveAdSlotKind({
+        enabled: true,
+        forceInternal: true,
+        firstParty: sampleAd,
+        fetched: true,
+        canShowAdMob: true,
+        isOnline: true,
+        offlineInternalEligible: false,
+      }),
+      'internal',
     );
   });
 
@@ -35,6 +52,8 @@ describe('resolveAdSlotKind', () => {
         firstParty: sampleAd,
         fetched: true,
         canShowAdMob: true,
+        isOnline: true,
+        offlineInternalEligible: false,
       }),
       'first-party',
     );
@@ -47,30 +66,50 @@ describe('resolveAdSlotKind', () => {
         firstParty: null,
         fetched: true,
         canShowAdMob: true,
+        isOnline: true,
+        offlineInternalEligible: false,
       }),
       'admob',
     );
   });
 
-  it('falls back to AdMob for free users without personalized ads consent', () => {
-    assert.equal(
-      resolveAdSlotKind({
-        enabled: true,
-        firstParty: null,
-        fetched: true,
-        canShowAdMob: true,
-      }),
-      'admob',
-    );
-  });
-
-  it('returns null when first-party is empty and AdMob is not allowed', () => {
+  it('falls back to internal when online fetch is empty and AdMob unavailable', () => {
     assert.equal(
       resolveAdSlotKind({
         enabled: true,
         firstParty: null,
         fetched: true,
         canShowAdMob: false,
+        isOnline: true,
+        offlineInternalEligible: false,
+      }),
+      'internal',
+    );
+  });
+
+  it('falls back to internal offline when gate passes', () => {
+    assert.equal(
+      resolveAdSlotKind({
+        enabled: true,
+        firstParty: null,
+        fetched: false,
+        canShowAdMob: false,
+        isOnline: false,
+        offlineInternalEligible: true,
+      }),
+      'internal',
+    );
+  });
+
+  it('returns null offline when gate fails', () => {
+    assert.equal(
+      resolveAdSlotKind({
+        enabled: true,
+        firstParty: null,
+        fetched: false,
+        canShowAdMob: false,
+        isOnline: false,
+        offlineInternalEligible: false,
       }),
       null,
     );
@@ -83,6 +122,8 @@ describe('resolveAdSlotKind', () => {
         firstParty: null,
         fetched: false,
         canShowAdMob: true,
+        isOnline: true,
+        offlineInternalEligible: false,
       }),
       null,
     );

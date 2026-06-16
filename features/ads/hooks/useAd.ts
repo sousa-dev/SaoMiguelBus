@@ -1,10 +1,15 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Linking, Platform } from 'react-native';
 
+import { canShowInternalAdsOffline } from '@/features/ads/lib/ad-offline-gate';
 import { resolveAdSlotKind } from '@/features/ads/lib/ad-slot';
+import { shouldForceInternalAds } from '@/features/ads/lib/force-internal-ads';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-runtime';
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
+import { selectInternalCreative } from '@/features/ads/lib/internal-ads/select-creative';
+import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import { resolveEnabledModules } from '@/config/island';
 import { track } from '@/lib/analytics';
 import { fetchAd, recordAdClick } from '@/lib/api';
 import { canInitAdMob, canShowFirstPartyAds } from '@/lib/consent-store';
@@ -15,42 +20,63 @@ import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 /**
- * Fetch a single ad slot with first-party priority and AdMob banner fallback.
+ * Fetch a single ad slot: API first-party → AdMob → internal fallback.
  *
- * Suppressed (no network call) for premium users and while offline. Each slot
- * gets its own query key so multiple banners on the same surface rotate
- * independently, mirroring the webapp's per-slot fetch.
+ * Internal fallback works offline when premium state is reliably known, or
+ * when the DEV force-internal toggle is on.
  */
 export function useAd(on: string, slot: string | number = 'top') {
   const isPremium = usePremium();
   const { isOnline } = useNetwork();
   const queryClient = useQueryClient();
   const platform = getAnalyticsPlatform();
-  const enabled = canShowFirstPartyAds(isPremium) && isOnline;
+  const { data: bootstrap } = useBootstrapCached();
+  const forceInternal = shouldForceInternalAds();
+  const showAds = canShowFirstPartyAds(isPremium);
+  const offlineInternalEligible = canShowInternalAdsOffline(isPremium);
+  const onlineFetchEnabled = showAds && isOnline && !forceInternal;
   const canShowAdMob =
-    enabled && canInitAdMob(isPremium) && Platform.OS !== 'web' && isAdMobNativeAvailable();
+    showAds &&
+    !forceInternal &&
+    canInitAdMob(isPremium) &&
+    Platform.OS !== 'web' &&
+    isAdMobNativeAvailable();
+
+  const enabledModuleKeys = useMemo(
+    () => resolveEnabledModules(bootstrap?.island?.enabledModules),
+    [bootstrap?.island?.enabledModules],
+  );
 
   useEffect(() => {
-    if (!enabled) {
-      queryClient.removeQueries({ queryKey: ['ad'] });
+    if (!onlineFetchEnabled) {
+      queryClient.removeQueries({ queryKey: ['ad', on, platform, slot] });
     }
-  }, [enabled, queryClient]);
+  }, [onlineFetchEnabled, on, platform, queryClient, slot]);
 
   const query = useQuery<AdPayload | null>({
     queryKey: ['ad', on, platform, slot],
     queryFn: () => fetchAd({ on, platform }),
-    enabled,
+    enabled: onlineFetchEnabled,
     staleTime: 1000 * 60,
     retry: false,
   });
 
-  const ad = enabled ? (query.data ?? null) : null;
+  const ad = onlineFetchEnabled ? (query.data ?? null) : null;
+  const slotKey = `${on}:${slot}`;
   const kind = resolveAdSlotKind({
-    enabled,
+    enabled: showAds,
+    forceInternal,
     firstParty: ad,
-    fetched: query.isFetched,
+    fetched: forceInternal || !isOnline || query.isFetched,
     canShowAdMob,
+    isOnline,
+    offlineInternalEligible,
   });
+
+  const internalCreative =
+    kind === 'internal'
+      ? selectInternalCreative({ slotKey, enabledModuleKeys })
+      : null;
 
   const openAd = useCallback(async () => {
     if (!ad) {
@@ -69,5 +95,5 @@ export function useAd(on: string, slot: string | number = 'top') {
     }
   }, [ad, on]);
 
-  return { kind, ad, openAd, enabled, on, slot };
+  return { kind, ad, internalCreative, openAd, enabled: showAds, on, slot };
 }

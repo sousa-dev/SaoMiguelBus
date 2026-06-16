@@ -22,6 +22,46 @@ export type AppOpenPolicyDecision = {
   reason?: string;
 };
 
+export type InternalAppOpenPolicyContext = {
+  isPremium: boolean;
+  consentDecided: boolean;
+  onConsentScreen: boolean;
+  isInternalFullscreenVisible: boolean;
+  isInterstitialShowing: boolean;
+  isFirstPartyInterstitialVisible: boolean;
+  lastFullScreenAdAt: number | null;
+};
+
+export function evaluateInternalAppOpenPolicy(
+  context: InternalAppOpenPolicyContext,
+  nowMs: number,
+): AppOpenPolicyDecision {
+  if (context.isPremium) {
+    return { show: false, reason: 'premium' };
+  }
+  if (!context.consentDecided) {
+    return { show: false, reason: 'consent_undecided' };
+  }
+  if (context.onConsentScreen) {
+    return { show: false, reason: 'consent_screen' };
+  }
+  if (context.isInternalFullscreenVisible) {
+    return { show: false, reason: 'already_showing' };
+  }
+  if (context.isInterstitialShowing || context.isFirstPartyInterstitialVisible) {
+    return { show: false, reason: 'other_fullscreen_active' };
+  }
+
+  if (context.lastFullScreenAdAt != null) {
+    const elapsed = nowMs - context.lastFullScreenAdAt;
+    if (elapsed < APP_OPEN_INTERSTITIAL_COOLDOWN_MS) {
+      return { show: false, reason: 'cooldown' };
+    }
+  }
+
+  return { show: true };
+}
+
 export function evaluateAppOpenPolicy(
   context: AppOpenPolicyContext,
   nowMs: number,

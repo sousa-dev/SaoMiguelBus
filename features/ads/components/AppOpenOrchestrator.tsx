@@ -1,12 +1,15 @@
 import { useSegments } from 'expo-router';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 
+import { InternalFullscreenAdModal } from '@/features/ads/components/InternalFullscreenAdModal';
 import {
   evaluateAppOpenPolicy,
+  evaluateInternalAppOpenPolicy,
   type AppOpenTrigger,
 } from '@/features/ads/lib/app-open-policy';
 import { loadLastFullScreenAdAt, markFullScreenAdShown } from '@/features/ads/lib/app-open-storage';
+import { shouldForceInternalAds } from '@/features/ads/lib/force-internal-ads';
 import {
   initializeAdMob,
   isAdMobCanRequestAds,
@@ -18,9 +21,17 @@ import {
   onAppOpenClosed,
   showAppOpenAd,
 } from '@/features/ads/lib/admob-runtime';
-import { isFirstPartyInterstitialVisible } from '@/features/ads/lib/fullscreen-ad-state';
+import {
+  isFirstPartyInterstitialVisible,
+  isInternalFullscreenAdVisible,
+  setInternalFullscreenAdVisible,
+} from '@/features/ads/lib/fullscreen-ad-state';
+import { selectInternalCreative } from '@/features/ads/lib/internal-ads/select-creative';
+import type { InternalAdCreative } from '@/features/ads/lib/internal-ads/types';
+import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import { resolveEnabledModules } from '@/config/island';
 import { track } from '@/lib/analytics';
-import { canInitAdMob, useConsentStore } from '@/lib/consent-store';
+import { canInitAdMob, canShowFirstPartyAds, useConsentStore } from '@/lib/consent-store';
 import { usePremium } from '@/lib/premium-store';
 
 const LOAD_TIMEOUT_MS = 3_000;
@@ -31,7 +42,7 @@ type Props = {
   onSplashDismiss: () => void;
 };
 
-function isEligible(isPremium: boolean): boolean {
+function isAdMobEligible(isPremium: boolean): boolean {
   return Platform.OS !== 'web' && isAdMobNativeAvailable() && canInitAdMob(isPremium);
 }
 
@@ -51,12 +62,96 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
   const consentDecided = useConsentStore((s) => s.decided);
   const segments = useSegments();
   const onConsentScreen = segments[0] === 'onboarding';
+  const { data: bootstrap } = useBootstrapCached();
+  const enabledModuleKeys = useMemo(
+    () => resolveEnabledModules(bootstrap?.island?.enabledModules),
+    [bootstrap?.island?.enabledModules],
+  );
+
+  const [internalCreative, setInternalCreative] = useState<InternalAdCreative | null>(null);
+  const [showInternal, setShowInternal] = useState(false);
 
   const runningRef = useRef(false);
   const coldStartDoneRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  const eligible = isEligible(isPremium);
+  const admobEligible = isAdMobEligible(isPremium);
+  const canShowAds = canShowFirstPartyAds(isPremium);
+
+  const dismissInternal = useCallback(() => {
+    setShowInternal(false);
+    setInternalCreative(null);
+    setInternalFullscreenAdVisible(false);
+  }, []);
+
+  const attemptInternalAppOpen = useCallback(
+    async (trigger: AppOpenTrigger, dismissSplashOnComplete: boolean) => {
+      if (!canShowAds || Platform.OS === 'web') {
+        if (dismissSplashOnComplete) {
+          onSplashDismiss();
+        }
+        return false;
+      }
+
+      const lastFullScreenAdAt = await loadLastFullScreenAdAt();
+      const decision = evaluateInternalAppOpenPolicy(
+        {
+          isPremium,
+          consentDecided,
+          onConsentScreen,
+          isInternalFullscreenVisible: isInternalFullscreenAdVisible() || showInternal,
+          isInterstitialShowing: isInterstitialShowing(),
+          isFirstPartyInterstitialVisible: isFirstPartyInterstitialVisible(),
+          lastFullScreenAdAt,
+        },
+        Date.now(),
+      );
+
+      if (!decision.show) {
+        if (dismissSplashOnComplete) {
+          onSplashDismiss();
+        }
+        return false;
+      }
+
+      const creative = selectInternalCreative({
+        slotKey: `app_open:${trigger}`,
+        enabledModuleKeys,
+      });
+      if (!creative) {
+        if (dismissSplashOnComplete) {
+          onSplashDismiss();
+        }
+        return false;
+      }
+
+      setInternalCreative(creative);
+      setShowInternal(true);
+      setInternalFullscreenAdVisible(true);
+      await markFullScreenAdShown(Date.now());
+      track('transit', 'internal_ad_impression', {
+        creativeId: creative.id,
+        kind: creative.kind,
+        moduleKey: creative.moduleKey,
+        surface: 'app_open',
+        trigger,
+      });
+
+      if (dismissSplashOnComplete) {
+        onSplashDismiss();
+      }
+      return true;
+    },
+    [
+      canShowAds,
+      consentDecided,
+      enabledModuleKeys,
+      isPremium,
+      onConsentScreen,
+      onSplashDismiss,
+      showInternal,
+    ],
+  );
 
   const attemptShow = useCallback(
     async (trigger: AppOpenTrigger, dismissSplashOnComplete: boolean) => {
@@ -66,70 +161,72 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       runningRef.current = true;
 
       try {
-        if (!eligible) {
+        if (!canShowAds || !consentDecided || onConsentScreen) {
           if (dismissSplashOnComplete) {
             onSplashDismiss();
           }
           return;
         }
 
-        await initializeAdMob();
-
-        if (!isAdMobInitialized()) {
-          if (dismissSplashOnComplete) {
-            onSplashDismiss();
-          }
+        if (shouldForceInternalAds()) {
+          await attemptInternalAppOpen(trigger, dismissSplashOnComplete);
           return;
         }
 
-        if (!isAppOpenAdLoaded()) {
-          await waitForAppOpenLoaded(LOAD_TIMEOUT_MS);
-        }
+        if (admobEligible) {
+          await initializeAdMob();
 
-        const lastFullScreenAdAt = await loadLastFullScreenAdAt();
-        const decision = evaluateAppOpenPolicy(
-          {
-            isPremium,
-            canRequestAds: isAdMobCanRequestAds(),
-            consentDecided,
-            onConsentScreen,
-            isAdMobReady: isAdMobInitialized(),
-            isAppOpenLoaded: isAppOpenAdLoaded(),
-            isAppOpenShowing: isAppOpenShowing(),
-            isInterstitialShowing: isInterstitialShowing(),
-            isFirstPartyInterstitialVisible: isFirstPartyInterstitialVisible(),
-            lastFullScreenAdAt,
-            trigger,
-          },
-          Date.now(),
-        );
+          if (isAdMobInitialized()) {
+            if (!isAppOpenAdLoaded()) {
+              await waitForAppOpenLoaded(LOAD_TIMEOUT_MS);
+            }
 
-        if (!decision.show) {
-          if (dismissSplashOnComplete) {
-            onSplashDismiss();
+            const lastFullScreenAdAt = await loadLastFullScreenAdAt();
+            const decision = evaluateAppOpenPolicy(
+              {
+                isPremium,
+                canRequestAds: isAdMobCanRequestAds(),
+                consentDecided,
+                onConsentScreen,
+                isAdMobReady: isAdMobInitialized(),
+                isAppOpenLoaded: isAppOpenAdLoaded(),
+                isAppOpenShowing: isAppOpenShowing(),
+                isInterstitialShowing: isInterstitialShowing(),
+                isFirstPartyInterstitialVisible: isFirstPartyInterstitialVisible(),
+                lastFullScreenAdAt,
+                trigger,
+              },
+              Date.now(),
+            );
+
+            if (decision.show) {
+              const shown = showAppOpenAd();
+              if (shown) {
+                await markFullScreenAdShown(Date.now());
+                track('transit', 'ad_mob_app_open_shown', { trigger });
+                if (dismissSplashOnComplete) {
+                  onSplashDismiss();
+                }
+                return;
+              }
+            }
           }
-          return;
         }
 
-        const shown = showAppOpenAd();
-        if (!shown) {
-          if (dismissSplashOnComplete) {
-            onSplashDismiss();
-          }
-          return;
-        }
-
-        await markFullScreenAdShown(Date.now());
-        track('transit', 'ad_mob_app_open_shown', { trigger });
-
-        if (dismissSplashOnComplete) {
-          onSplashDismiss();
-        }
+        await attemptInternalAppOpen(trigger, dismissSplashOnComplete);
       } finally {
         runningRef.current = false;
       }
     },
-    [eligible, isPremium, consentDecided, onConsentScreen, onSplashDismiss],
+    [
+      admobEligible,
+      attemptInternalAppOpen,
+      canShowAds,
+      consentDecided,
+      isPremium,
+      onConsentScreen,
+      onSplashDismiss,
+    ],
   );
 
   useEffect(() => {
@@ -147,7 +244,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       return;
     }
 
-    if (!eligible) {
+    if (!canShowAds) {
       coldStartDoneRef.current = true;
       onSplashDismiss();
       return;
@@ -155,7 +252,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
     coldStartDoneRef.current = true;
     void attemptShow('cold_start', true);
-  }, [appReady, consentDecided, onConsentScreen, eligible, attemptShow, onSplashDismiss]);
+  }, [appReady, attemptShow, canShowAds, consentDecided, onConsentScreen, onSplashDismiss]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -176,7 +273,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
     return () => {
       subscription.remove();
     };
-  }, [appReady, consentDecided, onConsentScreen, attemptShow]);
+  }, [appReady, attemptShow, consentDecided, onConsentScreen]);
 
   useEffect(() => {
     return onAppOpenClosed(() => {
@@ -184,5 +281,12 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
     });
   }, []);
 
-  return null;
+  return internalCreative ? (
+    <InternalFullscreenAdModal
+      visible={showInternal}
+      creative={internalCreative}
+      surface="app_open"
+      onDismiss={dismissInternal}
+    />
+  ) : null;
 }

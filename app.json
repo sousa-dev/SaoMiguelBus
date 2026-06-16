@@ -1,4 +1,9 @@
 {
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-8246676797736648~5996375679",
+    "ios_app_id": "ca-app-pub-8246676797736648~6167653791",
+    "delay_app_measurement_init": true
+  },
   "expo": {
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",

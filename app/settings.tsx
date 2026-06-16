@@ -8,6 +8,7 @@ import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
+import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
 import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
@@ -55,6 +56,8 @@ export default function SettingsScreen() {
   const setLandingPageKey = useHubStore((s) => s.setLandingPageKey);
   const premiumDevOverride = usePremiumStore((s) => s.devOverride);
   const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
+  const forceInternalAds = useAdsDevStore((s) => s.forceInternalAdsFallback);
+  const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
 
@@ -251,6 +254,21 @@ export default function SettingsScreen() {
                     value={premiumDevOverride}
                     onValueChange={(value) => {
                       setPremiumDevOverride(value);
+                      void Haptics.selectionAsync();
+                    }}
+                  />
+                }
+              />
+              <ListRow
+                icon={Megaphone}
+                title={t('settingsForceInternalAdsToggle')}
+                subtitle={t('settingsForceInternalAdsToggleHint')}
+                showChevron={false}
+                trailing={
+                  <Switch
+                    value={forceInternalAds}
+                    onValueChange={(value) => {
+                      setForceInternalAds(value);
                       void Haptics.selectionAsync();
                     }}
                   />

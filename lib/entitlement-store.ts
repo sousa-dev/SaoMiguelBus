@@ -6,6 +6,22 @@ import type { Entitlement } from '@/lib/types';
 
 const ENTITLEMENT_KEY = 'azores_hub_entitlement';
 
+let entitlementStoreHydrated = false;
+
+export function isEntitlementStoreHydrated(): boolean {
+  return entitlementStoreHydrated;
+}
+
+/** Test-only reset. */
+export function resetEntitlementHydrationForTests(): void {
+  entitlementStoreHydrated = false;
+}
+
+/** Test-only: simulate AsyncStorage rehydration complete. */
+export function markEntitlementStoreHydratedForTests(): void {
+  entitlementStoreHydrated = true;
+}
+
 /** How long an optimistic (post-purchase) premium unlock is trusted over a lagging backend. */
 export const OPTIMISTIC_GRACE_MS = 1000 * 60 * 5;
 
@@ -114,6 +130,9 @@ export const useEntitlementStore = create<EntitlementState>()(
           };
         }
         return persisted as EntitlementState;
+      },
+      onRehydrateStorage: () => () => {
+        entitlementStoreHydrated = true;
       },
     },
   ),

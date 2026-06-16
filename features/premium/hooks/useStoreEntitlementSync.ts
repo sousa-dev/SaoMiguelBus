@@ -2,6 +2,7 @@ import Purchases from 'react-native-purchases';
 import { useEffect } from 'react';
 
 import { optimisticEntitlementFromCustomerInfo } from '@/features/premium/lib/optimistic-entitlement';
+import { markStoreEntitlementSyncCompleted } from '@/features/premium/lib/store-entitlement-sync-state';
 import { useEntitlementStore } from '@/lib/entitlement-store';
 import { isRevenueCatConfigured, onCustomerInfoUpdate } from '@/lib/revenuecat';
 
@@ -23,6 +24,8 @@ export function useStoreEntitlementSync() {
         reconcileFromStore(optimisticEntitlementFromCustomerInfo(info));
       } catch {
         // Non-fatal — premium may still come from persisted store state.
+      } finally {
+        markStoreEntitlementSyncCompleted();
       }
     };
 

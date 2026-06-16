@@ -63,6 +63,9 @@ const VARIANTS: CtaVariant[] = [
 
 const ROTATE_MS = 30_000;
 
+/** Hidden for now — top `AdBanner` + internal fallback cover the same upsell surface. */
+export const PREMIUM_SEARCH_CTA_ENABLED = false;
+
 function randomVariantIndex(): number {
   return Math.floor(Math.random() * VARIANTS.length);
 }
@@ -79,7 +82,8 @@ export function PremiumSearchCta() {
   const { openPaywall } = usePaywall();
   const [index, setIndex] = useState(randomVariantIndex);
 
-  const show = canShowFirstPartyAds(isPremium) && isOnline;
+  const show =
+    PREMIUM_SEARCH_CTA_ENABLED && canShowFirstPartyAds(isPremium) && isOnline;
 
   useEffect(() => {
     if (!show) {

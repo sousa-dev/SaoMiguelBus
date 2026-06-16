@@ -1,9 +1,16 @@
+const ADMOB_DEFAULTS = require('./config/admob-defaults');
+
 /** @type {import('expo/config').ConfigContext} */
 module.exports = ({ config }) => {
   const androidAppId =
-    process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID ?? 'ca-app-pub-8246676797736648~5996375679';
-  const iosAppId =
-    process.env.EXPO_PUBLIC_ADMOB_APP_ID_IOS ?? 'ca-app-pub-8246676797736648~5996375679';
+    process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID ?? ADMOB_DEFAULTS.appIdAndroid;
+  const iosAppId = process.env.EXPO_PUBLIC_ADMOB_APP_ID_IOS ?? ADMOB_DEFAULTS.appIdIos;
+
+  const googleMobileAdsJson = {
+    android_app_id: androidAppId,
+    ios_app_id: iosAppId,
+    delay_app_measurement_init: true,
+  };
 
   const plugins = [...(config.plugins ?? [])];
   const hasAdMobPlugin = plugins.some(
@@ -28,5 +35,6 @@ module.exports = ({ config }) => {
   return {
     ...config,
     plugins,
+    'react-native-google-mobile-ads': googleMobileAdsJson,
   };
 };

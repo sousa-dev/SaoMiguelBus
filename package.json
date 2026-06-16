@@ -59,10 +59,11 @@
     "start": "expo start --clear",
     "start:verbose": "EXPO_DEBUG=1 expo start --clear",
     "android": "expo start --android --clear",
+    "android:run": "adb uninstall --user 0 com.hsousa_apps.Autocarros 2>/dev/null || true; expo run:android",
     "ios": "expo run:ios",
     "ios:start": "expo start --ios --clear",
     "web": "expo start --web --clear",
-    "test:unit": "npx tsx --test __tests__/lib/*.test.ts"
+    "test:unit": "npx tsx --test __tests__/lib/*.test.ts __tests__/features/**/*.test.ts"
   },
   "private": true
 }
