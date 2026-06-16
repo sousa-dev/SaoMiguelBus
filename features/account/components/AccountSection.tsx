@@ -8,6 +8,7 @@ import { PremiumBadge } from '@/features/account/components/PremiumBadge';
 import { useAuth } from '@/features/account/hooks/useAuth';
 import { ListRow } from '@/components/ui/ListRow';
 import { confirmAction, notify } from '@/lib/confirm';
+import { usePremium } from '@/lib/premium-store';
 import { useAppTheme } from '@/lib/theme';
 import { space, typography } from '@/lib/tokens';
 
@@ -17,6 +18,7 @@ export function AccountSection() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, isSignedIn, logout, deleteAccount } = useAuth();
+  const isPremium = usePremium();
 
   const groupStyle = [styles.group, { backgroundColor: theme.card, borderColor: theme.border }];
 
@@ -74,7 +76,7 @@ export function AccountSection() {
           <ListRow
             icon={LogIn}
             title={t('authSignInCta')}
-            subtitle={t('authSignInSubtitle')}
+            subtitle={isPremium ? t('authSignInSubtitlePremium') : t('authSignInSubtitle')}
             onPress={() => router.push('/auth/sign-in')}
           />
         </View>

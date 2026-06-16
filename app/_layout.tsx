@@ -14,6 +14,7 @@ import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
+import { SaveSubscriptionPrompt } from '@/features/premium/components/SaveSubscriptionPrompt';
 import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
@@ -123,6 +124,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <AppSidebar />
           <GlobalOfflineBanner />
           <PremiumOfflinePrompt />
+          <SaveSubscriptionPrompt />
         </ConsentGate>
         <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
       </ThemeProvider>

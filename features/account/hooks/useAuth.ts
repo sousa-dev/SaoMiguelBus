@@ -37,7 +37,7 @@ export function useAuth() {
       }
     },
     onSuccess: async () => {
-      useEntitlementStore.getState().clearEntitlement();
+      useEntitlementStore.getState().clearBackendEntitlement();
       await queryClient.invalidateQueries({ queryKey: ['billing', 'entitlement'] });
     },
   });
@@ -45,8 +45,9 @@ export function useAuth() {
   const deleteAccountMutation = useMutation({
     mutationFn: deleteAccount,
     onSuccess: async () => {
-      // Account is gone server-side; drop the local session + cached entitlement.
-      useEntitlementStore.getState().clearEntitlement();
+      // Account is gone server-side; drop backend entitlement. Store entitlement
+      // reflects whatever RevenueCat reports for the device store account.
+      useEntitlementStore.getState().clearBackendEntitlement();
       await clearSession();
       await queryClient.invalidateQueries({ queryKey: ['billing', 'entitlement'] });
     },

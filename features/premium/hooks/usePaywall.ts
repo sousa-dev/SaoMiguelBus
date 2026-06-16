@@ -1,10 +1,9 @@
-import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 import Purchases from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
 import { useReconcileEntitlement } from '@/features/premium/hooks/useReconcileEntitlement';
-import { setPendingPaywall } from '@/features/premium/lib/paywall-intent';
+import { requestSaveSubscriptionPrompt } from '@/features/premium/lib/save-subscription-prompt';
 import { useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import {
@@ -17,24 +16,25 @@ import {
 /**
  * Imperative RevenueCat paywall presentation.
  *
- * - `openPaywall()` — explicit upsell. Requires sign-in first (so the purchase is
- *   attributed to the backend account); if signed out, routes to sign-in and
- *   resumes the paywall on success.
+ * - `openPaywall()` — explicit upsell. Opens the paywall directly (no sign-in
+ *   gate). After an anonymous purchase, offers to save the subscription to an
+ *   account for cross-device access.
  * - `presentIfNeeded()` — gate a premium feature; shows the paywall only when the
  *   user lacks the entitlement.
  *
  * Both reconcile entitlement after a purchase/restore.
  */
 export function usePaywall() {
-  const router = useRouter();
   const reconcile = useReconcileEntitlement();
-  const isSignedIn = useAuthStore((s) => Boolean(s.token));
 
-  const reconcileIfChanged = useCallback(
-    async (result: PAYWALL_RESULT) => {
+  const afterPaywallResult = useCallback(
+    async (result: PAYWALL_RESULT | null) => {
       if (result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED) {
         const info = await Purchases.getCustomerInfo();
         await reconcile(info);
+        if (result === PAYWALL_RESULT.PURCHASED && !useAuthStore.getState().token) {
+          requestSaveSubscriptionPrompt();
+        }
       }
       return result;
     },
@@ -49,12 +49,12 @@ export function usePaywall() {
     }
     try {
       const result = await RevenueCatUI.presentPaywall();
-      return reconcileIfChanged(result);
+      return afterPaywallResult(result);
     } catch (error) {
       logger.error('Paywall: present failed', error);
       return null;
     }
-  }, [reconcileIfChanged]);
+  }, [afterPaywallResult]);
 
   const presentIfNeeded = useCallback(async (): Promise<PAYWALL_RESULT | null> => {
     if (!isRevenueCatConfigured()) {
@@ -66,21 +66,16 @@ export function usePaywall() {
       const result = await RevenueCatUI.presentPaywallIfNeeded({
         requiredEntitlementIdentifier: PREMIUM_ENTITLEMENT_ID,
       });
-      return reconcileIfChanged(result);
+      return afterPaywallResult(result);
     } catch (error) {
       logger.error('Paywall: presentIfNeeded failed', error);
       return null;
     }
-  }, [reconcileIfChanged]);
+  }, [afterPaywallResult]);
 
   const openPaywall = useCallback(async () => {
-    if (!isSignedIn) {
-      setPendingPaywall(true);
-      router.push('/auth/sign-in');
-      return;
-    }
     await present();
-  }, [isSignedIn, present, router]);
+  }, [present]);
 
   return { openPaywall, present, presentIfNeeded };
 }

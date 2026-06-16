@@ -12,7 +12,6 @@ import {
 } from '@/lib/revenuecat';
 
 /** Sentinel errors surfaced to the UI for non-store failures. */
-export const SIGN_IN_REQUIRED = 'SIGN_IN_REQUIRED';
 export const IDENTITY_UNBOUND = 'IDENTITY_UNBOUND';
 
 /** The current RevenueCat offering (packages to display in a custom paywall). */
@@ -32,8 +31,9 @@ export function useOfferings() {
 /**
  * Purchase + restore actions. Both reconcile entitlement on success.
  *
- * Purchases are gated on the SDK identity matching the signed-in user so a
- * failed `logIn` can never mis-attribute a purchase to an anonymous id.
+ * Signed-in purchases are gated on the SDK identity matching the backend user so
+ * a failed `logIn` can never mis-attribute a purchase to an anonymous id.
+ * Signed-out purchases use the anonymous RevenueCat identity.
  */
 export function usePremiumPurchases() {
   const reconcile = useReconcileEntitlement();
@@ -41,13 +41,12 @@ export function usePremiumPurchases() {
   const purchase = useMutation({
     mutationFn: async (pkg: PurchasesPackage): Promise<CustomerInfo> => {
       const user = useAuthStore.getState().user;
-      if (!user) {
-        throw new Error(SIGN_IN_REQUIRED);
-      }
-      if (!(await isIdentityBound(user))) {
-        await bindRevenueCatIdentity(user);
+      if (user) {
         if (!(await isIdentityBound(user))) {
-          throw new Error(IDENTITY_UNBOUND);
+          await bindRevenueCatIdentity(user);
+          if (!(await isIdentityBound(user))) {
+            throw new Error(IDENTITY_UNBOUND);
+          }
         }
       }
       const { customerInfo } = await Purchases.purchasePackage(pkg);

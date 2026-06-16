@@ -1,5 +1,6 @@
-import { CreditCard, Crown, RotateCcw, Sparkles } from 'lucide-react-native';
+import { CreditCard, Crown, LogIn, RotateCcw, Sparkles } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -30,15 +31,12 @@ const MANAGE_KEY: Record<ManageVia, string> = {
 export function PremiumSettingsSection() {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const { isSignedIn } = useAuth();
   const entitlement = useEntitlement();
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { restore } = usePremiumPurchases();
-
-  if (!isSignedIn) {
-    return null;
-  }
 
   const manageAction = resolveManageAction({
     source: entitlement?.source ?? null,
@@ -108,6 +106,15 @@ export function PremiumSettingsSection() {
         {isPremium ? null : (
           <ListRow icon={Crown} title={t('premiumGoPremium')} onPress={() => void openPaywall()} />
         )}
+
+        {isPremium && !isSignedIn ? (
+          <ListRow
+            icon={LogIn}
+            title={t('premiumSignInToSync')}
+            subtitle={t('premiumSignInToSyncSubtitle')}
+            onPress={() => router.push('/auth/sign-in')}
+          />
+        ) : null}
 
         {showManageRow ? (
           <ListRow

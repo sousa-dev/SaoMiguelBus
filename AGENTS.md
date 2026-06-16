@@ -21,3 +21,11 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 
 - Never hardcode subscription prices in CTA labels or upsell banner/modal copy — RevenueCat's hosted paywall owns pricing (store-managed, can change remotely).
 - Tour affiliate prices from the Viator API on book buttons/cards are exempt.
+
+## RevenueCat (IAP)
+
+- Premium CTAs open the hosted paywall **without requiring sign-in**. Purchases work against RevenueCat's anonymous App User ID (backed by the Apple/Google store account); device premium is derived from `CustomerInfo` and persisted locally.
+- On sign-in/register, the SDK calls `Purchases.logIn(smb_user_<id>)` to transfer anonymous purchases to the backend account. **Dashboard requirement:** enable **transfer purchases to the new App User ID** (not "keep with original").
+- App User ID format: `smb_user_<django_user_id>` — must match backend `billing.services.REVENUECAT_APP_USER_ID_PREFIX`.
+- Env: `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`, optional `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` (default `Sao Miguel Hub Premium`).
+- Requires a dev client or EAS build — IAP does not run in Expo Go.

@@ -10,14 +10,16 @@ const ENTITLEMENT_KEY = 'azores_hub_entitlement';
 export const OPTIMISTIC_GRACE_MS = 1000 * 60 * 5;
 
 interface EntitlementState {
-  /** Last-known entitlement from the API. Persisted so offline premium keeps working. */
-  entitlement: Entitlement | null;
+  /** Authoritative entitlement from GET /api/v3/billing/entitlement (signed-in only). */
+  backendEntitlement: Entitlement | null;
+  /** Device entitlement derived from RevenueCat CustomerInfo (works signed out). */
+  storeEntitlement: Entitlement | null;
   /**
    * Epoch ms until which an optimistic premium unlock wins over a backend `free`
    * (webhook latency window). Cleared once the backend confirms or the window lapses.
    */
   optimisticUntil: number | null;
-  setEntitlement: (entitlement: Entitlement | null) => void;
+  clearBackendEntitlement: () => void;
   clearEntitlement: () => void;
   /**
    * Optimistically unlock premium right after a verified purchase. Held for
@@ -31,36 +33,93 @@ interface EntitlementState {
    * ignored while an optimistic premium grace window is still open.
    */
   reconcileFromBackend: (entitlement: Entitlement) => void;
+  /** Sync premium state from RevenueCat CustomerInfo (anonymous or bound identity). */
+  reconcileFromStore: (entitlement: Entitlement | null) => void;
+}
+
+function isPremiumEntitlement(entitlement: Entitlement | null | undefined): boolean {
+  return entitlement?.tier === 'premium';
+}
+
+/** Merged entitlement for display — backend preferred when both are premium. */
+export function selectEntitlement(state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>): Entitlement | null {
+  const { backendEntitlement, storeEntitlement } = state;
+  if (isPremiumEntitlement(backendEntitlement)) {
+    return backendEntitlement;
+  }
+  if (isPremiumEntitlement(storeEntitlement)) {
+    return storeEntitlement;
+  }
+  return backendEntitlement ?? storeEntitlement;
+}
+
+export function selectIsPremium(state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>): boolean {
+  return isPremiumEntitlement(state.backendEntitlement) || isPremiumEntitlement(state.storeEntitlement);
+}
+
+export function shouldApplyBackendEntitlement(
+  entitlement: Entitlement,
+  optimisticUntil: number | null,
+  now = Date.now(),
+): boolean {
+  const withinGrace = optimisticUntil != null && now < optimisticUntil;
+  if (withinGrace && entitlement.tier === 'free') {
+    return false;
+  }
+  return true;
 }
 
 export const useEntitlementStore = create<EntitlementState>()(
   persist(
     (set, get) => ({
-      entitlement: null,
+      backendEntitlement: null,
+      storeEntitlement: null,
       optimisticUntil: null,
-      setEntitlement: (entitlement) => set({ entitlement }),
-      clearEntitlement: () => set({ entitlement: null, optimisticUntil: null }),
+      clearBackendEntitlement: () => set({ backendEntitlement: null }),
+      clearEntitlement: () => set({ backendEntitlement: null, storeEntitlement: null, optimisticUntil: null }),
       applyOptimisticPremium: (entitlement) =>
-        set({ entitlement, optimisticUntil: Date.now() + OPTIMISTIC_GRACE_MS }),
+        set({ storeEntitlement: entitlement, optimisticUntil: Date.now() + OPTIMISTIC_GRACE_MS }),
       reconcileFromBackend: (entitlement) => {
         const { optimisticUntil } = get();
-        const withinGrace = optimisticUntil != null && Date.now() < optimisticUntil;
-        if (withinGrace && entitlement.tier === 'free') {
-          // Webhook hasn't processed the purchase yet — keep optimistic premium.
+        if (!shouldApplyBackendEntitlement(entitlement, optimisticUntil)) {
           return;
         }
-        set({ entitlement, optimisticUntil: null });
+        set({ backendEntitlement: entitlement, optimisticUntil: null });
       },
+      reconcileFromStore: (entitlement) => set({ storeEntitlement: entitlement }),
     }),
     {
       name: ENTITLEMENT_KEY,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ entitlement: state.entitlement, optimisticUntil: state.optimisticUntil }),
+      partialize: (state) => ({
+        backendEntitlement: state.backendEntitlement,
+        storeEntitlement: state.storeEntitlement,
+        optimisticUntil: state.optimisticUntil,
+      }),
+      version: 1,
+      migrate: (persisted, version) => {
+        if (version === 0) {
+          const legacy = persisted as {
+            entitlement?: Entitlement | null;
+            optimisticUntil?: number | null;
+          };
+          const legacyEntitlement = legacy.entitlement ?? null;
+          const isBackendSource =
+            legacyEntitlement?.source != null &&
+            legacyEntitlement.source !== 'revenuecat';
+          return {
+            backendEntitlement: isBackendSource ? legacyEntitlement : null,
+            storeEntitlement: isBackendSource ? null : legacyEntitlement,
+            optimisticUntil: legacy.optimisticUntil ?? null,
+          };
+        }
+        return persisted as EntitlementState;
+      },
     },
   ),
 );
 
 /** Non-hook snapshot accessor (for use outside React). */
 export function getEntitlement(): Entitlement | null {
-  return useEntitlementStore.getState().entitlement;
+  return selectEntitlement(useEntitlementStore.getState());
 }

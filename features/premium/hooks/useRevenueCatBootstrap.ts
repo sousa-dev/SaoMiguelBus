@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useReconcileEntitlement } from '@/features/premium/hooks/useReconcileEntitlement';
+import { useStoreEntitlementSync } from '@/features/premium/hooks/useStoreEntitlementSync';
 import { useAuthStore } from '@/lib/auth-store';
 import i18n from '@/lib/i18n';
 import {
@@ -20,6 +21,8 @@ export function useRevenueCatBootstrap() {
   const reconcile = useReconcileEntitlement();
   const hydrated = useAuthStore((s) => s.hydrated);
   const userId = useAuthStore((s) => s.user?.id ?? null);
+
+  useStoreEntitlementSync();
 
   useEffect(() => {
     configureRevenueCat();
@@ -44,6 +47,11 @@ export function useRevenueCatBootstrap() {
     if (!hydrated) {
       return;
     }
-    void bindRevenueCatIdentity(useAuthStore.getState().user);
-  }, [hydrated, userId]);
+    void (async () => {
+      const customerInfo = await bindRevenueCatIdentity(useAuthStore.getState().user);
+      if (customerInfo) {
+        await reconcile(customerInfo);
+      }
+    })();
+  }, [hydrated, userId, reconcile]);
 }

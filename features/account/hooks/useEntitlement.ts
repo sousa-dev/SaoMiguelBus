@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { fetchEntitlement } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
-import { useEntitlementStore } from '@/lib/entitlement-store';
+import { selectEntitlement, useEntitlementStore } from '@/lib/entitlement-store';
 import type { Entitlement } from '@/lib/types';
 
 /**
@@ -15,7 +15,7 @@ export function useEntitlementSync() {
   const token = useAuthStore((s) => s.token);
   const hydrated = useAuthStore((s) => s.hydrated);
   const reconcileFromBackend = useEntitlementStore((s) => s.reconcileFromBackend);
-  const clearEntitlement = useEntitlementStore((s) => s.clearEntitlement);
+  const clearBackendEntitlement = useEntitlementStore((s) => s.clearBackendEntitlement);
 
   const query = useQuery({
     queryKey: ['billing', 'entitlement', token],
@@ -27,12 +27,13 @@ export function useEntitlementSync() {
   });
 
   // Clear only once we know (post-hydration) the user is signed out — avoids
-  // wiping the persisted entitlement during the brief pre-hydration window.
+  // wiping the persisted backend slice during the brief pre-hydration window.
+  // Store entitlement (RevenueCat) is preserved for anonymous premium.
   useEffect(() => {
     if (hydrated && !token) {
-      clearEntitlement();
+      clearBackendEntitlement();
     }
-  }, [hydrated, token, clearEntitlement]);
+  }, [hydrated, token, clearBackendEntitlement]);
 
   useEffect(() => {
     if (query.data) {
@@ -43,7 +44,7 @@ export function useEntitlementSync() {
   return query;
 }
 
-/** Read the current entitlement (last-known, persisted). */
+/** Read the current merged entitlement (backend preferred, then store). */
 export function useEntitlement(): Entitlement | null {
-  return useEntitlementStore((s) => s.entitlement);
+  return useEntitlementStore(selectEntitlement);
 }

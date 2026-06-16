@@ -3,7 +3,10 @@ import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import type { CustomerInfo } from 'react-native-purchases';
 
 import { logger } from '@/lib/logger';
+import { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId } from '@/lib/revenuecat-ids';
 import type { AuthUser } from '@/lib/types';
+
+export { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId };
 
 /**
  * RevenueCat entitlement identifier. MUST match the dashboard entitlement and
@@ -66,13 +69,8 @@ export function revenueCatSetupHint(issue: ReturnType<typeof revenueCatSetupIssu
 }
 
 /**
- * Stable App User ID bound to the backend account. This is the cross-repo
- * coordination point: the API webhook maps this id back to a `billing.Entitlement`.
- * Keep it identical to what the backend's `reconcile_revenuecat` expects.
+ * Stable App User ID bound to the backend account. See `lib/revenuecat-ids.ts`.
  */
-export function revenueCatAppUserId(user: Pick<AuthUser, 'id'>): string {
-  return `smb_user_${user.id}`;
-}
 
 /**
  * Configure the SDK once at app boot, before any offerings/purchase call.
@@ -110,20 +108,22 @@ export function configureRevenueCat(): void {
  * never crashes the app — but a failed bind means purchases would be attributed
  * to an anonymous id, so callers must verify `getAppUserID()` before purchasing.
  */
-export async function bindRevenueCatIdentity(user: AuthUser | null): Promise<void> {
+export async function bindRevenueCatIdentity(user: AuthUser | null): Promise<CustomerInfo | null> {
   if (!configured) {
-    return;
+    return null;
   }
   try {
     if (user) {
-      await Purchases.logIn(revenueCatAppUserId(user));
+      const { customerInfo } = await Purchases.logIn(revenueCatAppUserId(user));
       logger.debug('RevenueCat: logged in', revenueCatAppUserId(user));
-    } else {
-      await Purchases.logOut();
-      logger.debug('RevenueCat: logged out');
+      return customerInfo;
     }
+    await Purchases.logOut();
+    logger.debug('RevenueCat: logged out');
+    return null;
   } catch (error) {
     logger.error('RevenueCat: identity bind failed', error);
+    return null;
   }
 }
 
