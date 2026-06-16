@@ -1,4 +1,5 @@
 import { getAdMobRequestOptions } from '@/features/ads/lib/admob-request-options';
+import { AdLoadScheduler } from '@/features/ads/lib/admob-load-backoff';
 import { getAdMobModule } from '@/features/ads/lib/admob-native';
 import {
   getAdMobAppOpenUnitId,
@@ -38,6 +39,43 @@ let unsubscribeAppOpenLoaded: (() => void) | null = null;
 let unsubscribeAppOpenClosed: (() => void) | null = null;
 let unsubscribeAppOpenError: (() => void) | null = null;
 
+const interstitialScheduler = new AdLoadScheduler({
+  onLoad: () => {
+    if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
+      interstitialScheduler.markLoadSettled();
+      return;
+    }
+    if (!interstitial) {
+      interstitial = createInterstitialAd();
+    }
+    if (!interstitial) {
+      interstitialScheduler.markLoadSettled();
+      return;
+    }
+    interstitialLoaded = false;
+    interstitial.load();
+  },
+});
+
+const appOpenScheduler = new AdLoadScheduler({
+  onLoad: () => {
+    if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
+      appOpenScheduler.markLoadSettled();
+      return;
+    }
+    if (!appOpen) {
+      appOpen = createAppOpenAd();
+    }
+    if (!appOpen) {
+      appOpenScheduler.markLoadSettled();
+      return;
+    }
+    appOpenLoaded = false;
+    appOpenLoadTime = null;
+    appOpen.load();
+  },
+});
+
 function isAppOpenFresh(nowMs: number): boolean {
   if (!appOpenLoaded || appOpenLoadTime == null) {
     return false;
@@ -57,6 +95,7 @@ function attachInterstitialListeners(ad: InterstitialAdInstance): void {
 
   unsubscribeInterstitialLoaded = ad.addAdEventListener(mod.AdEventType.LOADED, () => {
     interstitialLoaded = true;
+    interstitialScheduler.markLoadSucceeded();
   });
 
   unsubscribeInterstitialClosed = ad.addAdEventListener(mod.AdEventType.CLOSED, () => {
@@ -65,14 +104,15 @@ function attachInterstitialListeners(ad: InterstitialAdInstance): void {
     for (const listener of closedListeners) {
       listener();
     }
-    preloadInterstitialAd();
+    interstitialScheduler.requestImmediateLoad();
   });
 
   unsubscribeInterstitialError = ad.addAdEventListener(mod.AdEventType.ERROR, (error) => {
     interstitialLoaded = false;
     interstitialShowing = false;
     logger.warn('AdMob interstitial error', error);
-    preloadInterstitialAd();
+    interstitialScheduler.markLoadSettled();
+    interstitialScheduler.scheduleRetryAfterError();
   });
 }
 
@@ -89,6 +129,7 @@ function attachAppOpenListeners(ad: AppOpenAdInstance): void {
   unsubscribeAppOpenLoaded = ad.addAdEventListener(mod.AdEventType.LOADED, () => {
     appOpenLoaded = true;
     appOpenLoadTime = Date.now();
+    appOpenScheduler.markLoadSucceeded();
   });
 
   unsubscribeAppOpenClosed = ad.addAdEventListener(mod.AdEventType.CLOSED, () => {
@@ -98,7 +139,7 @@ function attachAppOpenListeners(ad: AppOpenAdInstance): void {
     for (const listener of appOpenClosedListeners) {
       listener();
     }
-    preloadAppOpenAd();
+    appOpenScheduler.requestImmediateLoad();
   });
 
   unsubscribeAppOpenError = ad.addAdEventListener(mod.AdEventType.ERROR, (error) => {
@@ -106,7 +147,8 @@ function attachAppOpenListeners(ad: AppOpenAdInstance): void {
     appOpenLoadTime = null;
     appOpenShowing = false;
     logger.warn('AdMob app open error', error);
-    preloadAppOpenAd();
+    appOpenScheduler.markLoadSettled();
+    appOpenScheduler.scheduleRetryAfterError();
   });
 }
 
@@ -187,8 +229,8 @@ export async function initializeAdMob(): Promise<void> {
 
       await mod.MobileAds().initialize();
       initialized = true;
-      preloadInterstitialAd();
-      preloadAppOpenAd();
+      interstitialScheduler.requestImmediateLoad();
+      appOpenScheduler.requestImmediateLoad();
     } catch (error) {
       logger.warn('AdMob init failed', error);
       umpCanRequestAds = false;
@@ -224,6 +266,8 @@ export function teardownAdMob(): void {
   initialized = false;
   initPromise = null;
   umpCanRequestAds = false;
+  interstitialScheduler.cancel();
+  appOpenScheduler.cancel();
   closedListeners.clear();
   appOpenClosedListeners.clear();
 }
@@ -232,14 +276,7 @@ export function preloadInterstitialAd(): void {
   if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
     return;
   }
-  if (!interstitial) {
-    interstitial = createInterstitialAd();
-  }
-  if (!interstitial) {
-    return;
-  }
-  interstitialLoaded = false;
-  interstitial.load();
+  interstitialScheduler.requestImmediateLoad();
 }
 
 export function isInterstitialAdLoaded(): boolean {
@@ -271,15 +308,7 @@ export function preloadAppOpenAd(): void {
   if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
     return;
   }
-  if (!appOpen) {
-    appOpen = createAppOpenAd();
-  }
-  if (!appOpen) {
-    return;
-  }
-  appOpenLoaded = false;
-  appOpenLoadTime = null;
-  appOpen.load();
+  appOpenScheduler.requestImmediateLoad();
 }
 
 export function isAppOpenAdLoaded(nowMs: number = Date.now()): boolean {
