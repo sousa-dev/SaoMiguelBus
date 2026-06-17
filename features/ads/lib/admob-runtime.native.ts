@@ -2,6 +2,10 @@ import { getAdMobRequestOptions } from '@/features/ads/lib/admob-request-options
 import { AdLoadScheduler } from '@/features/ads/lib/admob-load-backoff';
 import { getAdMobModule } from '@/features/ads/lib/admob-native';
 import {
+  requestIosAppTrackingPermissionIfNeeded,
+  shouldRequestIosAppTrackingPermission,
+} from '@/features/ads/lib/ios-app-tracking-transparency';
+import {
   getAdMobAppOpenUnitId,
   getAdMobInterstitialUnitId,
   isAdMobSupportedPlatform,
@@ -225,6 +229,12 @@ export async function initializeAdMob(): Promise<void> {
       if (!umpCanRequestAds) {
         initPromise = null;
         return;
+      }
+
+      const gdprApplies = await mod.AdsConsent.getGdprApplies();
+      const purposeConsents = gdprApplies ? await mod.AdsConsent.getPurposeConsents() : '';
+      if (shouldRequestIosAppTrackingPermission(gdprApplies, purposeConsents)) {
+        await requestIosAppTrackingPermissionIfNeeded();
       }
 
       await mod.MobileAds().initialize();

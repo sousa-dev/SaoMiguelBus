@@ -32,9 +32,32 @@ module.exports = ({ config }) => {
     ]);
   }
 
+  const attUsageDescription =
+    'Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.';
+  const hasAttPlugin = plugins.some(
+    (entry) =>
+      (Array.isArray(entry) && entry[0] === 'expo-tracking-transparency') ||
+      entry === 'expo-tracking-transparency',
+  );
+  if (!hasAttPlugin) {
+    plugins.push([
+      'expo-tracking-transparency',
+      {
+        userTrackingPermission: attUsageDescription,
+      },
+    ]);
+  }
+
   return {
     ...config,
     plugins,
+    ios: {
+      ...config.ios,
+      infoPlist: {
+        ...config.ios?.infoPlist,
+        NSUserTrackingUsageDescription: attUsageDescription,
+      },
+    },
     'react-native-google-mobile-ads': googleMobileAdsJson,
   };
 };

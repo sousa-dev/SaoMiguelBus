@@ -4,6 +4,7 @@ import type { CustomerInfo } from 'react-native-purchases';
 
 import { logger } from '@/lib/logger';
 import { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId } from '@/lib/revenuecat-ids';
+import { shouldCallRevenueCatLogOut } from '@/lib/revenuecat-identity-policy';
 import type { AuthUser } from '@/lib/types';
 
 export { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId };
@@ -118,9 +119,16 @@ export async function bindRevenueCatIdentity(user: AuthUser | null): Promise<Cus
       logger.debug('RevenueCat: logged in', revenueCatAppUserId(user));
       return customerInfo;
     }
-    await Purchases.logOut();
+
+    const isAnonymous = await Purchases.isAnonymous();
+    if (!shouldCallRevenueCatLogOut(isAnonymous)) {
+      logger.debug('RevenueCat: already anonymous, skipping logOut');
+      return null;
+    }
+
+    const customerInfo = await Purchases.logOut();
     logger.debug('RevenueCat: logged out');
-    return null;
+    return customerInfo;
   } catch (error) {
     logger.error('RevenueCat: identity bind failed', error);
     return null;

@@ -28,6 +28,7 @@
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.5",
+    "expo-tracking-transparency": "~56.0.5",
     "expo-web-browser": "~56.0.5",
     "i18next": "^26.3.0",
     "lucide-react-native": "^1.17.0",
