@@ -41,6 +41,7 @@ import type {
   MinibusTariffsResponse,
   MinibusDocumentsResponse,
   MinibusLine,
+  MinibusMeta,
   MinibusDocumentResponse,
   MinibusNetworkResponse,
   MinibusRouteSearchResponse,
