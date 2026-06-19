@@ -1,4 +1,6 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# NOTE: When .easignore exists, EAS uses it INSTEAD of .gitignore for the
+# upload archive. It must therefore reproduce every .gitignore exclusion,
+# plus the EAS-only excludes at the bottom.
 
 # dependencies
 node_modules/
@@ -69,4 +71,16 @@ src/android-project/app/.idea/
 
 android.keystore
 
-assets/ads/*
+# --- EAS-only excludes (not needed for the build) ---
+# Legacy native projects (not imported by the Expo app)
+src/
+legacy/
+
+# Docs & specs
+docs/
+doc/
+SDD/
+MIGRATION_PLAN.md
+
+# Tests (not needed in the build archive)
+__tests__/
