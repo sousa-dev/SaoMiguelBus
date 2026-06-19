@@ -1,25 +1,27 @@
-import { ArrowUpDown } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Button } from '@/components/ui/Button';
 import { CachedBadge } from '@/components/ui/CachedBadge';
-import { IconButton } from '@/components/ui/IconButton';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
-import { MinibusJourneyCard } from '@/features/minibus/components/MinibusJourneyCard';
-import { MinibusStopPicker } from '@/features/minibus/components/MinibusStopPicker';
+import { AdBanner } from '@/features/ads/components/AdBanner';
+import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
+import { MinibusJourneyResults } from '@/features/minibus/components/MinibusJourneyResults';
+import { MinibusPlannerCard } from '@/features/minibus/components/MinibusPlannerCard';
+import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { useMinibusRouteSearch } from '@/features/minibus/hooks/useMinibusRouteSearch';
 import { track } from '@/lib/analytics';
-import { space, typography } from '@/lib/tokens';
+import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 export default function MinibusSearchScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const { snapshot } = useMinibusOffline();
   const linesQuery = useMinibusLines();
@@ -36,6 +38,7 @@ export default function MinibusSearchScreen() {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [submitted, setSubmitted] = useState<{ origin: string; destination: string } | null>(null);
+  const [interstitialTrigger, setInterstitialTrigger] = useState(0);
 
   const stops = useMemo(() => {
     if (!network) {
@@ -61,6 +64,13 @@ export default function MinibusSearchScreen() {
     Boolean(submitted),
   );
 
+  useEffect(() => {
+    if (!submitted || isLoading) {
+      return;
+    }
+    setInterstitialTrigger((value) => value + 1);
+  }, [submitted, isLoading]);
+
   const onSwap = () => {
     setOrigin(destination);
     setDestination(origin);
@@ -73,6 +83,7 @@ export default function MinibusSearchScreen() {
       return;
     }
     track('minibus', 'search', { offline: Boolean(offlineNetwork) });
+    void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
     setSubmitted({ origin: trimmedOrigin, destination: trimmedDestination });
   };
 
@@ -86,67 +97,50 @@ export default function MinibusSearchScreen() {
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={[typography.body, { color: theme.muted, marginBottom: space.md }]}>
-          {t('minibusSearchSubtitle')}
-        </Text>
-
-        <View style={styles.form}>
-          <MinibusStopPicker
-            label={t('minibusOrigin')}
-            value={origin}
-            placeholder={t('minibusStopPlaceholder')}
-            stops={stops}
-            onChangeText={setOrigin}
-          />
-          <View style={styles.swapRow}>
-            <IconButton
-              icon={ArrowUpDown}
-              variant="ghost"
-              size="sm"
-              color={theme.primary}
-              accessibilityLabel={t('minibusSwap')}
-              onPress={onSwap}
-            />
+        <TransitWebShell>
+          <View style={styles.adTop}>
+            <AdBanner on="home" slot="minibus-search-top" />
           </View>
-          <MinibusStopPicker
-            label={t('minibusDestination')}
-            value={destination}
-            placeholder={t('minibusStopPlaceholder')}
-            stops={stops}
-            onChangeText={setDestination}
-          />
-          <Button
-            label={t('minibusSearchCta')}
-            fullWidth
-            onPress={onSearch}
-            disabled={!origin.trim() || !destination.trim()}
-          />
-        </View>
 
-        {source === 'offline' && journeys.length > 0 ? (
-          <View style={styles.cachedRow}>
+          <MinibusPlannerCard
+            origin={origin}
+            destination={destination}
+            stops={stops}
+            searching={hasSearched && isLoading}
+            onOriginChange={setOrigin}
+            onDestinationChange={setDestination}
+            onSwap={onSwap}
+            onSearch={onSearch}
+          />
+
+          {source === 'offline' && journeys.length > 0 ? (
             <CachedBadge label={t('minibusOfflineResults')} />
-          </View>
-        ) : null}
+          ) : null}
 
-        {isLoading ? <LoadingState /> : null}
+          {isLoading ? <LoadingState /> : null}
 
-        {showEmpty ? (
-          <EmptyState title={t('minibusNoJourneys')} description={t('minibusNoJourneysHint')} />
-        ) : null}
+          {showEmpty ? (
+            <EmptyState title={t('minibusNoJourneys')} description={t('minibusNoJourneysHint')} />
+          ) : null}
 
-        {journeys.map((journey, index) => (
-          <MinibusJourneyCard key={`journey-${index}`} journey={journey} linesByCode={linesByCode} />
-        ))}
+          <MinibusJourneyResults journeys={journeys} linesByCode={linesByCode} />
+        </TransitWebShell>
       </ScrollView>
+      <InterstitialOrchestrator
+        trigger={interstitialTrigger}
+        ready={hasSearched && !isLoading}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.lg, paddingBottom: space.xl },
-  form: { gap: space.sm, marginBottom: space.lg },
-  swapRow: { alignItems: 'center' },
-  cachedRow: { marginBottom: space.sm },
+  content: {
+    padding: space.md,
+    paddingBottom: space['4xl'],
+    alignItems: 'center',
+  },
+  adTop: { marginBottom: space.md },
 });

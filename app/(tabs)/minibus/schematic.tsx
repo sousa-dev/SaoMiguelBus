@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusPdfViewer } from '@/features/minibus/components/MinibusPdfViewer';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
@@ -39,6 +40,9 @@ export default function MinibusSchematicScreen() {
   return (
     <Screen withStackHeader edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: theme.background }}>
+        <View style={styles.adTop}>
+          <AdBanner on="home" slot="minibus-schematic-top" />
+        </View>
         <View style={styles.viewer}>
           <MinibusPdfViewer url={url} slug={SCHEMATIC_SLUG} />
         </View>
@@ -53,5 +57,6 @@ export default function MinibusSchematicScreen() {
 
 const styles = StyleSheet.create({
   content: { flexGrow: 1, padding: space.md },
+  adTop: { marginBottom: space.md },
   viewer: { height: 420 },
 });

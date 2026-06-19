@@ -3,11 +3,11 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { normalizeToken } from '@/features/minibus/routeSearch';
-import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
-  label: string;
+  label?: string;
   value: string;
   placeholder?: string;
   stops: string[];
@@ -34,9 +34,9 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
 
   return (
     <View style={styles.wrap}>
-      <Text style={[typography.label, { color: theme.muted }]}>{label}</Text>
+      {label ? <Text style={[typography.label, { color: theme.muted }]}>{label}</Text> : null}
       <View style={[styles.field, { backgroundColor: theme.surfaceVariant, borderColor: theme.border }]}>
-        <MapPin size={iconSize.md} color={theme.muted} strokeWidth={2} />
+        <MapPin size={20} color={theme.primary} style={styles.pin} />
         <TextInput
           accessibilityLabel={label}
           placeholder={placeholder}
@@ -87,20 +87,27 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: space.xs },
+  wrap: { marginBottom: space.xs },
   field: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: space.md,
-    gap: space.sm,
-    minHeight: 48,
+    borderRadius: radius.full,
+    paddingRight: space.md,
   },
-  input: { flex: 1, paddingVertical: space.sm },
+  pin: { marginLeft: space.md },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: space.sm,
+    fontSize: 16,
+  },
   list: {
+    marginTop: 4,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+    zIndex: 10,
   },
   listContent: { paddingVertical: space.xs },
   option: { paddingHorizontal: space.md, paddingVertical: space.sm },

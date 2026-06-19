@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
 import { ErrorState } from '@/components/ui/StateView';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusPdfViewer } from '@/features/minibus/components/MinibusPdfViewer';
 import {
@@ -38,29 +39,36 @@ export default function MinibusPdfScreen() {
 
   return (
     <Screen withStackHeader edges={['bottom']}>
-      <View style={[styles.viewer, { backgroundColor: theme.background }]}>
-        <MinibusPdfViewer url={url} slug={slug} />
-      </View>
-      <View style={styles.footer}>
-        <Button
-          label={t('minibusOpenExternal')}
-          variant="outline"
-          fullWidth
-          onPress={() => void WebBrowser.openBrowserAsync(url)}
-        />
-        <Button
-          label={t('minibusSourceLink')}
-          variant="ghost"
-          fullWidth
-          onPress={() => void Linking.openURL('https://pdlminibus.pt')}
-        />
-        <MinibusAttributionFooter sourceUrl="https://pdlminibus.pt" />
+      <View style={[styles.body, { backgroundColor: theme.background }]}>
+        <View style={styles.adWrap}>
+          <AdBanner on="home" slot="minibus-pdf-top" />
+        </View>
+        <View style={styles.viewer}>
+          <MinibusPdfViewer url={url} slug={slug} />
+        </View>
+        <View style={styles.footer}>
+          <Button
+            label={t('minibusOpenExternal')}
+            variant="outline"
+            fullWidth
+            onPress={() => void WebBrowser.openBrowserAsync(url)}
+          />
+          <Button
+            label={t('minibusSourceLink')}
+            variant="ghost"
+            fullWidth
+            onPress={() => void Linking.openURL('https://pdlminibus.pt')}
+          />
+          <MinibusAttributionFooter sourceUrl="https://pdlminibus.pt" />
+        </View>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  body: { flex: 1 },
+  adWrap: { paddingHorizontal: space.md, paddingTop: space.md, marginBottom: space.md },
   viewer: { flex: 1 },
   footer: { padding: space.md, gap: space.sm },
 });

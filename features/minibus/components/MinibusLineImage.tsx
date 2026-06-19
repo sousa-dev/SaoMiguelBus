@@ -73,6 +73,7 @@ export function MinibusLineImage({
           ...fullscreenA11yValues,
         })}
         onPress={() => setFullscreen(true)}
+        style={compact ? styles.compactPressable : undefined}
       >
         <Image
           accessibilityLabel={accessibilityLabel}
@@ -97,7 +98,8 @@ export function MinibusLineImage({
 
 const styles = StyleSheet.create({
   image: { width: '100%', borderRadius: radius.md },
-  imageCompact: { maxHeight: 200 },
+  imageCompact: { maxHeight: 200, width: '100%', alignSelf: 'center' },
+  compactPressable: { alignItems: 'center' },
   placeholder: {
     width: '100%',
     minHeight: 160,

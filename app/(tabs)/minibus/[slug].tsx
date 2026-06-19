@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
 import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
@@ -53,6 +54,10 @@ export default function MinibusLineDetailScreen() {
   return (
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: theme.background }}>
+        <View style={styles.adTop}>
+          <AdBanner on="home" slot="minibus-line-top" />
+        </View>
+
         <View style={[styles.colorBar, { backgroundColor: line.color }]} />
         <Text style={[typography.title, { color: theme.text }]}>{line.name}</Text>
         <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]}>
@@ -82,4 +87,5 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, paddingBottom: space.xl },
   colorBar: { width: 48, height: 6, borderRadius: 3, marginBottom: space.md },
   imageWrap: { marginTop: space.sm },
+  adTop: { marginBottom: space.md },
 });

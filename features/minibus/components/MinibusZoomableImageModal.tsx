@@ -1,6 +1,13 @@
 import { X } from 'lucide-react-native';
-import { useEffect } from 'react';
-import { Modal, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -11,11 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
-import { space } from '@/lib/tokens';
-import { useAppTheme } from '@/lib/theme';
+import { radius, space } from '@/lib/tokens';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
+const BACKDROP_COLOR = 'rgba(0, 0, 0, 0.88)';
+const CLOSE_BUTTON_BG = 'rgba(255, 255, 255, 0.18)';
 
 type Props = {
   visible: boolean;
@@ -23,6 +31,26 @@ type Props = {
   accessibilityLabel: string;
   onClose: () => void;
 };
+
+function fitImageSize(
+  intrinsicWidth: number,
+  intrinsicHeight: number,
+  maxWidth: number,
+  maxHeight: number,
+): { width: number; height: number } {
+  if (intrinsicWidth <= 0 || intrinsicHeight <= 0) {
+    return { width: maxWidth, height: maxHeight * 0.6 };
+  }
+
+  const ratio = intrinsicWidth / intrinsicHeight;
+  let width = maxWidth;
+  let height = width / ratio;
+  if (height > maxHeight) {
+    height = maxHeight;
+    width = height * ratio;
+  }
+  return { width, height };
+}
 
 function ZoomableImage({
   uri,
@@ -109,12 +137,12 @@ function ZoomableImage({
 
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.zoomStage, { width, height }]}>
+      <Animated.View style={[styles.zoomFrame, { width, height }]}>
         <Animated.Image
           accessibilityLabel={accessibilityLabel}
           source={{ uri }}
           resizeMode="contain"
-          style={[styles.zoomImage, { width, height }, animatedStyle]}
+          style={[{ width, height }, animatedStyle]}
         />
       </Animated.View>
     </GestureDetector>
@@ -122,33 +150,78 @@ function ZoomableImage({
 }
 
 export function MinibusZoomableImageModal({ visible, uri, accessibilityLabel, onClose }: Props) {
-  const theme = useAppTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const stageWidth = width;
-  const stageHeight = height - insets.top - insets.bottom - space.xl * 2;
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [imageSize, setImageSize] = useState({ width: windowWidth, height: windowHeight * 0.6 });
+
+  const maxImageWidth = windowWidth - space.lg * 2;
+  const maxImageHeight = windowHeight - insets.top - insets.bottom - space.xl * 2;
+
+  useEffect(() => {
+    if (!uri) {
+      return;
+    }
+    let active = true;
+    Image.getSize(
+      uri,
+      (width, height) => {
+        if (!active) {
+          return;
+        }
+        setImageSize(fitImageSize(width, height, maxImageWidth, maxImageHeight));
+      },
+      () => {
+        if (active) {
+          setImageSize(fitImageSize(0, 0, maxImageWidth, maxImageHeight));
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [uri, maxImageWidth, maxImageHeight]);
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
       <GestureHandlerRootView style={styles.flex}>
-        <View style={[styles.backdrop, { backgroundColor: theme.scrim, paddingTop: insets.top }]}>
-          <View style={styles.header}>
+        <View style={[styles.root, { backgroundColor: BACKDROP_COLOR }]}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            accessibilityRole="button"
+            accessibilityLabel={t('close')}
+            onPress={onClose}
+          />
+
+          <View
+            pointerEvents="box-none"
+            style={[styles.closeWrap, { top: insets.top + space.sm, right: space.md }]}
+          >
             <IconButton
               icon={X}
               variant="ghost"
               size="md"
-              color={theme.text}
+              color="#FFFFFF"
               accessibilityLabel={t('close')}
               onPress={onClose}
+              style={styles.closeButton}
             />
           </View>
-          <ZoomableImage
-            uri={uri}
-            width={stageWidth}
-            height={Math.max(stageHeight, 240)}
-            accessibilityLabel={accessibilityLabel}
-          />
+
+          <View pointerEvents="box-none" style={styles.centerStage}>
+            <ZoomableImage
+              uri={uri}
+              width={imageSize.width}
+              height={imageSize.height}
+              accessibilityLabel={accessibilityLabel}
+            />
+          </View>
         </View>
       </GestureHandlerRootView>
     </Modal>
@@ -157,12 +230,23 @@ export function MinibusZoomableImageModal({ visible, uri, accessibilityLabel, on
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  backdrop: { flex: 1 },
-  header: {
-    alignItems: 'flex-end',
-    paddingHorizontal: space.md,
-    paddingBottom: space.sm,
+  root: { flex: 1 },
+  closeWrap: {
+    position: 'absolute',
+    zIndex: 2,
   },
-  zoomStage: { alignItems: 'center', justifyContent: 'center' },
-  zoomImage: {},
+  closeButton: {
+    backgroundColor: CLOSE_BUTTON_BG,
+    borderRadius: radius.full,
+  },
+  centerStage: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  zoomFrame: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

@@ -1,13 +1,23 @@
 import { Route } from 'lucide-react-native';
-import { useCallback, useEffect } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  LayoutChangeEvent,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/StateView';
+import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
@@ -16,16 +26,28 @@ import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLines, useMinibusTariffs } from '@/features/minibus/hooks/useMinibusQueries';
 import { localDocumentImageUri } from '@/features/minibus/offline';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
-import { resolveEnabledModules, staticIslandConfig } from '@/config/island';
+import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { track } from '@/lib/analytics';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
+type MinibusSection = 'plan' | 'lines' | 'pricing';
+
+const SECTIONS: Array<{ key: MinibusSection; labelKey: string }> = [
+  { key: 'plan', labelKey: 'minibusSectionPlanRoute' },
+  { key: 'lines', labelKey: 'minibusSectionLines' },
+  { key: 'pricing', labelKey: 'minibusSectionPricing' },
+];
+
 export default function MinibusScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
+  const sectionOffsets = useRef<Partial<Record<MinibusSection, number>>>({});
+  const [activeSection, setActiveSection] = useState<MinibusSection>('plan');
+
   const { data: bootstrap } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const enabled = modules.includes('minibus');
@@ -69,9 +91,23 @@ export default function MinibusScreen() {
   const loading = linesQuery.isLoading && !lines;
   const error = linesQuery.isError && !lines;
 
+  const onSectionLayout = (section: MinibusSection, event: LayoutChangeEvent) => {
+    sectionOffsets.current[section] = event.nativeEvent.layout.y;
+  };
+
+  const scrollToSection = (section: MinibusSection) => {
+    setActiveSection(section);
+    const y = sectionOffsets.current[section];
+    if (y == null) {
+      return;
+    }
+    scrollRef.current?.scrollTo({ y: Math.max(0, y - space.sm), animated: true });
+  };
+
   return (
     <Screen withStackHeader>
       <ScrollView
+        ref={scrollRef}
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={styles.content}
         refreshControl={
@@ -82,77 +118,108 @@ export default function MinibusScreen() {
           />
         }
       >
+        <View style={styles.adTop}>
+          <AdBanner on="home" slot="minibus-list-top" />
+        </View>
+
+        <View style={styles.pillsRow}>
+          {SECTIONS.map((section) => (
+            <Chip
+              key={section.key}
+              label={t(section.labelKey)}
+              selected={activeSection === section.key}
+              onPress={() => scrollToSection(section.key)}
+            />
+          ))}
+        </View>
+
         <Text style={[typography.body, { color: theme.muted, marginBottom: space.md }]}>
           {t('minibusSubtitle')}
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            track('minibus', 'view', { screen: 'search' });
-            router.push('/minibus/search');
-          }}
-        >
-          <Card style={styles.searchCard}>
-            <View style={[styles.searchIcon, { backgroundColor: theme.primary }]}>
-              <Route size={iconSize.md} color={theme.onPrimary} strokeWidth={2} />
-            </View>
-            <View style={styles.searchBody}>
-              <Text style={[typography.headline, { color: theme.text }]}>{t('minibusPlanRoute')}</Text>
-              <Text style={[typography.caption, { color: theme.muted }]}>
-                {t('minibusPlanRouteHint')}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
-
-        <Text style={[typography.headline, { color: theme.text, marginBottom: space.sm }]}>
-          {t('minibusNetworkMap')}
-        </Text>
-        <View style={styles.networkMapWrap}>
-          <MinibusLineImage
-            compact
-            localUri={networkMapLocalUri}
-            remoteUrl={networkMapRemoteUrl}
-            accessibilityLabel={t('minibusNetworkMapImageAlt')}
-            tapHintKey="minibusNetworkMapTapToZoom"
-            fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
-          />
+        <View onLayout={(event) => onSectionLayout('plan', event)}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              track('minibus', 'view', { screen: 'search' });
+              router.push('/minibus/search');
+            }}
+          >
+            <Card style={styles.searchCard}>
+              <View style={[styles.searchIcon, { backgroundColor: theme.primary }]}>
+                <Route size={iconSize.md} color={theme.onPrimary} strokeWidth={2} />
+              </View>
+              <View style={styles.searchBody}>
+                <Text style={[typography.headline, { color: theme.text }]}>{t('minibusPlanRoute')}</Text>
+                <Text style={[typography.caption, { color: theme.muted }]}>
+                  {t('minibusPlanRouteHint')}
+                </Text>
+              </View>
+            </Card>
+          </Pressable>
         </View>
 
-        {loading ? (
-          <View style={styles.skeletons}>
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
+        <View onLayout={(event) => onSectionLayout('lines', event)} style={styles.section}>
+          <Text style={[typography.headline, { color: theme.text, marginBottom: space.sm }]}>
+            {t('minibusSectionLines')}
+          </Text>
+
+          <Text style={[typography.label, { color: theme.muted, marginBottom: space.sm }]}>
+            {t('minibusNetworkMap')}
+          </Text>
+          <View style={styles.networkMapWrap}>
+            <MinibusLineImage
+              compact
+              localUri={networkMapLocalUri}
+              remoteUrl={networkMapRemoteUrl}
+              accessibilityLabel={t('minibusNetworkMapImageAlt')}
+              tapHintKey="minibusNetworkMapTapToZoom"
+              fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
+            />
+          </View>
+
+          {loading ? (
+            <View style={styles.skeletons}>
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </View>
+          ) : null}
+
+          {error ? (
+            <ErrorState
+              title={t('minibusLoadError')}
+              actionLabel={t('commonRetry')}
+              onAction={() => void linesQuery.refetch()}
+            />
+          ) : null}
+
+          {!loading && !error && lines ? (
+            <>
+              <View style={styles.lineList}>
+                {lines.map((line) => (
+                  <MinibusLineCard
+                    key={line.slug}
+                    line={line}
+                    onPress={() => router.push(`/minibus/${line.slug}`)}
+                  />
+                ))}
+              </View>
+
+              <View style={styles.adInline}>
+                <AdBanner on="home" slot="minibus-list-inline-0" />
+              </View>
+            </>
+          ) : null}
+        </View>
+
+        {!loading && !error && tariffs ? (
+          <View onLayout={(event) => onSectionLayout('pricing', event)} style={styles.section}>
+            <MinibusTariffTable tariffs={tariffs} effectiveDate={effectiveDate} />
           </View>
         ) : null}
 
-        {error ? (
-          <ErrorState
-            title={t('minibusLoadError')}
-            actionLabel={t('commonRetry')}
-            onAction={() => void linesQuery.refetch()}
-          />
-        ) : null}
-
-        {!loading && !error && lines ? (
-          <>
-            {lines.map((line) => (
-              <MinibusLineCard
-                key={line.slug}
-                line={line}
-                onPress={() => router.push(`/minibus/${line.slug}`)}
-              />
-            ))}
-
-            {tariffs ? (
-              <MinibusTariffTable tariffs={tariffs} effectiveDate={effectiveDate} />
-            ) : null}
-
-            <MinibusAttributionFooter sourceUrl={sourceUrl} importedAt={importedAt} />
-          </>
-        ) : null}
+        <MinibusAttributionFooter sourceUrl={sourceUrl} importedAt={importedAt} />
       </ScrollView>
     </Screen>
   );
@@ -175,5 +242,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBody: { flex: 1, gap: 2 },
-  networkMapWrap: { marginBottom: space.lg },
+  networkMapWrap: { marginBottom: space.lg, alignItems: 'center' },
+  lineList: { gap: space.md },
+  section: { marginTop: space.lg },
+  adTop: { marginBottom: space.md },
+  adInline: { marginTop: space.md },
+  pillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: space.md,
+  },
 });
