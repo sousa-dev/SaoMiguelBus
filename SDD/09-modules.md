@@ -114,6 +114,22 @@ Each module = one **flat Django app** under `SaoMiguelBus-api/src/<module>/` (re
 
 ---
 
+## 8. PDL Mini Bus (urban Ponta Delgada)
+
+**Backend:** `minibus` — `MinibusLine`, `MinibusTariff`, `MinibusDocument`, `MinibusImportMeta`. Catalog seeded from `minibus/data/catalog_sao_miguel.json`; PDFs/SVG imported via `import_minibus`.
+
+**Data source:** [pdlminibus.pt](https://pdlminibus.pt) — attribution required in API responses and client UI.
+
+**Features:**
+- Line list with service windows (weekday hours; Saturday departures for C/D)
+- Structured fare table + official PDF timetables, network map, schematic
+- In-app PDF viewer (WebView on API file stream URLs)
+- Entry from interurban Buses module (promo card + profile link)
+
+**Not in v1:** stop-by-stop OCR/search, live vehicle tracking, ticket sales.
+
+---
+
 ## Module enablement
 
 Each module is gated by `Island.feature_flags` / frontend `enabledModules`, so a newly cloned island can launch transit-only and switch modules on later without code changes ([`02`](./02-multi-island-whitelabel.md)).

@@ -8,7 +8,8 @@ export type ModuleKey =
   | 'trails'
   | 'traffic'
   | 'events'
-  | 'weather';
+  | 'weather'
+  | 'minibus';
 
 export interface IslandTheme {
   primaryColor: string;

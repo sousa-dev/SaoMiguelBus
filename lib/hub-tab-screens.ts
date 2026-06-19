@@ -10,6 +10,7 @@ export const MODULE_KEY_TO_TAB_SCREEN: Record<ModuleKey, string> = {
   traffic: 'traffic',
   events: 'tours',
   weather: 'weather',
+  minibus: 'minibus',
 };
 
 export const TAB_SCREEN_TO_MODULE_KEY: Record<string, ModuleKey> = Object.fromEntries(

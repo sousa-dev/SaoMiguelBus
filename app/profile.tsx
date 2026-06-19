@@ -1,5 +1,5 @@
 import * as Linking from 'expo-linking';
-import { useFocusEffect, useNavigation } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
 import {
   Bus,
@@ -29,6 +29,8 @@ import { Card } from '@/components/ui/Card';
 import { ListRow } from '@/components/ui/ListRow';
 import { Sheet } from '@/components/ui/Sheet';
 import { useAppStackScreenOptions } from '@/lib/navigation';
+import { resolveEnabledModules } from '@/config/island';
+import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { BUS_COMPANIES, type BusCompany } from '@/lib/bus-companies';
 import { formatLocalTime } from '@/lib/format-time';
 import { useProfileStore, type TripVoteEntry } from '@/lib/profile-store';
@@ -41,6 +43,9 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
+  const router = useRouter();
+  const { data: bootstrap } = useBootstrap();
+  const showMinibus = resolveEnabledModules(bootstrap?.island?.enabledModules).includes('minibus');
   const screenOptions = useAppStackScreenOptions();
   const favoriteRoutes = useProfileStore((s) => s.favoriteRoutes);
   const favoriteStops = useProfileStore((s) => s.favoriteStops);
@@ -222,6 +227,13 @@ export default function ProfileScreen() {
 
         <Section title={t('transitInfoTitle')} icon={Info}>
           <GroupList>
+            {showMinibus ? (
+              <ListRow
+                icon={BusFront}
+                title={t('minibusProfileRow')}
+                onPress={() => router.push('/minibus')}
+              />
+            ) : null}
             <ListRow
               icon={Info}
               title={t('infoModalTitle')}

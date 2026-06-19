@@ -2,6 +2,7 @@ import type { Href } from 'expo-router';
 import {
   Activity,
   Bus,
+  BusFront,
   CircleUser,
   Crown,
   Footprints,
@@ -90,6 +91,13 @@ export const HUB_MODULES: HubModule[] = [
     labelKey: 'navBarWeatherLabel',
     Icon: CloudSun,
     accent: '#0ea5e9',
+  },
+  {
+    key: 'minibus',
+    route: '/minibus',
+    labelKey: 'navBarMinibusLabel',
+    Icon: BusFront,
+    accent: '#f47216',
   },
 ];
 

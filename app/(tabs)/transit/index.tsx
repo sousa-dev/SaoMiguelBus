@@ -13,6 +13,7 @@ import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
+import { MinibusTransitLink } from '@/features/transit/components/MinibusTransitLink';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
@@ -28,6 +29,7 @@ import { WifiOff } from 'lucide-react-native';
 import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
 import { useAppTheme } from '@/lib/theme';
 import { resolveDayType } from '@/lib/transit-format';
+import { resolveEnabledModules } from '@/config/island';
 
 /** Legacy webapp treats an unset time as midnight and returns the full day schedule. */
 const DEFAULT_SEARCH_TIME = '00:00';
@@ -48,6 +50,7 @@ export default function TransitScreen() {
   const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
+  const showMinibus = resolveEnabledModules(bootstrap.data?.island?.enabledModules).includes('minibus');
   const { data: stops = [], isLoading: stopsLoading } = useStops();
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
@@ -206,6 +209,7 @@ export default function TransitScreen() {
             />
           ) : null}
 
+          {showInstructions && showMinibus ? <MinibusTransitLink /> : null}
           {showInstructions ? <TransitInstructionCard /> : null}
         </TransitWebShell>
       </ScrollView>

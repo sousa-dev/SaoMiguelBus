@@ -21,6 +21,7 @@ const SCREEN_MODULE_KEY: Record<string, ModuleKey> = {
   traffic: 'traffic',
   tours: 'events',
   weather: 'weather',
+  minibus: 'minibus',
 };
 
 function TabBarIcon({
@@ -189,6 +190,18 @@ export default function TabLayout() {
           href: tabHref('weather'),
           tabBarIcon: ({ color, size }) => {
             const mod = HUB_MODULES.find((m) => m.key === 'weather');
+            return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="minibus"
+        options={{
+          title: t('navBarMinibusLabel'),
+          headerShown: false,
+          href: tabHref('minibus'),
+          tabBarIcon: ({ color, size }) => {
+            const mod = HUB_MODULES.find((m) => m.key === 'minibus');
             return mod ? <TabBarIcon Icon={mod.Icon} color={color} size={size} /> : null;
           },
         }}

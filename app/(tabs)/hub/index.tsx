@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { resolveEnabledModules } from '@/config/island';
 import { HomeBusCta } from '@/features/hub/components/home/HomeBusCta';
+import { HomeMinibusCta } from '@/features/hub/components/home/HomeMinibusCta';
 import { HomeEarthquakesCard } from '@/features/hub/components/home/HomeEarthquakesCard';
 import { HomeNewsList } from '@/features/hub/components/home/HomeNewsList';
 import { HomePrepareSection } from '@/features/hub/components/home/HomePrepareSection';
@@ -34,6 +35,7 @@ export default function HubScreen() {
   }, [home]);
 
   const showPrepare = tours.enabled || trails.enabled;
+  const showMinibus = enabledKeys.includes('minibus');
 
   return (
     <ScrollView
@@ -66,6 +68,7 @@ export default function HubScreen() {
           <HomePrepareSection tours={tours} trails={trails} />
         ) : null}
         <HomeBusCta />
+        {showMinibus ? <HomeMinibusCta /> : null}
       </View>
     </ScrollView>
   );
