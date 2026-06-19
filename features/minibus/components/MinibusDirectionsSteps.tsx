@@ -1,110 +1,109 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { buildJourneySteps, isJourneyStepHighlighted, type JourneyStep } from '@/features/minibus/journeySteps';
+import { onColorFor } from '@/lib/color-utils';
 import { radius, space, typography } from '@/lib/tokens';
 import type { MinibusJourney } from '@/lib/types';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   journey: MinibusJourney;
+  highlightedStepKey?: string | null;
+  onStepPress?: (stepKey: string) => void;
 };
 
-type Step = {
-  key: string;
-  label: string;
-  detail: string;
-  accent?: string;
-};
-
-function buildSteps(journey: MinibusJourney, t: (key: string, opts?: Record<string, unknown>) => string): Step[] {
-  const steps: Step[] = [];
-  let stepNumber = 0;
-
-  journey.legs.forEach((leg, legIndex) => {
-    if (legIndex > 0) {
-      const transfer = journey.transfer_stops[legIndex - 1];
-      stepNumber += 1;
-      steps.push({
-        key: `transfer-${legIndex}`,
-        label: `${stepNumber}. ${t('minibusStepTransfer')}`,
-        detail: t('minibusTransferAt', { stop: transfer?.name ?? leg.board.name }),
-      });
-    }
-
-    stepNumber += 1;
-    steps.push({
-      key: `board-${leg.line_code}-${leg.board.key}`,
-      label: `${stepNumber}. ${t('minibusStepBoard')}`,
-      detail: t('minibusStepBoardDetail', {
-        stop: leg.board.name,
-        line: leg.line_name ?? leg.line_code,
-      }),
-      accent: leg.line_color ?? undefined,
-    });
-
-    if (leg.num_stops > 2) {
-      stepNumber += 1;
-      steps.push({
-        key: `ride-${leg.line_code}-${leg.board.key}`,
-        label: `${stepNumber}. ${t('minibusStepRide')}`,
-        detail: t('minibusStopsCount', { count: leg.num_stops - 1 }),
-        accent: leg.line_color ?? undefined,
-      });
-    }
-
-    stepNumber += 1;
-    steps.push({
-      key: `alight-${leg.line_code}-${leg.alight.key}`,
-      label: `${stepNumber}. ${t('minibusStepAlight')}`,
-      detail: t('minibusStepAlightDetail', {
-        stop: leg.alight.name,
-        line: leg.line_name ?? leg.line_code,
-      }),
-      accent: leg.line_color ?? undefined,
-    });
-  });
-
-  return steps;
+function stepBadgeColor(step: JourneyStep, theme: ReturnType<typeof useAppTheme>): string {
+  if (step.kind === 'transfer') {
+    return '#6366f1';
+  }
+  return step.accent ?? theme.surfaceVariant;
 }
 
-export function MinibusDirectionsSteps({ journey }: Props) {
+export function MinibusDirectionsSteps({
+  journey,
+  highlightedStepKey = null,
+  onStepPress,
+}: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const steps = buildSteps(journey, t);
+  const steps = buildJourneySteps(journey, t);
 
   return (
     <View style={styles.wrap}>
-      {steps.map((step) => (
-        <View key={step.key} style={[styles.row, { borderColor: theme.outline }]}>
-          <View
-            style={[
-              styles.bullet,
-              { backgroundColor: step.accent ?? theme.surfaceVariant },
-            ]}
-          />
-          <View style={styles.body}>
+      {steps.map((step) => {
+        const isSelected = isJourneyStepHighlighted(step.key, highlightedStepKey, steps);
+        const isPressable = Boolean(onStepPress) && step.kind !== 'ride' && step.coordinate;
+        const badgeColor = stepBadgeColor(step, theme);
+        const onFill = onColorFor(badgeColor);
+
+        const rowBody = (
+          <>
             <Text style={[typography.label, { color: theme.text }]}>{step.label}</Text>
             <Text style={[typography.body, { color: theme.muted }]}>{step.detail}</Text>
+          </>
+        );
+
+        return (
+          <View
+            key={step.key}
+            style={[
+              styles.row,
+              { borderColor: theme.outline },
+              isSelected && { backgroundColor: theme.surfaceVariant, borderRadius: radius.sm },
+            ]}
+          >
+            <View
+              style={[
+                styles.badge,
+                {
+                  backgroundColor: badgeColor,
+                  borderColor: isSelected ? theme.text : 'transparent',
+                  borderWidth: isSelected ? 2 : 0,
+                },
+              ]}
+            >
+              <Text style={[styles.badgeText, { color: onFill }]}>{step.stepNumber}</Text>
+            </View>
+            <View style={styles.body}>
+              {isPressable ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={step.label}
+                  onPress={() => onStepPress?.(step.key)}
+                  style={({ pressed }) => [pressed && styles.pressed]}
+                >
+                  {rowBody}
+                </Pressable>
+              ) : (
+                rowBody
+              )}
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: space.sm },
+  wrap: { gap: space.xs },
   row: {
     flexDirection: 'row',
     gap: space.md,
     paddingVertical: space.sm,
+    paddingHorizontal: space.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  bullet: {
-    width: 10,
-    height: 10,
+  badge: {
+    width: 28,
+    height: 28,
     borderRadius: radius.full,
-    marginTop: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
+  badgeText: { fontSize: 12, fontWeight: '800' },
   body: { flex: 1, gap: 2 },
+  pressed: { opacity: 0.7 },
 });

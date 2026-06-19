@@ -33,6 +33,9 @@ interface StopNode {
   namePt: string;
   matchKey: string;
   interchangeKey: string;
+  externalId: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface Edge {
@@ -69,6 +72,9 @@ export function buildGraph(network: MinibusNetwork): MinibusGraph {
         namePt: stop.name_pt,
         matchKey: stop.match_key,
         interchangeKey: stop.interchange_key,
+        externalId: stop.external_id ?? null,
+        latitude: stop.latitude ?? null,
+        longitude: stop.longitude ?? null,
       });
       const group = interchangeGroups.get(stop.interchange_key) ?? [];
       group.push(stop.key);
@@ -119,7 +125,15 @@ export function resolveStopRefs(graph: MinibusGraph, token: string): string[] {
 }
 
 function stopRef(node: StopNode): MinibusStopRef {
-  return { key: node.key, name: node.namePt, line_code: node.lineCode, sequence: node.sequence };
+  return {
+    key: node.key,
+    name: node.namePt,
+    line_code: node.lineCode,
+    sequence: node.sequence,
+    external_id: node.externalId,
+    latitude: node.latitude,
+    longitude: node.longitude,
+  };
 }
 
 function pathToJourney(graph: MinibusGraph, path: string[]): MinibusJourney {

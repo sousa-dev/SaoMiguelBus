@@ -923,6 +923,7 @@
     "minibusLineMap": "Карта маршруту",
     "minibusLineMapA11y": "Карта лінії {{line}}",
     "minibusJourneyMapA11y": "Карта подорожі",
+    "minibusViewStopOnMap": "Переглянути {{stop}} на карті",
     "minibusTimetable": "Розклад",
     "minibusTimetableImageAlt": "Розклад {{line}}",
     "minibusTimetableUnavailable": "Зображення розкладу недоступне",

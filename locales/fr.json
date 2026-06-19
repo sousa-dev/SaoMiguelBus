@@ -998,6 +998,7 @@
     "minibusLineMap": "Carte du parcours",
     "minibusLineMapA11y": "Carte de la ligne {{line}}",
     "minibusJourneyMapA11y": "Carte du trajet",
+    "minibusViewStopOnMap": "Voir {{stop}} sur la carte",
     "minibusTimetable": "Horaire",
     "minibusTimetableImageAlt": "Horaire de la {{line}}",
     "minibusTimetableUnavailable": "Image d'horaire indisponible",

@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
+import { hasCoordinates, displayStopSequence } from '@/features/minibus/stopCoordinates';
 import type { MinibusNetworkStop } from '@/lib/types';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -9,9 +10,16 @@ import { useAppTheme } from '@/lib/theme';
 type Props = {
   stops: MinibusNetworkStop[];
   lineColor: string;
+  selectedStopKey?: string | null;
+  onStopPress?: (stopKey: string) => void;
 };
 
-export function MinibusLineStopsList({ stops, lineColor }: Props) {
+export function MinibusLineStopsList({
+  stops,
+  lineColor,
+  selectedStopKey = null,
+  onStopPress,
+}: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -29,16 +37,50 @@ export function MinibusLineStopsList({ stops, lineColor }: Props) {
       {ordered.map((stop, index) => {
         const isLast = index === ordered.length - 1;
         const transfers = stop.interchange_lines.filter(Boolean);
+        const isSelected = selectedStopKey === stop.key;
+        const canFocusOnMap = Boolean(onStopPress) && hasCoordinates(stop);
+
+        const stopName = (
+          <Text
+            style={[
+              typography.body,
+              {
+                color: theme.text,
+                fontWeight: isSelected ? '700' : '400',
+              },
+            ]}
+          >
+            {stop.name_pt}
+          </Text>
+        );
+
         return (
           <View key={stop.key} style={styles.row}>
             <View style={styles.rail}>
               <View style={[styles.bullet, { backgroundColor: lineColor }]}>
-                <Text style={styles.bulletText}>{stop.sequence}</Text>
+                <Text style={styles.bulletText}>{displayStopSequence(stop, stops)}</Text>
               </View>
               {!isLast ? <View style={[styles.connector, { backgroundColor: theme.border }]} /> : null}
             </View>
-            <View style={[styles.stopBody, !isLast && styles.stopBodySpaced]}>
-              <Text style={[typography.body, { color: theme.text }]}>{stop.name_pt}</Text>
+            <View
+              style={[
+                styles.stopBody,
+                !isLast && styles.stopBodySpaced,
+                isSelected && { backgroundColor: theme.surfaceVariant, borderRadius: radius.sm },
+              ]}
+            >
+              {canFocusOnMap ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('minibusViewStopOnMap', { stop: stop.name_pt })}
+                  onPress={() => onStopPress?.(stop.key)}
+                  style={({ pressed }) => [pressed && styles.pressed]}
+                >
+                  {stopName}
+                </Pressable>
+              ) : (
+                stopName
+              )}
               {transfers.length > 0 ? (
                 <Text style={[typography.caption, { color: theme.muted, marginTop: 2 }]}>
                   {t('minibusInterchangeWith', { lines: transfers.join(', ') })}
@@ -65,6 +107,7 @@ const styles = StyleSheet.create({
   },
   bulletText: { color: '#111', fontSize: 12, fontWeight: '800' },
   connector: { width: 2, flex: 1, minHeight: space.md, marginVertical: 2 },
-  stopBody: { flex: 1, paddingTop: 4 },
+  stopBody: { flex: 1, paddingTop: 4, paddingHorizontal: space.xs },
   stopBodySpaced: { paddingBottom: space.sm },
+  pressed: { opacity: 0.7 },
 });

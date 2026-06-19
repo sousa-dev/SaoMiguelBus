@@ -87,17 +87,31 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         };
       }
 
-      function markerIcon(color, title) {
+      function markerIcon(color, title, label, size, highlighted) {
         const fill = color || '#3388ff';
-        const label = title ? '<div class="hub-marker-label">' + title + '</div>' : '';
+        const px = size || 28;
+        const radius = px / 2;
+        const inner = label || '';
+        const fontSize = px <= 20 ? 10 : 11;
+        const innerHtml = inner
+          ? '<div style="color:#fff;font:700 ' + fontSize + 'px/1 system-ui,sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.45)">' + inner + '</div>'
+          : '';
+        const caption = title && !inner
+          ? '<div class="hub-marker-label">' + title + '</div>'
+          : '';
+        const halo = highlighted
+          ? '<div style="position:absolute;inset:-5px;border-radius:999px;border:2px solid #111;box-shadow:0 0 0 2px #fff"></div>'
+          : '';
         return L.divIcon({
           className: '',
           html:
             '<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%)">' +
-            '<div style="width:28px;height:28px;border-radius:14px;background:' + fill +
-            ';border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.28)"></div>' + label + '</div>',
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
+            '<div style="position:relative;width:' + px + 'px;height:' + px + 'px">' + halo +
+            '<div style="width:' + px + 'px;height:' + px + 'px;border-radius:' + radius + 'px;background:' + fill +
+            ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center">' +
+            innerHtml + '</div></div>' + caption + '</div>',
+          iconSize: [px + (highlighted ? 10 : 0), px + (highlighted ? 10 : 0)],
+          iconAnchor: [(px + (highlighted ? 10 : 0)) / 2, (px + (highlighted ? 10 : 0)) / 2],
         });
       }
 
@@ -107,7 +121,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         polylineLayer.clearLayers();
         (overlays.markers || []).forEach(function (marker) {
           const m = L.marker([marker.latitude, marker.longitude], {
-            icon: markerIcon(marker.pinColor, marker.title),
+            icon: markerIcon(marker.pinColor, marker.title, marker.label, marker.size, marker.highlighted),
             draggable: !!marker.draggable,
           });
           m.on('click', function () { post('markerPress', { id: marker.id }); });

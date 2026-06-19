@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  displayStopSequence,
+  enrichJourneyCoordinates,
   fitRegionForCoordinates,
+  isLoopTerminus,
+  journeyHasMapCoordinates,
   journeyPolylines,
+  lineMapStops,
   linePolyline,
+  normalizeMapHighlightKey,
 } from '@/features/minibus/stopCoordinates';
-import type { MinibusJourney, MinibusNetworkStop } from '@/lib/types';
+import type { MinibusJourney, MinibusNetwork, MinibusNetworkStop } from '@/lib/types';
 
 function geoStop(sequence: number, key: string, lat: number, lng: number): MinibusNetworkStop {
   return {
@@ -94,5 +100,73 @@ describe('stopCoordinates', () => {
     ]);
     assert.ok(region.latitudeDelta >= 0.015);
     assert.ok(region.longitudeDelta >= 0.015);
+  });
+
+  it('lineMapStops drops loop terminus when it shares coords with stop 1', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+      geoStop(21, 'a-21', 37.73, -25.67),
+    ];
+    const mapStops = lineMapStops(stops);
+    assert.equal(mapStops.length, 2);
+    assert.equal(mapStops[0]?.key, 'a-01');
+    assert.equal(mapStops[1]?.key, 'a-02');
+    assert.equal(linePolyline(stops).length, 2);
+  });
+
+  it('displayStopSequence shows 1 on loop terminus', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(21, 'a-21', 37.73, -25.67),
+    ];
+    assert.equal(displayStopSequence(stops[1], stops), 1);
+    assert.ok(isLoopTerminus(stops[1], stops));
+    assert.equal(normalizeMapHighlightKey('a-21', stops), 'a-01');
+  });
+
+  it('enrichJourneyCoordinates fills coords from the network graph', () => {
+    const network: MinibusNetwork = {
+      interchanges_by_key: {},
+      lines: [
+        {
+          code: 'D',
+          slug: 'line-d',
+          name: 'D',
+          color: '#f00',
+          direction: 'circular',
+          stop_count: 2,
+          stops: [
+            geoStop(1, 'd-01', 37.73, -25.67),
+            geoStop(2, 'd-02', 37.74, -25.68),
+          ],
+        },
+      ],
+    };
+    const journey: MinibusJourney = {
+      transfers: 0,
+      total_stops: 2,
+      transfer_stops: [],
+      legs: [
+        {
+          line_code: 'D',
+          line_slug: 'line-d',
+          line_name: 'D',
+          line_color: '#f00',
+          board: { key: 'd-01', name: 'Start', line_code: 'D', sequence: 1 },
+          alight: { key: 'd-02', name: 'End', line_code: 'D', sequence: 2 },
+          stops: [
+            { key: 'd-01', name: 'Start', line_code: 'D', sequence: 1 },
+            { key: 'd-02', name: 'End', line_code: 'D', sequence: 2 },
+          ],
+          num_stops: 2,
+          departure_time: null,
+          arrival_time: null,
+        },
+      ],
+    };
+    const enriched = enrichJourneyCoordinates(journey, network);
+    assert.equal(enriched.legs[0]?.board.latitude, 37.73);
+    assert.ok(journeyHasMapCoordinates(enriched));
   });
 });

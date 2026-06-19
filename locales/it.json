@@ -930,6 +930,7 @@
     "minibusLineMap": "Mappa del percorso",
     "minibusLineMapA11y": "Mappa linea {{line}}",
     "minibusJourneyMapA11y": "Mappa del viaggio",
+    "minibusViewStopOnMap": "Vedi {{stop}} sulla mappa",
     "minibusTimetable": "Orario",
     "minibusTimetableImageAlt": "Orario della {{line}}",
     "minibusTimetableUnavailable": "Immagine dell'orario non disponibile",

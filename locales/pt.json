@@ -1040,6 +1040,7 @@
     "minibusLineMap": "Mapa do percurso",
     "minibusLineMapA11y": "Mapa da linha {{line}}",
     "minibusJourneyMapA11y": "Mapa do trajeto",
+    "minibusViewStopOnMap": "Ver {{stop}} no mapa",
     "minibusTimetable": "Horário",
     "minibusTimetableImageAlt": "Horário da {{line}}",
     "minibusTimetableUnavailable": "Imagem de horário indisponível",

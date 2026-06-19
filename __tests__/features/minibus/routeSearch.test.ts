@@ -147,4 +147,23 @@ describe('searchMinibusJourneys', () => {
     assert.equal(result.origin.matched, false);
     assert.deepEqual(result.journeys, []);
   });
+
+  it('includes stop coordinates on journey legs when the network has them', () => {
+    const network: MinibusNetwork = {
+      ...NETWORK,
+      lines: NETWORK.lines.map((line) => ({
+        ...line,
+        stops: line.stops.map((stop) => ({
+          ...stop,
+          latitude: 37.73 + stop.sequence * 0.001,
+          longitude: -25.67 - stop.sequence * 0.001,
+        })),
+      })),
+    };
+    const result = searchMinibusJourneys(network, 'a-01', 'a-04');
+    const leg = result.journeys[0]?.legs[0];
+    assert.equal(typeof leg?.board.latitude, 'number');
+    assert.equal(typeof leg?.alight.longitude, 'number');
+    assert.equal(typeof leg?.stops[0]?.latitude, 'number');
+  });
 });

@@ -1040,6 +1040,7 @@
     "minibusLineMap": "Route map",
     "minibusLineMapA11y": "Line {{line}} route map",
     "minibusJourneyMapA11y": "Journey route map",
+    "minibusViewStopOnMap": "View {{stop}} on map",
     "minibusTimetable": "Timetable",
     "minibusTimetableImageAlt": "{{line}} timetable",
     "minibusTimetableUnavailable": "Timetable image unavailable",

@@ -6,6 +6,11 @@ export type MapMarkerOverlay = {
   latitude: number;
   longitude: number;
   pinColor?: string;
+  /** Shown inside the pin circle (e.g. stop sequence). */
+  label?: string;
+  /** Pin diameter in px; defaults to 28 on Android WebView. */
+  size?: number;
+  highlighted?: boolean;
   title?: string;
   draggable?: boolean;
   onPress?: () => void;

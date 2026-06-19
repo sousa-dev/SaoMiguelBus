@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,10 @@ import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
-import { MinibusLineMap } from '@/features/minibus/components/MinibusLineMap';
+import {
+  MinibusLineMap,
+  type MinibusLineMapHandle,
+} from '@/features/minibus/components/MinibusLineMap';
 import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
@@ -27,6 +30,10 @@ export default function MinibusLineDetailScreen() {
   const offlineNetwork = snapshot?.bundle?.network ?? null;
   const networkQuery = useMinibusNetwork(!offlineNetwork);
   const network = offlineNetwork ?? networkQuery.data ?? null;
+  const scrollRef = useRef<ScrollView>(null);
+  const mapRef = useRef<MinibusLineMapHandle>(null);
+  const [mapScrollY, setMapScrollY] = useState(0);
+  const [highlightedStopKey, setHighlightedStopKey] = useState<string | null>(null);
 
   // Offline-aware: fall back to the cached snapshot line when the query has no data.
   const cachedLine = snapshot?.bundle?.lines.find((l) => l.slug === slug) ?? null;
@@ -46,6 +53,17 @@ export default function MinibusLineDetailScreen() {
     }
   }, [line?.code, stops.length]);
 
+  const onStopPress = (stopKey: string) => {
+    setHighlightedStopKey(stopKey);
+    scrollRef.current?.scrollTo({ y: Math.max(0, mapScrollY - space.md), animated: true });
+    requestAnimationFrame(() => {
+      mapRef.current?.focusStop(stopKey);
+    });
+    if (line) {
+      track('minibus', 'view', { screen: 'line_map_stop', line: line.code, stop: stopKey });
+    }
+  };
+
   if (!line) {
     return (
       <Screen withStackHeader>
@@ -60,7 +78,11 @@ export default function MinibusLineDetailScreen() {
 
   return (
     <Screen withStackHeader>
-      <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: theme.background }}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        style={{ backgroundColor: theme.background }}
+      >
         <View style={styles.adTop}>
           <AdBanner on="home" slot="minibus-line-top" />
         </View>
@@ -71,9 +93,22 @@ export default function MinibusLineDetailScreen() {
           {formatServiceSummary(line.service_summary, t)}
         </Text>
 
-        <MinibusLineStopsList stops={stops} lineColor={line.color} />
+        <MinibusLineStopsList
+          stops={stops}
+          lineColor={line.color}
+          selectedStopKey={highlightedStopKey}
+          onStopPress={onStopPress}
+        />
 
-        <MinibusLineMap stops={stops} lineColor={line.color} lineCode={line.code} />
+        <View onLayout={(event) => setMapScrollY(event.nativeEvent.layout.y)}>
+          <MinibusLineMap
+            ref={mapRef}
+            stops={stops}
+            lineColor={line.color}
+            lineCode={line.code}
+            highlightedStopKey={highlightedStopKey}
+          />
+        </View>
 
         <Text style={[typography.headline, { color: theme.text, marginTop: space.lg }]}>
           {t('minibusTimetable')}

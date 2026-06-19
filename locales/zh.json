@@ -923,6 +923,7 @@
     "minibusLineMap": "线路地图",
     "minibusLineMapA11y": "{{line}} 线线路图",
     "minibusJourneyMapA11y": "行程地图",
+    "minibusViewStopOnMap": "在地图上查看{{stop}}",
     "minibusTimetable": "时刻表",
     "minibusTimetableImageAlt": "{{line}} 时刻表",
     "minibusTimetableUnavailable": "时刻表图片不可用",
