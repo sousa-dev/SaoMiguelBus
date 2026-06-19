@@ -1,19 +1,20 @@
-import { ArrowRight, ArrowsUpFromLine } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { ArrowRight, ArrowsUpFromLine, ChevronRight } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
 import type { MinibusJourney, MinibusLine } from '@/lib/types';
-import { radius, space, typography } from '@/lib/tokens';
+import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   journey: MinibusJourney;
   linesByCode: Map<string, MinibusLine>;
+  onPress?: () => void;
 };
 
-export function MinibusJourneyCard({ journey, linesByCode }: Props) {
+export function MinibusJourneyCard({ journey, linesByCode, onPress }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -22,13 +23,16 @@ export function MinibusJourneyCard({ journey, linesByCode }: Props) {
       ? t('minibusDirectJourney')
       : t('minibusTransfersCount', { count: journey.transfers });
 
-  return (
-    <Card style={styles.card}>
+  const content = (
+    <>
       <View style={styles.header}>
         <Text style={[typography.label, { color: theme.text }]}>{summary}</Text>
-        <Text style={[typography.caption, { color: theme.muted }]}>
-          {t('minibusStopsCount', { count: journey.total_stops })}
-        </Text>
+        <View style={styles.headerRight}>
+          <Text style={[typography.caption, { color: theme.muted }]}>
+            {t('minibusStopsCount', { count: journey.total_stops })}
+          </Text>
+          {onPress ? <ChevronRight size={iconSize.sm} color={theme.muted} strokeWidth={2} /> : null}
+        </View>
       </View>
 
       {journey.legs.map((leg, index) => {
@@ -76,13 +80,28 @@ export function MinibusJourneyCard({ journey, linesByCode }: Props) {
         </View>
         );
       })}
-    </Card>
+    </>
+  );
+
+  if (!onPress) {
+    return <Card style={styles.card}>{content}</Card>;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t('minibusViewDirections')}
+      onPress={onPress}
+    >
+      <Card style={styles.card}>{content}</Card>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: { marginBottom: space.sm, gap: space.sm },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   transferRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { MinibusJourneyResults } from '@/features/minibus/components/MinibusJourneyResults';
 import { MinibusPlannerCard } from '@/features/minibus/components/MinibusPlannerCard';
+import { setPendingDirections } from '@/features/minibus/directionsStore';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
@@ -21,6 +23,7 @@ import { useAppTheme } from '@/lib/theme';
 export default function MinibusSearchScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { snapshot } = useMinibusOffline();
@@ -125,7 +128,14 @@ export default function MinibusSearchScreen() {
             <EmptyState title={t('minibusNoJourneys')} description={t('minibusNoJourneysHint')} />
           ) : null}
 
-          <MinibusJourneyResults journeys={journeys} linesByCode={linesByCode} />
+          <MinibusJourneyResults
+            journeys={journeys}
+            linesByCode={linesByCode}
+            onJourneyPress={(journey) => {
+              setPendingDirections(journey, linesByCode);
+              router.push('/minibus/directions');
+            }}
+          />
         </TransitWebShell>
       </ScrollView>
       <InterstitialOrchestrator

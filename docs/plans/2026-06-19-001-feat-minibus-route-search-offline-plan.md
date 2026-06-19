@@ -399,6 +399,14 @@ python manage.py test minibus
 
 ---
 
+## Follow-up: Coordinates & in-app maps (shipped 2026-06-19)
+
+Official PDL stop coordinates merged from `src/minibus/data/stops_registry_sao_miguel.json` into `network_stops_sao_miguel.json` (`external_id`, `latitude`, `longitude` on all 89 routable stops). Exposed via `/network`, `/route` leg stop refs, and offline bundle (cache key `minibus:offline:v3:*`).
+
+Mobile: line detail route map (`MinibusLineMap`), journey search → directions screen with numbered steps + multi-leg map (`MinibusJourneyMap`). In-app only — no external maps deep links. Re-merge coords: `python manage.py merge_minibus_coordinates` (or `python minibus/data/merge_coordinates.py`).
+
+---
+
 ## Sources / Research
 
 - Minibus app: `SaoMiguelBus-api/src/minibus/{models,services,api_v3,urls_v3}.py`, `management/commands/import_minibus.py`, `data/{catalog_sao_miguel,network_stops_sao_miguel}.json`, `tests/test_minibus.py`.

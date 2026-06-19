@@ -8,6 +8,7 @@ import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
+import { MinibusLineMap } from '@/features/minibus/components/MinibusLineMap';
 import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
@@ -30,12 +31,20 @@ export default function MinibusLineDetailScreen() {
   // Offline-aware: fall back to the cached snapshot line when the query has no data.
   const cachedLine = snapshot?.bundle?.lines.find((l) => l.slug === slug) ?? null;
   const line = lineQuery.data ?? cachedLine;
+  const networkLine = line ? network?.lines.find((row) => row.slug === line.slug) ?? null : null;
+  const stops = networkLine?.stops ?? [];
 
   useEffect(() => {
     if (line) {
       track('minibus', 'view', { screen: 'line', line: line.code });
     }
   }, [line?.code]);
+
+  useEffect(() => {
+    if (stops.length > 0 && line) {
+      track('minibus', 'view', { screen: 'line_map', line: line.code });
+    }
+  }, [line?.code, stops.length]);
 
   if (!line) {
     return (
@@ -48,8 +57,6 @@ export default function MinibusLineDetailScreen() {
   const sourceUrl = lineQuery.data?.source_url ?? snapshot?.bundle?.source_url ?? null;
   const importedAt = lineQuery.data?.imported_at ?? snapshot?.bundle?.imported_at ?? null;
   const localUri = localLineImageUri(snapshot, line.slug);
-  const networkLine = network?.lines.find((row) => row.slug === line.slug) ?? null;
-  const stops = networkLine?.stops ?? [];
 
   return (
     <Screen withStackHeader>
@@ -65,6 +72,8 @@ export default function MinibusLineDetailScreen() {
         </Text>
 
         <MinibusLineStopsList stops={stops} lineColor={line.color} />
+
+        <MinibusLineMap stops={stops} lineColor={line.color} lineCode={line.code} />
 
         <Text style={[typography.headline, { color: theme.text, marginTop: space.lg }]}>
           {t('minibusTimetable')}

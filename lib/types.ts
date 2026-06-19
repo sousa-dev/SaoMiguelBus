@@ -474,6 +474,9 @@ export interface MinibusNetworkStop {
   match_key: string;
   interchange_key: string;
   interchange_lines: string[];
+  external_id?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface MinibusNetworkLine {
@@ -501,6 +504,9 @@ export interface MinibusStopRef {
   name: string;
   line_code: string;
   sequence: number;
+  external_id?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface MinibusLeg {

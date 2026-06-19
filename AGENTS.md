@@ -29,3 +29,9 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 - App User ID format: `smb_user_<django_user_id>` — must match backend `billing.services.REVENUECAT_APP_USER_ID_PREFIX`.
 - Env: `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`, optional `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` (default `Sao Miguel Hub Premium`).
 - Requires a dev client or EAS build — IAP does not run in Expo Go.
+
+## PDL Mini Bus maps
+
+- Stop coordinates ship in the offline bundle (`network.lines[].stops[]`: `latitude`, `longitude`, `external_id`) and on journey leg `board`/`alight` refs from `GET /api/v3/minibus/route`.
+- In-app maps only (v1): `OsmMapView` on line detail (`MinibusLineMap`) and journey directions (`MinibusJourneyMap` + `MinibusDirectionsSteps`). Polylines are straight stop-to-stop segments; no external Apple/Google Maps handoff.
+- Helpers: `features/minibus/stopCoordinates.ts` (`linePolyline`, `journeyPolylines`, `fitRegionForCoordinates`).

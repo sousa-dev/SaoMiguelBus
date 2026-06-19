@@ -20,6 +20,7 @@ export default function MinibusLayout() {
         }}
       />
       <Stack.Screen name="search" options={{ title: t('minibusSearchTitle') }} />
+      <Stack.Screen name="directions" options={{ title: t('minibusDirectionsTitle') }} />
       <Stack.Screen name="[slug]" options={{ title: t('minibusLineDetail') }} />
       <Stack.Screen name="pdf" options={{ title: t('minibusPdfTitle') }} />
       <Stack.Screen name="schematic" options={{ title: t('minibusSchematic') }} />
