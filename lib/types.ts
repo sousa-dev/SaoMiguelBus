@@ -411,6 +411,159 @@ export interface ParishWeatherHourly {
   attribution: string;
 }
 
+export interface MinibusServiceSummary {
+  weekday?: { start: string; end: string };
+  saturday_departures?: string[] | null;
+}
+
+export interface MinibusLine {
+  code: string;
+  slug: string;
+  name: string;
+  color: string;
+  sort_order: number;
+  service_summary: MinibusServiceSummary;
+  timetable_slug?: string | null;
+  timetable_file_url?: string | null;
+}
+
+export interface MinibusTariff {
+  key: string;
+  label: string;
+  price_eur: string;
+  sort_order: number;
+}
+
+export interface MinibusDocument {
+  slug: string;
+  title: string;
+  doc_type: 'timetable' | 'network_map' | 'tariffs' | 'schematic';
+  line_code?: string | null;
+  file_url?: string | null;
+  has_file: boolean;
+}
+
+export interface MinibusMeta {
+  attribution: string;
+  source_url: string;
+  imported_at?: string | null;
+  tariffs_effective_date?: string | null;
+  source_revision?: string;
+}
+
+export interface MinibusLinesResponse extends MinibusMeta {
+  lines: MinibusLine[];
+}
+
+export interface MinibusTariffsResponse extends MinibusMeta {
+  tariffs: MinibusTariff[];
+}
+
+export interface MinibusDocumentsResponse extends MinibusMeta {
+  documents: MinibusDocument[];
+}
+
+export interface MinibusDocumentResponse extends MinibusDocument, MinibusMeta {}
+
+// --- Network stops + route search --- //
+
+export interface MinibusNetworkStop {
+  sequence: number;
+  key: string;
+  name_pt: string;
+  match_key: string;
+  interchange_key: string;
+  interchange_lines: string[];
+}
+
+export interface MinibusNetworkLine {
+  code: string;
+  slug: string;
+  name: string;
+  color: string | null;
+  direction: string;
+  stop_count: number;
+  stops: MinibusNetworkStop[];
+}
+
+export interface MinibusNetwork {
+  source?: string | null;
+  extracted_at?: string | null;
+  match_key_notes?: string | null;
+  interchanges_by_key: Record<string, string[]>;
+  lines: MinibusNetworkLine[];
+}
+
+export interface MinibusNetworkResponse extends MinibusNetwork, MinibusMeta {}
+
+export interface MinibusStopRef {
+  key: string;
+  name: string;
+  line_code: string;
+  sequence: number;
+}
+
+export interface MinibusLeg {
+  line_code: string;
+  line_slug: string;
+  line_name: string | null;
+  line_color: string | null;
+  board: MinibusStopRef;
+  alight: MinibusStopRef;
+  stops: MinibusStopRef[];
+  num_stops: number;
+  // Reserved for a later schedules feature; null until then.
+  departure_time: string | null;
+  arrival_time: string | null;
+}
+
+export interface MinibusTransferStop {
+  name: string;
+  from_line: string;
+  to_line: string;
+}
+
+export interface MinibusJourney {
+  transfers: number;
+  total_stops: number;
+  transfer_stops: MinibusTransferStop[];
+  legs: MinibusLeg[];
+}
+
+export interface MinibusRouteEndpoint {
+  query: string;
+  name: string | null;
+  matched: boolean;
+}
+
+export interface MinibusRouteSearchResponse extends MinibusMeta {
+  origin: MinibusRouteEndpoint;
+  destination: MinibusRouteEndpoint;
+  journeys: MinibusJourney[];
+}
+
+// --- Offline bundle (ungated on-device snapshot) --- //
+
+export interface MinibusOfflineImage {
+  line_code: string;
+  line_slug: string;
+  slug: string | null;
+  url: string | null;
+}
+
+export interface MinibusOfflineBundle extends MinibusMeta {
+  version: string;
+  generated_at: string;
+  lines: MinibusLine[];
+  tariffs: MinibusTariff[];
+  network: MinibusNetwork;
+  images: MinibusOfflineImage[];
+}
+
+export interface MinibusBundleVersionResponse {
+  version: string;
+}
+
 // --- First-party ads (compat /api/v1/ad) --- //
 
 /**

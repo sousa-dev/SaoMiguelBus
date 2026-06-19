@@ -16,6 +16,7 @@
     "expo-build-properties": "~56.0.16",
     "expo-constants": "~56.0.16",
     "expo-crypto": "^56.0.4",
+    "expo-file-system": "~56.0.8",
     "expo-font": "~56.0.5",
     "expo-haptics": "~56.0.3",
     "expo-image-picker": "~56.0.15",

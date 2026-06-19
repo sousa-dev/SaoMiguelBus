@@ -37,6 +37,15 @@ import type {
   WeatherParishesResponse,
   ParishWeather,
   ParishWeatherHourly,
+  MinibusLinesResponse,
+  MinibusTariffsResponse,
+  MinibusDocumentsResponse,
+  MinibusLine,
+  MinibusDocumentResponse,
+  MinibusNetworkResponse,
+  MinibusRouteSearchResponse,
+  MinibusOfflineBundle,
+  MinibusBundleVersionResponse,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -424,6 +433,72 @@ export async function fetchWeatherParishHourly(
   return apiFetch<ParishWeatherHourly>(
     `/api/v3/weather/parishes/${encodeURIComponent(slug)}/hourly?${query.toString()}`,
   );
+}
+
+function minibusQuery(locale?: string): string {
+  const query = new URLSearchParams();
+  if (locale) {
+    query.set('locale', locale);
+  }
+  const suffix = query.toString();
+  return suffix ? `?${suffix}` : '';
+}
+
+export async function fetchMinibusLines(params?: { locale?: string }): Promise<MinibusLinesResponse> {
+  return apiFetch<MinibusLinesResponse>(`/api/v3/minibus/lines${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusLine(
+  slug: string,
+  params?: { locale?: string },
+): Promise<MinibusLine & MinibusMeta> {
+  return apiFetch<MinibusLine & MinibusMeta>(
+    `/api/v3/minibus/lines/${encodeURIComponent(slug)}${minibusQuery(params?.locale)}`,
+  );
+}
+
+export async function fetchMinibusTariffs(params?: { locale?: string }): Promise<MinibusTariffsResponse> {
+  return apiFetch<MinibusTariffsResponse>(`/api/v3/minibus/tariffs${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusDocuments(params?: {
+  locale?: string;
+}): Promise<MinibusDocumentsResponse> {
+  return apiFetch<MinibusDocumentsResponse>(`/api/v3/minibus/documents${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusSchematic(params?: {
+  locale?: string;
+}): Promise<MinibusDocumentResponse> {
+  return apiFetch<MinibusDocumentResponse>(`/api/v3/minibus/schematic${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusNetwork(params?: {
+  locale?: string;
+}): Promise<MinibusNetworkResponse> {
+  return apiFetch<MinibusNetworkResponse>(`/api/v3/minibus/network${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusRoute(params: {
+  origin: string;
+  destination: string;
+  locale?: string;
+}): Promise<MinibusRouteSearchResponse> {
+  const query = new URLSearchParams({ origin: params.origin, destination: params.destination });
+  if (params.locale) {
+    query.set('locale', params.locale);
+  }
+  return apiFetch<MinibusRouteSearchResponse>(`/api/v3/minibus/route?${query.toString()}`);
+}
+
+export async function fetchMinibusOfflineBundle(params?: {
+  locale?: string;
+}): Promise<MinibusOfflineBundle> {
+  return apiFetch<MinibusOfflineBundle>(`/api/v3/minibus/offline-bundle${minibusQuery(params?.locale)}`);
+}
+
+export async function fetchMinibusBundleVersion(): Promise<MinibusBundleVersionResponse> {
+  return apiFetch<MinibusBundleVersionResponse>(`/api/v3/minibus/offline-bundle/version`);
 }
 
 export async function fetchSeismicEvents(params?: {
