@@ -43,7 +43,7 @@ async function saveSnapshot(snapshot: MinibusOfflineSnapshot): Promise<void> {
   await AsyncStorage.setItem(snapshotKey(), JSON.stringify(snapshot));
 }
 
-async function downloadLineImages(bundle: MinibusOfflineBundle): Promise<Record<string, string>> {
+async function downloadBundleImages(bundle: MinibusOfflineBundle): Promise<Record<string, string>> {
   const dir = imageDirectory();
   try {
     if (!dir.exists) {
@@ -54,19 +54,27 @@ async function downloadLineImages(bundle: MinibusOfflineBundle): Promise<Record<
   }
 
   const uris: Record<string, string> = {};
+
+  const queue: { key: string; url: string }[] = [];
   for (const image of bundle.images) {
-    if (!image.url || !image.line_slug) {
-      continue;
+    if (image.url && image.line_slug) {
+      queue.push({ key: image.line_slug, url: image.url });
     }
-    const target = new File(dir, `${image.line_slug}.png`);
+  }
+  if (bundle.network_map?.slug && bundle.network_map.url) {
+    queue.push({ key: bundle.network_map.slug, url: bundle.network_map.url });
+  }
+
+  for (const item of queue) {
+    const target = new File(dir, `${item.key}.png`);
     try {
       if (target.exists) {
         target.delete();
       }
-      const downloaded = await File.downloadFileAsync(image.url, target, { idempotent: true });
-      uris[image.line_slug] = downloaded.uri;
+      const downloaded = await File.downloadFileAsync(item.url, target, { idempotent: true });
+      uris[item.key] = downloaded.uri;
     } catch (error) {
-      logger.warn('minibus image download failed', image.line_slug, error);
+      logger.warn('minibus image download failed', item.key, error);
     }
   }
   return uris;
@@ -75,7 +83,7 @@ async function downloadLineImages(bundle: MinibusOfflineBundle): Promise<Record<
 export async function refreshMinibusSnapshot(locale: string): Promise<MinibusOfflineSnapshot | null> {
   try {
     const bundle = await fetchMinibusOfflineBundle({ locale });
-    const imageUris = await downloadLineImages(bundle);
+    const imageUris = await downloadBundleImages(bundle);
     const snapshot: MinibusOfflineSnapshot = {
       version: bundle.version,
       locale,
@@ -108,7 +116,9 @@ export async function refreshMinibusSnapshotIfStale(locale: string): Promise<{
       const imagesPresent = cached.bundle.images.every(
         (image) => !image.line_slug || Boolean(cached.imageUris[image.line_slug]),
       );
-      if (remote.version && cached.version === remote.version && imagesPresent) {
+      const networkMapPresent =
+        !cached.bundle.network_map?.slug || Boolean(cached.imageUris[cached.bundle.network_map.slug]);
+      if (remote.version && cached.version === remote.version && imagesPresent && networkMapPresent) {
         return { snapshot: cached, updated: false };
       }
     } catch (error) {
@@ -128,4 +138,8 @@ export async function hasMinibusOfflineCache(): Promise<boolean> {
 
 export function localLineImageUri(snapshot: MinibusOfflineSnapshot | null, lineSlug: string): string | null {
   return snapshot?.imageUris?.[lineSlug] ?? null;
+}
+
+export function localDocumentImageUri(snapshot: MinibusOfflineSnapshot | null, slug: string): string | null {
+  return snapshot?.imageUris?.[slug] ?? null;
 }

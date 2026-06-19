@@ -1,6 +1,7 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { formatAppDate } from '@/lib/date-format';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -25,7 +26,7 @@ export function MinibusAttributionFooter({ sourceUrl, importedAt }: Props) {
       </Pressable>
       {importedAt ? (
         <Text style={[styles.text, { color: theme.muted }]}>
-          {t('minibusImportedAt', { date: new Date(importedAt).toLocaleDateString() })}
+          {t('minibusImportedAt', { date: formatAppDate(importedAt) })}
         </Text>
       ) : null}
       <Text style={[styles.text, { color: theme.muted }]}>{t('minibusDisclaimer')}</Text>

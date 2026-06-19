@@ -10,9 +10,12 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/StateView';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
+import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
 import { MinibusTariffTable } from '@/features/minibus/components/MinibusTariffTable';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLines, useMinibusTariffs } from '@/features/minibus/hooks/useMinibusQueries';
+import { localDocumentImageUri } from '@/features/minibus/offline';
+import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
 import { resolveEnabledModules, staticIslandConfig } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { track } from '@/lib/analytics';
@@ -59,6 +62,10 @@ export default function MinibusScreen() {
   const effectiveDate =
     tariffsQuery.data?.tariffs_effective_date ?? snapshot?.bundle?.tariffs_effective_date ?? null;
 
+  const networkMapLocalUri = localDocumentImageUri(snapshot, 'network-map');
+  const networkMapRemoteUrl =
+    snapshot?.bundle?.network_map?.url ?? buildMinibusDocumentFileUrl('network-map');
+
   const loading = linesQuery.isLoading && !lines;
   const error = linesQuery.isError && !lines;
 
@@ -98,6 +105,20 @@ export default function MinibusScreen() {
             </View>
           </Card>
         </Pressable>
+
+        <Text style={[typography.headline, { color: theme.text, marginBottom: space.sm }]}>
+          {t('minibusNetworkMap')}
+        </Text>
+        <View style={styles.networkMapWrap}>
+          <MinibusLineImage
+            compact
+            localUri={networkMapLocalUri}
+            remoteUrl={networkMapRemoteUrl}
+            accessibilityLabel={t('minibusNetworkMapImageAlt')}
+            tapHintKey="minibusNetworkMapTapToZoom"
+            fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
+          />
+        </View>
 
         {loading ? (
           <View style={styles.skeletons}>
@@ -154,4 +175,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBody: { flex: 1, gap: 2 },
+  networkMapWrap: { marginBottom: space.lg },
 });

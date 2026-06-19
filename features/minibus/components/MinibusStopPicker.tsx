@@ -1,6 +1,6 @@
 import { MapPin } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { normalizeToken } from '@/features/minibus/routeSearch';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
@@ -14,30 +14,23 @@ type Props = {
   onChangeText: (text: string) => void;
 };
 
-const MAX_SUGGESTIONS = 6;
+const LIST_MAX_HEIGHT = 220;
+
+function sortStops(stops: string[]): string[] {
+  return [...stops].sort((a, b) => a.localeCompare(b, 'pt'));
+}
 
 export function MinibusStopPicker({ label, value, placeholder, stops, onChangeText }: Props) {
   const theme = useAppTheme();
-  const [focused, setFocused] = useState(false);
-  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (blurTimer.current) {
-      clearTimeout(blurTimer.current);
-    }
-  }, []);
-
-  const suggestions = useMemo(() => {
+  const options = useMemo(() => {
+    const sorted = sortStops(stops);
     const query = normalizeToken(value);
-    if (!focused || query.length < 2) {
-      return [];
+    if (!query) {
+      return sorted;
     }
-    // Hide the list once the value already exactly matches a stop.
-    if (stops.some((stop) => normalizeToken(stop) === query)) {
-      return [];
-    }
-    return stops.filter((stop) => normalizeToken(stop).includes(query)).slice(0, MAX_SUGGESTIONS);
-  }, [value, stops, focused]);
+    return sorted.filter((stop) => normalizeToken(stop).includes(query));
+  }, [value, stops]);
 
   return (
     <View style={styles.wrap}>
@@ -50,34 +43,44 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
           placeholderTextColor={theme.muted}
           value={value}
           onChangeText={onChangeText}
-          onFocus={() => {
-            if (blurTimer.current) {
-              clearTimeout(blurTimer.current);
-            }
-            setFocused(true);
-          }}
-          onBlur={() => {
-            // Delay so a suggestion tap registers before the list unmounts.
-            blurTimer.current = setTimeout(() => setFocused(false), 150);
-          }}
           style={[styles.input, typography.body, { color: theme.text }]}
           returnKeyType="search"
         />
       </View>
 
-      {suggestions.length > 0 ? (
-        <View style={[styles.suggestions, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          {suggestions.map((stop) => (
-            <Pressable
-              key={stop}
-              accessibilityRole="button"
-              style={styles.suggestion}
-              onPress={() => onChangeText(stop)}
-            >
-              <Text style={[typography.body, { color: theme.text }]}>{stop}</Text>
-            </Pressable>
-          ))}
-        </View>
+      {options.length > 0 ? (
+        <ScrollView
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          style={[styles.list, { borderColor: theme.border, maxHeight: LIST_MAX_HEIGHT }]}
+          contentContainerStyle={styles.listContent}
+        >
+          {options.map((stop) => {
+            const selected = value === stop;
+            return (
+              <Pressable
+                key={stop}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => onChangeText(stop)}
+                style={[
+                  styles.option,
+                  selected && { backgroundColor: theme.surfaceVariant },
+                ]}
+              >
+                <Text
+                  style={[
+                    typography.body,
+                    { color: theme.text },
+                    selected && { fontWeight: '600' },
+                  ]}
+                >
+                  {stop}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       ) : null}
     </View>
   );
@@ -95,10 +98,10 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   input: { flex: 1, paddingVertical: space.sm },
-  suggestions: {
+  list: {
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
   },
-  suggestion: { paddingHorizontal: space.md, paddingVertical: space.sm },
+  listContent: { paddingVertical: space.xs },
+  option: { paddingHorizontal: space.md, paddingVertical: space.sm },
 });

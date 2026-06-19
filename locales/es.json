@@ -943,6 +943,9 @@
     "minibusDisclaimer": "Timetables may be outdated. Always check the official source.",
     "minibusLoadError": "Could not load Mini Bus.",
     "minibusNetworkMap": "Network map",
+    "minibusNetworkMapOpenFullscreen": "Abrir mapa de red a pantalla completa",
+    "minibusNetworkMapTapToZoom": "Toca para ver a pantalla completa",
+    "minibusNetworkMapImageAlt": "Mapa de red",
     "minibusTariffs": "Fares",
     "minibusSchematic": "Line schematic",
     "minibusViewTimetable": "View timetable PDF",
@@ -956,6 +959,8 @@
     "minibusWeekdayHours": "Weekdays {{start}}–{{end}}",
     "minibusSaturdayDepartures": "Saturdays: {{times}}",
     "minibusLineDetail": "Line",
+    "minibusInterchangeWith": "Transbordo a línea(s) {{lines}}",
+    "minibusLineRoute": "Ruta",
     "minibusPdfTitle": "Document",
     "minibusProfileRow": "PDL Mini Bus (Ponta Delgada)",
     "minibusImportedAt": "Imported on {{date}}",
@@ -981,5 +986,7 @@
     "minibusTransferAt": "Transbordo en {{stop}}",
     "minibusTimetable": "Horario",
     "minibusTimetableImageAlt": "Horario de {{line}}",
-    "minibusTimetableUnavailable": "Imagen de horario no disponible"
+    "minibusTimetableUnavailable": "Imagen de horario no disponible",
+    "minibusTimetableOpenFullscreen": "Abrir horario de {{line}} a pantalla completa",
+    "minibusTimetableTapToZoom": "Toca para ver a pantalla completa",
 }

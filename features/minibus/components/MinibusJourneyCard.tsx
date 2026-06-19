@@ -3,15 +3,17 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
-import type { MinibusJourney } from '@/lib/types';
+import { formatServiceSummary } from '@/features/minibus/serviceSummary';
+import type { MinibusJourney, MinibusLine } from '@/lib/types';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   journey: MinibusJourney;
+  linesByCode: Map<string, MinibusLine>;
 };
 
-export function MinibusJourneyCard({ journey }: Props) {
+export function MinibusJourneyCard({ journey, linesByCode }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -29,7 +31,11 @@ export function MinibusJourneyCard({ journey }: Props) {
         </Text>
       </View>
 
-      {journey.legs.map((leg, index) => (
+      {journey.legs.map((leg, index) => {
+        const line = linesByCode.get(leg.line_code);
+        const hours = line ? formatServiceSummary(line.service_summary, t) : '';
+
+        return (
         <View key={`${leg.line_code}-${leg.board.key}`}>
           {index > 0 ? (
             <View style={styles.transferRow}>
@@ -50,6 +56,9 @@ export function MinibusJourneyCard({ journey }: Props) {
               {leg.line_name ? (
                 <Text style={[typography.label, { color: theme.text }]}>{leg.line_name}</Text>
               ) : null}
+              {hours ? (
+                <Text style={[typography.caption, { color: theme.muted }]}>{hours}</Text>
+              ) : null}
               <View style={styles.stopsRow}>
                 <Text style={[typography.body, { color: theme.text, flexShrink: 1 }]}>
                   {leg.board.name}
@@ -65,7 +74,8 @@ export function MinibusJourneyCard({ journey }: Props) {
             </View>
           </View>
         </View>
-      ))}
+        );
+      })}
     </Card>
   );
 }

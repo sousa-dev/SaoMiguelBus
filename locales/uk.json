@@ -868,6 +868,9 @@
     "minibusDisclaimer": "Timetables may be outdated. Always check the official source.",
     "minibusLoadError": "Could not load Mini Bus.",
     "minibusNetworkMap": "Network map",
+    "minibusNetworkMapOpenFullscreen": "Відкрити карту мережі на весь екран",
+    "minibusNetworkMapTapToZoom": "Торкніться для повноекранного перегляду",
+    "minibusNetworkMapImageAlt": "Карта мережі",
     "minibusTariffs": "Fares",
     "minibusSchematic": "Line schematic",
     "minibusViewTimetable": "View timetable PDF",
@@ -881,6 +884,8 @@
     "minibusWeekdayHours": "Weekdays {{start}}–{{end}}",
     "minibusSaturdayDepartures": "Saturdays: {{times}}",
     "minibusLineDetail": "Line",
+    "minibusInterchangeWith": "Пересадка на лінію/лінії {{lines}}",
+    "minibusLineRoute": "Маршрут",
     "minibusPdfTitle": "Document",
     "minibusProfileRow": "PDL Mini Bus (Ponta Delgada)",
     "minibusImportedAt": "Imported on {{date}}",
@@ -906,5 +911,7 @@
     "minibusTransferAt": "Пересадка на {{stop}}",
     "minibusTimetable": "Розклад",
     "minibusTimetableImageAlt": "Розклад {{line}}",
-    "minibusTimetableUnavailable": "Зображення розкладу недоступне"
+    "minibusTimetableUnavailable": "Зображення розкладу недоступне",
+    "minibusTimetableOpenFullscreen": "Відкрити розклад {{line}} на весь екран",
+    "minibusTimetableTapToZoom": "Торкніться для повноекранного перегляду",
 }

@@ -1,5 +1,5 @@
 import { ArrowUpDown } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,7 @@ import { EmptyState, LoadingState } from '@/components/ui/StateView';
 import { MinibusJourneyCard } from '@/features/minibus/components/MinibusJourneyCard';
 import { MinibusStopPicker } from '@/features/minibus/components/MinibusStopPicker';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
-import { useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { useMinibusRouteSearch } from '@/features/minibus/hooks/useMinibusRouteSearch';
 import { track } from '@/lib/analytics';
 import { space, typography } from '@/lib/tokens';
@@ -22,9 +22,16 @@ export default function MinibusSearchScreen() {
   const { t } = useTranslation();
 
   const { snapshot } = useMinibusOffline();
+  const linesQuery = useMinibusLines();
   const offlineNetwork = snapshot?.bundle?.network ?? null;
   const networkQuery = useMinibusNetwork(!offlineNetwork);
   const network = offlineNetwork ?? networkQuery.data ?? null;
+  const lines = linesQuery.data?.lines ?? snapshot?.bundle?.lines ?? [];
+
+  const linesByCode = useMemo(
+    () => new Map(lines.map((line) => [line.code, line])),
+    [lines],
+  );
 
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -130,7 +137,7 @@ export default function MinibusSearchScreen() {
         ) : null}
 
         {journeys.map((journey, index) => (
-          <MinibusJourneyCard key={`journey-${index}`} journey={journey} />
+          <MinibusJourneyCard key={`journey-${index}`} journey={journey} linesByCode={linesByCode} />
         ))}
       </ScrollView>
     </Screen>

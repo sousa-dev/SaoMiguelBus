@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/ui/Card';
+import { formatAppDate } from '@/lib/date-format';
 import type { MinibusTariff } from '@/lib/types';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -20,7 +21,7 @@ export function MinibusTariffTable({ tariffs, effectiveDate }: Props) {
       <Text style={[typography.headline, { color: theme.text }]}>{t('minibusTariffs')}</Text>
       {effectiveDate ? (
         <Text style={[typography.caption, { color: theme.muted, marginBottom: space.sm }]}>
-          {t('minibusTariffsEffective', { date: effectiveDate })}
+          {t('minibusTariffsEffective', { date: formatAppDate(effectiveDate) })}
         </Text>
       ) : null}
       {tariffs.map((tariff, index) => (

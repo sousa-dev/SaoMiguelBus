@@ -7,8 +7,9 @@ import { Screen } from '@/components/Screen';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
+import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
-import { useMinibusLine } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { localLineImageUri } from '@/features/minibus/offline';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
 import { track } from '@/lib/analytics';
@@ -21,6 +22,9 @@ export default function MinibusLineDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const lineQuery = useMinibusLine(slug, Boolean(slug));
   const { snapshot } = useMinibusOffline();
+  const offlineNetwork = snapshot?.bundle?.network ?? null;
+  const networkQuery = useMinibusNetwork(!offlineNetwork);
+  const network = offlineNetwork ?? networkQuery.data ?? null;
 
   // Offline-aware: fall back to the cached snapshot line when the query has no data.
   const cachedLine = snapshot?.bundle?.lines.find((l) => l.slug === slug) ?? null;
@@ -43,6 +47,8 @@ export default function MinibusLineDetailScreen() {
   const sourceUrl = lineQuery.data?.source_url ?? snapshot?.bundle?.source_url ?? null;
   const importedAt = lineQuery.data?.imported_at ?? snapshot?.bundle?.imported_at ?? null;
   const localUri = localLineImageUri(snapshot, line.slug);
+  const networkLine = network?.lines.find((row) => row.slug === line.slug) ?? null;
+  const stops = networkLine?.stops ?? [];
 
   return (
     <Screen withStackHeader>
@@ -52,6 +58,8 @@ export default function MinibusLineDetailScreen() {
         <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]}>
           {formatServiceSummary(line.service_summary, t)}
         </Text>
+
+        <MinibusLineStopsList stops={stops} lineColor={line.color} />
 
         <Text style={[typography.headline, { color: theme.text, marginTop: space.lg }]}>
           {t('minibusTimetable')}

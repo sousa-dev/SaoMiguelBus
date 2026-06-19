@@ -13,6 +13,7 @@ import { usePremiumPurchases } from '@/features/premium/hooks/usePremiumPurchase
 import { presentCustomerCenter } from '@/features/premium/lib/customer-center';
 import { NATIVE_SUBSCRIPTIONS_URL, resolveManageAction } from '@/features/premium/lib/manage-action';
 import { isPurchaseCancelled, purchaseErrorMessageKey } from '@/features/premium/lib/purchase-errors';
+import { formatAppDate } from '@/lib/date-format';
 import { LEGAL_URLS } from '@/lib/legal-urls';
 import { usePremium } from '@/lib/premium-store';
 import { CUSTOMER_CENTER_ENABLED, hasPremiumEntitlement } from '@/lib/revenuecat';
@@ -45,7 +46,7 @@ export function PremiumSettingsSection() {
   });
 
   const renewalDate = entitlement?.currentPeriodEnd
-    ? new Date(entitlement.currentPeriodEnd).toLocaleDateString(i18n.language)
+    ? formatAppDate(entitlement.currentPeriodEnd)
     : null;
 
   const onManage = async () => {

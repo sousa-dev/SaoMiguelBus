@@ -551,6 +551,11 @@ export interface MinibusOfflineImage {
   url: string | null;
 }
 
+export interface MinibusOfflineAsset {
+  slug: string;
+  url: string | null;
+}
+
 export interface MinibusOfflineBundle extends MinibusMeta {
   version: string;
   generated_at: string;
@@ -558,6 +563,7 @@ export interface MinibusOfflineBundle extends MinibusMeta {
   tariffs: MinibusTariff[];
   network: MinibusNetwork;
   images: MinibusOfflineImage[];
+  network_map?: MinibusOfflineAsset | null;
 }
 
 export interface MinibusBundleVersionResponse {
