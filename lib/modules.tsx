@@ -44,6 +44,13 @@ export const HUB_MODULES: HubModule[] = [
     accent: '#218732',
   },
   {
+    key: 'minibus',
+    route: '/minibus',
+    labelKey: 'navBarMinibusLabel',
+    Icon: BusFront,
+    accent: '#f47216',
+  },
+  {
     key: 'news',
     route: '/news',
     labelKey: 'navBarNewsLabel',
@@ -91,13 +98,6 @@ export const HUB_MODULES: HubModule[] = [
     labelKey: 'navBarWeatherLabel',
     Icon: CloudSun,
     accent: '#0ea5e9',
-  },
-  {
-    key: 'minibus',
-    route: '/minibus',
-    labelKey: 'navBarMinibusLabel',
-    Icon: BusFront,
-    accent: '#f47216',
   },
 ];
 
