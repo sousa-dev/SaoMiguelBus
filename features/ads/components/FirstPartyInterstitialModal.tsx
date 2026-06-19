@@ -152,12 +152,15 @@ const styles = StyleSheet.create({
   crownRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space.xs,
+    width: '100%',
   },
   title: {
     ...typography.label,
     fontSize: 16,
     textAlign: 'center',
+    flexShrink: 1,
   },
   body: {
     ...typography.body,

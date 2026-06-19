@@ -324,7 +324,9 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space.sm,
+    width: '100%',
   },
   heroTitle: {
     ...typography.title,
@@ -341,8 +343,10 @@ const styles = StyleSheet.create({
   hintRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space.xs,
     marginTop: space.xs,
+    width: '100%',
   },
   hint: {
     ...typography.caption,

@@ -112,8 +112,10 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space.sm,
     marginBottom: space.xs,
+    width: '100%',
   },
   title: {
     ...typography.label,
@@ -122,6 +124,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   subtitle: {
     ...typography.body,
@@ -132,8 +136,10 @@ const styles = StyleSheet.create({
   hintRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
     marginTop: space.sm,
+    width: '100%',
   },
   hint: {
     ...typography.caption,
