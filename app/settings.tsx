@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
 import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
@@ -172,6 +173,7 @@ export default function SettingsScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator
       >
+        <ScreenTopAdBanner embedded />
         {!isOnline && dsarBanner ? (
           <Banner variant="offline" message={t('settingsDsarOffline')} />
         ) : null}

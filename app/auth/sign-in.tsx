@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/features/account/hooks/useAuth';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { consumePendingPaywall } from '@/features/premium/lib/paywall-intent';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -87,6 +88,7 @@ export default function SignInScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <ScreenTopAdBanner embedded />
         <Text style={[typography.body, styles.intro, { color: theme.muted }]}>
           {t('authIntro')}
         </Text>

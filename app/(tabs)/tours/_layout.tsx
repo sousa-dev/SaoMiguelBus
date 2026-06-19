@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
 import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
+import { ModuleStackScreenLayout } from '@/features/ads/components/ModuleStackScreenLayout';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function ToursLayout() {
@@ -10,7 +11,7 @@ export default function ToursLayout() {
   const screenOptions = useAppStackScreenOptions();
 
   return (
-    <Stack screenOptions={screenOptions}>
+    <Stack screenOptions={screenOptions} screenLayout={ModuleStackScreenLayout}>
       <Stack.Screen
         name="index"
         options={{

@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ListRow } from '@/components/ui/ListRow';
 import { Sheet } from '@/components/ui/Sheet';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
@@ -80,6 +81,7 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
+        <ScreenTopAdBanner embedded />
         <Section title={t('profileNameTitle')} icon={User}>
           <Card>
             <ProfileNameInput />

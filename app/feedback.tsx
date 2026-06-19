@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { IconButton } from '@/components/ui/IconButton';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { ScreenshotPicker } from '@/features/feedback/components/ScreenshotPicker';
 import {
   composeFeedbackEmail,
@@ -139,6 +140,7 @@ export default function FeedbackScreen() {
         keyboardVerticalOffset={80}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <ScreenTopAdBanner embedded />
           {notice ? <Banner variant={notice.variant} message={notice.message} /> : null}
 
           <Card elevated>

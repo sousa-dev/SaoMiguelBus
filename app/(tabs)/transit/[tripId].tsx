@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { TripDetail } from '@/features/transit/components/TripDetail';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { shareTrip } from '@/features/transit/share-trip';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
 import { useFabActions } from '@/lib/fab-store';
@@ -120,6 +121,7 @@ export default function TripDetailScreen() {
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <TransitWebShell>
+          <ScreenTopAdBanner embedded />
           {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
 
           {resolvedNotice?.message ? (

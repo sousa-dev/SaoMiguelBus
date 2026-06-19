@@ -12,6 +12,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView'
 import { DirectionsPlannerForm } from '@/features/transit/components/DirectionsPlannerForm';
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useBootstrap, useDirections, useStops } from '@/features/transit/hooks/useTransitQueries';
 import { useNetworkStatus } from '@/lib/network-status';
 import { elevation, radius, space, typography } from '@/lib/tokens';
@@ -78,6 +79,7 @@ export default function DirectionsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <TransitWebShell>
+          <ScreenTopAdBanner embedded />
           {!isOnline ? <Banner variant="offline" message={t('offlineSearchDisabled')} /> : null}
 
           <DirectionsPlannerForm
