@@ -11,13 +11,31 @@ import {
   updateProvider,
 } from '@/lib/api';
 import { track } from '@/lib/analytics';
+import type { MarketplaceListFilters } from '@/features/marketplace/filterHelpers';
 import { useMarketplaceStore } from '@/lib/marketplace-store';
 import type { ProviderWriteInput } from '@/lib/types';
 
-export interface ProviderQueryParams {
-  category?: string;
+export interface ProviderQueryParams extends MarketplaceListFilters {
   q?: string;
+  lat?: number;
+  lng?: number;
   enabled?: boolean;
+}
+
+function toFetchParams(params: ProviderQueryParams) {
+  const { enabled: _enabled, nearMe: _nearMe, minRating, hasRate, verified, sort, category, q, lat, lng } =
+    params;
+  return {
+    category,
+    q,
+    lat,
+    lng,
+    sort,
+    min_rating: minRating,
+    has_rate: hasRate || undefined,
+    verified: verified || undefined,
+    limit: 50,
+  };
 }
 
 export function useMarketplaceCategories(enabled = true) {
@@ -29,16 +47,18 @@ export function useMarketplaceCategories(enabled = true) {
   });
 }
 
-export function useProviders(params: ProviderQueryParams = {}) {
+export function useProviders(params: ProviderQueryParams = { sort: 'random', nearMe: false }) {
   const { enabled, ...filters } = params;
+  const fetchParams = toFetchParams(filters);
   return useQuery({
-    queryKey: ['marketplace', 'v1', 'providers', filters],
+    queryKey: ['marketplace', 'v1', 'providers', fetchParams],
     queryFn: async () => {
-      const providers = await fetchProviders({ ...filters, limit: 50 });
+      const providers = await fetchProviders(fetchParams);
       if (filters.q) {
         track('marketplace', 'search', {
           query: filters.q,
           category: filters.category ?? null,
+          sort: filters.sort,
           results_count: providers.length,
         });
       }

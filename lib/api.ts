@@ -596,6 +596,11 @@ export async function fetchProviders(params?: {
   q?: string;
   lat?: number;
   lng?: number;
+  radius_km?: number;
+  min_rating?: number;
+  has_rate?: boolean;
+  verified?: boolean;
+  sort?: string;
   limit?: number;
 }): Promise<MarketplaceProvider[]> {
   const query = new URLSearchParams();
@@ -608,6 +613,21 @@ export async function fetchProviders(params?: {
   if (params?.lat != null && params?.lng != null) {
     query.set('lat', String(params.lat));
     query.set('lng', String(params.lng));
+  }
+  if (params?.radius_km != null) {
+    query.set('radius_km', String(params.radius_km));
+  }
+  if (params?.min_rating != null) {
+    query.set('min_rating', String(params.min_rating));
+  }
+  if (params?.has_rate) {
+    query.set('has_rate', 'true');
+  }
+  if (params?.verified) {
+    query.set('verified', 'true');
+  }
+  if (params?.sort) {
+    query.set('sort', params.sort);
   }
   if (params?.limit) {
     query.set('limit', String(params.limit));

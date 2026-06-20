@@ -6,13 +6,20 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Banner } from '@/components/ui/Banner';
 import { useFabActions } from '@/lib/fab-store';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
-import { MarketplaceFilters } from '@/features/marketplace/components/MarketplaceFilters';
 import { MarketplaceRegisterCta } from '@/features/marketplace/components/MarketplaceRegisterCta';
+import { MarketplaceToolbar } from '@/features/marketplace/components/MarketplaceToolbar';
 import { ProviderCard } from '@/features/marketplace/components/ProviderCard';
+import {
+  buildMarketplaceListItems,
+  DEFAULT_MARKETPLACE_FILTERS,
+  type MarketplaceListFilters,
+  type MarketplaceListItem,
+} from '@/features/marketplace/filterHelpers';
 import {
   useMarketplaceCategories,
   useProviders,
@@ -21,6 +28,7 @@ import {
   MARKETPLACE_REGISTER_URL,
   shareMarketplaceListingInvite,
 } from '@/features/marketplace/share-listing-invite';
+import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -30,7 +38,10 @@ export default function MarketplaceScreen() {
   const router = useRouter();
 
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string | null>(null);
+  const [filters, setFilters] = useState<MarketplaceListFilters>(DEFAULT_MARKETPLACE_FILTERS);
+
+  const location = useNearbyLocation(filters.nearMe);
+  const nearMeCoords = filters.nearMe && location.permission === 'granted' ? location.coords : null;
 
   useFabActions(
     useMemo(
@@ -58,9 +69,16 @@ export default function MarketplaceScreen() {
 
   const categories = useMarketplaceCategories();
   const providers = useProviders({
+    ...filters,
     q: query.trim() || undefined,
-    category: category ?? undefined,
+    lat: nearMeCoords?.lat,
+    lng: nearMeCoords?.lng,
   });
+
+  const listItems = useMemo(
+    () => buildMarketplaceListItems(providers.data ?? []),
+    [providers.data],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -69,15 +87,42 @@ export default function MarketplaceScreen() {
     }, [providers.refetch]),
   );
 
+  const clearFilters = () => {
+    setFilters(DEFAULT_MARKETPLACE_FILTERS);
+  };
+
+  const renderItem = ({ item }: { item: MarketplaceListItem }) => {
+    if (item.type === 'cta') {
+      return <MarketplaceRegisterCta variant="compact" />;
+    }
+    return (
+      <ProviderCard
+        provider={item.provider}
+        viewerCoords={nearMeCoords}
+        onPress={() =>
+          router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: String(item.provider.id) } })
+        }
+      />
+    );
+  };
+
   return (
     <Screen withStackHeader>
-      <MarketplaceFilters
+      <MarketplaceToolbar
         categories={categories.data ?? []}
-        activeCategory={category}
+        filters={filters}
+        onChangeFilters={setFilters}
+        onClearFilters={clearFilters}
         query={query}
         onChangeQuery={setQuery}
-        onSelectCategory={setCategory}
+        nearMeAvailable={Boolean(nearMeCoords)}
       />
+
+      {filters.nearMe && location.permission === 'denied' ? (
+        <View style={styles.bannerWrap}>
+          <Banner message={t('marketplaceNearMeDenied')} variant="warning" />
+        </View>
+      ) : null}
 
       {providers.isLoading ? (
         <View style={{ padding: space.lg }}>
@@ -93,8 +138,8 @@ export default function MarketplaceScreen() {
       ) : null}
 
       <FlatList
-        data={providers.data ?? []}
-        keyExtractor={(item) => String(item.id)}
+        data={listItems}
+        keyExtractor={(item) => (item.type === 'cta' ? item.id : String(item.provider.id))}
         refreshControl={
           <RefreshControl
             refreshing={providers.isRefetching}
@@ -102,22 +147,27 @@ export default function MarketplaceScreen() {
             tintColor={theme.primary}
           />
         }
+        ListHeaderComponent={
+          !providers.isLoading && !providers.isError ? (
+            <MarketplaceRegisterCta variant="compact" />
+          ) : null
+        }
         ListEmptyComponent={
           !providers.isLoading ? (
-            <EmptyState icon={Store} title={t('marketplaceEmpty')} />
+            <EmptyState
+              icon={Store}
+              title={t('marketplaceEmpty')}
+              actionLabel={t('marketplaceAddListing')}
+              onAction={() => router.push('/(tabs)/marketplace/new' as Href)}
+            />
           ) : null
         }
         ListFooterComponent={
-          !providers.isLoading && !providers.isError ? <MarketplaceRegisterCta /> : null
+          !providers.isLoading && !providers.isError && listItems.length > 0 ? (
+            <MarketplaceRegisterCta />
+          ) : null
         }
-        renderItem={({ item }) => (
-          <ProviderCard
-            provider={item}
-            onPress={() =>
-              router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: String(item.id) } })
-            }
-          />
-        )}
+        renderItem={renderItem}
         contentContainerStyle={styles.list}
       />
     </Screen>
@@ -126,4 +176,5 @@ export default function MarketplaceScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: space.md, paddingBottom: space['4xl'] },
+  bannerWrap: { paddingHorizontal: space.md, paddingBottom: space.sm },
 });

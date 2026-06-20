@@ -13,8 +13,8 @@ import {
 import { iconSize, space, typography } from '@/lib/tokens';
 import { primaryTint, useAppTheme } from '@/lib/theme';
 
-/** Footer CTA encouraging users to invite businesses to register on servicos.saomiguelhub.com. */
-export function MarketplaceRegisterCta() {
+/** Footer / inline CTA encouraging users to invite businesses to register on servicos.saomiguelhub.com. */
+export function MarketplaceRegisterCta({ variant = 'full' }: { variant?: 'full' | 'compact' }) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
@@ -24,6 +24,38 @@ export function MarketplaceRegisterCta() {
       t('fabShareMarketplaceInviteMessage', { url: MARKETPLACE_REGISTER_URL }),
       { title: t('fabShareMarketplaceInvite'), alertTitle: t('fabShareMarketplaceInvite') },
     );
+
+  if (variant === 'compact') {
+    return (
+      <Card elevated style={styles.compactCard}>
+        <View style={styles.compactRow}>
+          <View style={[styles.compactIcon, { backgroundColor: primaryTint(theme) }]}>
+            <Store size={iconSize.md} color={theme.primary} strokeWidth={2} />
+          </View>
+          <View style={styles.compactText}>
+            <Text style={[typography.label, { color: theme.text }]}>
+              {t('marketplaceRegisterCtaCompactTitle')}
+            </Text>
+          </View>
+        </View>
+        <Button
+          label={t('marketplaceAddListing')}
+          variant="primary"
+          size="sm"
+          fullWidth
+          onPress={() => router.push('/(tabs)/marketplace/new' as Href)}
+          style={styles.compactBtn}
+        />
+        <Button
+          label={t('marketplaceRegisterCtaShare')}
+          variant="outline"
+          size="sm"
+          fullWidth
+          onPress={onShare}
+        />
+      </Card>
+    );
+  }
 
   return (
     <Card elevated style={styles.card}>
@@ -73,4 +105,19 @@ const styles = StyleSheet.create({
   body: { textAlign: 'center', marginTop: space.sm, lineHeight: 22 },
   btn: { marginTop: space.lg },
   btnSecondary: { marginTop: space.sm },
+  compactCard: {
+    marginBottom: space.md,
+    padding: space.md,
+    gap: space.sm,
+  },
+  compactRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  compactIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compactText: { flex: 1 },
+  compactBtn: { marginTop: space.xs },
 });

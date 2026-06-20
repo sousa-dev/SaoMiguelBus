@@ -1,23 +1,23 @@
 # UI-SDD 60 — Marketplace List
 
-**Screen & route:** [`app/(tabs)/marketplace/index.tsx`](../../app/(tabs)/marketplace/index.tsx) → `/(tabs)/marketplace`. Components: `MarketplaceFilters`, `ProviderCard`.
+**Screen & route:** [`app/(tabs)/marketplace/index.tsx`](../../app/(tabs)/marketplace/index.tsx) → `/(tabs)/marketplace`. Components: `MarketplaceToolbar`, `MarketplaceFilterSheet`, `ProviderCard`, `MarketplaceRegisterCta`.
 
 ---
 
 ## 1. Purpose
-Find local service providers — search, filter by category, "near me", open detail, and add your own listing (FAB). Directory feel.
+Find local service providers — search, filter/sort by category, location, rating, and rate; open detail; add your own listing (top/inline CTAs + FAB). Directory feel with fair random default ordering.
 
 ## 2. Current state
-`MarketplaceFilters` (search + category + near-me) + `FlatList` of `ProviderCard`s with refresh, error/empty text, and a bottom-right `+ Add listing` pill (`fab`). Functional; FAB and filters need the design system; near-me uses raw `navigator.geolocation`.
+`MarketplaceToolbar` (search + sort chips + filter sheet) + `FlatList` of dense `ProviderCard`s (no avatars), top/inline/footer add-service CTAs, refresh, error/empty with add action. Near-me uses `expo-location` via `useNearbyLocation`.
 
 ## 3. Rebrand direction
-- **`ProviderCard`.** Logo/avatar (`Avatar` with initial fallback), name `headline`, category `Badge` (`Store`/`Tag`), rating (`Star` + value) if present, short location/distance `caption` with `MapPin`, quick-contact icons (`Phone`/`Mail`/`Navigation`) as `IconButton`s on the card.
-- **`MarketplaceFilters` → `SearchField` + `Chip` row + near-me `Chip`/toggle** (`Crosshair`). Use `expo-location` properly for native near-me (current `navigator.geolocation` only works on web) — request permission, handle denied with a `Banner`.
-- **FAB → shared `Fab`** (extended, `primary`, `Plus`), consistently placed above tab bar + safe area.
-- Tokens; "mine" listings get an `Badge`/edit affordance (ownership via `marketplace-store`).
+- **`ProviderCard`.** Full title (2 lines), category + promoted + verified `Badge`s, bio, hourly rate, distance when near-me, rating row, quick-contact `IconButton`s (phone/WhatsApp/email/map). **No avatar.**
+- **`MarketplaceToolbar` → `SearchField` + horizontal sort `Chip`s + filter sheet** (category search, near-me, min rating, has rate, verified). Denied location → `Banner`.
+- **Add-service CTAs:** compact card in list header, periodic inline every N items, full footer card, FAB speed-dial, empty-state action.
+- Tokens; "mine" listings get edit affordance on detail (ownership via `marketplace-store`).
 
 ## 4. iOS specifics
-- Large title "Services"; FAB respects home indicator; contact actions use native tel/mailto/maps; haptic on add.
+- Large title "Services"; FAB respects home indicator; contact actions use native tel/mailto/maps; haptic on filter open.
 
 ## 5. Android specifics
 - Material FAB + ripple; native intents for call/email/maps; edge-to-edge; FAB above gesture inset.
@@ -30,12 +30,13 @@ Find local service providers — search, filter by category, "near me", open det
 - **Location denied:** `Banner` explaining near-me unavailable.
 
 ## 7. Motion & haptics
-- Cards fade in; FAB optional scale on scroll (shrink to icon-only); haptic on add tap.
+- Cards fade in; haptic on filter sheet open.
 
 ## 8. Accessibility
-- Card label includes name/category/rating/distance; contact buttons labeled ("Call {name}"). FAB labeled. Near-me toggle announces state.
+- Card label includes name/category/rating/distance; contact buttons labeled. FAB labeled. Near-me toggle announces state.
 
 ## 9. Acceptance checklist
-- [ ] `ProviderCard` with avatar, category badge, rating, quick-contact icon buttons.
-- [ ] Filters use `SearchField`/`Chip`; near-me uses `expo-location` with denied `Banner`.
-- [ ] Shared `Fab` for add; loading/empty/error/offline; tokens only; iOS + Android verified.
+- [ ] `ProviderCard` without avatar; category/promoted/verified badges; rate; quick-contact icon buttons.
+- [ ] `MarketplaceToolbar` with sort chips + filter sheet; near-me uses `expo-location` with denied `Banner`.
+- [ ] Add-service CTAs at top, inline during scroll, footer, empty state; shared `Fab` retained.
+- [ ] Loading/empty/error/offline; tokens only; iOS + Android verified.

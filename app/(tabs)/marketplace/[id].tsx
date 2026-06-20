@@ -158,7 +158,6 @@ export default function ProviderDetailScreen() {
   }
 
   const p = provider.data;
-  const initial = p.name.trim().charAt(0).toUpperCase() || '?';
   const hasMap = p.latitude != null && p.longitude != null;
 
   return (
@@ -172,13 +171,13 @@ export default function ProviderDetailScreen() {
 
         <Card elevated>
           <View style={styles.header}>
-            <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-              <Text style={[typography.headline, { color: theme.onPrimary }]}>{initial}</Text>
-            </View>
-            <View style={styles.headerText}>
-              <Text style={[typography.title, { color: theme.text }]}>{p.name}</Text>
+            <Text style={[typography.title, { color: theme.text }]}>{p.name}</Text>
+            <View style={styles.badges}>
               <Badge label={p.category.name} tone="neutral" />
               {p.isPromoted ? <Badge label={t('marketplacePromoted')} tone="accent" /> : null}
+              {p.verifiedByOwner ? (
+                <Badge label={t('marketplaceVerifiedBadge')} tone="primary" />
+              ) : null}
               {p.status && p.status !== 'published' ? (
                 <Badge label={t('marketplacePendingBadge')} tone="primary" />
               ) : null}
@@ -303,15 +302,8 @@ export default function ProviderDetailScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: space.lg, paddingBottom: space['4xl'] },
-  header: { flexDirection: 'row', gap: space.md },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: { flex: 1, gap: space.xs },
+  header: { gap: space.sm },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.md },
   mapCard: { marginTop: space.md, overflow: 'hidden' },
   map: { height: 160, borderRadius: 12 },
