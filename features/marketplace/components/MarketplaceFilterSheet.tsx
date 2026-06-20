@@ -134,7 +134,7 @@ export function MarketplaceFilterSheet({
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingBottom: space.lg },
+  wrap: { paddingHorizontal: space.xl, paddingBottom: space.lg },
   groupLabel: { marginTop: space.md, marginBottom: space.sm },
   categorySearch: { marginBottom: space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

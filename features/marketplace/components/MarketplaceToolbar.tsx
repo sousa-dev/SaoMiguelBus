@@ -184,5 +184,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   countText: { fontWeight: '700' },
-  sheetActions: { paddingHorizontal: space.lg, marginTop: space.md },
+  sheetActions: { paddingHorizontal: space.xl, marginTop: space.md },
 });
