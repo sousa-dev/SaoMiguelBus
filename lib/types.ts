@@ -199,6 +199,7 @@ export interface ServiceCategory {
   slug: string;
   icon: string;
   userSuggested?: boolean;
+  isActive?: boolean;
 }
 
 export interface SocialLink {
@@ -265,6 +266,49 @@ export interface ProviderWriteInput {
   internal_phone?: string;
   latitude?: number | null;
   longitude?: number | null;
+}
+
+export interface ProviderAdminWriteInput extends ProviderWriteInput {
+  is_promoted?: boolean;
+  verified_by_owner?: boolean;
+  status?: string;
+}
+
+export interface ReviewAdminWriteInput {
+  rating?: number;
+  text?: string;
+  status?: string;
+}
+
+export interface CategoryAdminWriteInput {
+  name?: string;
+  slug?: string;
+  icon?: string;
+  approve?: boolean;
+}
+
+export interface MarketplaceAdminQueue {
+  pendingProviders: number;
+  pendingReviews: number;
+  suggestedCategories: number;
+}
+
+export interface MarketplaceAdminProvidersResult {
+  providers: MarketplaceProvider[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceAdminReviewsResult {
+  reviews: MarketplaceAdminReview[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceAdminReview extends MarketplaceReview {
+  providerName: string;
 }
 
 export interface TrafficCategory {
@@ -619,6 +663,7 @@ export interface AuthUser {
   email: string;
   displayName: string;
   dateJoined: string;
+  isSuperuser?: boolean;
 }
 
 export interface AuthResponse {

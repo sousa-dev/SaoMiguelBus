@@ -31,6 +31,13 @@ import type {
   MarketplaceProvidersResult,
   MarketplaceReview,
   ProviderWriteInput,
+  ProviderAdminWriteInput,
+  ReviewAdminWriteInput,
+  CategoryAdminWriteInput,
+  MarketplaceAdminQueue,
+  MarketplaceAdminProvidersResult,
+  MarketplaceAdminReviewsResult,
+  MarketplaceAdminReview,
   TrafficCategory,
   TrafficReport,
   TrafficReportWriteInput,
@@ -691,6 +698,112 @@ export async function submitReview(
     method: 'POST',
     headers: { 'X-Session-Id': sessionId },
     body: JSON.stringify({ ...payload, session_id: sessionId }),
+  });
+}
+
+// --------------------------------------------------------------------------- //
+// Marketplace admin (superuser only)
+// --------------------------------------------------------------------------- //
+
+export async function fetchMarketplaceAdminQueue(): Promise<MarketplaceAdminQueue> {
+  return apiFetch<MarketplaceAdminQueue>('/api/v3/marketplace/admin/queue');
+}
+
+export async function fetchMarketplaceAdminProviders(params?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<MarketplaceAdminProvidersResult> {
+  const query = new URLSearchParams();
+  if (params?.status) {
+    query.set('status', params.status);
+  }
+  if (params?.limit != null) {
+    query.set('limit', String(params.limit));
+  }
+  if (params?.offset != null) {
+    query.set('offset', String(params.offset));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return apiFetch<MarketplaceAdminProvidersResult>(`/api/v3/marketplace/admin/providers${suffix}`);
+}
+
+export async function fetchMarketplaceAdminReviews(params?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<MarketplaceAdminReviewsResult> {
+  const query = new URLSearchParams();
+  if (params?.status) {
+    query.set('status', params.status);
+  }
+  if (params?.limit != null) {
+    query.set('limit', String(params.limit));
+  }
+  if (params?.offset != null) {
+    query.set('offset', String(params.offset));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return apiFetch<MarketplaceAdminReviewsResult>(`/api/v3/marketplace/admin/reviews${suffix}`);
+}
+
+export async function fetchMarketplaceAdminCategories(): Promise<ServiceCategory[]> {
+  const data = await apiFetch<{ categories: ServiceCategory[] }>(
+    '/api/v3/marketplace/admin/categories?suggested=1',
+  );
+  return data.categories;
+}
+
+export async function moderateMarketplaceProviderAdmin(
+  providerId: number,
+  action: 'publish' | 'reject',
+): Promise<MarketplaceProvider> {
+  return apiFetch<MarketplaceProvider>(
+    `/api/v3/marketplace/admin/providers/${providerId}/moderate`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    },
+  );
+}
+
+export async function moderateMarketplaceReviewAdmin(
+  reviewId: number,
+  action: 'publish' | 'reject',
+): Promise<MarketplaceReview> {
+  return apiFetch<MarketplaceReview>(`/api/v3/marketplace/admin/reviews/${reviewId}/moderate`, {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  });
+}
+
+export async function updateMarketplaceProviderAdmin(
+  providerId: number,
+  input: ProviderAdminWriteInput,
+): Promise<MarketplaceProvider> {
+  return apiFetch<MarketplaceProvider>(`/api/v3/marketplace/admin/providers/${providerId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateMarketplaceReviewAdmin(
+  reviewId: number,
+  input: ReviewAdminWriteInput,
+): Promise<MarketplaceAdminReview> {
+  return apiFetch<MarketplaceAdminReview>(`/api/v3/marketplace/admin/reviews/${reviewId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateMarketplaceCategoryAdmin(
+  categoryId: number,
+  input: CategoryAdminWriteInput,
+): Promise<ServiceCategory> {
+  return apiFetch<ServiceCategory>(`/api/v3/marketplace/admin/categories/${categoryId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
   });
 }
 

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { LogIn, LogOut, Trash2, UserCircle } from 'lucide-react-native';
+import { LogIn, LogOut, ShieldCheck, Trash2, UserCircle } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +53,14 @@ export function AccountSection() {
             showChevron={false}
             trailing={<PremiumBadge />}
           />
+          {user?.isSuperuser ? (
+            <ListRow
+              icon={ShieldCheck}
+              title={t('marketplaceAdminTitle')}
+              subtitle={t('marketplaceAdminSubtitle')}
+              onPress={() => router.push('/admin/marketplace')}
+            />
+          ) : null}
           <ListRow
             icon={LogOut}
             title={t('authSignOut')}

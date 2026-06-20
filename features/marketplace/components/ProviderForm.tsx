@@ -24,7 +24,7 @@ import {
 import { useMarketplaceCategories } from '@/features/marketplace/hooks/useMarketplaceQueries';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
-import type { MarketplaceProvider, ProviderWriteInput } from '@/lib/types';
+import type { MarketplaceProvider, ProviderAdminWriteInput, ProviderWriteInput } from '@/lib/types';
 
 type ProviderFormProps = {
   initial?: MarketplaceProvider;
@@ -33,6 +33,8 @@ type ProviderFormProps = {
   onSubmit: (input: ProviderWriteInput) => void;
   onDelete?: () => void;
   deleting?: boolean;
+  mode?: 'user' | 'admin';
+  onAdminSubmit?: (input: ProviderAdminWriteInput) => void;
 };
 
 export function ProviderForm({
@@ -42,6 +44,8 @@ export function ProviderForm({
   onSubmit,
   onDelete,
   deleting,
+  mode = 'user',
+  onAdminSubmit,
 }: ProviderFormProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
@@ -62,6 +66,10 @@ export function ProviderForm({
   const [ownerEmail, setOwnerEmail] = useState(initial?.internalEmail ?? '');
   const [ownerPhone, setOwnerPhone] = useState(initial?.internalPhone ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const isAdmin = mode === 'admin';
+  const [isPromoted, setIsPromoted] = useState(initial?.isPromoted ?? false);
+  const [verifiedByOwner, setVerifiedByOwner] = useState(initial?.verifiedByOwner ?? false);
+  const [status, setStatus] = useState(initial?.status ?? 'pending');
 
   const selectExistingCategory = (slug: string) => {
     setUseNewCategory(false);
@@ -87,7 +95,7 @@ export function ProviderForm({
     if (!hasContact) {
       errors.contact = t('marketplaceFormContactRequired');
     }
-    if (useNewCategory) {
+    if (!isAdmin && useNewCategory) {
       if (newCategoryName.trim().length < 2) {
         errors.category = t('marketplaceFormCategoryNameError');
       }
@@ -130,6 +138,16 @@ export function ProviderForm({
       payload.internal_email = '';
       payload.internal_phone = '';
     }
+    if (isAdmin) {
+      const adminPayload: ProviderAdminWriteInput = {
+        ...payload,
+        is_promoted: isPromoted,
+        verified_by_owner: verifiedByOwner,
+        status,
+      };
+      onAdminSubmit?.(adminPayload);
+      return;
+    }
     onSubmit(payload);
   };
 
@@ -169,11 +187,13 @@ export function ProviderForm({
                 onPress={() => selectExistingCategory(cat.slug)}
               />
             ))}
-            <Chip
-              label={`+ ${t('marketplaceFormNewCategory')}`}
-              selected={useNewCategory}
-              onPress={enableNewCategory}
-            />
+            {!isAdmin ? (
+              <Chip
+                label={`+ ${t('marketplaceFormNewCategory')}`}
+                selected={useNewCategory}
+                onPress={enableNewCategory}
+              />
+            ) : null}
           </View>
           {useNewCategory ? (
             <Field
@@ -297,7 +317,53 @@ export function ProviderForm({
           />
         </Card>
 
-        <Button label={t('marketplaceFormSubmit')} onPress={submit} loading={submitting} fullWidth />
+        {isAdmin ? (
+          <Card elevated style={styles.section}>
+            <Text style={[typography.overline, styles.sectionTitle, { color: theme.muted }]}>
+              {t('marketplaceAdminModerationSection')}
+            </Text>
+            <View style={styles.ownerRow}>
+              <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>
+                {t('marketplacePromoted')}
+              </Text>
+              <Switch
+                value={isPromoted}
+                onValueChange={setIsPromoted}
+                trackColor={{ false: theme.outline, true: theme.primary }}
+              />
+            </View>
+            <View style={styles.ownerRow}>
+              <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>
+                {t('marketplaceVerifiedBadge')}
+              </Text>
+              <Switch
+                value={verifiedByOwner}
+                onValueChange={setVerifiedByOwner}
+                trackColor={{ false: theme.outline, true: theme.primary }}
+              />
+            </View>
+            <Text style={[typography.caption, { color: theme.muted, marginBottom: space.sm }]}>
+              {t('marketplaceAdminStatusLabel')}
+            </Text>
+            <View style={styles.chips}>
+              {(['pending', 'published', 'rejected'] as const).map((value) => (
+                <Chip
+                  key={value}
+                  label={t(`marketplaceAdminStatus_${value}`)}
+                  selected={status === value}
+                  onPress={() => setStatus(value)}
+                />
+              ))}
+            </View>
+          </Card>
+        ) : null}
+
+        <Button
+          label={isAdmin ? t('marketplaceAdminSave') : t('marketplaceFormSubmit')}
+          onPress={submit}
+          loading={submitting}
+          fullWidth
+        />
         {onDelete ? (
           <Button
             label={t('marketplaceDeleteAction')}
@@ -308,9 +374,11 @@ export function ProviderForm({
             style={{ marginTop: space.md }}
           />
         ) : null}
-        <Text style={[typography.caption, styles.notice, { color: theme.muted }]}>
-          {t('marketplaceFormPendingNotice')}
-        </Text>
+        {!isAdmin ? (
+          <Text style={[typography.caption, styles.notice, { color: theme.muted }]}>
+            {t('marketplaceFormPendingNotice')}
+          </Text>
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

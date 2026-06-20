@@ -15,8 +15,10 @@ interface AuthState {
   /** True once the secure token has been loaded at boot. */
   hydrated: boolean;
   setSession: (token: string, user: AuthUser) => Promise<void>;
+  setUser: (user: AuthUser) => void;
   clearSession: () => Promise<void>;
   hydrate: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,6 +31,9 @@ export const useAuthStore = create<AuthState>()(
         await saveAuthToken(token);
         set({ token, user });
       },
+      setUser: (user) => {
+        set({ user });
+      },
       clearSession: async () => {
         await deleteAuthToken();
         set({ token: null, user: null });
@@ -36,6 +41,23 @@ export const useAuthStore = create<AuthState>()(
       hydrate: async () => {
         const token = await loadAuthToken();
         set({ token: token ?? null, hydrated: true });
+        if (token) {
+          await useAuthStore.getState().refreshUser();
+        }
+      },
+      refreshUser: async () => {
+        const token = getAuthToken() ?? (await loadAuthToken());
+        if (!token) {
+          return;
+        }
+        try {
+          const { fetchMe } = await import('@/lib/api');
+          const user = await fetchMe();
+          set({ user, token });
+        } catch {
+          await deleteAuthToken();
+          set({ token: null, user: null });
+        }
       },
     }),
     {
