@@ -34,7 +34,7 @@ export function PremiumHeaderButton() {
         if (isPremium) {
           router.push('/settings');
         } else {
-          void openPaywall();
+          void openPaywall('header');
         }
       }}
       style={({ pressed }) => [

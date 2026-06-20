@@ -107,7 +107,7 @@ export function AppSidebar() {
       if (isPremium) {
         router.push('/settings');
       } else {
-        void openPaywall();
+        void openPaywall('sidebar');
       }
       return;
     }

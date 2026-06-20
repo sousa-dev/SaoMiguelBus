@@ -4,6 +4,7 @@ import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
 import { useReconcileEntitlement } from '@/features/premium/hooks/useReconcileEntitlement';
 import { requestSaveSubscriptionPrompt } from '@/features/premium/lib/save-subscription-prompt';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import {
@@ -12,6 +13,18 @@ import {
   revenueCatSetupHint,
   revenueCatSetupIssue,
 } from '@/lib/revenuecat';
+
+export type PaywallPresentOptions = {
+  /** Entry point for funnel breakdown (e.g. settings, premium_search_cta). */
+  source?: string;
+};
+
+function trackPaywallOpen(mode: 'explicit' | 'if_needed', source?: string) {
+  track('billing', 'paywall_open', {
+    mode,
+    ...(source ? { source } : {}),
+  });
+}
 
 /**
  * Imperative RevenueCat paywall presentation.
@@ -41,12 +54,13 @@ export function usePaywall() {
     [reconcile],
   );
 
-  const present = useCallback(async (): Promise<PAYWALL_RESULT | null> => {
+  const present = useCallback(async (options?: PaywallPresentOptions): Promise<PAYWALL_RESULT | null> => {
     if (!isRevenueCatConfigured()) {
       const issue = revenueCatSetupIssue();
       logger.debug('Paywall: RevenueCat not configured —', issue, revenueCatSetupHint(issue));
       return null;
     }
+    trackPaywallOpen('explicit', options?.source);
     try {
       const result = await RevenueCatUI.presentPaywall();
       return afterPaywallResult(result);
@@ -56,7 +70,7 @@ export function usePaywall() {
     }
   }, [afterPaywallResult]);
 
-  const presentIfNeeded = useCallback(async (): Promise<PAYWALL_RESULT | null> => {
+  const presentIfNeeded = useCallback(async (options?: PaywallPresentOptions): Promise<PAYWALL_RESULT | null> => {
     if (!isRevenueCatConfigured()) {
       const issue = revenueCatSetupIssue();
       logger.debug('Paywall: RevenueCat not configured —', issue, revenueCatSetupHint(issue));
@@ -66,6 +80,9 @@ export function usePaywall() {
       const result = await RevenueCatUI.presentPaywallIfNeeded({
         requiredEntitlementIdentifier: PREMIUM_ENTITLEMENT_ID,
       });
+      if (result != null && result !== PAYWALL_RESULT.NOT_PRESENTED) {
+        trackPaywallOpen('if_needed', options?.source);
+      }
       return afterPaywallResult(result);
     } catch (error) {
       logger.error('Paywall: presentIfNeeded failed', error);
@@ -73,8 +90,8 @@ export function usePaywall() {
     }
   }, [afterPaywallResult]);
 
-  const openPaywall = useCallback(async () => {
-    await present();
+  const openPaywall = useCallback(async (source?: string) => {
+    await present({ source });
   }, [present]);
 
   return { openPaywall, present, presentIfNeeded };

@@ -36,7 +36,7 @@ export default function SignInScreen() {
   const finishAuth = () => {
     router.back();
     if (consumePendingPaywall()) {
-      void present();
+      void present({ source: 'post_sign_in' });
     }
   };
 

@@ -105,7 +105,7 @@ export function PremiumSearchCta() {
 
   const onPress = () => {
     track('transit', 'premium_search_cta_click', { variant: variant.id });
-    void openPaywall();
+    void openPaywall('premium_search_cta');
   };
 
   return (

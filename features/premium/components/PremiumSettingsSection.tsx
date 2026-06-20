@@ -105,7 +105,7 @@ export function PremiumSettingsSection() {
         />
 
         {isPremium ? null : (
-          <ListRow icon={Crown} title={t('premiumGoPremium')} onPress={() => void openPaywall()} />
+          <ListRow icon={Crown} title={t('premiumGoPremium')} onPress={() => void openPaywall('settings')} />
         )}
 
         {isPremium && !isSignedIn ? (

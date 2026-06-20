@@ -67,7 +67,7 @@ export function InternalFullscreenAdModal({ visible, creative, surface, onDismis
 
     if (creative.kind === 'paywall') {
       onDismiss();
-      void openPaywall();
+      void openPaywall('internal_fullscreen_ad');
       return;
     }
 

@@ -42,11 +42,11 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
       if (!ok) {
         Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
       }
-    });
+    }, 'track_start');
   };
 
   const onPin = () => {
-    void guardPremiumAction(() => pinFromTrip(trip, searchDay));
+    void guardPremiumAction(() => pinFromTrip(trip, searchDay), 'track_pin');
   };
 
   return (

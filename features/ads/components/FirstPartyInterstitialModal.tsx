@@ -41,7 +41,7 @@ export function FirstPartyInterstitialModal({ visible, ad, onDismiss }: Props) {
   const onUpgrade = () => {
     track('transit', 'interstitial_upsell_click', { source: 'first_party_modal' });
     onDismiss();
-    void openPaywall();
+    void openPaywall('first_party_interstitial');
   };
 
   return (

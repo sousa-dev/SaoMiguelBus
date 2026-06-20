@@ -50,7 +50,7 @@ export function InternalAdBanner({ creative, on, slot = 'top' }: Props) {
     });
 
     if (creative.kind === 'paywall') {
-      void openPaywall();
+      void openPaywall('internal_ad_banner');
       return;
     }
 

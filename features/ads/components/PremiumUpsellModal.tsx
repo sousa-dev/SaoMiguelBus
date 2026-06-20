@@ -22,7 +22,7 @@ export function PremiumUpsellModal({ visible, onDismiss }: Props) {
   const onUpgrade = () => {
     track('transit', 'interstitial_upsell_click', { source: 'post_video_modal' });
     onDismiss();
-    void openPaywall();
+    void openPaywall('premium_upsell_modal');
   };
 
   return (

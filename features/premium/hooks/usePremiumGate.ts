@@ -15,12 +15,12 @@ export function usePremiumGate() {
   const { presentIfNeeded } = usePaywall();
 
   const guardPremiumAction = useCallback(
-    async (action: () => void) => {
+    async (action: () => void, source?: string) => {
       if (isPremium) {
         action();
         return;
       }
-      await presentIfNeeded();
+      await presentIfNeeded({ source });
     },
     [isPremium, presentIfNeeded],
   );

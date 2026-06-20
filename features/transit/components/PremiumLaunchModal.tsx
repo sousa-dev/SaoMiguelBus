@@ -20,7 +20,7 @@ export function PremiumLaunchModal({ visible, onClose }: Props) {
 
   const onGoPremium = () => {
     onClose();
-    void openPaywall();
+    void openPaywall('launch_modal');
   };
 
   return (
