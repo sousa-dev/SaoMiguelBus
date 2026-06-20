@@ -35,6 +35,9 @@ export default function MarketplaceAdminScreen() {
   const moderateProvider = useModerateMarketplaceProviderAdmin();
   const moderateReview = useModerateMarketplaceReviewAdmin();
 
+  const moderationStatusLabel = (status: string) =>
+    t(`marketplaceAdminStatus_${status}`, { defaultValue: status });
+
   const refreshing =
     queue.isRefetching || providers.isRefetching || reviews.isRefetching || categories.isRefetching;
 
@@ -65,7 +68,7 @@ export default function MarketplaceAdminScreen() {
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.cardHeader}>
         <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>{item.name}</Text>
-        <Badge tone="accent" label={item.status ?? 'pending'} />
+        <Badge tone="accent" label={moderationStatusLabel(item.status ?? 'pending')} />
       </View>
       <Text style={[typography.caption, { color: theme.muted }]}>{item.category.name}</Text>
       <View style={styles.actions}>
@@ -108,7 +111,7 @@ export default function MarketplaceAdminScreen() {
         <Text style={[typography.bodyStrong, { color: theme.text, flex: 1 }]}>
           {item.providerName}
         </Text>
-        <Badge tone="accent" label={item.status} />
+        <Badge tone="accent" label={moderationStatusLabel(item.status)} />
       </View>
       <Text style={[typography.body, { color: theme.text }]}>
         {'★'.repeat(item.rating)} {item.text || t('marketplaceAdminNoReviewText')}

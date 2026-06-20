@@ -54,9 +54,13 @@ export const useAuthStore = create<AuthState>()(
           const { fetchMe } = await import('@/lib/api');
           const user = await fetchMe();
           set({ user, token });
-        } catch {
-          await deleteAuthToken();
-          set({ token: null, user: null });
+        } catch (error) {
+          // Keep the session on transient failures; only clear on explicit 401.
+          const { ApiRequestError } = await import('@/lib/api-errors');
+          if (error instanceof ApiRequestError && error.status === 401) {
+            await deleteAuthToken();
+            set({ token: null, user: null });
+          }
         }
       },
     }),
@@ -65,6 +69,10 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => AsyncStorage),
       // Token lives in secure storage only; persist the profile for instant UI.
       partialize: (state) => ({ user: state.user }),
+      onRehydrateStorage: () => () => {
+        // Persist rehydration can overwrite a fresh /auth/me — refresh after cache load.
+        void useAuthStore.getState().hydrate();
+      },
     },
   ),
 );

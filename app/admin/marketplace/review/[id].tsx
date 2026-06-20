@@ -82,7 +82,9 @@ export default function AdminReviewEditScreen() {
           {review.providerName}
         </Text>
         <Text style={[typography.caption, { color: theme.muted, marginBottom: space.md }]}>
-          {t('marketplaceAdminReviewStatus', { status: review.status })}
+          {t('marketplaceAdminReviewStatus', {
+            status: t(`marketplaceAdminStatus_${review.status}`, { defaultValue: review.status }),
+          })}
         </Text>
         <Text style={[typography.bodyStrong, { color: theme.text, marginBottom: space.sm }]}>
           {t('marketplaceAdminReviewRating')}

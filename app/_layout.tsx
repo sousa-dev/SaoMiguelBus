@@ -56,9 +56,16 @@ function AppShell({ appReady }: { appReady: boolean }) {
     void SplashScreen.hideAsync();
   }, []);
 
-  // Load the secure auth token at boot, then keep entitlement in sync.
+  // Load token + refresh profile after persist rehydration (avoids stale cached user).
   useEffect(() => {
-    void useAuthStore.getState().hydrate();
+    const runHydrate = () => {
+      void useAuthStore.getState().hydrate();
+    };
+    if (useAuthStore.persist.hasHydrated()) {
+      runHydrate();
+      return;
+    }
+    return useAuthStore.persist.onFinishHydration(runHydrate);
   }, []);
   useEntitlementSync();
   useRevenueCatBootstrap();

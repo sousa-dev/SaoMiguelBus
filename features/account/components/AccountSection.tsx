@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { PremiumBadge } from '@/features/account/components/PremiumBadge';
+import { AdminBadge } from '@/features/account/components/AdminBadge';
 import { useAuth } from '@/features/account/hooks/useAuth';
 import { ListRow } from '@/components/ui/ListRow';
 import { confirmAction, notify } from '@/lib/confirm';
@@ -51,7 +52,12 @@ export function AccountSection() {
             title={user?.displayName || user?.email || t('accountSection')}
             subtitle={user?.email}
             showChevron={false}
-            trailing={<PremiumBadge />}
+            trailing={
+              <View style={styles.badges}>
+                <AdminBadge />
+                <PremiumBadge />
+              </View>
+            }
           />
           {user?.isSuperuser ? (
             <ListRow
@@ -96,4 +102,5 @@ export function AccountSection() {
 const styles = StyleSheet.create({
   sectionLabel: { marginTop: space['2xl'], marginBottom: space.sm },
   group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, justifyContent: 'flex-end' },
 });

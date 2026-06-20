@@ -996,6 +996,7 @@
     "premiumOfflineDownloading": "Downloading offline data…",
     "premiumOfflineDownloaded": "Offline data ready",
     "accountSection": "Account",
+    "accountAdminBadge": "Admin",
     "authTitle": "Account",
     "authIntro": "Sign in to sync your premium and preferences across devices.",
     "authSignIn": "Sign in",

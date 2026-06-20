@@ -21,6 +21,8 @@ export function useAuth() {
 
   const onSession = async (res: AuthResponse) => {
     await setSession(res.token, res.user);
+    // Always reconcile profile flags (isSuperuser) from /auth/me — login payload can be stale.
+    await useAuthStore.getState().refreshUser();
     await queryClient.invalidateQueries({ queryKey: ['billing', 'entitlement'] });
   };
 

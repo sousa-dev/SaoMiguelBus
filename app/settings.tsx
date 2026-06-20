@@ -2,8 +2,8 @@ import { Download, Megaphone, ShieldCheck, Sparkles, Trash2 } from 'lucide-react
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
-import { useNavigation, useRouter } from 'expo-router';
-import React, { useLayoutEffect, useState } from 'react';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
+import React, { useCallback, useLayoutEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -21,6 +21,7 @@ import { ListRow } from '@/components/ui/ListRow';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
+import { useAuthStore } from '@/lib/auth-store';
 import { deleteMyData, exportMyData } from '@/lib/api';
 import { confirmAction, notify } from '@/lib/confirm';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
@@ -61,6 +62,12 @@ export default function SettingsScreen() {
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      void useAuthStore.getState().refreshUser();
+    }, []),
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
