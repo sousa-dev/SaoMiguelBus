@@ -26,3 +26,36 @@ export function isAllowedMinibusDocumentUrl(url: string): boolean {
     return false;
   }
 }
+
+function documentSlugFromUrl(url: string): string | null {
+  try {
+    const match = new URL(url).pathname.match(/\/api\/v3\/minibus\/documents\/([^/]+)\/file$/);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Prefer offline file URI; otherwise stream via the configured API base (HTTPS in prod). */
+export function resolveMinibusImageUri(
+  localUri?: string | null,
+  remoteUrl?: string | null,
+  documentSlug?: string,
+): string | null {
+  if (localUri) {
+    return localUri;
+  }
+  if (documentSlug && isValidMinibusDocumentSlug(documentSlug)) {
+    return buildMinibusDocumentFileUrl(documentSlug);
+  }
+  if (!remoteUrl) {
+    return null;
+  }
+  if (isAllowedMinibusDocumentUrl(remoteUrl)) {
+    const slug = documentSlugFromUrl(remoteUrl);
+    if (slug) {
+      return buildMinibusDocumentFileUrl(slug);
+    }
+  }
+  return remoteUrl;
+}

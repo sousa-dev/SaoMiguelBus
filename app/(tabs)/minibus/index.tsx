@@ -164,19 +164,16 @@ export default function MinibusScreen() {
             {t('minibusSectionLines')}
           </Text>
 
-          <Text style={[typography.label, { color: theme.muted, marginBottom: space.sm }]}>
-            {t('minibusNetworkMap')}
-          </Text>
-          <View style={styles.networkMapWrap}>
-            <MinibusLineImage
-              compact
-              localUri={networkMapLocalUri}
-              remoteUrl={networkMapRemoteUrl}
-              accessibilityLabel={t('minibusNetworkMapImageAlt')}
-              tapHintKey="minibusNetworkMapTapToZoom"
-              fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
-            />
-          </View>
+          <MinibusLineImage
+            compact
+            documentSlug="network-map"
+            localUri={networkMapLocalUri}
+            remoteUrl={networkMapRemoteUrl}
+            sectionTitle={t('minibusNetworkMap')}
+            accessibilityLabel={t('minibusNetworkMapImageAlt')}
+            tapHintKey="minibusNetworkMapTapToZoom"
+            fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
+          />
 
           {loading ? (
             <View style={styles.skeletons}>
@@ -242,7 +239,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBody: { flex: 1, gap: 2 },
-  networkMapWrap: { marginBottom: space.lg, alignItems: 'center' },
   lineList: { gap: space.md },
   section: { marginTop: space.lg },
   adTop: { marginBottom: space.md },

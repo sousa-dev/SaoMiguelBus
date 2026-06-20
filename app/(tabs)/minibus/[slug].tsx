@@ -110,16 +110,14 @@ export default function MinibusLineDetailScreen() {
           />
         </View>
 
-        <Text style={[typography.headline, { color: theme.text, marginTop: space.lg }]}>
-          {t('minibusTimetable')}
-        </Text>
-        <View style={styles.imageWrap}>
-          <MinibusLineImage
-            localUri={localUri}
-            remoteUrl={line.timetable_file_url}
-            accessibilityLabel={t('minibusTimetableImageAlt', { line: line.name })}
-          />
-        </View>
+        <MinibusLineImage
+          documentSlug={line.slug}
+          localUri={localUri}
+          remoteUrl={line.timetable_file_url}
+          sectionTitle={t('minibusTimetable')}
+          sectionTitleStyle={[typography.headline, { color: theme.text, marginTop: space.lg }]}
+          accessibilityLabel={t('minibusTimetableImageAlt', { line: line.name })}
+        />
 
         <MinibusAttributionFooter sourceUrl={sourceUrl} importedAt={importedAt} />
       </ScrollView>
@@ -130,6 +128,5 @@ export default function MinibusLineDetailScreen() {
 const styles = StyleSheet.create({
   content: { padding: space.lg, paddingBottom: space.xl },
   colorBar: { width: 48, height: 6, borderRadius: 3, marginBottom: space.md },
-  imageWrap: { marginTop: space.sm },
   adTop: { marginBottom: space.md },
 });
