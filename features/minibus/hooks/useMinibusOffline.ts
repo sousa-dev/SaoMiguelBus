@@ -8,6 +8,7 @@ import {
   refreshMinibusSnapshotIfStale,
   type MinibusOfflineSnapshot,
 } from '@/features/minibus/offline';
+import { track } from '@/lib/analytics';
 import { logger } from '@/lib/logger';
 import { useNetwork } from '@/lib/network-provider';
 
@@ -52,14 +53,34 @@ export function useMinibusOffline(): MinibusOfflineState {
     }
     syncingRef.current = true;
     setSyncing(true);
+    track('minibus', 'engage', {
+      action: 'offline_sync',
+      bundle: 'minibus',
+      phase: 'start',
+      locale,
+    });
     try {
-      const { snapshot: next } = await refreshMinibusSnapshotIfStale(locale);
+      const { snapshot: next, updated } = await refreshMinibusSnapshotIfStale(locale);
       lastSyncRef.current = Date.now();
       if (next) {
         setSnapshot(next);
       }
+      track('minibus', 'engage', {
+        action: 'offline_sync',
+        bundle: 'minibus',
+        outcome: 'success',
+        updated,
+        version: next?.version ?? '',
+        locale,
+      });
     } catch (error) {
       logger.warn('minibus offline sync failed', error);
+      track('minibus', 'engage', {
+        action: 'offline_sync',
+        bundle: 'minibus',
+        outcome: 'failure',
+        locale,
+      });
     } finally {
       syncingRef.current = false;
       setSyncing(false);

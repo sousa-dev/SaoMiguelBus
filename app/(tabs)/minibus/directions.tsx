@@ -14,6 +14,7 @@ import { consumePendingDirections } from '@/features/minibus/directionsStore';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { enrichJourneyCoordinates } from '@/features/minibus/stopCoordinates';
+import { minibusJourneyAnalyticsProps } from '@/features/minibus/lib/analytics-props';
 import { track } from '@/lib/analytics';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -43,7 +44,7 @@ export default function MinibusDirectionsScreen() {
     trackedRef.current = true;
     track('minibus', 'view', {
       screen: 'directions',
-      transfers: pending.journey.transfers,
+      ...minibusJourneyAnalyticsProps(pending.journey),
     });
   }, [pending]);
 

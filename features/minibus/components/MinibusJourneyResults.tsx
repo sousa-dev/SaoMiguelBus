@@ -9,7 +9,7 @@ import type { MinibusJourney, MinibusLine } from '@/lib/types';
 type Props = {
   journeys: MinibusJourney[];
   linesByCode: Map<string, MinibusLine>;
-  onJourneyPress?: (journey: MinibusJourney) => void;
+  onJourneyPress?: (journey: MinibusJourney, journeyIndex: number) => void;
 };
 
 export function MinibusJourneyResults({ journeys, linesByCode, onJourneyPress }: Props) {
@@ -26,7 +26,7 @@ export function MinibusJourneyResults({ journeys, linesByCode, onJourneyPress }:
             <MinibusJourneyCard
               journey={journey}
               linesByCode={linesByCode}
-              onPress={onJourneyPress ? () => onJourneyPress(journey) : undefined}
+              onPress={onJourneyPress ? () => onJourneyPress(journey, index) : undefined}
             />
             {showInlineAd ? <AdBanner on="home" slot={`minibus-search-inline-${index}`} /> : null}
           </Fragment>

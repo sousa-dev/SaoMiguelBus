@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -28,7 +28,7 @@ import i18n, { normalizeLocaleCode, resources } from '@/lib/i18n';
 import { NetworkProvider } from '@/lib/network-provider';
 import { AppQueryProvider } from '@/lib/query-provider';
 import { ThemeProvider, useAppTheme } from '@/lib/theme';
-import { track } from '@/lib/analytics';
+import { flushAnalytics, track } from '@/lib/analytics';
 import { useConsentStore } from '@/lib/consent-store';
 import { rehydrateThemePrefs } from '@/lib/theme-prefs';
 
@@ -99,6 +99,18 @@ function AppShell({ appReady }: { appReady: boolean }) {
       track('transit', 'load', { surface: 'app_shell' });
     }
   }, [hasAnalytics]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background' || state === 'inactive') {
+        flushAnalytics();
+      }
+      if (state === 'active') {
+        flushAnalytics();
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   return (
     <SafeAreaProvider>

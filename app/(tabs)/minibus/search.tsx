@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,7 @@ import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { MinibusJourneyResults } from '@/features/minibus/components/MinibusJourneyResults';
 import { MinibusPlannerCard } from '@/features/minibus/components/MinibusPlannerCard';
+import { minibusJourneyAnalyticsProps } from '@/features/minibus/lib/analytics-props';
 import { setPendingDirections } from '@/features/minibus/directionsStore';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
@@ -42,6 +43,7 @@ export default function MinibusSearchScreen() {
   const [destination, setDestination] = useState('');
   const [submitted, setSubmitted] = useState<{ origin: string; destination: string } | null>(null);
   const [interstitialTrigger, setInterstitialTrigger] = useState(0);
+  const lastSearchTrackedRef = useRef<string | null>(null);
 
   const stops = useMemo(() => {
     if (!network) {
@@ -74,6 +76,24 @@ export default function MinibusSearchScreen() {
     setInterstitialTrigger((value) => value + 1);
   }, [submitted, isLoading]);
 
+  useEffect(() => {
+    if (!submitted || isLoading) {
+      return;
+    }
+    const searchKey = `${submitted.origin}|${submitted.destination}`;
+    if (lastSearchTrackedRef.current === searchKey) {
+      return;
+    }
+    lastSearchTrackedRef.current = searchKey;
+    track('minibus', 'search', {
+      origin: submitted.origin,
+      destination: submitted.destination,
+      results_count: result?.journeys.length ?? 0,
+      offline: source === 'offline',
+      source: source ?? 'api',
+    });
+  }, [submitted, isLoading, result, source]);
+
   const onSwap = () => {
     setOrigin(destination);
     setDestination(origin);
@@ -85,7 +105,6 @@ export default function MinibusSearchScreen() {
     if (!trimmedOrigin || !trimmedDestination) {
       return;
     }
-    track('minibus', 'search', { offline: Boolean(offlineNetwork) });
     void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
     setSubmitted({ origin: trimmedOrigin, destination: trimmedDestination });
   };
@@ -131,7 +150,14 @@ export default function MinibusSearchScreen() {
           <MinibusJourneyResults
             journeys={journeys}
             linesByCode={linesByCode}
-            onJourneyPress={(journey) => {
+            onJourneyPress={(journey, journeyIndex) => {
+              track('minibus', 'engage', {
+                action: 'select_journey',
+                ...minibusJourneyAnalyticsProps(journey, {
+                  journey_index: journeyIndex,
+                  offline: source === 'offline',
+                }),
+              });
               setPendingDirections(journey, linesByCode);
               router.push('/minibus/directions');
             }}

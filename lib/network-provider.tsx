@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import { AppState, Platform } from 'react-native';
 
+import { flushAnalytics, track } from '@/lib/analytics';
 import { logger } from '@/lib/logger';
 import { flushDrafts } from '@/lib/offline-drafts';
 import {
@@ -20,11 +21,7 @@ import {
 } from '@/lib/offline-bundle';
 import { usePremium } from '@/lib/premium-store';
 
-let latestOnline = true;
-/** Synchronous online getter for non-React call sites (e.g. mutation guards). */
-export function getNetworkOnline(): boolean {
-  return latestOnline;
-}
+import { getNetworkOnline, setNetworkOnline } from '@/lib/network-online';
 
 /** Debounce window for connectivity transitions to avoid banner flicker. */
 const CONNECTIVITY_DEBOUNCE_MS = 700;
@@ -73,12 +70,13 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(debounceTimer.current);
       }
       debounceTimer.current = setTimeout(() => {
-        latestOnline = next;
+        setNetworkOnline(next);
         setIsOnline((prev) => (prev === next ? prev : next));
       }, CONNECTIVITY_DEBOUNCE_MS);
     };
 
     if (Platform.OS === 'web' && typeof navigator !== 'undefined') {
+      setNetworkOnline(navigator.onLine);
       setIsOnline(navigator.onLine);
       const onOnline = () => applyOnline(true);
       const onOffline = () => applyOnline(false);
@@ -121,6 +119,11 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     }
     syncingRef.current = true;
     setSyncing(true);
+    track('transit', 'engage', {
+      action: 'offline_sync',
+      bundle: 'transit',
+      phase: 'start',
+    });
     try {
       const { bundle, updated } = await refreshOfflineBundleIfStale();
       lastSyncRef.current = Date.now();
@@ -130,8 +133,20 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       if (updated) {
         await queryClient.invalidateQueries({ queryKey: ['transit', 'offline-cache'] });
       }
+      track('transit', 'engage', {
+        action: 'offline_sync',
+        bundle: 'transit',
+        outcome: 'success',
+        updated,
+        version: bundle?.version ?? '',
+      });
     } catch (error) {
       logger.warn('offline sync failed', error);
+      track('transit', 'engage', {
+        action: 'offline_sync',
+        bundle: 'transit',
+        outcome: 'failure',
+      });
     } finally {
       syncingRef.current = false;
       setSyncing(false);
@@ -162,11 +177,12 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [isPremium, isOnline, syncNow]);
 
-  // Flush queued safety-report drafts when connectivity returns.
+  // Flush queued safety-report drafts and analytics when connectivity returns.
   useEffect(() => {
     if (!isOnline) {
       return;
     }
+    flushAnalytics();
     void flushDrafts().then((flushed) => {
       if (flushed > 0) {
         void queryClient.invalidateQueries({ queryKey: ['seismic'] });
@@ -206,4 +222,4 @@ export function useNetwork(): NetworkContextValue {
   return useContext(NetworkContext);
 }
 
-export { hasOfflineCache };
+export { getNetworkOnline } from '@/lib/network-online';

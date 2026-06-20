@@ -895,7 +895,12 @@ export async function postConsent(sessionId: string, purposes: ConsentPurposes) 
 
 export async function postAnalyticsEvents(
   sessionId: string,
-  events: { module: string; event_type: string; properties?: Record<string, unknown> }[],
+  events: {
+    module: string;
+    event_type: string;
+    properties?: Record<string, unknown>;
+    occurred_at?: string;
+  }[],
 ) {
   return apiFetch<{ accepted: number; dropped: number }>('/api/v3/analytics/events', {
     method: 'POST',

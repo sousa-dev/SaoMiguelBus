@@ -40,6 +40,13 @@ async function syncToBackend(purposes: ConsentPurposes) {
   }
 }
 
+async function purgeAnalyticsIfRejected(purposes: ConsentPurposes) {
+  if (!purposes.analytics) {
+    const { purgeAnalyticsQueue } = await import('@/lib/analytics-queue');
+    await purgeAnalyticsQueue();
+  }
+}
+
 function persistDecision(
   set: (partial: Partial<ConsentState>) => void,
   purposes: ConsentPurposes,
@@ -104,11 +111,13 @@ export const useConsentStore = create<ConsentState>()(
       rejectNonEssential: async (policyVersion) => {
         const purposes = { ...defaultPurposes };
         await syncToBackend(purposes);
+        await purgeAnalyticsIfRejected(purposes);
         persistDecision(set, purposes, policyVersion);
       },
       saveCustom: async (purposes, policyVersion) => {
         const normalized = { ...defaultPurposes, ...purposes, strictly_necessary: true };
         await syncToBackend(normalized);
+        await purgeAnalyticsIfRejected(normalized);
         persistDecision(set, normalized, policyVersion);
       },
     }),
