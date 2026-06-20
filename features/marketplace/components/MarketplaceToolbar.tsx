@@ -4,6 +4,7 @@ import { SlidersHorizontal } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 
+import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { SearchField } from '@/components/ui/SearchField';
@@ -13,6 +14,7 @@ import {
   countActiveMarketplaceFilters,
   hasActiveMarketplaceFilters,
   MARKETPLACE_SORTS,
+  shouldShowMarketplaceRatingWarning,
   type MarketplaceListFilters,
   type MarketplaceSortKey,
 } from '@/features/marketplace/filterHelpers';
@@ -46,7 +48,7 @@ export function MarketplaceToolbar({
   onClearFilters,
   query,
   onChangeQuery,
-  nearMeAvailable,
+  reviewedShare,
 }: {
   categories: ServiceCategory[];
   filters: MarketplaceListFilters;
@@ -54,7 +56,7 @@ export function MarketplaceToolbar({
   onClearFilters: () => void;
   query: string;
   onChangeQuery: (value: string) => void;
-  nearMeAvailable: boolean;
+  reviewedShare?: number;
 }) {
   const theme = useAppTheme();
   const { t } = useTranslation();
@@ -62,6 +64,7 @@ export function MarketplaceToolbar({
 
   const activeCount = countActiveMarketplaceFilters(filters);
   const hasActive = hasActiveMarketplaceFilters(filters);
+  const showSortRatingWarning = shouldShowMarketplaceRatingWarning(filters, reviewedShare);
 
   const openSheet = () => {
     if (Platform.OS !== 'web') {
@@ -72,14 +75,6 @@ export function MarketplaceToolbar({
 
   const setSort = (sort: MarketplaceSortKey) => {
     onChangeFilters({ ...filters, sort });
-  };
-
-  const onNearMeToggleInSheet = (next: MarketplaceListFilters) => {
-    if (next.nearMe && next.sort === 'random') {
-      onChangeFilters({ ...next, sort: 'distance' });
-      return;
-    }
-    onChangeFilters(next);
   };
 
   return (
@@ -96,19 +91,19 @@ export function MarketplaceToolbar({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.sortRow}
       >
-        {MARKETPLACE_SORTS.map((sort) => {
-          const disabled = sort === 'distance' && !nearMeAvailable;
-          return (
-            <Chip
-              key={sort}
-              label={t(sortLabelKey(sort))}
-              selected={filters.sort === sort}
-              disabled={disabled}
-              onPress={() => setSort(sort)}
-            />
-          );
-        })}
+        {MARKETPLACE_SORTS.map((sort) => (
+          <Chip
+            key={sort}
+            label={t(sortLabelKey(sort))}
+            selected={filters.sort === sort}
+            onPress={() => setSort(sort)}
+          />
+        ))}
       </ScrollView>
+
+      {showSortRatingWarning ? (
+        <Banner message={t('marketplaceMinRatingWarning')} variant="warning" />
+      ) : null}
 
       <View style={styles.row}>
         {hasActive ? (
@@ -155,8 +150,9 @@ export function MarketplaceToolbar({
         <MarketplaceFilterSheet
           categories={categories}
           filters={filters}
-          onChange={onNearMeToggleInSheet}
+          onChange={onChangeFilters}
           onClear={onClearFilters}
+          reviewedShare={reviewedShare}
         />
         <View style={styles.sheetActions}>
           <Button label={t('marketplaceFilterApply')} size="md" onPress={() => setOpen(false)} fullWidth />

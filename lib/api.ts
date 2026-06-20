@@ -28,6 +28,7 @@ import type {
   POIsListResponse,
   ServiceCategory,
   MarketplaceProvider,
+  MarketplaceProvidersResult,
   MarketplaceReview,
   ProviderWriteInput,
   TrafficCategory,
@@ -602,7 +603,7 @@ export async function fetchProviders(params?: {
   verified?: boolean;
   sort?: string;
   limit?: number;
-}): Promise<MarketplaceProvider[]> {
+}): Promise<MarketplaceProvidersResult> {
   const query = new URLSearchParams();
   if (params?.category) {
     query.set('category', params.category);
@@ -633,10 +634,9 @@ export async function fetchProviders(params?: {
     query.set('limit', String(params.limit));
   }
   const suffix = query.toString() ? `?${query.toString()}` : '';
-  const data = await apiFetch<{ providers: MarketplaceProvider[] }>(
+  return apiFetch<MarketplaceProvidersResult>(
     `/api/v3/marketplace/providers${suffix}`,
   );
-  return data.providers;
 }
 
 export async function fetchProvider(providerId: number): Promise<MarketplaceProvider> {

@@ -3,7 +3,6 @@ export type MarketplaceSortKey = 'random' | 'distance' | 'name' | 'rating' | 'ne
 export interface MarketplaceListFilters {
   category?: string;
   sort: MarketplaceSortKey;
-  nearMe: boolean;
   minRating?: number;
   hasRate?: boolean;
   verified?: boolean;
@@ -11,23 +10,34 @@ export interface MarketplaceListFilters {
 
 export const DEFAULT_MARKETPLACE_FILTERS: MarketplaceListFilters = {
   sort: 'random',
-  nearMe: false,
 };
 
 export const MARKETPLACE_SORTS: MarketplaceSortKey[] = [
   'random',
-  'distance',
   'name',
   'rating',
   'newest',
 ];
 
+export const MARKETPLACE_REVIEWED_SHARE_WARNING_THRESHOLD = 0.5;
+
+export function shouldShowMarketplaceRatingWarning(
+  filters: MarketplaceListFilters,
+  reviewedShare: number | undefined,
+): boolean {
+  if (reviewedShare == null || reviewedShare >= MARKETPLACE_REVIEWED_SHARE_WARNING_THRESHOLD) {
+    return false;
+  }
+  return filters.sort === 'rating' || (filters.minRating != null && filters.minRating > 0);
+}
+
+export function usesMarketplaceRatingFilter(filters: MarketplaceListFilters): boolean {
+  return filters.sort === 'rating' || (filters.minRating != null && filters.minRating > 0);
+}
+
 export function countActiveMarketplaceFilters(filters: MarketplaceListFilters): number {
   let count = 0;
   if (filters.category) {
-    count += 1;
-  }
-  if (filters.nearMe) {
     count += 1;
   }
   if (filters.minRating != null && filters.minRating > 0) {

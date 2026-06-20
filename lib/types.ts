@@ -229,6 +229,17 @@ export interface MarketplaceProvider {
   verifiedByOwner?: boolean;
 }
 
+export interface MarketplaceListMeta {
+  reviewedShare: number;
+  reviewedCount: number;
+  totalCount: number;
+}
+
+export interface MarketplaceProvidersResult {
+  providers: MarketplaceProvider[];
+  meta: MarketplaceListMeta;
+}
+
 export interface MarketplaceReview {
   id: number;
   providerId: number;

@@ -23,8 +23,7 @@ export interface ProviderQueryParams extends MarketplaceListFilters {
 }
 
 function toFetchParams(params: ProviderQueryParams) {
-  const { enabled: _enabled, nearMe: _nearMe, minRating, hasRate, verified, sort, category, q, lat, lng } =
-    params;
+  const { enabled: _enabled, minRating, hasRate, verified, sort, category, q, lat, lng } = params;
   return {
     category,
     q,
@@ -47,22 +46,22 @@ export function useMarketplaceCategories(enabled = true) {
   });
 }
 
-export function useProviders(params: ProviderQueryParams = { sort: 'random', nearMe: false }) {
+export function useProviders(params: ProviderQueryParams = { sort: 'random' }) {
   const { enabled, ...filters } = params;
   const fetchParams = toFetchParams(filters);
   return useQuery({
     queryKey: ['marketplace', 'v1', 'providers', fetchParams],
     queryFn: async () => {
-      const providers = await fetchProviders(fetchParams);
+      const result = await fetchProviders(fetchParams);
       if (filters.q) {
         track('marketplace', 'search', {
           query: filters.q,
           category: filters.category ?? null,
           sort: filters.sort,
-          results_count: providers.length,
+          results_count: result.providers.length,
         });
       }
-      return providers;
+      return result;
     },
     enabled: enabled !== false,
     staleTime: 1000 * 60 * 5,
@@ -138,6 +137,7 @@ export function useSubmitReview(providerId: number) {
       });
       void queryClient.invalidateQueries({ queryKey: ['marketplace', 'v1', 'reviews', providerId] });
       void queryClient.invalidateQueries({ queryKey: ['marketplace', 'v1', 'provider', providerId] });
+      void queryClient.invalidateQueries({ queryKey: ['marketplace', 'v1', 'providers'] });
     },
   });
 }

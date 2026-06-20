@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { VerifiedByOwnerBadge } from '@/features/marketplace/components/VerifiedByOwnerBadge';
 import { IconButton } from '@/components/ui/IconButton';
-import { distanceKm, formatDistanceKm } from '@/features/marketplace/distanceKm';
 import { iconSize, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { MarketplaceProvider } from '@/lib/types';
@@ -13,11 +13,9 @@ import type { MarketplaceProvider } from '@/lib/types';
 export function ProviderCard({
   provider,
   onPress,
-  viewerCoords,
 }: {
   provider: MarketplaceProvider;
   onPress: () => void;
-  viewerCoords?: { lat: number; lng: number } | null;
 }) {
   const theme = useAppTheme();
   const { t } = useTranslation();
@@ -38,15 +36,6 @@ export function ProviderCard({
     }
   };
 
-  const distanceLabel =
-    viewerCoords &&
-    provider.latitude != null &&
-    provider.longitude != null
-      ? formatDistanceKm(
-          distanceKm(viewerCoords.lat, viewerCoords.lng, provider.latitude, provider.longitude),
-        )
-      : null;
-
   return (
     <Card onPress={onPress} elevated style={styles.card}>
       <View style={styles.header}>
@@ -56,9 +45,7 @@ export function ProviderCard({
         <View style={styles.badges}>
           <Badge label={provider.category.name} tone="neutral" />
           {provider.isPromoted ? <Badge label={t('marketplacePromoted')} tone="accent" /> : null}
-          {provider.verifiedByOwner ? (
-            <Badge label={t('marketplaceVerifiedBadge')} tone="primary" />
-          ) : null}
+          {provider.verifiedByOwner ? <VerifiedByOwnerBadge /> : null}
         </View>
       </View>
 
@@ -73,9 +60,6 @@ export function ProviderCard({
           <Text style={[typography.caption, { color: theme.text }]}>
             {t('marketplaceRateLabel', { rate: provider.hourlyRate })}
           </Text>
-        ) : null}
-        {distanceLabel ? (
-          <Text style={[typography.caption, { color: theme.muted }]}>{distanceLabel}</Text>
         ) : null}
       </View>
 

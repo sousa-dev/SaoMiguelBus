@@ -6,7 +6,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Banner } from '@/components/ui/Banner';
 import { useFabActions } from '@/lib/fab-store';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/StateView';
@@ -28,7 +27,6 @@ import {
   MARKETPLACE_REGISTER_URL,
   shareMarketplaceListingInvite,
 } from '@/features/marketplace/share-listing-invite';
-import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
 
@@ -39,9 +37,6 @@ export default function MarketplaceScreen() {
 
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<MarketplaceListFilters>(DEFAULT_MARKETPLACE_FILTERS);
-
-  const location = useNearbyLocation(filters.nearMe);
-  const nearMeCoords = filters.nearMe && location.permission === 'granted' ? location.coords : null;
 
   useFabActions(
     useMemo(
@@ -71,12 +66,10 @@ export default function MarketplaceScreen() {
   const providers = useProviders({
     ...filters,
     q: query.trim() || undefined,
-    lat: nearMeCoords?.lat,
-    lng: nearMeCoords?.lng,
   });
 
   const listItems = useMemo(
-    () => buildMarketplaceListItems(providers.data ?? []),
+    () => buildMarketplaceListItems(providers.data?.providers ?? []),
     [providers.data],
   );
 
@@ -98,7 +91,6 @@ export default function MarketplaceScreen() {
     return (
       <ProviderCard
         provider={item.provider}
-        viewerCoords={nearMeCoords}
         onPress={() =>
           router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: String(item.provider.id) } })
         }
@@ -115,14 +107,8 @@ export default function MarketplaceScreen() {
         onClearFilters={clearFilters}
         query={query}
         onChangeQuery={setQuery}
-        nearMeAvailable={Boolean(nearMeCoords)}
+        reviewedShare={providers.data?.meta.reviewedShare}
       />
-
-      {filters.nearMe && location.permission === 'denied' ? (
-        <View style={styles.bannerWrap}>
-          <Banner message={t('marketplaceNearMeDenied')} variant="warning" />
-        </View>
-      ) : null}
 
       {providers.isLoading ? (
         <View style={{ padding: space.lg }}>
@@ -176,5 +162,4 @@ export default function MarketplaceScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: space.md, paddingBottom: space['4xl'] },
-  bannerWrap: { paddingHorizontal: space.md, paddingBottom: space.sm },
 });

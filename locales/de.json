@@ -543,6 +543,7 @@
     "marketplaceHasRate": "Mit Stundensatz",
     "marketplaceVerifiedOnly": "Nur verifiziert",
     "marketplaceVerifiedBadge": "Verifiziert",
+    "marketplaceVerifiedTooltip": "Dieses Häkchen bedeutet, dass dieser Eintrag vom Inhaber des Unternehmens verifiziert wurde",
     "marketplaceClearFilters": "Filter löschen",
     "marketplaceRegisterCtaCompactTitle": "Lokales Geschäft kennen? Zum Verzeichnis hinzufügen.",
     "marketplacePromoted": "Empfohlen",

@@ -15,6 +15,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { ContactRow } from '@/features/marketplace/components/ContactRow';
 import { ReviewSheet } from '@/features/marketplace/components/ReviewSheet';
+import { VerifiedByOwnerBadge } from '@/features/marketplace/components/VerifiedByOwnerBadge';
 import {
   useDeleteProvider,
   useProvider,
@@ -175,9 +176,7 @@ export default function ProviderDetailScreen() {
             <View style={styles.badges}>
               <Badge label={p.category.name} tone="neutral" />
               {p.isPromoted ? <Badge label={t('marketplacePromoted')} tone="accent" /> : null}
-              {p.verifiedByOwner ? (
-                <Badge label={t('marketplaceVerifiedBadge')} tone="primary" />
-              ) : null}
+              {p.verifiedByOwner ? <VerifiedByOwnerBadge /> : null}
               {p.status && p.status !== 'published' ? (
                 <Badge label={t('marketplacePendingBadge')} tone="primary" />
               ) : null}

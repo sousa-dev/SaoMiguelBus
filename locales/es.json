@@ -543,6 +543,7 @@
     "marketplaceHasRate": "Con tarifa por hora",
     "marketplaceVerifiedOnly": "Solo verificados",
     "marketplaceVerifiedBadge": "Verificado",
+    "marketplaceVerifiedTooltip": "Esta marca significa que este anuncio fue verificado por el propietario del negocio",
     "marketplaceClearFilters": "Borrar filtros",
     "marketplaceRegisterCtaCompactTitle": "¿Conoces un negocio local? Añádelo al directorio.",
     "marketplacePromoted": "Destacado",
