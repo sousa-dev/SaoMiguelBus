@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: space.md,
     paddingTop: space.sm,
-    marginBottom: space.md,
+    marginBottom: space.sm,
   },
   embedded: {
     marginBottom: space.md,

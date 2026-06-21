@@ -145,7 +145,7 @@ export default function WeatherDetailScreen() {
   const code = current?.weatherCode;
 
   return (
-    <Screen>
+    <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: theme.text }]}>{parish.name}</Text>
         <Text style={[styles.concelho, { color: theme.muted }]}>{parish.concelho}</Text>
@@ -244,7 +244,7 @@ export default function WeatherDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: space.xl },
+  content: { paddingHorizontal: space.lg, paddingBottom: space.xl },
   title: { ...typography.headline, marginBottom: space.xs },
   concelho: { marginBottom: space.lg },
   currentCard: {
