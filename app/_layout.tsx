@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -168,10 +169,12 @@ export default function RootLayout() {
   }
 
   return (
-    <AppQueryProvider>
-      <NetworkProvider>
-        <AppShell appReady={loaded} />
-      </NetworkProvider>
-    </AppQueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppQueryProvider>
+        <NetworkProvider>
+          <AppShell appReady={loaded} />
+        </NetworkProvider>
+      </AppQueryProvider>
+    </GestureHandlerRootView>
   );
 }
