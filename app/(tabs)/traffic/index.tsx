@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
-import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
@@ -24,7 +23,6 @@ import { ProximityAlert } from '@/features/traffic/components/ProximityAlert';
 import { ReportCard } from '@/features/traffic/components/ReportCard';
 import { TrafficMap, type TrafficMapHandle } from '@/features/traffic/components/TrafficMap';
 import {
-  useCreateTrafficReport,
   useTrafficCategories,
   useTrafficReports,
 } from '@/features/traffic/hooks/useTrafficQueries';
@@ -34,8 +32,7 @@ import { isWithinIslandBounds } from '@/lib/island-map';
 import { useFabActions } from '@/lib/fab-store';
 import { track } from '@/lib/analytics';
 import { useAppTheme } from '@/lib/theme';
-import { useTrafficStore } from '@/lib/traffic-store';
-import type { TrafficCategory, TrafficReport } from '@/lib/types';
+import type { TrafficReport } from '@/lib/types';
 
 const POLL_MS = 30000;
 
@@ -43,15 +40,12 @@ export default function TrafficScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const addReport = useTrafficStore((s) => s.addReport);
 
   const [focused, setFocused] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [scheduledOpen, setScheduledOpen] = useState(false);
   const [dismissedAlertId, setDismissedAlertId] = useState<number | null>(null);
   const [draftPin, setDraftPin] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapPickMode, setMapPickMode] = useState(false);
-  const [reportError, setReportError] = useState<string | null>(null);
 
   const { coords, permission } = useNearbyLocation(focused);
   const userOnIsland = coords ? isWithinIslandBounds(coords.lat, coords.lng) : false;
@@ -70,7 +64,6 @@ export default function TrafficScreen() {
     refetchInterval: focused ? POLL_MS : undefined,
   });
 
-  const create = useCreateTrafficReport();
   const mapRef = useRef<TrafficMapHandle>(null);
 
   useFabActions(
@@ -137,38 +130,12 @@ export default function TrafficScreen() {
       params.lng = String(draftPin.lng);
     }
     setPickerOpen(false);
-    setMapPickMode(false);
     setDraftPin(null);
     router.push({ pathname: '/(tabs)/traffic/new', params });
   };
 
-  const quickCreate = async (category: TrafficCategory) => {
-    if (category.isSchedulable || draftPin) {
-      openNewAtPin(category.slug);
-      return;
-    }
-    if (!userOnIsland || !coords) {
-      openNewAtPin(category.slug);
-      return;
-    }
-    try {
-      const result = await create.mutateAsync({
-        category_slug: category.slug,
-        latitude: coords.lat,
-        longitude: coords.lng,
-      });
-      if (!('queued' in result)) {
-        addReport(result.id);
-      }
-      setPickerOpen(false);
-    } catch {
-      setReportError(t('trafficReportError'));
-    }
-  };
-
   const onMapPick = (picked: { lat: number; lng: number }) => {
     setDraftPin(picked);
-    setMapPickMode(false);
     setPickerOpen(true);
   };
 
@@ -201,11 +168,9 @@ export default function TrafficScreen() {
             reports={activeReports}
             userCoords={coords}
             draftPin={draftPin}
-            pickMode={mapPickMode}
             theme={theme}
             onMarkerPress={openReport}
             onLongPress={onMapPick}
-            onPickTap={onMapPick}
           />
         ) : (
           reportList
@@ -235,10 +200,6 @@ export default function TrafficScreen() {
           ) : null}
         </Pressable>
 
-        {reportError ? (
-          <Banner variant="danger" message={reportError} />
-        ) : null}
-
         {reports.isLoading ? (
           <ActivityIndicator color={theme.primary} style={styles.loader} />
         ) : null}
@@ -246,15 +207,6 @@ export default function TrafficScreen() {
         {permission === 'denied' ? (
           <View style={[styles.permBanner, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={{ color: theme.muted, fontSize: 12 }}>{t('trafficLocationDenied')}</Text>
-          </View>
-        ) : null}
-
-        {mapPickMode ? (
-          <View style={[styles.pickBanner, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Text style={{ color: theme.text, fontSize: 12, flex: 1 }}>{t('trafficMapPickModeHint')}</Text>
-            <Pressable onPress={() => setMapPickMode(false)} hitSlop={8}>
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>{t('trafficCancel')}</Text>
-            </Pressable>
           </View>
         ) : null}
 
@@ -278,13 +230,7 @@ export default function TrafficScreen() {
         visible={pickerOpen}
         categories={categories.data ?? []}
         theme={theme}
-        pending={create.isPending}
-        onPick={(c) => void quickCreate(c)}
-        onAddDetails={() => openNewAtPin()}
-        onPickOnMap={() => {
-          setPickerOpen(false);
-          setMapPickMode(true);
-        }}
+        onPick={(c) => openNewAtPin(c.slug)}
         onClose={() => {
           setPickerOpen(false);
           setDraftPin(null);
@@ -341,19 +287,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     padding: 10,
-  },
-  pickBanner: {
-    position: 'absolute',
-    top: 8,
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    elevation: 3,
   },
   draftBar: {
     position: 'absolute',

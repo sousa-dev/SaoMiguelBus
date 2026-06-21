@@ -1,11 +1,13 @@
-import { MapPin } from 'lucide-react-native';
+import { MapPin, Search } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState, type ElementRef } from 'react';
-import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
+import { Field } from '@/components/ui/Field';
 import { OsmMapView } from '@/components/OsmMapView';
+import { searchPlaces, type PlaceResult } from '@/lib/api';
 import { staticIslandConfig } from '@/config/island';
 import {
   clampCoordinate,
@@ -45,12 +47,62 @@ export function LocationPickerModal({
   const { t } = useTranslation();
   const mapRef = useRef<ElementRef<typeof OsmMapView>>(null);
   const [pin, setPin] = useState<Coords>(initialCoords ?? defaultPin());
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<PlaceResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setPin(initialCoords ?? defaultPin());
+      setQuery('');
+      setResults([]);
+      setSearchError(false);
     }
   }, [visible, initialCoords?.lat, initialCoords?.lng]);
+
+  // Debounced address search bounded to the island.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) {
+      setResults([]);
+      setSearching(false);
+      setSearchError(false);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    setSearchError(false);
+    const handle = setTimeout(async () => {
+      try {
+        const found = await searchPlaces(q);
+        if (!cancelled) {
+          setResults(found);
+        }
+      } catch {
+        if (!cancelled) {
+          setResults([]);
+          setSearchError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setSearching(false);
+        }
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [query]);
+
+  const selectResult = (place: PlaceResult) => {
+    const next = clampCoordinate(place.lat, place.lng);
+    setPin(next);
+    setResults([]);
+    setQuery('');
+    mapRef.current?.animateToRegion(coordinateToRegion(next), 250);
+  };
 
   const userOnIsland = useMemo(
     () => (userCoords ? isWithinIslandBounds(userCoords.lat, userCoords.lng) : false),
@@ -84,9 +136,56 @@ export function LocationPickerModal({
           <Button label={t('trafficPickLocationConfirm')} onPress={confirm} disabled={outOfBounds} />
         </View>
 
-        <Text style={[typography.caption, { color: theme.muted, textAlign: 'center', padding: space.md }]}>
+        <Text style={[typography.caption, { color: theme.muted, textAlign: 'center', paddingHorizontal: space.md, paddingTop: space.md }]}>
           {t('trafficPickLocationHint')}
         </Text>
+
+        <View style={styles.searchWrap}>
+          <Field
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('trafficSearchPlaceholder')}
+            autoCorrect={false}
+            returnKeyType="search"
+            style={{ marginBottom: 0 }}
+            trailing={
+              searching ? (
+                <ActivityIndicator size="small" color={theme.muted} />
+              ) : (
+                <Search size={18} color={theme.muted} />
+              )
+            }
+          />
+          {results.length > 0 ? (
+            <ScrollView
+              style={[styles.results, { backgroundColor: theme.card, borderColor: theme.border }]}
+              keyboardShouldPersistTaps="handled"
+            >
+              {results.map((place, idx) => (
+                <Pressable
+                  key={`${place.lat},${place.lng},${idx}`}
+                  onPress={() => selectResult(place)}
+                  style={[styles.resultRow, { borderBottomColor: theme.border }]}
+                >
+                  <MapPin size={16} color={theme.primary} />
+                  <Text style={[typography.caption, { color: theme.text, flex: 1 }]} numberOfLines={2}>
+                    {place.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          ) : null}
+          {searchError ? (
+            <Text style={[typography.caption, { color: theme.danger, marginTop: space.xs }]}>
+              {t('trafficSearchError')}
+            </Text>
+          ) : !searching && query.trim().length >= 3 && results.length === 0 ? (
+            <Text style={[typography.caption, { color: theme.muted, marginTop: space.xs }]}>
+              {t('trafficSearchNoResults')}
+            </Text>
+          ) : null}
+        </View>
+
         {outOfBounds ? (
           <Text style={[typography.caption, { color: theme.danger, textAlign: 'center', marginBottom: space.sm }]}>
             {t('trafficLocationNeeded')}
@@ -150,6 +249,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   map: { flex: 1 },
+  searchWrap: { paddingHorizontal: space.md, paddingTop: space.sm },
+  results: {
+    maxHeight: 180,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+    marginTop: space.xs,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   pin: {
     width: 36,
     height: 36,

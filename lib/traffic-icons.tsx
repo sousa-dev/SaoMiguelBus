@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
 import {
   AlertTriangle,
+  Camera,
   Car,
   CloudRain,
   Construction,
@@ -15,7 +16,7 @@ import {
 const TRAFFIC_CATEGORY_ICONS: Record<string, LucideIcon> = {
   acidente: Car,
   transito: Gauge,
-  radar: Gauge,
+  radar: Camera,
   policia: Shield,
   obras: Construction,
   desvio: Route,

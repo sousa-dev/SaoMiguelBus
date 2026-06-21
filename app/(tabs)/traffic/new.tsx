@@ -45,19 +45,14 @@ export default function NewTrafficReportScreen() {
 
   const [reportCoords, setReportCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [coordsInitialized, setCoordsInitialized] = useState(false);
 
+  // Pre-fill only from an explicit map pin (draft) — never silently use the
+  // user's current GPS location. The user must choose the spot deliberately.
   useEffect(() => {
     if (paramCoords) {
       setReportCoords(paramCoords);
-      setCoordsInitialized(true);
-      return;
     }
-    if (!coordsInitialized && userOnIsland && gpsCoords) {
-      setReportCoords(gpsCoords);
-      setCoordsInitialized(true);
-    }
-  }, [paramCoords, coordsInitialized, userOnIsland, gpsCoords]);
+  }, [paramCoords]);
 
   const onSubmit = async (input: TrafficReportWriteInput) => {
     setError(null);

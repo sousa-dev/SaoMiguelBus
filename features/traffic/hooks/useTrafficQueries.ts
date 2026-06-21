@@ -106,7 +106,15 @@ export function useDeleteTrafficReport() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (reportId: number) => deleteTrafficReport(reportId),
-    onSuccess: () => {
+    onSuccess: (_data, reportId) => {
+      // Drop the marker from every cached list immediately — the map list query
+      // is disabled while the detail screen is focused, so invalidation alone
+      // would not refetch until a manual reload.
+      queryClient.setQueriesData<TrafficReport[]>(
+        { queryKey: ['traffic', 'v1', 'reports'] },
+        (old) => old?.filter((r) => r.id !== reportId),
+      );
+      queryClient.removeQueries({ queryKey: ['traffic', 'v1', 'report', reportId] });
       void queryClient.invalidateQueries({ queryKey: ['traffic', 'v1', 'reports'] });
     },
   });

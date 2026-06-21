@@ -1,5 +1,6 @@
 import { staticIslandConfig } from '@/config/island';
 import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
+import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
@@ -872,6 +873,50 @@ export async function deleteTrafficReport(reportId: number): Promise<void> {
     method: 'DELETE',
     headers: { 'X-Session-Id': sessionId },
   });
+}
+
+export type PlaceResult = { name: string; lat: number; lng: number };
+
+/**
+ * Forward-geocode a free-text query to coordinates, bounded to São Miguel.
+ * Uses the public OpenStreetMap Nominatim service (matches the OSM map we render).
+ * Results outside the island bounds are dropped as a safety net.
+ */
+export async function searchPlaces(query: string): Promise<PlaceResult[]> {
+  const q = query.trim();
+  if (q.length < 3) {
+    return [];
+  }
+  const { southWest, northEast } = saoMiguelMapBounds;
+  // Nominatim viewbox order: west, north, east, south.
+  const viewbox = `${southWest.lng},${northEast.lat},${northEast.lng},${southWest.lat}`;
+  const params = new URLSearchParams({
+    format: 'jsonv2',
+    countrycodes: 'pt',
+    bounded: '1',
+    viewbox,
+    limit: '6',
+    q,
+  });
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+    headers: {
+      'User-Agent': `SaoMiguelBus/${getAppVersion()} (https://saomiguelbus.com)`,
+      'Accept-Language': 'pt',
+    },
+  });
+  if (!response.ok) {
+    throw new ApiRequestError(response.status, '', { code: 'nominatim_error' });
+  }
+  const data = (await response.json()) as { display_name?: string; lat?: string; lon?: string }[];
+  return data
+    .map((item) => ({
+      name: item.display_name ?? '',
+      lat: Number(item.lat),
+      lng: Number(item.lon),
+    }))
+    .filter(
+      (p) => p.name && Number.isFinite(p.lat) && Number.isFinite(p.lng) && isWithinIslandBounds(p.lat, p.lng),
+    );
 }
 
 export async function confirmTrafficReport(

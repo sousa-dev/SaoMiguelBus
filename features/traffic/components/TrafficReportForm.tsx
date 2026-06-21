@@ -1,5 +1,5 @@
 import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +15,9 @@ import { isWithinIslandBounds } from '@/lib/island-map';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TrafficCategory, TrafficReportWriteInput } from '@/lib/types';
+
+/** Fallback "valid until" window when a category has no TTL (≈ 2h). */
+const DEFAULT_TTL_MINUTES = 120;
 
 type Props = {
   categories: TrafficCategory[];
@@ -48,15 +51,25 @@ export function TrafficReportForm({
   const [description, setDescription] = useState('');
   const [scheduled, setScheduled] = useState(false);
   const [startAt, setStartAt] = useState(() => new Date(Date.now() + 3600_000));
-  const [endAt, setEndAt] = useState(() => new Date(Date.now() + 3 * 3600_000));
+  const [validUntil, setValidUntil] = useState(() => new Date(Date.now() + DEFAULT_TTL_MINUTES * 60_000));
+  const [validUntilTouched, setValidUntilTouched] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [showValidUntilPicker, setShowValidUntilPicker] = useState(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
   const selected = useMemo(() => categories.find((c) => c.slug === slug), [categories, slug]);
   const canSchedule = !!selected?.isSchedulable;
   const coordsValid = coords ? isWithinIslandBounds(coords.lat, coords.lng) : false;
   const canSubmit = !!slug && coordsValid && !submitting && !offline;
+
+  // Default the "valid until" to the category's TTL until the user edits it.
+  useEffect(() => {
+    if (validUntilTouched) {
+      return;
+    }
+    const ttl = selected?.defaultTtlMinutes ?? DEFAULT_TTL_MINUTES;
+    setValidUntil(new Date(Date.now() + ttl * 60_000));
+  }, [selected?.defaultTtlMinutes, validUntilTouched]);
 
   const submit = () => {
     if (!slug) {
@@ -73,10 +86,10 @@ export function TrafficReportForm({
       longitude: coords.lng,
       description: description.trim() || undefined,
       road: road.trim() || undefined,
+      active_until: validUntil.toISOString(),
     };
     if (canSchedule && scheduled) {
       input.active_from = startAt.toISOString();
-      input.active_until = endAt.toISOString();
     }
     onSubmit(input);
   };
@@ -189,31 +202,10 @@ export function TrafficReportForm({
                       }
                       if (date) {
                         setStartAt(date);
-                        if (date >= endAt) {
-                          setEndAt(new Date(date.getTime() + 3600_000));
+                        if (date >= validUntil) {
+                          setValidUntil(new Date(date.getTime() + 3600_000));
+                          setValidUntilTouched(true);
                         }
-                      }
-                    }}
-                  />
-                ) : null}
-
-                <Text style={[typography.label, { color: theme.text, marginTop: space.md }]}>
-                  {t('trafficScheduleEnd')}
-                </Text>
-                <Pressable onPress={() => setShowEndPicker(true)} style={[styles.timeField, { borderColor: theme.border }]}>
-                  <Text style={[typography.body, { color: theme.text }]}>{formatWhen(endAt)}</Text>
-                </Pressable>
-                {showEndPicker ? (
-                  <ThemedDateTimePicker
-                    value={endAt}
-                    mode="datetime"
-                    minimumDate={startAt}
-                    onChange={(_, date) => {
-                      if (Platform.OS === 'android') {
-                        setShowEndPicker(false);
-                      }
-                      if (date) {
-                        setEndAt(date);
                       }
                     }}
                   />
@@ -222,6 +214,29 @@ export function TrafficReportForm({
             ) : null}
           </Card>
         ) : null}
+
+        <Card elevated style={styles.section}>
+          <Text style={[typography.label, { color: theme.text }]}>{t('trafficValidUntil')}</Text>
+          <Pressable onPress={() => setShowValidUntilPicker(true)} style={[styles.timeField, { borderColor: theme.border }]}>
+            <Text style={[typography.body, { color: theme.text }]}>{formatWhen(validUntil)}</Text>
+          </Pressable>
+          {showValidUntilPicker ? (
+            <ThemedDateTimePicker
+              value={validUntil}
+              mode="datetime"
+              minimumDate={canSchedule && scheduled ? startAt : new Date()}
+              onChange={(_, date) => {
+                if (Platform.OS === 'android') {
+                  setShowValidUntilPicker(false);
+                }
+                if (date) {
+                  setValidUntil(date);
+                  setValidUntilTouched(true);
+                }
+              }}
+            />
+          ) : null}
+        </Card>
 
         <Button
           label={t('trafficSubmit')}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Sheet } from '@/components/ui/Sheet';
@@ -12,19 +12,13 @@ export function CategoryPickerSheet({
   visible,
   categories,
   theme,
-  pending,
   onPick,
-  onAddDetails,
-  onPickOnMap,
   onClose,
 }: {
   visible: boolean;
   categories: TrafficCategory[];
   theme: AppTheme;
-  pending: boolean;
   onPick: (category: TrafficCategory) => void;
-  onAddDetails: () => void;
-  onPickOnMap: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -32,7 +26,7 @@ export function CategoryPickerSheet({
   return (
     <Sheet visible={visible} onClose={onClose} title={t('trafficReportTitle')}>
       <Text style={[typography.body, { color: theme.muted, marginBottom: space.lg, paddingHorizontal: space.lg }]}>
-        {t('trafficReportHint')}
+        {t('trafficPickCategory')}
       </Text>
       <View style={[styles.grid, { paddingHorizontal: space.lg }]}>
         {categories.map((category) => {
@@ -40,36 +34,33 @@ export function CategoryPickerSheet({
           return (
             <Pressable
               key={category.id}
-              disabled={pending}
               onPress={() => onPick(category)}
+              accessibilityRole="button"
+              accessibilityLabel={category.name}
               style={[styles.chip, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
             >
-              <Icon size={28} color={theme.primary} strokeWidth={2} />
-              <Text style={[typography.caption, { color: theme.text, marginTop: space.xs }]} numberOfLines={1}>
-                {category.name}
-              </Text>
+              <Icon size={32} color={theme.primary} strokeWidth={2} />
             </Pressable>
           );
         })}
       </View>
-      {pending ? <ActivityIndicator color={theme.primary} style={{ marginTop: space.lg }} /> : null}
-      <Pressable onPress={onPickOnMap} style={{ marginTop: space.lg, paddingHorizontal: space.lg }}>
-        <Text style={[typography.label, { color: theme.primary, textAlign: 'center' }]}>{t('trafficPickOnMap')}</Text>
-      </Pressable>
-      <Pressable onPress={onAddDetails} style={{ marginTop: space.md, paddingHorizontal: space.lg }}>
-        <Text style={[typography.label, { color: theme.muted, textAlign: 'center' }]}>{t('trafficAddDetails')}</Text>
-      </Pressable>
     </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: space.sm,
+  },
   chip: {
-    width: 92,
-    paddingVertical: space.md,
+    width: '31%',
+    aspectRatio: 1.2,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 });
