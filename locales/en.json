@@ -1120,5 +1120,5 @@
     "minibusTimetableImageAlt": "{{line}} timetable",
     "minibusTimetableUnavailable": "Timetable image unavailable",
     "minibusTimetableOpenFullscreen": "Open {{line}} timetable fullscreen",
-    "minibusTimetableTapToZoom": "Tap to view fullscreen",
+    "minibusTimetableTapToZoom": "Tap to view fullscreen"
 }
