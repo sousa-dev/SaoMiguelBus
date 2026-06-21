@@ -2,6 +2,7 @@ import {
   enqueueAnalyticsEvent,
   flushAnalyticsQueue,
 } from '@/lib/analytics-queue';
+import { isAdminUser } from '@/lib/auth-store';
 import { useConsentStore } from '@/lib/consent-store';
 import { getNetworkOnline } from '@/lib/network-online';
 
@@ -23,6 +24,9 @@ function scheduleFlush() {
 
 export function track(module: string, eventType: string, properties: TrackProps = {}) {
   if (!useConsentStore.getState().hasAnalyticsConsent()) {
+    return;
+  }
+  if (isAdminUser()) {
     return;
   }
   const cleaned: Record<string, unknown> = {};

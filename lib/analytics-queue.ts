@@ -77,6 +77,11 @@ export async function flushAnalyticsQueue(): Promise<number> {
     await purgeAnalyticsQueue();
     return 0;
   }
+  // Don't flush during an admin session, but keep any genuine pre-login queue.
+  const { isAdminUser } = await import('@/lib/auth-store');
+  if (isAdminUser()) {
+    return 0;
+  }
   if (!getNetworkOnline()) {
     return 0;
   }

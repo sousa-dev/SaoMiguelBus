@@ -84,3 +84,7 @@ export function getAuthToken(): string | null {
 export function isSignedIn(): boolean {
   return Boolean(useAuthStore.getState().token);
 }
+
+export function isAdminUser(): boolean {
+  return Boolean(useAuthStore.getState().user?.isSuperuser);
+}
