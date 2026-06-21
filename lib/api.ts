@@ -13,6 +13,8 @@ import type {
   SocialProvider,
   BootstrapResponse,
   ConsentPurposes,
+  PersonaProfile,
+  PersonaProfileResponse,
   DirectionsResponse,
   Stop,
   TransitSearchResult,
@@ -209,6 +211,7 @@ export interface DsarExportBundle {
   session_hash: string;
   consent: unknown[];
   analytics_events: unknown[];
+  personalization?: unknown[];
   note?: string;
 }
 
@@ -216,6 +219,7 @@ export interface DsarDeleteResult {
   session_hash: string;
   consent_records_deleted: number;
   analytics_events_anonymized: number;
+  personalization_profiles_deleted?: number;
   note?: string;
 }
 
@@ -936,6 +940,19 @@ export async function postConsent(sessionId: string, purposes: ConsentPurposes) 
     method: 'POST',
     body: JSON.stringify({ session_id: sessionId, purposes }),
   });
+}
+
+export async function postPersonalization(sessionId: string, profile: PersonaProfile) {
+  return apiFetch<PersonaProfileResponse>(`/api/v3/personalization/`, {
+    method: 'POST',
+    body: JSON.stringify({ session_id: sessionId, ...profile }),
+  });
+}
+
+export async function fetchPersonalization(sessionId: string) {
+  return apiFetch<PersonaProfileResponse>(
+    `/api/v3/personalization/?session_id=${encodeURIComponent(sessionId)}`,
+  );
 }
 
 export async function postAnalyticsEvents(

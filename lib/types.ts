@@ -53,6 +53,21 @@ export interface ConsentPurposes {
   personalization: boolean;
 }
 
+export type UserType = 'tourist' | 'resident' | 'newcomer';
+
+export interface PersonaProfile {
+  user_type: UserType;
+  interests: string[];
+  home_municipality: string;
+}
+
+export interface PersonaProfileResponse {
+  user_type: UserType | null;
+  interests: string[];
+  home_municipality: string;
+  updated_at: string | null;
+}
+
 export interface TripDetail {
   id: number;
   route: string;

@@ -1,4 +1,4 @@
-import { Download, Megaphone, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
+import { Download, Megaphone, ShieldCheck, Sparkles, Trash2, UserRound } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
@@ -33,6 +33,7 @@ import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
 import { usePremiumStore } from '@/lib/premium-store';
 import { useProfileStore } from '@/lib/profile-store';
+import { usePersonalizationStore } from '@/lib/personalization-store';
 import { getOrCreateSessionId } from '@/lib/session';
 import { space, typography } from '@/lib/tokens';
 import { type ThemePreference, useThemePrefsStore } from '@/lib/theme-prefs';
@@ -161,6 +162,7 @@ export default function SettingsScreen() {
       // was erased server-side). We keep `decided` so the consent gate doesn't
       // redirect — re-arming it here while the Settings modal is open loops.
       useProfileStore.getState().resetAll();
+      usePersonalizationStore.getState().resetAll();
       useConsentStore.getState().setPurposes(defaultPurposes);
       notify(t('settingsDataDeletedTitle'), t('settingsDataDeleted'));
     } catch {
@@ -170,7 +172,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const appVersion = Constants.expoConfig?.version ?? '5.1.4';
+  const appVersion = Constants.expoConfig?.version ?? '5.1.5';
 
   return (
     <Screen withStackHeader collapsable={false}>
@@ -207,6 +209,13 @@ export default function SettingsScreen() {
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsHub')}
         </Text>
+        <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <ListRow
+            icon={UserRound}
+            title={t('settingsPersonalizeProfile')}
+            onPress={() => router.push('/onboarding/personalize?edit=1')}
+          />
+        </View>
         <LandingPagePicker
           enabledKeys={enabledKeys}
           moduleOrderKeys={moduleOrderKeys}

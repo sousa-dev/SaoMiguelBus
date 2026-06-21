@@ -52,7 +52,7 @@ export default function ConsentScreen() {
       if (wasDecided) {
         router.back();
       } else {
-        router.replace('/(tabs)/hub');
+        router.replace('/onboarding/personalize');
       }
     } finally {
       setBusy(false);

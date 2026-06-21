@@ -52,6 +52,7 @@ interface HubState {
   setColumns: (columns: HubColumns) => void;
   setLandingPageKey: (key: LandingPageKey) => void;
   setEditMode: (editMode: boolean) => void;
+  applyPersonaLayout: (layout: { moduleOrderKeys: ModuleKey[]; pinnedKeys: ModuleKey[] }) => void;
 }
 
 export const useHubStore = create<HubState>()(
@@ -106,6 +107,13 @@ export const useHubStore = create<HubState>()(
       setColumns: (columns) => set({ columns }),
       setLandingPageKey: (landingPageKey) => set({ landingPageKey }),
       setEditMode: (editMode) => set({ editMode }),
+
+      applyPersonaLayout: ({ moduleOrderKeys, pinnedKeys }) => {
+        set({
+          moduleOrderKeys: [...moduleOrderKeys],
+          pinnedKeys: pinnedKeys.slice(0, PIN_CAP),
+        });
+      },
     }),
     {
       name: `azores_hub_layout_${staticIslandConfig.islandKey}`,

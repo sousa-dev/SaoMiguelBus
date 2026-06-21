@@ -133,6 +133,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
               }}
             />
             <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="onboarding/personalize" />
             <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
             <Stack.Screen
               name="auth/sign-in"
