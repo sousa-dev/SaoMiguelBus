@@ -129,6 +129,25 @@ describe('searchRoutes', () => {
     const graph = buildGraph(NETWORK);
     assert.deepEqual(searchRoutes(graph, [], ['a-04']), []);
   });
+
+  it('drops zero-distance legs when origin is a shared interchange', () => {
+    const graph = buildGraph(NETWORK);
+    const originKeys = resolveStopRefs(graph, 'Gamma');
+    const journeys = searchRoutes(graph, originKeys, ['d-03']);
+
+    assert.ok(journeys.length >= 1);
+    for (const journey of journeys) {
+      for (const leg of journey.legs) {
+        assert.notEqual(leg.board.key, leg.alight.key);
+      }
+    }
+
+    assert.equal(journeys[0].transfers, 0);
+    assert.equal(journeys[0].legs.length, 1);
+    assert.equal(journeys[0].legs[0].line_code, 'D');
+    assert.equal(journeys[0].legs[0].board.key, 'd-02');
+    assert.equal(journeys[0].legs[0].alight.key, 'd-03');
+  });
 });
 
 describe('searchMinibusJourneys', () => {
@@ -146,6 +165,25 @@ describe('searchMinibusJourneys', () => {
     const result = searchMinibusJourneys(NETWORK, 'nowhere', 'd-03');
     assert.equal(result.origin.matched, false);
     assert.deepEqual(result.journeys, []);
+  });
+
+  it('prefers a direct journey over a fake transfer from a shared interchange origin', () => {
+    const result = searchMinibusJourneys(NETWORK, 'Gamma', 'Zeta');
+
+    assert.equal(result.origin.matched, true);
+    assert.equal(result.destination.matched, true);
+    assert.ok(result.journeys.length >= 1);
+
+    for (const journey of result.journeys) {
+      for (const leg of journey.legs) {
+        assert.notEqual(leg.board.key, leg.alight.key);
+      }
+    }
+
+    assert.equal(result.journeys[0].transfers, 0);
+    assert.equal(result.journeys[0].legs[0].line_code, 'D');
+    assert.equal(result.journeys[0].legs[0].board.key, 'd-02');
+    assert.equal(result.journeys[0].legs[0].alight.key, 'd-03');
   });
 
   it('includes stop coordinates on journey legs when the network has them', () => {

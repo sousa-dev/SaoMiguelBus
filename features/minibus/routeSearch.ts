@@ -278,6 +278,9 @@ export function searchRoutes(
 
     if (destinations.has(item.node)) {
       const journey = pathToJourney(graph, item.path);
+      if (journey.legs.some((leg) => leg.board.key === leg.alight.key)) {
+        continue;
+      }
       const signature = legSignature(journey);
       if (!seen.has(signature)) {
         seen.add(signature);
