@@ -2,6 +2,7 @@ import type { Href } from 'expo-router';
 import {
   Activity,
   Ban,
+  Binoculars,
   Bus,
   BusFront,
   CircleUser,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react-native';
 
 import type { ModuleKey } from '@/config/island';
+import { HOP_ON_OFF_ACCENT } from '@/features/hop-on-hop-off/lib/theme';
 
 export interface HubModule {
   key: ModuleKey;
@@ -132,7 +134,7 @@ export function getEnabledHubModules(
 export type SidebarSectionId = 'hub' | 'modules' | 'app';
 
 /** Sidebar rows that run app logic instead of `router.push(route)`. */
-export type SidebarNavAction = 'premium' | 'remove_ads';
+export type SidebarNavAction = 'premium' | 'remove_ads' | 'hop_on_off';
 
 export type SidebarNavItem = {
   key: string;
@@ -161,15 +163,30 @@ const hubNavItem: SidebarNavItem = {
   section: 'hub',
 };
 
-const moduleNavItems: SidebarNavItem[] = HUB_MODULES.map((m) => ({
-  key: m.key,
-  route: m.route,
-  labelKey: m.labelKey,
-  Icon: m.Icon,
-  accent: m.accent,
-  section: 'modules' as const,
-  moduleKey: m.key,
-}));
+const moduleNavItems: SidebarNavItem[] = HUB_MODULES.flatMap((m) => {
+  const item: SidebarNavItem = {
+    key: m.key,
+    route: m.route,
+    labelKey: m.labelKey,
+    Icon: m.Icon,
+    accent: m.accent,
+    section: 'modules',
+    moduleKey: m.key,
+  };
+  if (m.key !== 'minibus') {
+    return [item];
+  }
+  const hopOnOffItem: SidebarNavItem = {
+    key: 'hop_on_off',
+    route: HUB_TAB.route,
+    labelKey: 'hopOnOffSidebarLabel',
+    Icon: Binoculars,
+    accent: HOP_ON_OFF_ACCENT,
+    section: 'modules',
+    action: 'hop_on_off',
+  };
+  return [item, hopOnOffItem];
+});
 
 const PREMIUM_ACCENT = '#ca8a04';
 

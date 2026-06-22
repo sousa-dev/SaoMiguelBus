@@ -4,6 +4,8 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { resolveEnabledModules } from '@/config/island';
 import { HomeBusCta } from '@/features/hub/components/home/HomeBusCta';
 import { HomeMinibusCta } from '@/features/hub/components/home/HomeMinibusCta';
+import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
+import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
 import { HomeEarthquakesCard } from '@/features/hub/components/home/HomeEarthquakesCard';
 import { HomeNewsList } from '@/features/hub/components/home/HomeNewsList';
 import { HomePrepareSection } from '@/features/hub/components/home/HomePrepareSection';
@@ -36,6 +38,7 @@ export default function HubScreen() {
 
   const showPrepare = tours.enabled || trails.enabled;
   const showMinibus = enabledKeys.includes('minibus');
+  const { visible: showHopOnOff } = useHopOnHopOffPromo();
 
   return (
     <ScrollView
@@ -69,6 +72,12 @@ export default function HubScreen() {
         ) : null}
         <HomeBusCta />
         {showMinibus ? <HomeMinibusCta /> : null}
+        {showHopOnOff ? (
+          <HopOnHopOffCtaRow
+            source="hub"
+            style={showMinibus ? undefined : styles.hopOnOffOnly}
+          />
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -87,5 +96,8 @@ const styles = StyleSheet.create({
   splitCell: {
     flex: 1,
     minWidth: 0,
+  },
+  hopOnOffOnly: {
+    marginBottom: space.md,
   },
 });

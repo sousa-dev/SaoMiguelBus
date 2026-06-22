@@ -13,7 +13,8 @@ import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
-import { MinibusTransitLink } from '@/features/transit/components/MinibusTransitLink';
+import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
+import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
@@ -51,6 +52,7 @@ export default function TransitScreen() {
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
   const showMinibus = resolveEnabledModules(bootstrap.data?.island?.enabledModules).includes('minibus');
+  const { visible: showHopOnOff } = useHopOnHopOffPromo();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
@@ -210,6 +212,9 @@ export default function TransitScreen() {
           ) : null}
 
           {showInstructions && showMinibus ? <MinibusTransitLink /> : null}
+          {showInstructions && showMinibus && showHopOnOff ? (
+            <HopOnHopOffCtaRow source="transit" />
+          ) : null}
           {showInstructions ? <TransitInstructionCard /> : null}
         </TransitWebShell>
       </ScrollView>

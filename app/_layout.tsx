@@ -22,6 +22,7 @@ import { useAdFreeWindowBootstrap } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdBootstrap } from '@/features/ads/hooks/useRewardedAdBootstrap';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
 import { AdFreeRewardModalHost } from '@/features/ads/components/AdFreeRewardModalHost';
+import { HopOnHopOffSheetHost } from '@/features/hop-on-hop-off/components/HopOnHopOffSheetHost';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
@@ -153,6 +154,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <PremiumOfflinePrompt />
           <SaveSubscriptionPrompt />
           <AdFreeRewardModalHost />
+          <HopOnHopOffSheetHost />
         </ConsentGate>
         <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
       </ThemeProvider>

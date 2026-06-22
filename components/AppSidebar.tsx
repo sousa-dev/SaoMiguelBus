@@ -22,8 +22,12 @@ import { resolveEnabledModules } from '@/config/island';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
+import { trackHopOnOffSheetOpen } from '@/features/hop-on-hop-off/lib/analytics';
+import { useHopOnOffModalStore } from '@/features/hop-on-hop-off/lib/modal-store';
+import { isHopOnHopOffVisible } from '@/features/hop-on-hop-off/lib/visibility';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { usePremium } from '@/lib/premium-store';
+import { usePersonalizationStore } from '@/lib/personalization-store';
 import { isSidebarItemActive } from '@/lib/sidebar-active';
 import { useSidebarStore } from '@/lib/sidebar-store';
 import { withAlpha } from '@/lib/color-utils';
@@ -53,6 +57,9 @@ export function AppSidebar() {
   );
   const enabledSet = useMemo(() => new Set(enabledKeys), [enabledKeys]);
   const isPremium = usePremium();
+  const userType = usePersonalizationStore((s) => s.userType);
+  const showHopOnOff = isHopOnHopOffVisible(userType);
+  const openHopOnHopOffSheet = useHopOnOffModalStore((s) => s.openHopOnHopOffSheet);
   const { openPaywall } = usePaywall();
   const { isAdFreeActive } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('sidebar');
@@ -107,14 +114,21 @@ export function AppSidebar() {
   }));
 
   const sidebarSections = useMemo(() => {
-    if (!isPremium) {
-      return SIDEBAR_SECTIONS;
+    let sections = SIDEBAR_SECTIONS;
+    if (isPremium) {
+      sections = sections.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.key !== 'remove_ads'),
+      }));
     }
-    return SIDEBAR_SECTIONS.map((section) => ({
-      ...section,
-      items: section.items.filter((item) => item.key !== 'remove_ads'),
-    }));
-  }, [isPremium]);
+    if (!showHopOnOff) {
+      sections = sections.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.key !== 'hop_on_off'),
+      }));
+    }
+    return sections;
+  }, [isPremium, showHopOnOff]);
 
   const onNavigate = (item: SidebarNavItem) => {
     closeSidebar();
@@ -136,6 +150,11 @@ export function AppSidebar() {
         return;
       }
       void openPaywall('sidebar_remove_ads');
+      return;
+    }
+    if (item.action === 'hop_on_off') {
+      trackHopOnOffSheetOpen('sidebar');
+      openHopOnHopOffSheet('sidebar');
       return;
     }
     router.push(item.route);
