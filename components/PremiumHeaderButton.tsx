@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Clock, Crown, Sparkles } from 'lucide-react-native';
 import React, { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, Text } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
@@ -111,35 +111,46 @@ export function PremiumHeaderButton() {
   }
 
   if (isRewardOfferAvailable) {
-    const label = t('adsAdFreeHeaderCta');
+    const label = t('removeAdsButton');
+    const freeBadge = t('adsAdFreeSidebarBadge');
     const iconColor = theme.accent;
     const textColor = iconColor;
 
     return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={() => {
-          if (Platform.OS !== 'web') {
-            void Haptics.selectionAsync();
-          }
-          openModal();
-        }}
-        style={({ pressed }) => [
-          styles.pill,
-          styles.pillUpsell,
-          {
-            backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
-            borderColor: theme.accent,
-            opacity: pressed ? 0.88 : 1,
-          },
-        ]}
-      >
-        <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-          {label}
-        </Text>
-      </Pressable>
+      <View style={styles.pillWrap} accessibilityElementsHidden>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${label}, ${freeBadge}`}
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              void Haptics.selectionAsync();
+            }
+            openModal();
+          }}
+          style={({ pressed }) => [
+            styles.pill,
+            styles.pillUpsell,
+            styles.pillWithBadge,
+            {
+              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+              borderColor: theme.accent,
+              opacity: pressed ? 0.88 : 1,
+            },
+          ]}
+        >
+          <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+            {label}
+          </Text>
+        </Pressable>
+        <View
+          style={[styles.cornerBadge, { backgroundColor: theme.accent, borderColor: theme.surface }]}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Text style={[styles.cornerBadgeText, { color: theme.onAccent }]}>{freeBadge}</Text>
+        </View>
+      </View>
     );
   }
 
@@ -176,6 +187,9 @@ export function PremiumHeaderButton() {
 }
 
 const styles = StyleSheet.create({
+  pillWrap: {
+    position: 'relative',
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -185,9 +199,26 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     marginLeft: space.xs,
     flexShrink: 1,
-    maxWidth: 168,
+  },
+  pillWithBadge: {
+    paddingRight: space.md,
   },
   pillActive: { borderWidth: StyleSheet.hairlineWidth },
   pillUpsell: { borderWidth: 1 },
-  label: { fontWeight: '700', letterSpacing: 0.3, flexShrink: 1 },
+  label: { fontWeight: '700', letterSpacing: 0.3 },
+  cornerBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -2,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+  },
+  cornerBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+  },
 });
