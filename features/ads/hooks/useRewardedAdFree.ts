@@ -69,8 +69,9 @@ export function useRewardedAdModalActions() {
 
   const onGetPremium = useCallback(() => {
     track('ads', 'reward_modal_premium', { source: 'ad_free_modal' });
-    closeModal();
-    void openPaywall('ad_free_modal');
+    void openPaywall('ad_free_modal').finally(() => {
+      closeModal();
+    });
   }, [closeModal, openPaywall]);
 
   const startRewardFlow = useCallback(async () => {

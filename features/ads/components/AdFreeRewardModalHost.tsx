@@ -10,7 +10,6 @@ function formatRemainingMinutes(remainingMs: number): number {
 /** Single app-root host — never mount inside native stack headerRight (iOS overflow menu). */
 export function AdFreeRewardModalHost() {
   const {
-    modalVisible,
     modalMode,
     remainingMs,
     closeModal,
@@ -21,14 +20,16 @@ export function AdFreeRewardModalHost() {
     isPremium,
   } = useRewardedAdModalActions();
 
-  if (isPremium || !modalVisible || modalMode == null) {
+  if (isPremium) {
     return null;
   }
 
+  const open = modalSource !== null && modalMode != null;
+
   return (
     <AdFreeRewardModal
-      visible={modalVisible}
-      mode={modalMode}
+      visible={open}
+      mode={modalMode ?? 'status'}
       remainingMinutes={formatRemainingMinutes(remainingMs)}
       canWatchVideo={isRewardOfferAvailable}
       isLoading={isLoading}
