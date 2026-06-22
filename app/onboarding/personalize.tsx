@@ -162,7 +162,7 @@ export default function PersonalizeScreen() {
   };
 
   return (
-    <Screen collapsable={false} style={{ backgroundColor: theme.primary }}>
+    <Screen collapsable={false} edges={['top']} style={{ backgroundColor: theme.primary }}>
       <View style={styles.layout}>
         <View style={[styles.hero, { paddingTop: Math.max(insets.top, space.md) }]}>
           <View style={styles.heroTopBar}>
