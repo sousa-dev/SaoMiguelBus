@@ -70,14 +70,9 @@ export default function HubScreen() {
         {showPrepare ? (
           <HomePrepareSection tours={tours} trails={trails} />
         ) : null}
+        {showHopOnOff ? <HopOnHopOffCtaRow source="hub" /> : null}
         <HomeBusCta />
         {showMinibus ? <HomeMinibusCta /> : null}
-        {showHopOnOff ? (
-          <HopOnHopOffCtaRow
-            source="hub"
-            style={showMinibus ? undefined : styles.hopOnOffOnly}
-          />
-        ) : null}
       </View>
     </ScrollView>
   );
@@ -96,8 +91,5 @@ const styles = StyleSheet.create({
   splitCell: {
     flex: 1,
     minWidth: 0,
-  },
-  hopOnOffOnly: {
-    marginBottom: space.md,
   },
 });
