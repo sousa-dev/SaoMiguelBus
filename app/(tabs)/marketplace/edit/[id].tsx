@@ -68,7 +68,7 @@ export default function EditListingScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ ...screenOptions, headerShown: true, title: t('marketplaceEditAction') }} />
+      <Stack.Screen options={{ ...screenOptions, headerShown: true }} />
       <Screen>
         <ProviderForm
           initial={provider.data}

@@ -21,6 +21,7 @@ export function useAppStackScreenOptions(screenName?: string) {
           : {}),
       },
       headerTintColor: theme.onSurface,
+      headerTitle: '',
       headerTitleStyle: { fontWeight: '600' as const, color: theme.onSurface },
       headerShadowVisible: !theme.isDark,
       headerBackTitleVisible: false,

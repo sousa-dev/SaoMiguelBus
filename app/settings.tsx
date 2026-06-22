@@ -76,7 +76,6 @@ export default function SettingsScreen() {
     navigation.setOptions({
       ...screenOptions,
       headerShown: true,
-      title: t('settingsTitle'),
       presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
       ...(Platform.OS === 'ios'
         ? {

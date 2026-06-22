@@ -34,7 +34,7 @@ export default function NewListingScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ ...screenOptions, headerShown: true, title: t('marketplaceAddListing') }} />
+      <Stack.Screen options={{ ...screenOptions, headerShown: true }} />
       <Screen>
         <ProviderForm
           submitting={create.isPending}

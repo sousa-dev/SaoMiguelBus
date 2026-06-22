@@ -65,7 +65,6 @@ export default function ProfileScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       ...screenOptions,
-      title: t('transitProfileTitle'),
       headerShown: true,
     });
   }, [navigation, screenOptions, t]);

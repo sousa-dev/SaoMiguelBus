@@ -11,7 +11,7 @@ export default function NotFoundScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t('notFoundTitle') }} />
+      <Stack.Screen options={{ headerShown: true }} />
       <Screen>
         <EmptyState
           icon={MapPinOff}

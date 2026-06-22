@@ -74,7 +74,6 @@ export default function NewTrafficReportScreen() {
         options={{
           ...screenOptions,
           headerShown: true,
-          title: t('trafficReportTitle'),
           headerBackVisible: false,
         }}
       />

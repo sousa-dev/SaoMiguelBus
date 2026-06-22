@@ -57,7 +57,6 @@ export default function SignInScreen() {
     navigation.setOptions({
       ...screenOptions,
       headerShown: true,
-      title: t('authTitle'),
       presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
     });
   }, [navigation, screenOptions, t]);
