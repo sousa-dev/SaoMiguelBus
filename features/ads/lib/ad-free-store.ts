@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { grantAdFreeWindow, loadAdFreeUntil } from '@/features/ads/lib/ad-free-storage';
+import { clearAdFreeWindow, grantAdFreeWindow, loadAdFreeUntil } from '@/features/ads/lib/ad-free-storage';
 
 interface AdFreeStoreState {
   adFreeUntilMs: number | null;
@@ -9,6 +9,7 @@ interface AdFreeStoreState {
   hydrate: () => Promise<void>;
   refresh: () => Promise<void>;
   grantFromReward: () => Promise<number>;
+  resetAdFreeWindow: () => Promise<void>;
   tickNow: () => void;
 }
 
@@ -41,6 +42,14 @@ export const useAdFreeStore = create<AdFreeStoreState>((set, get) => ({
     const until = await grantAdFreeWindow();
     set({ adFreeUntilMs: until, nowMs: Date.now(), hydrated: true });
     return until;
+  },
+
+  resetAdFreeWindow: async () => {
+    if (!__DEV__) {
+      return;
+    }
+    await clearAdFreeWindow();
+    set({ adFreeUntilMs: null, nowMs: Date.now(), hydrated: true });
   },
 
   tickNow: () => {

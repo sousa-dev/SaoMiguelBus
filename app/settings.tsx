@@ -1,4 +1,4 @@
-import { Download, Megaphone, ShieldCheck, Sparkles, Trash2, UserRound } from 'lucide-react-native';
+import { Download, Megaphone, ShieldCheck, Sparkles, TimerReset, Trash2, UserRound } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
 import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
+import { useAdFreeStore } from '@/features/ads/lib/ad-free-store';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
@@ -61,6 +62,7 @@ export default function SettingsScreen() {
   const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
   const forceInternalAds = useAdsDevStore((s) => s.forceInternalAdsFallback);
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
+  const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
 
@@ -291,6 +293,16 @@ export default function SettingsScreen() {
                     }}
                   />
                 }
+              />
+              <ListRow
+                icon={TimerReset}
+                title={t('settingsResetAdFreeWindow')}
+                subtitle={t('settingsResetAdFreeWindowHint')}
+                onPress={() => {
+                  void resetAdFreeWindow().then(() => {
+                    notify(t('settingsResetAdFreeWindowDoneTitle'), t('settingsResetAdFreeWindowDone'));
+                  });
+                }}
               />
             </View>
           </>

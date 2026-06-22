@@ -37,6 +37,11 @@ export async function grantAdFreeWindow(
   return untilMs;
 }
 
-export async function clearAdFreeForTests(): Promise<void> {
+export async function clearAdFreeWindow(): Promise<void> {
   await AsyncStorage.removeItem(AD_FREE_UNTIL_KEY);
+}
+
+/** @deprecated Use {@link clearAdFreeWindow} */
+export async function clearAdFreeForTests(): Promise<void> {
+  await clearAdFreeWindow();
 }
