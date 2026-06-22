@@ -20,6 +20,11 @@ function formatRemainingMinutes(remainingMs: number): number {
 
 /** Keep the transit header pill narrow enough to avoid iOS nav-bar overflow ("…" menu). */
 const HEADER_PILL_MAX_WIDTH = 112;
+const COMPACT_HEADER_LABEL_MAX_LENGTH = 12;
+
+function resolveHeaderDisplayLabel(fullLabel: string, compactLabel: string): string {
+  return fullLabel.length > COMPACT_HEADER_LABEL_MAX_LENGTH ? compactLabel : fullLabel;
+}
 
 function resolveHeaderPillLabelStyle(label: string): TextStyle {
   const length = label.length;
@@ -61,6 +66,7 @@ export function PremiumHeaderButton() {
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('header');
+  const compactLabel = t('premiumHeaderButton');
 
   useEffect(() => {
     if (!isPremium && !isAdFreeActive && isRewardOfferAvailable) {
@@ -70,6 +76,7 @@ export function PremiumHeaderButton() {
 
   if (isPremium) {
     const label = t('premiumHeaderButtonActive');
+    const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
     const iconColor = theme.onAccent;
     const textColor = iconColor;
 
@@ -87,7 +94,7 @@ export function PremiumHeaderButton() {
         style={({ pressed }) => [
           styles.pill,
           styles.pillActive,
-          resolveHeaderPillPadding(label),
+          resolveHeaderPillPadding(displayLabel),
           {
             backgroundColor: theme.accent,
             borderColor: withAlpha(theme.onAccent, 0.12),
@@ -101,13 +108,14 @@ export function PremiumHeaderButton() {
           strokeWidth={2.25}
           fill={withAlpha(theme.onAccent, 0.25)}
         />
-        <HeaderPillLabel label={label} color={textColor} />
+        <HeaderPillLabel label={displayLabel} color={textColor} />
       </Pressable>
     );
   }
 
   if (isAdFreeActive) {
     const label = t('adsAdFreeStatusRemaining', { minutes: formatRemainingMinutes(remainingMs) });
+    const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
     const iconColor = theme.accent;
     const textColor = iconColor;
 
@@ -124,7 +132,7 @@ export function PremiumHeaderButton() {
         style={({ pressed }) => [
           styles.pill,
           styles.pillUpsell,
-          resolveHeaderPillPadding(label),
+          resolveHeaderPillPadding(displayLabel),
           {
             backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
             borderColor: theme.accent,
@@ -133,13 +141,14 @@ export function PremiumHeaderButton() {
         ]}
       >
         <Clock size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-        <HeaderPillLabel label={label} color={textColor} />
+        <HeaderPillLabel label={displayLabel} color={textColor} />
       </Pressable>
     );
   }
 
   if (isRewardOfferAvailable) {
     const label = t('removeAdsButton');
+    const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
     const freeBadge = t('adsAdFreeSidebarBadge');
     const iconColor = theme.accent;
     const textColor = iconColor;
@@ -159,7 +168,7 @@ export function PremiumHeaderButton() {
             styles.pill,
             styles.pillUpsell,
             styles.pillWithBadge,
-            resolveHeaderPillPadding(label),
+            resolveHeaderPillPadding(displayLabel),
             {
               backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
               borderColor: theme.accent,
@@ -168,7 +177,7 @@ export function PremiumHeaderButton() {
           ]}
         >
           <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-          <HeaderPillLabel label={label} color={textColor} />
+          <HeaderPillLabel label={displayLabel} color={textColor} />
         </Pressable>
         <View
           style={[styles.cornerBadge, { backgroundColor: theme.accent, borderColor: theme.surface }]}
@@ -182,6 +191,7 @@ export function PremiumHeaderButton() {
   }
 
   const label = t('removeAdsButton');
+  const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
   const iconColor = theme.accent;
   const textColor = iconColor;
 
@@ -198,7 +208,7 @@ export function PremiumHeaderButton() {
       style={({ pressed }) => [
         styles.pill,
         styles.pillUpsell,
-        resolveHeaderPillPadding(label),
+        resolveHeaderPillPadding(displayLabel),
         {
           backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
           borderColor: theme.accent,
@@ -207,7 +217,7 @@ export function PremiumHeaderButton() {
       ]}
     >
       <Crown size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-      <HeaderPillLabel label={label} color={textColor} />
+      <HeaderPillLabel label={displayLabel} color={textColor} />
     </Pressable>
   );
 }

@@ -1,12 +1,10 @@
 import { Stack } from 'expo-router';
-import { useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { space } from '@/lib/tokens';
 
-import { PremiumHeaderButton } from '@/components/PremiumHeaderButton';
-import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
-import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { TransitHeaderActions } from '@/components/TransitHeaderActions';
 import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -24,20 +22,7 @@ export default function TransitLayout() {
         options={{
           headerTitle: '',
           headerLeft: () => <SidebarHeaderButton />,
-          headerRight: () => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexShrink: 1,
-                maxWidth: headerRightMaxWidth,
-              }}
-            >
-              <ProfileHeaderButton compact />
-              <SettingsHeaderButton compact />
-              <PremiumHeaderButton />
-            </View>
-          ),
+          headerRight: () => <TransitHeaderActions />,
           headerRightContainerStyle: { paddingRight: space.xs, maxWidth: headerRightMaxWidth },
         }}
       />
