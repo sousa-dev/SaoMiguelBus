@@ -13,6 +13,10 @@ import { IconButton } from '@/components/ui/IconButton';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
+import {
+  standardHeaderCtaLabel,
+  useCyclingStandardHeaderCta,
+} from '@/features/premium/hooks/useCyclingStandardHeaderCta';
 import { usePremium } from '@/lib/premium-store';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -33,6 +37,7 @@ export function AppHeaderActions() {
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('header');
+  const standardCtaIndex = useCyclingStandardHeaderCta();
 
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const [contentWidth, setContentWidth] = useState(0);
@@ -41,7 +46,7 @@ export function AppHeaderActions() {
   useEffect(() => {
     setUseOverflowMenu(false);
     setContentWidth(0);
-  }, [windowWidth, isPremium, isAdFreeActive, isRewardOfferAvailable, remainingMs, t]);
+  }, [windowWidth, isPremium, isAdFreeActive, isRewardOfferAvailable, remainingMs, standardCtaIndex, t]);
 
   useEffect(() => {
     if (containerWidth == null || contentWidth === 0) {
@@ -72,7 +77,7 @@ export function AppHeaderActions() {
         return { text: t('removeAdsButton'), onPress: () => openModal() };
       }
       return {
-        text: t('premiumGoPremium'),
+        text: standardHeaderCtaLabel(t, standardCtaIndex),
         onPress: () => {
           void openPaywall('header');
         },
@@ -100,6 +105,7 @@ export function AppHeaderActions() {
     openStatusModal,
     remainingMs,
     router,
+    standardCtaIndex,
     t,
   ]);
 
@@ -131,7 +137,7 @@ export function AppHeaderActions() {
       >
         <ProfileHeaderButton compact />
         <SettingsHeaderButton compact />
-        <PremiumHeaderButton />
+        <PremiumHeaderButton standardCtaIndex={standardCtaIndex} />
       </View>
     </View>
   );

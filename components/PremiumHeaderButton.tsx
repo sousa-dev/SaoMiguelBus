@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
+import {
+  standardHeaderCtaContent,
+  type StandardHeaderCtaIndex,
+} from '@/features/premium/hooks/useCyclingStandardHeaderCta';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
 import { withAlpha } from '@/lib/color-utils';
@@ -20,7 +24,8 @@ function formatRemainingMinutes(remainingMs: number): number {
 
 /** Keep the transit header pill narrow enough to avoid iOS nav-bar overflow ("…" menu). */
 const HEADER_PILL_MAX_WIDTH = 112;
-const COMPACT_HEADER_LABEL_MAX_LENGTH = 12;
+/** Longest standard CTA label — keep in sync with `premiumHeaderCtaOfflineAccess` ("Offline Access"). */
+const COMPACT_HEADER_LABEL_MAX_LENGTH = 14;
 
 function resolveHeaderDisplayLabel(fullLabel: string, compactLabel: string): string {
   return fullLabel.length > COMPACT_HEADER_LABEL_MAX_LENGTH ? compactLabel : fullLabel;
@@ -58,7 +63,11 @@ function HeaderPillLabel({ label, color }: { label: string; color: string }) {
 }
 
 /** Header pill only — modal lives in {@link AdFreeRewardModalHost}. */
-export function PremiumHeaderButton() {
+export function PremiumHeaderButton({
+  standardCtaIndex,
+}: {
+  standardCtaIndex: StandardHeaderCtaIndex;
+}) {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
@@ -66,7 +75,6 @@ export function PremiumHeaderButton() {
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('header');
-  const goPremiumLabel = t('premiumGoPremium');
   const removeAdsLabel = t('removeAdsButton');
   const compactLabel = t('premiumHeaderButton');
 
@@ -189,15 +197,16 @@ export function PremiumHeaderButton() {
     );
   }
 
-  const label = goPremiumLabel;
-  const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
+  const cta = standardHeaderCtaContent(t, standardCtaIndex);
+  const displayLabel = resolveHeaderDisplayLabel(cta.label, cta.compactLabel);
   const iconColor = theme.accent;
   const textColor = iconColor;
+  const StandardCtaIcon = cta.Icon;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={cta.label}
       onPress={() => {
         if (Platform.OS !== 'web') {
           void Haptics.selectionAsync();
@@ -215,7 +224,7 @@ export function PremiumHeaderButton() {
         },
       ]}
     >
-      <Crown size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+      <StandardCtaIcon size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
       <HeaderPillLabel label={displayLabel} color={textColor} />
     </Pressable>
   );
