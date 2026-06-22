@@ -7,6 +7,7 @@ import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from '
 import Svg, { Path } from 'react-native-svg';
 
 import { useAuth } from '@/features/account/hooks/useAuth';
+import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { logger } from '@/lib/logger';
 import { useAppTheme } from '@/lib/theme';
 import { radius, space, typography } from '@/lib/tokens';
@@ -59,9 +60,9 @@ function GoogleGlyph({ size = 20 }: { size?: number }) {
 /**
  * Google sign-in is isolated in its own component because
  * `Google.useIdTokenAuthRequest` throws when no client IDs are configured. We
- * only mount this when `GOOGLE_ENABLED`, so the hook never runs without IDs.
- * `GOOGLE_ENABLED` is a module constant, so the mount decision is stable across
- * renders and does not violate the rules of hooks.
+ * only mount this when the provider is enabled locally and on the API, so the
+ * hook never runs without IDs. The mount decision is stable across renders and
+ * does not violate the rules of hooks.
  */
 function GoogleSignInButton({ onSuccess, onError }: Props) {
   const { t } = useTranslation();
@@ -125,6 +126,7 @@ function GoogleSignInButton({ onSuccess, onError }: Props) {
 export function SocialSignInButtons({ onSuccess, onError }: Props) {
   const theme = useAppTheme();
   const { social } = useAuth();
+  const { data: bootstrap } = useBootstrapCached();
 
   const [appleAvailable, setAppleAvailable] = useState(false);
   useEffect(() => {
@@ -132,6 +134,9 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
       AppleAuthentication.isAvailableAsync().then(setAppleAvailable).catch(() => setAppleAvailable(false));
     }
   }, []);
+
+  const googleEnabled = GOOGLE_ENABLED && (bootstrap?.socialAuth?.google ?? false);
+  const appleEnabled = appleAvailable && (bootstrap?.socialAuth?.apple ?? false);
 
   const onApple = async () => {
     try {
@@ -164,7 +169,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
     }
   };
 
-  if (!appleAvailable && !GOOGLE_ENABLED) return null;
+  if (!appleEnabled && !googleEnabled) return null;
 
   return (
     <View style={styles.wrap}>
@@ -174,7 +179,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
         <View style={[styles.line, { backgroundColor: theme.border }]} />
       </View>
 
-      {appleAvailable ? (
+      {appleEnabled ? (
         <AppleAuthentication.AppleAuthenticationButton
           buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
           buttonStyle={
@@ -188,7 +193,7 @@ export function SocialSignInButtons({ onSuccess, onError }: Props) {
         />
       ) : null}
 
-      {GOOGLE_ENABLED ? (
+      {googleEnabled ? (
         <GoogleSignInButton onSuccess={onSuccess} onError={onError} />
       ) : null}
     </View>

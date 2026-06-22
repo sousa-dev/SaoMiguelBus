@@ -15,6 +15,10 @@ export interface BootstrapResponse {
   version: string;
   mapsEnabled: boolean;
   consentPolicyVersion: string;
+  socialAuth?: {
+    google: boolean;
+    apple: boolean;
+  };
   holidays: { id: number; date: string; name: string }[];
   infos: Record<string, unknown>[];
 }
