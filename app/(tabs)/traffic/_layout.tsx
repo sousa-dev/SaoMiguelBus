@@ -1,8 +1,7 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
-import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
+import { useModuleRootHeaderOptions } from '@/components/AppHeaderActions';
 import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { ModuleStackScreenLayout } from '@/features/ads/components/ModuleStackScreenLayout';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -10,6 +9,7 @@ import { useAppStackScreenOptions } from '@/lib/navigation';
 export default function TrafficLayout() {
   const { t } = useTranslation();
   const screenOptions = useAppStackScreenOptions();
+  const moduleRootHeader = useModuleRootHeaderOptions();
 
   return (
     <Stack screenOptions={screenOptions} screenLayout={ModuleStackScreenLayout}>
@@ -17,8 +17,7 @@ export default function TrafficLayout() {
         name="index"
         options={{
           title: t('homeTrafficTitle'),
-          headerLeft: () => <SidebarHeaderButton />,
-          headerRight: () => <SettingsHeaderButton />,
+          ...moduleRootHeader,
         }}
       />
       <Stack.Screen

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Clock, Crown, Sparkles } from 'lucide-react-native';
+import { Ban, Clock, Crown } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text, type TextStyle, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +66,8 @@ export function PremiumHeaderButton() {
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('header');
+  const goPremiumLabel = t('premiumGoPremium');
+  const removeAdsLabel = t('removeAdsButton');
   const compactLabel = t('premiumHeaderButton');
 
   useEffect(() => {
@@ -76,9 +78,7 @@ export function PremiumHeaderButton() {
 
   if (isPremium) {
     const label = t('premiumHeaderButtonActive');
-    const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
     const iconColor = theme.onAccent;
-    const textColor = iconColor;
 
     return (
       <Pressable
@@ -94,7 +94,7 @@ export function PremiumHeaderButton() {
         style={({ pressed }) => [
           styles.pill,
           styles.pillActive,
-          resolveHeaderPillPadding(displayLabel),
+          styles.pillIconOnly,
           {
             backgroundColor: theme.accent,
             borderColor: withAlpha(theme.onAccent, 0.12),
@@ -108,7 +108,6 @@ export function PremiumHeaderButton() {
           strokeWidth={2.25}
           fill={withAlpha(theme.onAccent, 0.25)}
         />
-        <HeaderPillLabel label={displayLabel} color={textColor} />
       </Pressable>
     );
   }
@@ -147,7 +146,7 @@ export function PremiumHeaderButton() {
   }
 
   if (isRewardOfferAvailable) {
-    const label = t('removeAdsButton');
+    const label = removeAdsLabel;
     const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
     const freeBadge = t('adsAdFreeSidebarBadge');
     const iconColor = theme.accent;
@@ -176,7 +175,7 @@ export function PremiumHeaderButton() {
             },
           ]}
         >
-          <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+          <Ban size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
           <HeaderPillLabel label={displayLabel} color={textColor} />
         </Pressable>
         <View
@@ -190,7 +189,7 @@ export function PremiumHeaderButton() {
     );
   }
 
-  const label = t('removeAdsButton');
+  const label = goPremiumLabel;
   const displayLabel = resolveHeaderDisplayLabel(label, compactLabel);
   const iconColor = theme.accent;
   const textColor = iconColor;
@@ -240,6 +239,10 @@ const styles = StyleSheet.create({
     paddingRight: space.sm,
   },
   pillActive: { borderWidth: StyleSheet.hairlineWidth },
+  pillIconOnly: {
+    paddingHorizontal: space.sm,
+    paddingVertical: 6,
+  },
   pillUpsell: { borderWidth: 1 },
   label: { flexShrink: 1 },
   cornerBadge: {

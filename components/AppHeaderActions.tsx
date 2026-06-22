@@ -1,13 +1,14 @@
 import { type Href, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { MoreHorizontal } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, View, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { PremiumHeaderButton } from '@/components/PremiumHeaderButton';
 import { ProfileHeaderButton } from '@/components/ProfileHeaderButton';
 import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
+import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
 import { IconButton } from '@/components/ui/IconButton';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
@@ -20,8 +21,8 @@ function formatRemainingMinutes(remainingMs: number): number {
   return Math.max(1, Math.ceil(remainingMs / 60_000));
 }
 
-/** Transit header actions — collapses to a working overflow menu before iOS nav-bar "…" appears. */
-export function TransitHeaderActions() {
+/** Module root header actions — profile, settings, premium/remove-ads. Collapses to overflow before iOS nav-bar "…". */
+export function AppHeaderActions() {
   const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
@@ -71,7 +72,7 @@ export function TransitHeaderActions() {
         return { text: t('removeAdsButton'), onPress: () => openModal() };
       }
       return {
-        text: t('removeAdsButton'),
+        text: t('premiumGoPremium'),
         onPress: () => {
           void openPaywall('header');
         },
@@ -133,5 +134,20 @@ export function TransitHeaderActions() {
         <PremiumHeaderButton />
       </View>
     </View>
+  );
+}
+
+/** Shared header chrome for module root (index) screens. */
+export function useModuleRootHeaderOptions() {
+  const { width: windowWidth } = useWindowDimensions();
+  const headerRightMaxWidth = Math.min(windowWidth * 0.62, 248);
+
+  return useMemo(
+    () => ({
+      headerLeft: () => <SidebarHeaderButton />,
+      headerRight: () => <AppHeaderActions />,
+      headerRightContainerStyle: { paddingRight: space.xs, maxWidth: headerRightMaxWidth },
+    }),
+    [headerRightMaxWidth],
   );
 }

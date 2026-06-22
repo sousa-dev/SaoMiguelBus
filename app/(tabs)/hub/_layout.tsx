@@ -1,13 +1,13 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { SettingsHeaderButton } from '@/components/SettingsHeaderButton';
-import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
+import { useModuleRootHeaderOptions } from '@/components/AppHeaderActions';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function HubLayout() {
   const { t } = useTranslation();
   const screenOptions = useAppStackScreenOptions();
+  const moduleRootHeader = useModuleRootHeaderOptions();
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -15,8 +15,7 @@ export default function HubLayout() {
         name="index"
         options={{
           title: t('hubTitle'),
-          headerLeft: () => <SidebarHeaderButton />,
-          headerRight: () => <SettingsHeaderButton />,
+          ...moduleRootHeader,
         }}
       />
     </Stack>

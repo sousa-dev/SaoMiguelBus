@@ -1,19 +1,14 @@
 import { Stack } from 'expo-router';
-import { useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { space } from '@/lib/tokens';
-
-import { TransitHeaderActions } from '@/components/TransitHeaderActions';
-import { SidebarHeaderButton } from '@/components/SidebarHeaderButton';
+import { useModuleRootHeaderOptions } from '@/components/AppHeaderActions';
 import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TransitLayout() {
   const { t } = useTranslation();
-  const { width: windowWidth } = useWindowDimensions();
   const screenOptions = useAppStackScreenOptions();
-  const headerRightMaxWidth = Math.min(windowWidth * 0.62, 248);
+  const moduleRootHeader = useModuleRootHeaderOptions();
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -21,9 +16,7 @@ export default function TransitLayout() {
         name="index"
         options={{
           headerTitle: '',
-          headerLeft: () => <SidebarHeaderButton />,
-          headerRight: () => <TransitHeaderActions />,
-          headerRightContainerStyle: { paddingRight: space.xs, maxWidth: headerRightMaxWidth },
+          ...moduleRootHeader,
         }}
       />
       <Stack.Screen
