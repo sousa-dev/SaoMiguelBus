@@ -18,6 +18,7 @@ import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
 import { SaveSubscriptionPrompt } from '@/features/premium/components/SaveSubscriptionPrompt';
 import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
+import { useRewardedAdBootstrap } from '@/features/ads/hooks/useRewardedAdBootstrap';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
@@ -71,6 +72,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
   useEntitlementSync();
   useRevenueCatBootstrap();
   useAdMobInit();
+  useRewardedAdBootstrap();
 
   useEffect(() => {
     void rehydrateThemePrefs();

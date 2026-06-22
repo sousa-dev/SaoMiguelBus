@@ -1,82 +1,34 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { getAdMobRewardedUnitId } from '@/config/admob';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
+import { useRewardedAdAvailability } from '@/features/ads/hooks/useRewardedAdAvailability';
 import {
-  initializeAdMob,
-  isAdMobCanRequestAds,
-  isAdMobInitialized,
-  isAdMobNativeAvailable,
   isRewardedAdLoaded,
-  onRewardedAdLoadStateChanged,
   preloadRewardedAd,
   showRewardedAd,
 } from '@/features/ads/lib/admob-runtime';
-import { isRewardOfferAvailable } from '@/features/ads/lib/reward-offer-availability';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
-import { canInitAdMobForUser } from '@/lib/consent-store';
-import { useNetwork } from '@/lib/network-provider';
 import { usePremium } from '@/lib/premium-store';
 
 export type RewardedAdFreeSource = 'header' | 'sidebar';
 
+/** Modal + reward flow for a surface; availability is shared via {@link useRewardedAdAvailability}. */
 export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
   const isPremium = usePremium();
   const { grantFromReward } = useAdFreeWindow();
-  const { isOnline } = useNetwork();
   const { openPaywall } = usePaywall();
+  const isRewardOfferAvailable = useRewardedAdAvailability();
   const [modalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rewardedLoaded, setRewardedLoaded] = useState(false);
-  const [canRequestAds, setCanRequestAds] = useState(false);
-
-  const hasRewardedUnit = useMemo(() => Boolean(getAdMobRewardedUnitId()), []);
-  const canInitAdMob = canInitAdMobForUser(isPremium);
-  const isNativeAvailable = isAdMobNativeAvailable();
-
-  const rewardOfferAvailable = isRewardOfferAvailable({
-    isPremium,
-    isOnline,
-    canInitAdMob,
-    isNativeAvailable,
-    hasRewardedUnit,
-    canRequestAds,
-    rewardedLoaded,
-  });
-
-  useEffect(() => {
-    if (isPremium || !isOnline || !canInitAdMob || !isNativeAvailable || !hasRewardedUnit) {
-      setRewardedLoaded(false);
-      setCanRequestAds(false);
-      return;
-    }
-
-    const unsubscribe = onRewardedAdLoadStateChanged(setRewardedLoaded);
-
-    void (async () => {
-      if (!isAdMobInitialized()) {
-        await initializeAdMob();
-      }
-      const allowed = isAdMobCanRequestAds();
-      setCanRequestAds(allowed);
-      if (allowed) {
-        preloadRewardedAd();
-      } else {
-        setRewardedLoaded(false);
-      }
-    })();
-
-    return unsubscribe;
-  }, [canInitAdMob, hasRewardedUnit, isNativeAvailable, isOnline, isPremium]);
 
   const openModal = useCallback(() => {
-    if (isPremium || !rewardOfferAvailable) {
+    if (isPremium || !isRewardOfferAvailable) {
       return;
     }
     track('ads', 'reward_modal_open', { source });
     setModalVisible(true);
-  }, [isPremium, rewardOfferAvailable, source]);
+  }, [isPremium, isRewardOfferAvailable, source]);
 
   const closeModal = useCallback(() => {
     setModalVisible(false);
@@ -90,7 +42,7 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
   }, [closeModal, openPaywall]);
 
   const startRewardFlow = useCallback(async () => {
-    if (isPremium || isLoading || !rewardOfferAvailable) {
+    if (isPremium || isLoading || !isRewardOfferAvailable) {
       return;
     }
 
@@ -122,7 +74,7 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
     if (result === 'dismissed') {
       track('ads', 'reward_ad_dismissed', { source: 'ad_free_modal' });
     }
-  }, [closeModal, grantFromReward, isLoading, isPremium, rewardOfferAvailable]);
+  }, [closeModal, grantFromReward, isLoading, isPremium, isRewardOfferAvailable]);
 
   return {
     modalVisible,
@@ -130,7 +82,7 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
     closeModal,
     startRewardFlow,
     onGetPremium,
-    isRewardOfferAvailable: rewardOfferAvailable,
+    isRewardOfferAvailable,
     isLoading,
     isPremium,
   };
