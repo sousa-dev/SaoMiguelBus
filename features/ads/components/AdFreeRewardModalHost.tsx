@@ -10,6 +10,7 @@ function formatRemainingMinutes(remainingMs: number): number {
 /** Single app-root host — never mount inside native stack headerRight (iOS overflow menu). */
 export function AdFreeRewardModalHost() {
   const {
+    modalVisible,
     modalMode,
     remainingMs,
     closeModal,
@@ -24,7 +25,7 @@ export function AdFreeRewardModalHost() {
     return null;
   }
 
-  const open = modalSource !== null && modalMode != null;
+  const open = modalVisible && modalMode != null;
 
   return (
     <AdFreeRewardModal
