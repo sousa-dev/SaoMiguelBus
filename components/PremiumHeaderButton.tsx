@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Clock, Crown, Sparkles } from 'lucide-react-native';
 import React, { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, type TextStyle, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
@@ -16,6 +16,40 @@ import { useAppTheme } from '@/lib/theme';
 
 function formatRemainingMinutes(remainingMs: number): number {
   return Math.max(1, Math.ceil(remainingMs / 60_000));
+}
+
+/** Keep the transit header pill narrow enough to avoid iOS nav-bar overflow ("…" menu). */
+const HEADER_PILL_MAX_WIDTH = 112;
+
+function resolveHeaderPillLabelStyle(label: string): TextStyle {
+  const length = label.length;
+  if (length <= 10) {
+    return { ...typography.caption, fontWeight: '700', letterSpacing: 0.3 };
+  }
+  if (length <= 16) {
+    return { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 0.2 };
+  }
+  return { fontSize: 10, lineHeight: 13, fontWeight: '700', letterSpacing: 0.1 };
+}
+
+function resolveHeaderPillPadding(label: string) {
+  if (label.length <= 10) {
+    return { paddingHorizontal: space.sm, paddingVertical: 6 };
+  }
+  return { paddingHorizontal: space.xs, paddingVertical: 5 };
+}
+
+function HeaderPillLabel({ label, color }: { label: string; color: string }) {
+  return (
+    <Text
+      style={[resolveHeaderPillLabelStyle(label), styles.label, { color }]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.82}
+    >
+      {label}
+    </Text>
+  );
 }
 
 /** Header pill only — modal lives in {@link AdFreeRewardModalHost}. */
@@ -53,6 +87,7 @@ export function PremiumHeaderButton() {
         style={({ pressed }) => [
           styles.pill,
           styles.pillActive,
+          resolveHeaderPillPadding(label),
           {
             backgroundColor: theme.accent,
             borderColor: withAlpha(theme.onAccent, 0.12),
@@ -66,9 +101,7 @@ export function PremiumHeaderButton() {
           strokeWidth={2.25}
           fill={withAlpha(theme.onAccent, 0.25)}
         />
-        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-          {label}
-        </Text>
+        <HeaderPillLabel label={label} color={textColor} />
       </Pressable>
     );
   }
@@ -91,6 +124,7 @@ export function PremiumHeaderButton() {
         style={({ pressed }) => [
           styles.pill,
           styles.pillUpsell,
+          resolveHeaderPillPadding(label),
           {
             backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
             borderColor: theme.accent,
@@ -99,9 +133,7 @@ export function PremiumHeaderButton() {
         ]}
       >
         <Clock size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-          {label}
-        </Text>
+        <HeaderPillLabel label={label} color={textColor} />
       </Pressable>
     );
   }
@@ -127,6 +159,7 @@ export function PremiumHeaderButton() {
             styles.pill,
             styles.pillUpsell,
             styles.pillWithBadge,
+            resolveHeaderPillPadding(label),
             {
               backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
               borderColor: theme.accent,
@@ -135,9 +168,7 @@ export function PremiumHeaderButton() {
           ]}
         >
           <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-            {label}
-          </Text>
+          <HeaderPillLabel label={label} color={textColor} />
         </Pressable>
         <View
           style={[styles.cornerBadge, { backgroundColor: theme.accent, borderColor: theme.surface }]}
@@ -167,6 +198,7 @@ export function PremiumHeaderButton() {
       style={({ pressed }) => [
         styles.pill,
         styles.pillUpsell,
+        resolveHeaderPillPadding(label),
         {
           backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
           borderColor: theme.accent,
@@ -175,9 +207,7 @@ export function PremiumHeaderButton() {
       ]}
     >
       <Crown size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-      <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-        {label}
-      </Text>
+      <HeaderPillLabel label={label} color={textColor} />
     </Pressable>
   );
 }
@@ -190,18 +220,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.xs,
-    paddingHorizontal: space.sm,
-    paddingVertical: 6,
     borderRadius: radius.full,
     marginLeft: space.xs,
     flexShrink: 1,
+    maxWidth: HEADER_PILL_MAX_WIDTH,
+    minWidth: 0,
   },
   pillWithBadge: {
-    paddingRight: space.md,
+    paddingRight: space.sm,
   },
   pillActive: { borderWidth: StyleSheet.hairlineWidth },
   pillUpsell: { borderWidth: 1 },
-  label: { fontWeight: '700', letterSpacing: 0.3 },
+  label: { flexShrink: 1 },
   cornerBadge: {
     position: 'absolute',
     top: -5,

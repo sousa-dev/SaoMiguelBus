@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { space } from '@/lib/tokens';
@@ -13,7 +13,9 @@ import { useAppStackScreenOptions } from '@/lib/navigation';
 
 export default function TransitLayout() {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const screenOptions = useAppStackScreenOptions();
+  const headerRightMaxWidth = Math.min(windowWidth * 0.62, 248);
 
   return (
     <Stack screenOptions={screenOptions}>
@@ -27,16 +29,16 @@ export default function TransitLayout() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: space.xs,
                 flexShrink: 1,
+                maxWidth: headerRightMaxWidth,
               }}
             >
-              <ProfileHeaderButton />
-              <SettingsHeaderButton />
+              <ProfileHeaderButton compact />
+              <SettingsHeaderButton compact />
               <PremiumHeaderButton />
             </View>
           ),
-          headerRightContainerStyle: { paddingRight: space.sm, maxWidth: '70%' },
+          headerRightContainerStyle: { paddingRight: space.xs, maxWidth: headerRightMaxWidth },
         }}
       />
       <Stack.Screen
