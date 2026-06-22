@@ -14,7 +14,6 @@ import {
   Settings,
   Store,
   CloudSun,
-  Binoculars,
   Ticket,
   type LucideIcon,
 } from 'lucide-react-native';
