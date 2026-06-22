@@ -1,45 +1,50 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
-import { grantAdFreeWindow, loadAdFreeUntil } from '@/features/ads/lib/ad-free-storage';
+import { useAdFreeStore } from '@/features/ads/lib/ad-free-store';
 import { adFreeRemainingMs, shouldShowAds } from '@/features/ads/lib/ad-visibility';
 import { usePremium } from '@/lib/premium-store';
 
-/**
- * Reactive device-local ad-free reward window (ignored when premium).
- */
-export function useAdFreeWindow() {
-  const isPremium = usePremium();
-  const [adFreeUntilMs, setAdFreeUntilMs] = useState<number | null>(null);
-  const [nowMs, setNowMs] = useState(() => Date.now());
-  const [hydrated, setHydrated] = useState(false);
+function useAdFreeDerived(isPremium: boolean) {
+  const adFreeUntilMs = useAdFreeStore((s) => s.adFreeUntilMs);
+  const nowMs = useAdFreeStore((s) => s.nowMs);
+  const effectiveUntilMs = isPremium ? null : adFreeUntilMs;
+  const isAdFreeActive =
+    !isPremium && effectiveUntilMs != null && effectiveUntilMs > nowMs;
+  const remainingMs = isPremium ? 0 : adFreeRemainingMs(effectiveUntilMs, nowMs);
+  const showAds = shouldShowAds(isPremium, effectiveUntilMs, nowMs);
 
-  const refresh = useCallback(async () => {
-    const until = await loadAdFreeUntil();
-    setAdFreeUntilMs(until);
-    setNowMs(Date.now());
-    setHydrated(true);
-  }, []);
+  return {
+    adFreeUntilMs: effectiveUntilMs,
+    isAdFreeActive,
+    remainingMs,
+    showAds,
+  };
+}
+
+/** Mount once at app root — hydrates storage and keeps expiry clock in sync. */
+export function useAdFreeWindowBootstrap() {
+  const isPremium = usePremium();
+  const hydrated = useAdFreeStore((s) => s.hydrated);
+  const hydrate = useAdFreeStore((s) => s.hydrate);
+  const refresh = useAdFreeStore((s) => s.refresh);
+  const tickNow = useAdFreeStore((s) => s.tickNow);
+  const { isAdFreeActive, remainingMs } = useAdFreeDerived(isPremium);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void hydrate();
+  }, [hydrate]);
 
   useEffect(() => {
     const onChange = (state: AppStateStatus) => {
       if (state === 'active') {
-        setNowMs(Date.now());
+        tickNow();
         void refresh();
       }
     };
     const sub = AppState.addEventListener('change', onChange);
     return () => sub.remove();
-  }, [refresh]);
-
-  const isAdFreeActive =
-    !isPremium && adFreeUntilMs != null && adFreeUntilMs > nowMs;
-  const remainingMs = isPremium ? 0 : adFreeRemainingMs(adFreeUntilMs, nowMs);
-  const showAds = shouldShowAds(isPremium, isPremium ? null : adFreeUntilMs, nowMs);
+  }, [refresh, tickNow]);
 
   useEffect(() => {
     if (!isAdFreeActive || remainingMs <= 0) {
@@ -47,28 +52,36 @@ export function useAdFreeWindow() {
     }
     const tickMs = Math.min(remainingMs + 50, 60_000);
     const timer = setTimeout(() => {
-      setNowMs(Date.now());
+      tickNow();
     }, tickMs);
     return () => clearTimeout(timer);
-  }, [isAdFreeActive, remainingMs]);
+  }, [isAdFreeActive, remainingMs, tickNow]);
+
+  return hydrated;
+}
+
+/**
+ * Reactive device-local ad-free reward window (ignored when premium).
+ * Backed by {@link useAdFreeStore} so all surfaces update immediately after a reward.
+ */
+export function useAdFreeWindow() {
+  const isPremium = usePremium();
+  const hydrated = useAdFreeStore((s) => s.hydrated);
+  const refresh = useAdFreeStore((s) => s.refresh);
+  const grantFromRewardStore = useAdFreeStore((s) => s.grantFromReward);
+  const derived = useAdFreeDerived(isPremium);
 
   const grantFromReward = useCallback(async () => {
     if (isPremium) {
       return null;
     }
-    const until = await grantAdFreeWindow();
-    setAdFreeUntilMs(until);
-    setNowMs(Date.now());
-    return until;
-  }, [isPremium]);
+    return grantFromRewardStore();
+  }, [grantFromRewardStore, isPremium]);
 
   return {
     hydrated,
-    adFreeUntilMs: isPremium ? null : adFreeUntilMs,
-    isAdFreeActive,
-    remainingMs,
-    showAds,
-    grantFromReward,
     refresh,
+    grantFromReward,
+    ...derived,
   };
 }
