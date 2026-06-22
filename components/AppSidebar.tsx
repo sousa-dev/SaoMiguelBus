@@ -34,10 +34,6 @@ import { primaryTint, useAppTheme } from '@/lib/theme';
 const PANEL_MAX_WIDTH = 360;
 const ANIM_MS = 220;
 
-function formatRemainingMinutes(remainingMs: number): number {
-  return Math.max(1, Math.ceil(remainingMs / 60_000));
-}
-
 function panelWidth(): number {
   return Math.min(Dimensions.get('window').width * 0.82, PANEL_MAX_WIDTH);
 }
@@ -58,7 +54,7 @@ export function AppSidebar() {
   const enabledSet = useMemo(() => new Set(enabledKeys), [enabledKeys]);
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
-  const { isAdFreeActive, remainingMs } = useAdFreeWindow();
+  const { isAdFreeActive } = useAdFreeWindow();
   const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('sidebar');
 
   const width = panelWidth();
@@ -218,9 +214,7 @@ export function AppSidebar() {
                     const { Icon } = item;
                     const removeAdsAdFreeBadge =
                       item.key === 'remove_ads' && isAdFreeActive
-                        ? t('adsAdFreeStatusRemaining', {
-                            minutes: formatRemainingMinutes(remainingMs),
-                          })
+                        ? t('adsAdFreeSidebarRemoveForever')
                         : null;
                     const removeAdsFreeBadge =
                       item.key === 'remove_ads' && !isAdFreeActive && isRewardOfferAvailable
