@@ -440,6 +440,7 @@
     "adsAdFreeModalBody": "Watch a short video ad and enjoy 15 minutes of navigation without ads on this device.",
     "adsAdFreeModalWatchButton": "Watch video",
     "adsAdFreeModalDismissButton": "Not now",
+    "adsAdFreeModalRemoveAdsPermanently": "Remove ads permanently",
     "adsAdFreeStatusRemaining": "{{minutes}}m left",
     "adsAdFreeRewardUnavailable": "Video rewards are unavailable right now. You can still upgrade to Premium.",
     "alreadySubscribed": "I already have a subscription enabled",

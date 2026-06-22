@@ -440,6 +440,7 @@
     "adsAdFreeModalBody": "Veja um anúncio em vídeo curto e desfrute de 15 minutos de navegação sem anúncios neste dispositivo.",
     "adsAdFreeModalWatchButton": "Ver vídeo",
     "adsAdFreeModalDismissButton": "Agora não",
+    "adsAdFreeModalRemoveAdsPermanently": "Remover anúncios definitivamente",
     "adsAdFreeStatusRemaining": "{{minutes}}m restantes",
     "adsAdFreeRewardUnavailable": "Os vídeos de recompensa não estão disponíveis agora. Pode fazer upgrade para Premium.",
     "alreadySubscribed": "Já tenho uma subscrição ativada",

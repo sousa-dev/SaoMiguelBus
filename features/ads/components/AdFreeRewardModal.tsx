@@ -82,7 +82,7 @@ export function AdFreeRewardModal({
               accessibilityRole="button"
             >
               <Text style={[styles.premiumBtnText, { color: theme.text }]}>
-                {t('premiumGoPremium')}
+                {t('adsAdFreeModalRemoveAdsPermanently')}
               </Text>
             </Pressable>
           ) : null}
