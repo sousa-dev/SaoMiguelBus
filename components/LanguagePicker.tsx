@@ -1,6 +1,6 @@
 import { Check, ChevronDown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -15,12 +15,20 @@ type LanguagePickerProps = {
   locales: string[];
   activeLocale: string;
   onSelect: (code: string) => void | Promise<void>;
+  /** When true, closes the locale sheet (e.g. parent wizard advanced away from language step). */
+  forceClosed?: boolean;
 };
 
-export function LanguagePicker({ locales, activeLocale, onSelect }: LanguagePickerProps) {
+export function LanguagePicker({ locales, activeLocale, onSelect, forceClosed }: LanguagePickerProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (forceClosed) {
+      setOpen(false);
+    }
+  }, [forceClosed]);
 
   const selectedCode = useMemo(
     () => locales.find((code) => isActiveLocale(activeLocale, code)) ?? locales[0] ?? 'pt',

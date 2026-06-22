@@ -11,8 +11,8 @@ import {
   Sparkles,
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -31,12 +31,15 @@ import { saveLocale } from '@/lib/locale-prefs';
 import { getModule } from '@/lib/modules';
 import { MUNICIPALITIES } from '@/lib/municipalities';
 import { personaHubDefaults, PERSONALIZABLE_INTERESTS } from '@/lib/persona-defaults';
+import {
+  PERSONALIZE_STEP_COUNT,
+  PERSONALIZE_USER_TYPE_STEP,
+  canAdvancePersonalizeStep,
+} from '@/lib/personalize-steps';
 import { usePersonalizationStore } from '@/lib/personalization-store';
 import { hitSlop, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { UserType } from '@/lib/types';
-
-const STEP_COUNT = 4;
 
 const USER_TYPE_OPTIONS: { value: UserType; labelKey: string; Icon: LucideIcon }[] = [
   { value: 'tourist', labelKey: 'personalizeUserTypeTourist', Icon: Compass },
@@ -77,6 +80,32 @@ export default function PersonalizeScreen() {
 
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [storeHydrated, setStoreHydrated] = useState(() =>
+    usePersonalizationStore.persist.hasHydrated(),
+  );
+  const [draftUserType, setDraftUserType] = useState<UserType | null>(null);
+  const draftInitializedRef = useRef(false);
+  const [languagePickerForceClosed, setLanguagePickerForceClosed] = useState(false);
+
+  useEffect(() => {
+    if (usePersonalizationStore.persist.hasHydrated()) {
+      setStoreHydrated(true);
+      return;
+    }
+    return usePersonalizationStore.persist.onFinishHydration(() => {
+      setStoreHydrated(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!storeHydrated || draftInitializedRef.current) {
+      return;
+    }
+    draftInitializedRef.current = true;
+    if (storedUserType !== null) {
+      setDraftUserType(storedUserType);
+    }
+  }, [storeHydrated, storedUserType]);
 
   const selectableInterests = useMemo(
     () => PERSONALIZABLE_INTERESTS.filter((key) => enabledKeys.includes(key)),
@@ -128,30 +157,44 @@ export default function PersonalizeScreen() {
     }
   };
 
-  const canAdvance = () => {
-    switch (step) {
-      case 0:
-        return true;
-      case 1:
-        return storedUserType !== null;
-      case 2:
-      case 3:
-        return true;
-      default:
-        return false;
-    }
-  };
+  const advanceUserType =
+    step === PERSONALIZE_USER_TYPE_STEP ? draftUserType : storedUserType;
 
-  const onNext = () => {
-    if (step < STEP_COUNT - 1) {
+  const canAdvance = () => canAdvancePersonalizeStep(step, advanceUserType);
+
+  const proceedAdvance = () => {
+    if (step < PERSONALIZE_STEP_COUNT - 1) {
       setStep((current) => current + 1);
       return;
     }
     void onFinish();
   };
 
+  const onSelectUserType = (value: UserType) => {
+    if (busy || !storeHydrated) {
+      return;
+    }
+    setDraftUserType(value);
+    setUserType(value);
+    setStep(2);
+  };
+
+  const onNext = () => {
+    if (step === 0 && !languagePickerForceClosed) {
+      setLanguagePickerForceClosed(true);
+      queueMicrotask(() => {
+        setStep(1);
+      });
+      return;
+    }
+    proceedAdvance();
+  };
+
   const onBack = () => {
     if (step > 0) {
+      if (step === 1) {
+        setLanguagePickerForceClosed(false);
+      }
       setStep((current) => current - 1);
     }
   };
@@ -164,7 +207,7 @@ export default function PersonalizeScreen() {
   return (
     <Screen collapsable={false} edges={['top']} style={{ backgroundColor: theme.primary }}>
       <View style={styles.layout}>
-        <View style={[styles.hero, { paddingTop: Math.max(insets.top, space.md) }]}>
+        <View style={[styles.hero, { paddingTop: space.md }]}>
           <View style={styles.heroTopBar}>
             {isEdit ? (
               <Pressable
@@ -243,10 +286,15 @@ export default function PersonalizeScreen() {
             styles.sheet,
             {
               backgroundColor: theme.background,
-              paddingBottom: Math.max(insets.bottom, space.lg),
             },
           ]}
         >
+          {!storeHydrated ? (
+            <View style={styles.hydrationLoading}>
+              <ActivityIndicator color={theme.primary} />
+            </View>
+          ) : (
+            <>
           <ScrollView
             style={styles.sheetScroll}
             contentContainerStyle={styles.sheetScrollContent}
@@ -262,20 +310,22 @@ export default function PersonalizeScreen() {
                 locales={locales}
                 activeLocale={i18n.language}
                 onSelect={onSelectLocale}
+                forceClosed={languagePickerForceClosed}
               />
             ) : null}
 
-            {step === 1 ? (
+            {step === PERSONALIZE_USER_TYPE_STEP ? (
               <View style={[styles.group, { borderColor: theme.border, backgroundColor: theme.card }]}>
                 {USER_TYPE_OPTIONS.map(({ value, labelKey, Icon }) => {
-                  const selected = storedUserType === value;
+                  const selected = draftUserType === value || storedUserType === value;
                   return (
                     <ListRow
                       key={value}
                       icon={Icon}
                       title={t(labelKey)}
                       showChevron={false}
-                      onPress={() => setUserType(value)}
+                      disabled={busy}
+                      onPress={() => onSelectUserType(value)}
                       trailing={
                         selected ? (
                           <View style={[styles.checkBadge, { backgroundColor: theme.primary }]}>
@@ -330,7 +380,15 @@ export default function PersonalizeScreen() {
             ) : null}
           </ScrollView>
 
-          <View style={[styles.actions, { borderTopColor: theme.border }]}>
+          <View
+            style={[
+              styles.actions,
+              {
+                borderTopColor: theme.border,
+                paddingBottom: Math.max(insets.bottom, space.lg),
+              },
+            ]}
+          >
             {step > 0 ? (
               <Button
                 label={t('personalizeBack')}
@@ -340,14 +398,18 @@ export default function PersonalizeScreen() {
                 fullWidth
               />
             ) : null}
-            <Button
-              label={step === STEP_COUNT - 1 ? t('personalizeFinish') : t('personalizeNext')}
-              onPress={onNext}
-              disabled={busy || !canAdvance()}
-              fullWidth
-              style={{ marginTop: step > 0 ? space.md : 0 }}
-            />
+            {step !== PERSONALIZE_USER_TYPE_STEP ? (
+              <Button
+                label={step === PERSONALIZE_STEP_COUNT - 1 ? t('personalizeFinish') : t('personalizeNext')}
+                onPress={onNext}
+                disabled={busy || !canAdvance()}
+                fullWidth
+                style={{ marginTop: step > 0 ? space.md : 0 }}
+              />
+            ) : null}
           </View>
+            </>
+          )}
         </View>
       </View>
     </Screen>
@@ -445,6 +507,12 @@ const styles = StyleSheet.create({
       },
       default: {},
     }),
+  },
+  hydrationLoading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: space['4xl'],
   },
   sheetScroll: {
     flex: 1,
