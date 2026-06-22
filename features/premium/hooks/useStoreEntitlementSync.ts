@@ -1,9 +1,11 @@
 import Purchases from 'react-native-purchases';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { AppState } from 'react-native';
 
 import { optimisticEntitlementFromCustomerInfo } from '@/features/premium/lib/optimistic-entitlement';
+import { schedulePremiumExpirySync } from '@/features/premium/lib/premium-expiry-scheduler';
 import { markStoreEntitlementSyncCompleted } from '@/features/premium/lib/store-entitlement-sync-state';
-import { useEntitlementStore } from '@/lib/entitlement-store';
+import { selectEntitlement, useEntitlementStore } from '@/lib/entitlement-store';
 import { isRevenueCatConfigured, onCustomerInfoUpdate } from '@/lib/revenuecat';
 
 /**
@@ -12,11 +14,23 @@ import { isRevenueCatConfigured, onCustomerInfoUpdate } from '@/lib/revenuecat';
  */
 export function useStoreEntitlementSync() {
   const reconcileFromStore = useEntitlementStore((s) => s.reconcileFromStore);
+  const cancelExpiryTimerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!isRevenueCatConfigured()) {
       return;
     }
+
+    const rescheduleExpirySync = () => {
+      cancelExpiryTimerRef.current?.();
+      const entitlement = selectEntitlement(useEntitlementStore.getState());
+      cancelExpiryTimerRef.current = schedulePremiumExpirySync(
+        entitlement?.currentPeriodEnd,
+        () => {
+          void syncFromCustomerInfo();
+        },
+      );
+    };
 
     const syncFromCustomerInfo = async () => {
       try {
@@ -26,6 +40,7 @@ export function useStoreEntitlementSync() {
         // Non-fatal — premium may still come from persisted store state.
       } finally {
         markStoreEntitlementSyncCompleted();
+        rescheduleExpirySync();
       }
     };
 
@@ -33,8 +48,19 @@ export function useStoreEntitlementSync() {
 
     const removeCustomerInfoListener = onCustomerInfoUpdate((info) => {
       reconcileFromStore(optimisticEntitlementFromCustomerInfo(info));
+      rescheduleExpirySync();
     });
 
-    return removeCustomerInfoListener;
+    const appStateSub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') {
+        void syncFromCustomerInfo();
+      }
+    });
+
+    return () => {
+      removeCustomerInfoListener();
+      appStateSub.remove();
+      cancelExpiryTimerRef.current?.();
+    };
   }, [reconcileFromStore]);
 }

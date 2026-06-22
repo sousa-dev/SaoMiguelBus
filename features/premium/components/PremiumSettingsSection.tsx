@@ -1,7 +1,7 @@
-import { CreditCard, Crown, LogIn, RotateCcw, Sparkles } from 'lucide-react-native';
+import { Clock, CreditCard, Crown, LogIn, RotateCcw, Sparkles } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -11,8 +11,10 @@ import { useEntitlement } from '@/features/account/hooks/useEntitlement';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { usePremiumPurchases } from '@/features/premium/hooks/usePremiumPurchases';
 import { presentCustomerCenter } from '@/features/premium/lib/customer-center';
+import { isTouristPassEntitlement } from '@/features/premium/lib/is-tourist-pass-entitlement';
 import { NATIVE_SUBSCRIPTIONS_URL, resolveManageAction } from '@/features/premium/lib/manage-action';
 import { isPurchaseCancelled, purchaseErrorMessageKey } from '@/features/premium/lib/purchase-errors';
+import { getPremiumDaysRemaining } from '@/features/premium/lib/premium-time-remaining';
 import { formatAppDate } from '@/lib/date-format';
 import { LEGAL_URLS } from '@/lib/legal-urls';
 import { usePremium } from '@/lib/premium-store';
@@ -28,16 +30,42 @@ const MANAGE_KEY: Record<ManageVia, string> = {
   none: 'premiumManageNone',
 };
 
+const PASS_COUNTDOWN_REFRESH_MS = 60 * 60 * 1000;
+
+function passExpirySubtitle(
+  t: (key: string, options?: { count?: number }) => string,
+  daysRemaining: number,
+  endIso: string,
+): string {
+  const relative =
+    daysRemaining <= 1
+      ? t('premiumExpiresInOneDay')
+      : t('premiumExpiresInDays', { count: daysRemaining });
+  return `${relative} · ${t('premiumExpires')}${formatAppDate(endIso)}`;
+}
+
 /** Premium status + self-service management for the Settings screen. */
 export function PremiumSettingsSection() {
   const theme = useAppTheme();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { isSignedIn } = useAuth();
   const entitlement = useEntitlement();
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { restore } = usePremiumPurchases();
+  const [, setCountdownTick] = useState(0);
+
+  const isTouristPass = isTouristPassEntitlement(entitlement);
+  const daysRemaining = getPremiumDaysRemaining(entitlement?.currentPeriodEnd);
+
+  useEffect(() => {
+    if (!isTouristPass || daysRemaining <= 0) {
+      return;
+    }
+    const timer = setInterval(() => setCountdownTick((n) => n + 1), PASS_COUNTDOWN_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [isTouristPass, daysRemaining, entitlement?.currentPeriodEnd]);
 
   const manageAction = resolveManageAction({
     source: entitlement?.source ?? null,
@@ -45,9 +73,25 @@ export function PremiumSettingsSection() {
     customerCenterEnabled: CUSTOMER_CENTER_ENABLED,
   });
 
-  const renewalDate = entitlement?.currentPeriodEnd
-    ? formatAppDate(entitlement.currentPeriodEnd)
-    : null;
+  const showManageRow =
+    isPremium &&
+    !isTouristPass &&
+    (manageAction.kind === 'customer_center' || manageAction.kind === 'native_subscriptions');
+
+  const showPassExpiryRow = isPremium && isTouristPass && daysRemaining > 0;
+
+  const statusSubtitle = (() => {
+    if (!isPremium) {
+      return t('premiumUpsell');
+    }
+    if (isTouristPass) {
+      return t('premiumManageNone');
+    }
+    if (entitlement?.currentPeriodEnd) {
+      return `${t('premiumExpires')}${formatAppDate(entitlement.currentPeriodEnd)}`;
+    }
+    return t(MANAGE_KEY[entitlement?.manageVia ?? 'none']);
+  })();
 
   const onManage = async () => {
     switch (manageAction.kind) {
@@ -82,7 +126,6 @@ export function PremiumSettingsSection() {
     }
   };
 
-  const showManageRow = isPremium && (manageAction.kind === 'customer_center' || manageAction.kind === 'native_subscriptions');
   const groupStyle = [styles.group, { backgroundColor: theme.card, borderColor: theme.border }];
 
   return (
@@ -94,13 +137,7 @@ export function PremiumSettingsSection() {
         <ListRow
           icon={Sparkles}
           title={isPremium ? t('premiumActive') : t('premiumNotActive')}
-          subtitle={
-            isPremium
-              ? renewalDate
-                ? `${t('premiumExpires')}${renewalDate}`
-                : t(MANAGE_KEY[entitlement?.manageVia ?? 'none'])
-              : t('premiumUpsell')
-          }
+          subtitle={statusSubtitle}
           showChevron={false}
         />
 
@@ -114,6 +151,19 @@ export function PremiumSettingsSection() {
             title={t('premiumSignInToSync')}
             subtitle={t('premiumSignInToSyncSubtitle')}
             onPress={() => router.push('/auth/sign-in')}
+          />
+        ) : null}
+
+        {showPassExpiryRow && entitlement?.currentPeriodEnd ? (
+          <ListRow
+            icon={Clock}
+            title={
+              daysRemaining <= 1
+                ? t('premiumExpiresInOneDay')
+                : t('premiumExpiresInDays', { count: daysRemaining })
+            }
+            subtitle={passExpirySubtitle(t, daysRemaining, entitlement.currentPeriodEnd)}
+            showChevron={false}
           />
         ) : null}
 

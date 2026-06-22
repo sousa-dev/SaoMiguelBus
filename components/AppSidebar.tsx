@@ -101,6 +101,16 @@ export function AppSidebar() {
     transform: [{ translateX: (progress.value - 1) * width }],
   }));
 
+  const sidebarSections = useMemo(() => {
+    if (!isPremium) {
+      return SIDEBAR_SECTIONS;
+    }
+    return SIDEBAR_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => item.key !== 'remove_ads'),
+    }));
+  }, [isPremium]);
+
   const onNavigate = (item: SidebarNavItem) => {
     closeSidebar();
     if (item.action === 'premium') {
@@ -109,6 +119,10 @@ export function AppSidebar() {
       } else {
         void openPaywall('sidebar');
       }
+      return;
+    }
+    if (item.action === 'remove_ads') {
+      void openPaywall('sidebar_remove_ads');
       return;
     }
     router.push(item.route);
@@ -159,7 +173,7 @@ export function AppSidebar() {
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
         >
-          {SIDEBAR_SECTIONS.map((section) => (
+          {sidebarSections.map((section) => (
             <View key={section.id} style={styles.section}>
               {section.titleKey ? (
                 <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>

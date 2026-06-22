@@ -2,19 +2,20 @@ import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import type { CustomerInfo } from 'react-native-purchases';
 
+import { resolvePremiumEntitlementFromCustomerInfo } from '@/features/premium/lib/resolve-premium-entitlement';
 import { logger } from '@/lib/logger';
-import { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId } from '@/lib/revenuecat-ids';
+import { REVENUECAT_APP_USER_ID_PREFIX, PREMIUM_ENTITLEMENT_ID, revenueCatAppUserId } from '@/lib/revenuecat-ids';
 import { shouldCallRevenueCatLogOut } from '@/lib/revenuecat-identity-policy';
 import type { AuthUser } from '@/lib/types';
 
-export { REVENUECAT_APP_USER_ID_PREFIX, revenueCatAppUserId };
+export { REVENUECAT_APP_USER_ID_PREFIX, PREMIUM_ENTITLEMENT_ID, revenueCatAppUserId };
 
-/**
- * RevenueCat entitlement identifier. MUST match the dashboard entitlement and
- * whatever the backend webhook (`reconcile_revenuecat`) treats as premium.
- */
-export const PREMIUM_ENTITLEMENT_ID =
-  process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? 'Sao Miguel Hub Premium';
+/** RevenueCat offering identifier for the tourist 7-day pass paywall (empty until dashboard offering exists). */
+export function getTouristOfferingId(): string {
+  return (process.env.EXPO_PUBLIC_REVENUECAT_TOURIST_OFFERING_ID ?? '').trim();
+}
+
+export { getTouristPassProductDurations } from '@/features/premium/lib/tourist-pass-expiry';
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
 const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
@@ -151,7 +152,8 @@ export async function isIdentityBound(user: Pick<AuthUser, 'id'>): Promise<boole
 
 /** Whether the customer holds the premium entitlement right now. */
 export function hasPremiumEntitlement(info: CustomerInfo): boolean {
-  return Boolean(info.entitlements.active[PREMIUM_ENTITLEMENT_ID]);
+  const manageVia = Platform.OS === 'ios' ? 'app_store' : Platform.OS === 'android' ? 'play_store' : 'none';
+  return resolvePremiumEntitlementFromCustomerInfo(info, manageVia) !== null;
 }
 
 /** Register a listener for entitlement changes pushed by the SDK (renewals, expiries). */

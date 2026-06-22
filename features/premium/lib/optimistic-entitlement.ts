@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import type { CustomerInfo } from 'react-native-purchases';
 
-import { PREMIUM_ENTITLEMENT_ID } from '@/lib/revenuecat';
+import { resolvePremiumEntitlementFromCustomerInfo } from '@/features/premium/lib/resolve-premium-entitlement';
 import type { Entitlement, ManageVia } from '@/lib/types';
 
 function manageViaForPlatform(): ManageVia {
@@ -21,16 +21,7 @@ function manageViaForPlatform(): ManageVia {
  * so callers never optimistically *downgrade* — only the backend does that.
  */
 export function optimisticEntitlementFromCustomerInfo(info: CustomerInfo): Entitlement | null {
-  const active = info.entitlements.active[PREMIUM_ENTITLEMENT_ID];
-  if (!active) {
-    return null;
-  }
-  return {
-    tier: 'premium',
-    source: 'revenuecat',
-    status: active.willRenew ? 'active' : 'cancelled',
-    currentPeriodEnd: active.expirationDate ?? null,
-    features: [],
-    manageVia: manageViaForPlatform(),
-  };
+  return resolvePremiumEntitlementFromCustomerInfo(info, manageViaForPlatform());
 }
+
+export { resolvePremiumEntitlementFromCustomerInfo } from '@/features/premium/lib/resolve-premium-entitlement';

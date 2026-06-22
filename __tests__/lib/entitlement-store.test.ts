@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   OPTIMISTIC_GRACE_MS,
+  isEntitlementPremiumActive,
   selectEntitlement,
   selectIsPremium,
   shouldApplyBackendEntitlement,
@@ -49,6 +50,34 @@ describe('entitlement store', () => {
       selectIsPremium({ backendEntitlement: freeBackend, storeEntitlement: premiumStore }),
       true,
     );
+  });
+
+  it('selectIsPremium is false when store premium currentPeriodEnd is past', () => {
+    const expiredStore: Entitlement = {
+      ...premiumStore,
+      currentPeriodEnd: '2020-01-01T00:00:00.000Z',
+    };
+    const now = new Date('2026-01-01T00:00:00.000Z').getTime();
+    assert.equal(
+      selectIsPremium({ backendEntitlement: null, storeEntitlement: expiredStore }, now),
+      false,
+    );
+  });
+
+  it('selectIsPremium is true when store premium currentPeriodEnd is future', () => {
+    const now = new Date('2026-01-01T00:00:00.000Z').getTime();
+    const activeStore: Entitlement = {
+      ...premiumStore,
+      currentPeriodEnd: '2026-06-01T00:00:00.000Z',
+    };
+    assert.equal(
+      selectIsPremium({ backendEntitlement: null, storeEntitlement: activeStore }, now),
+      true,
+    );
+  });
+
+  it('isEntitlementPremiumActive treats null currentPeriodEnd as lifetime premium', () => {
+    assert.equal(isEntitlementPremiumActive(premiumStore), true);
   });
 
   it('selectEntitlement prefers backend when both are premium', () => {

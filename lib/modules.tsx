@@ -1,6 +1,7 @@
 import type { Href } from 'expo-router';
 import {
   Activity,
+  Ban,
   Bus,
   BusFront,
   CircleUser,
@@ -131,7 +132,7 @@ export function getEnabledHubModules(
 export type SidebarSectionId = 'hub' | 'modules' | 'app';
 
 /** Sidebar rows that run app logic instead of `router.push(route)`. */
-export type SidebarNavAction = 'premium';
+export type SidebarNavAction = 'premium' | 'remove_ads';
 
 export type SidebarNavItem = {
   key: string;
@@ -181,6 +182,15 @@ const appNavItems: SidebarNavItem[] = [
     accent: PREMIUM_ACCENT,
     section: 'app',
     action: 'premium',
+  },
+  {
+    key: 'remove_ads',
+    route: '/settings',
+    labelKey: 'sidebarRemoveAllAds',
+    Icon: Ban,
+    accent: PREMIUM_ACCENT,
+    section: 'app',
+    action: 'remove_ads',
   },
   {
     key: 'settings',

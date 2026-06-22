@@ -57,20 +57,47 @@ function isPremiumEntitlement(entitlement: Entitlement | null | undefined): bool
   return entitlement?.tier === 'premium';
 }
 
+/** Whether a premium entitlement is still active at `now` (wall-clock expiry for passes). */
+export function isEntitlementPremiumActive(
+  entitlement: Entitlement | null | undefined,
+  now = Date.now(),
+): boolean {
+  if (!isPremiumEntitlement(entitlement)) {
+    return false;
+  }
+  if (entitlement!.currentPeriodEnd == null) {
+    return true;
+  }
+  return new Date(entitlement!.currentPeriodEnd).getTime() > now;
+}
+
+function isActivePremiumSource(entitlement: Entitlement | null | undefined, now = Date.now()): boolean {
+  return isEntitlementPremiumActive(entitlement, now);
+}
+
 /** Merged entitlement for display — backend preferred when both are premium. */
-export function selectEntitlement(state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>): Entitlement | null {
+export function selectEntitlement(
+  state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>,
+  now = Date.now(),
+): Entitlement | null {
   const { backendEntitlement, storeEntitlement } = state;
-  if (isPremiumEntitlement(backendEntitlement)) {
+  if (isActivePremiumSource(backendEntitlement, now)) {
     return backendEntitlement;
   }
-  if (isPremiumEntitlement(storeEntitlement)) {
+  if (isActivePremiumSource(storeEntitlement, now)) {
     return storeEntitlement;
   }
   return backendEntitlement ?? storeEntitlement;
 }
 
-export function selectIsPremium(state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>): boolean {
-  return isPremiumEntitlement(state.backendEntitlement) || isPremiumEntitlement(state.storeEntitlement);
+export function selectIsPremium(
+  state: Pick<EntitlementState, 'backendEntitlement' | 'storeEntitlement'>,
+  now = Date.now(),
+): boolean {
+  return (
+    isActivePremiumSource(state.backendEntitlement, now) ||
+    isActivePremiumSource(state.storeEntitlement, now)
+  );
 }
 
 export function shouldApplyBackendEntitlement(
