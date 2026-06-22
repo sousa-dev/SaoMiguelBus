@@ -17,7 +17,11 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton } from '@/components/ui/IconButton';
+import { Badge } from '@/components/ui/Badge';
 import { resolveEnabledModules } from '@/config/island';
+import { AdFreeRewardModal } from '@/features/ads/components/AdFreeRewardModal';
+import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
+import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { usePremium } from '@/lib/premium-store';
@@ -30,6 +34,10 @@ import { primaryTint, useAppTheme } from '@/lib/theme';
 
 const PANEL_MAX_WIDTH = 360;
 const ANIM_MS = 220;
+
+function formatRemainingMinutes(remainingMs: number): number {
+  return Math.max(1, Math.ceil(remainingMs / 60_000));
+}
 
 function panelWidth(): number {
   return Math.min(Dimensions.get('window').width * 0.82, PANEL_MAX_WIDTH);
@@ -51,6 +59,16 @@ export function AppSidebar() {
   const enabledSet = useMemo(() => new Set(enabledKeys), [enabledKeys]);
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
+  const { isAdFreeActive, remainingMs } = useAdFreeWindow();
+  const {
+    modalVisible,
+    openModal,
+    closeModal,
+    startRewardFlow,
+    onGetPremium,
+    isRewardOfferAvailable,
+    isLoading,
+  } = useRewardedAdFree('sidebar');
 
   const width = panelWidth();
   const [mounted, setMounted] = useState(open);
@@ -122,6 +140,13 @@ export function AppSidebar() {
       return;
     }
     if (item.action === 'remove_ads') {
+      if (isRewardOfferAvailable) {
+        openModal();
+        return;
+      }
+      if (isAdFreeActive) {
+        return;
+      }
       void openPaywall('sidebar_remove_ads');
       return;
     }
@@ -197,13 +222,27 @@ export function AppSidebar() {
                   item.moduleKey != null && !enabledSet.has(item.moduleKey);
                 const accent = item.accent ?? theme.primary;
                 const { Icon } = item;
+                const removeAdsAdFreeBadge =
+                  item.key === 'remove_ads' && isAdFreeActive
+                    ? t('adsAdFreeStatusRemaining', {
+                        minutes: formatRemainingMinutes(remainingMs),
+                      })
+                    : null;
+                const removeAdsFreeBadge =
+                  item.key === 'remove_ads' && !isAdFreeActive && isRewardOfferAvailable
+                    ? t('adsAdFreeSidebarBadge')
+                    : null;
+                const rowBadgeLabel = removeAdsAdFreeBadge ?? removeAdsFreeBadge;
+                const accessibilityLabel = rowBadgeLabel
+                  ? `${t(labelKey)}, ${rowBadgeLabel}`
+                  : t(labelKey);
 
                 return (
                   <Pressable
                     key={item.key}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
-                    accessibilityLabel={t(labelKey)}
+                    accessibilityLabel={accessibilityLabel}
                     onPress={() => onNavigate(item)}
                     style={({ pressed }) => [
                       styles.row,
@@ -231,7 +270,9 @@ export function AppSidebar() {
                     >
                       {t(labelKey)}
                     </Text>
-                    {disabledHint ? (
+                    {rowBadgeLabel ? (
+                      <Badge label={rowBadgeLabel} tone="accent" />
+                    ) : disabledHint ? (
                       <View
                         style={[styles.offDot, { backgroundColor: theme.muted }]}
                         accessibilityElementsHidden
@@ -244,6 +285,20 @@ export function AppSidebar() {
           ))}
         </ScrollView>
       </Animated.View>
+
+      {!isPremium ? (
+        <AdFreeRewardModal
+          visible={modalVisible}
+          canWatchVideo={isRewardOfferAvailable}
+          isLoading={isLoading}
+          showGetPremium
+          onDismiss={closeModal}
+          onWatchVideo={() => {
+            void startRewardFlow();
+          }}
+          onGetPremium={onGetPremium}
+        />
+      ) : null}
     </View>
   );
 }

@@ -34,7 +34,7 @@ export function PremiumHeaderButton() {
     onGetPremium,
     isRewardOfferAvailable,
     isLoading,
-  } = useRewardedAdFree();
+  } = useRewardedAdFree('header');
 
   useEffect(() => {
     if (!isPremium && !isAdFreeActive && isRewardOfferAvailable) {

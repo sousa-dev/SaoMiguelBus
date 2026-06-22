@@ -19,7 +19,9 @@ import { canInitAdMobForUser } from '@/lib/consent-store';
 import { useNetwork } from '@/lib/network-provider';
 import { usePremium } from '@/lib/premium-store';
 
-export function useRewardedAdFree() {
+export type RewardedAdFreeSource = 'header' | 'sidebar';
+
+export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
   const isPremium = usePremium();
   const { grantFromReward } = useAdFreeWindow();
   const { isOnline } = useNetwork();
@@ -72,9 +74,9 @@ export function useRewardedAdFree() {
     if (isPremium || !rewardOfferAvailable) {
       return;
     }
-    track('ads', 'reward_modal_open', { source: 'header' });
+    track('ads', 'reward_modal_open', { source });
     setModalVisible(true);
-  }, [isPremium, rewardOfferAvailable]);
+  }, [isPremium, rewardOfferAvailable, source]);
 
   const closeModal = useCallback(() => {
     setModalVisible(false);
