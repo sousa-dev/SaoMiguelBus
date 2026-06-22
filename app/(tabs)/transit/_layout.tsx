@@ -23,12 +23,20 @@ export default function TransitLayout() {
           headerTitle: '',
           headerLeft: () => <SidebarHeaderButton />,
           headerRight: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: space.xs,
+                flexShrink: 1,
+              }}
+            >
               <ProfileHeaderButton />
               <SettingsHeaderButton />
               <PremiumHeaderButton />
             </View>
           ),
+          headerRightContainerStyle: { paddingRight: space.sm, maxWidth: '70%' },
         }}
       />
       <Stack.Screen

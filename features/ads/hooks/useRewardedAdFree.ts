@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdAvailability } from '@/features/ads/hooks/useRewardedAdAvailability';
@@ -7,33 +7,54 @@ import {
   preloadRewardedAd,
   showRewardedAd,
 } from '@/features/ads/lib/admob-runtime';
+import {
+  type RewardedAdFreeSource,
+  useRewardedAdStore,
+} from '@/features/ads/lib/rewarded-ad-store';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
 import { usePremium } from '@/lib/premium-store';
 
-export type RewardedAdFreeSource = 'header' | 'sidebar';
+export type { RewardedAdFreeSource };
 
-/** Modal + reward flow for a surface; availability is shared via {@link useRewardedAdAvailability}. */
-export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
+export function useRewardedAdFree(source: RewardedAdFreeSource) {
   const isPremium = usePremium();
-  const { grantFromReward } = useAdFreeWindow();
-  const { openPaywall } = usePaywall();
   const isRewardOfferAvailable = useRewardedAdAvailability();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const openRewardModal = useRewardedAdStore((s) => s.openRewardModal);
+  const modalSource = useRewardedAdStore((s) => s.modalSource);
+  const isLoading = useRewardedAdStore((s) => s.isRewardLoading);
 
   const openModal = useCallback(() => {
     if (isPremium || !isRewardOfferAvailable) {
       return;
     }
     track('ads', 'reward_modal_open', { source });
-    setModalVisible(true);
-  }, [isPremium, isRewardOfferAvailable, source]);
+    openRewardModal(source);
+  }, [isPremium, isRewardOfferAvailable, openRewardModal, source]);
+
+  return {
+    openModal,
+    isRewardOfferAvailable,
+    isLoading,
+    isPremium,
+    modalVisible: modalSource !== null,
+  };
+}
+
+/** Shared modal actions — mount {@link AdFreeRewardModalHost} once at app root. */
+export function useRewardedAdModalActions() {
+  const isPremium = usePremium();
+  const { grantFromReward } = useAdFreeWindow();
+  const { openPaywall } = usePaywall();
+  const isRewardOfferAvailable = useRewardedAdAvailability();
+  const closeRewardModal = useRewardedAdStore((s) => s.closeRewardModal);
+  const setRewardLoading = useRewardedAdStore((s) => s.setRewardLoading);
+  const isLoading = useRewardedAdStore((s) => s.isRewardLoading);
+  const modalSource = useRewardedAdStore((s) => s.modalSource);
 
   const closeModal = useCallback(() => {
-    setModalVisible(false);
-    setIsLoading(false);
-  }, []);
+    closeRewardModal();
+  }, [closeRewardModal]);
 
   const onGetPremium = useCallback(() => {
     track('ads', 'reward_modal_premium', { source: 'ad_free_modal' });
@@ -47,7 +68,7 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
     }
 
     track('ads', 'reward_modal_watch', { source: 'ad_free_modal' });
-    setIsLoading(true);
+    setRewardLoading(true);
 
     if (!isRewardedAdLoaded()) {
       preloadRewardedAd();
@@ -55,13 +76,13 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
     }
 
     if (!isRewardedAdLoaded()) {
-      setIsLoading(false);
+      setRewardLoading(false);
       return;
     }
 
     track('ads', 'reward_ad_show', { source: 'ad_free_modal' });
     const result = await showRewardedAd();
-    setIsLoading(false);
+    setRewardLoading(false);
 
     if (result === 'earned') {
       track('ads', 'reward_ad_earned', { source: 'ad_free_modal' });
@@ -74,11 +95,17 @@ export function useRewardedAdFree(source: RewardedAdFreeSource = 'header') {
     if (result === 'dismissed') {
       track('ads', 'reward_ad_dismissed', { source: 'ad_free_modal' });
     }
-  }, [closeModal, grantFromReward, isLoading, isPremium, isRewardOfferAvailable]);
+  }, [
+    closeModal,
+    grantFromReward,
+    isLoading,
+    isPremium,
+    isRewardOfferAvailable,
+    setRewardLoading,
+  ]);
 
   return {
-    modalVisible,
-    openModal,
+    modalVisible: modalSource !== null,
     closeModal,
     startRewardFlow,
     onGetPremium,

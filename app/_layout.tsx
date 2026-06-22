@@ -20,6 +20,7 @@ import { SaveSubscriptionPrompt } from '@/features/premium/components/SaveSubscr
 import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
 import { useRewardedAdBootstrap } from '@/features/ads/hooks/useRewardedAdBootstrap';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
+import { AdFreeRewardModalHost } from '@/features/ads/components/AdFreeRewardModalHost';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
@@ -149,6 +150,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <GlobalOfflineBanner />
           <PremiumOfflinePrompt />
           <SaveSubscriptionPrompt />
+          <AdFreeRewardModalHost />
         </ConsentGate>
         <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
       </ThemeProvider>

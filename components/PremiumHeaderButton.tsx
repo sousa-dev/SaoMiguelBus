@@ -5,7 +5,6 @@ import React, { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { AdFreeRewardModal } from '@/features/ads/components/AdFreeRewardModal';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
@@ -19,6 +18,7 @@ function formatRemainingMinutes(remainingMs: number): number {
   return Math.max(1, Math.ceil(remainingMs / 60_000));
 }
 
+/** Header pill only — modal lives in {@link AdFreeRewardModalHost}. */
 export function PremiumHeaderButton() {
   const { t } = useTranslation();
   const theme = useAppTheme();
@@ -26,15 +26,7 @@ export function PremiumHeaderButton() {
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
-  const {
-    modalVisible,
-    openModal,
-    closeModal,
-    startRewardFlow,
-    onGetPremium,
-    isRewardOfferAvailable,
-    isLoading,
-  } = useRewardedAdFree('header');
+  const { openModal, isRewardOfferAvailable } = useRewardedAdFree('header');
 
   useEffect(() => {
     if (!isPremium && !isAdFreeActive && isRewardOfferAvailable) {
@@ -87,50 +79,34 @@ export function PremiumHeaderButton() {
     const textColor = iconColor;
 
     return (
-      <>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          disabled={!isRewardOfferAvailable}
-          onPress={() => {
-            if (!isRewardOfferAvailable) {
-              return;
-            }
-            if (Platform.OS !== 'web') {
-              void Haptics.selectionAsync();
-            }
-            openModal();
-          }}
-          style={({ pressed }) => [
-            styles.pill,
-            styles.pillUpsell,
-            {
-              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
-              borderColor: theme.accent,
-              opacity: pressed && isRewardOfferAvailable ? 0.88 : 1,
-            },
-          ]}
-        >
-          <Clock size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-            {label}
-          </Text>
-        </Pressable>
-
-        {isRewardOfferAvailable ? (
-          <AdFreeRewardModal
-            visible={modalVisible}
-            canWatchVideo
-            isLoading={isLoading}
-            showGetPremium
-            onDismiss={closeModal}
-            onWatchVideo={() => {
-              void startRewardFlow();
-            }}
-            onGetPremium={onGetPremium}
-          />
-        ) : null}
-      </>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        disabled={!isRewardOfferAvailable}
+        onPress={() => {
+          if (!isRewardOfferAvailable) {
+            return;
+          }
+          if (Platform.OS !== 'web') {
+            void Haptics.selectionAsync();
+          }
+          openModal();
+        }}
+        style={({ pressed }) => [
+          styles.pill,
+          styles.pillUpsell,
+          {
+            backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+            borderColor: theme.accent,
+            opacity: pressed && isRewardOfferAvailable ? 0.88 : 1,
+          },
+        ]}
+      >
+        <Clock size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </Pressable>
     );
   }
 
@@ -140,44 +116,30 @@ export function PremiumHeaderButton() {
     const textColor = iconColor;
 
     return (
-      <>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          onPress={() => {
-            if (Platform.OS !== 'web') {
-              void Haptics.selectionAsync();
-            }
-            openModal();
-          }}
-          style={({ pressed }) => [
-            styles.pill,
-            styles.pillUpsell,
-            {
-              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
-              borderColor: theme.accent,
-              opacity: pressed ? 0.88 : 1,
-            },
-          ]}
-        >
-          <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
-          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
-            {label}
-          </Text>
-        </Pressable>
-
-        <AdFreeRewardModal
-          visible={modalVisible}
-          canWatchVideo
-          isLoading={isLoading}
-          showGetPremium
-          onDismiss={closeModal}
-          onWatchVideo={() => {
-            void startRewardFlow();
-          }}
-          onGetPremium={onGetPremium}
-        />
-      </>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={() => {
+          if (Platform.OS !== 'web') {
+            void Haptics.selectionAsync();
+          }
+          openModal();
+        }}
+        style={({ pressed }) => [
+          styles.pill,
+          styles.pillUpsell,
+          {
+            backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+            borderColor: theme.accent,
+            opacity: pressed ? 0.88 : 1,
+          },
+        ]}
+      >
+        <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </Pressable>
     );
   }
 
@@ -222,8 +184,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.full,
     marginLeft: space.xs,
+    flexShrink: 1,
+    maxWidth: 168,
   },
   pillActive: { borderWidth: StyleSheet.hairlineWidth },
   pillUpsell: { borderWidth: 1 },
-  label: { fontWeight: '700', letterSpacing: 0.3 },
+  label: { fontWeight: '700', letterSpacing: 0.3, flexShrink: 1 },
 });

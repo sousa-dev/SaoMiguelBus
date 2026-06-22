@@ -19,7 +19,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton } from '@/components/ui/IconButton';
 import { Badge } from '@/components/ui/Badge';
 import { resolveEnabledModules } from '@/config/island';
-import { AdFreeRewardModal } from '@/features/ads/components/AdFreeRewardModal';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
@@ -60,15 +59,7 @@ export function AppSidebar() {
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
-  const {
-    modalVisible,
-    openModal,
-    closeModal,
-    startRewardFlow,
-    onGetPremium,
-    isRewardOfferAvailable,
-    isLoading,
-  } = useRewardedAdFree('sidebar');
+  const { openModal, isRewardOfferAvailable } = useRewardedAdFree('sidebar');
 
   const width = panelWidth();
   const [mounted, setMounted] = useState(open);
@@ -153,7 +144,7 @@ export function AppSidebar() {
     router.push(item.route);
   };
 
-  if (!mounted && !modalVisible) {
+  if (!mounted) {
     return null;
   }
 
@@ -288,20 +279,6 @@ export function AppSidebar() {
             </ScrollView>
           </Animated.View>
         </View>
-      ) : null}
-
-      {!isPremium && modalVisible ? (
-        <AdFreeRewardModal
-          visible={modalVisible}
-          canWatchVideo={isRewardOfferAvailable}
-          isLoading={isLoading}
-          showGetPremium
-          onDismiss={closeModal}
-          onWatchVideo={() => {
-            void startRewardFlow();
-          }}
-          onGetPremium={onGetPremium}
-        />
       ) : null}
     </>
   );
