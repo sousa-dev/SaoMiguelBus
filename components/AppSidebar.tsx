@@ -153,140 +153,144 @@ export function AppSidebar() {
     router.push(item.route);
   };
 
-  if (!mounted) {
+  if (!mounted && !modalVisible) {
     return null;
   }
 
   return (
-    <View style={styles.overlay} pointerEvents="box-none">
-      <Pressable
-        style={StyleSheet.absoluteFill}
-        accessibilityLabel={t('sidebarClose')}
-        onPress={closeSidebar}
-      >
-        <Animated.View
-          style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }, scrimStyle]}
-        />
-      </Pressable>
-
-      <Animated.View
-        style={[
-          styles.panel,
-          panelStyle,
-          elevation(3, theme.text),
-          {
-            width,
-            backgroundColor: theme.surface,
-            paddingTop: insets.top + space.md,
-            paddingBottom: insets.bottom + space.md,
-          },
-        ]}
-      >
-        <View style={styles.header}>
-          <Text style={[typography.title, { color: theme.text, flex: 1 }]}>{t('sidebarTitle')}</Text>
-          <IconButton
-            icon={X}
+    <>
+      {mounted ? (
+        <View style={styles.overlay} pointerEvents="box-none">
+          <Pressable
+            style={StyleSheet.absoluteFill}
             accessibilityLabel={t('sidebarClose')}
-            color={theme.text}
             onPress={closeSidebar}
-          />
-        </View>
+          >
+            <Animated.View
+              style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }, scrimStyle]}
+            />
+          </Pressable>
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator
-          keyboardShouldPersistTaps="handled"
-        >
-          {sidebarSections.map((section) => (
-            <View key={section.id} style={styles.section}>
-              {section.titleKey ? (
-                <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
-                  {t(section.titleKey)}
-                </Text>
-              ) : null}
-              {section.items.map((item) => {
-                const labelKey =
-                  item.key === 'premium'
-                    ? isPremium
-                      ? 'premiumHeaderButtonActive'
-                      : 'premiumGoPremium'
-                    : item.labelKey;
-                const active =
-                  item.key === 'premium' && isPremium
-                    ? isSidebarItemActive(pathname, item)
-                    : item.action
-                      ? false
-                      : isSidebarItemActive(pathname, item);
-                const disabledHint =
-                  item.moduleKey != null && !enabledSet.has(item.moduleKey);
-                const accent = item.accent ?? theme.primary;
-                const { Icon } = item;
-                const removeAdsAdFreeBadge =
-                  item.key === 'remove_ads' && isAdFreeActive
-                    ? t('adsAdFreeStatusRemaining', {
-                        minutes: formatRemainingMinutes(remainingMs),
-                      })
-                    : null;
-                const removeAdsFreeBadge =
-                  item.key === 'remove_ads' && !isAdFreeActive && isRewardOfferAvailable
-                    ? t('adsAdFreeSidebarBadge')
-                    : null;
-                const rowBadgeLabel = removeAdsAdFreeBadge ?? removeAdsFreeBadge;
-                const accessibilityLabel = rowBadgeLabel
-                  ? `${t(labelKey)}, ${rowBadgeLabel}`
-                  : t(labelKey);
-
-                return (
-                  <Pressable
-                    key={item.key}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={accessibilityLabel}
-                    onPress={() => onNavigate(item)}
-                    style={({ pressed }) => [
-                      styles.row,
-                      {
-                        backgroundColor: active ? primaryTint(theme, 0.14) : 'transparent',
-                        opacity: disabledHint ? 0.72 : pressed ? 0.88 : 1,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.iconTile,
-                        { backgroundColor: withAlpha(accent, 0.12) },
-                      ]}
-                    >
-                      <Icon color={accent} size={22} strokeWidth={2} />
-                    </View>
-                    <Text
-                      style={[
-                        typography.bodyStrong,
-                        styles.rowLabel,
-                        { color: active ? theme.primary : theme.text },
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {t(labelKey)}
-                    </Text>
-                    {rowBadgeLabel ? (
-                      <Badge label={rowBadgeLabel} tone="accent" />
-                    ) : disabledHint ? (
-                      <View
-                        style={[styles.offDot, { backgroundColor: theme.muted }]}
-                        accessibilityElementsHidden
-                      />
-                    ) : null}
-                  </Pressable>
-                );
-              })}
+          <Animated.View
+            style={[
+              styles.panel,
+              panelStyle,
+              elevation(3, theme.text),
+              {
+                width,
+                backgroundColor: theme.surface,
+                paddingTop: insets.top + space.md,
+                paddingBottom: insets.bottom + space.md,
+              },
+            ]}
+          >
+            <View style={styles.header}>
+              <Text style={[typography.title, { color: theme.text, flex: 1 }]}>{t('sidebarTitle')}</Text>
+              <IconButton
+                icon={X}
+                accessibilityLabel={t('sidebarClose')}
+                color={theme.text}
+                onPress={closeSidebar}
+              />
             </View>
-          ))}
-        </ScrollView>
-      </Animated.View>
 
-      {!isPremium ? (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator
+              keyboardShouldPersistTaps="handled"
+            >
+              {sidebarSections.map((section) => (
+                <View key={section.id} style={styles.section}>
+                  {section.titleKey ? (
+                    <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+                      {t(section.titleKey)}
+                    </Text>
+                  ) : null}
+                  {section.items.map((item) => {
+                    const labelKey =
+                      item.key === 'premium'
+                        ? isPremium
+                          ? 'premiumHeaderButtonActive'
+                          : 'premiumGoPremium'
+                        : item.labelKey;
+                    const active =
+                      item.key === 'premium' && isPremium
+                        ? isSidebarItemActive(pathname, item)
+                        : item.action
+                          ? false
+                          : isSidebarItemActive(pathname, item);
+                    const disabledHint =
+                      item.moduleKey != null && !enabledSet.has(item.moduleKey);
+                    const accent = item.accent ?? theme.primary;
+                    const { Icon } = item;
+                    const removeAdsAdFreeBadge =
+                      item.key === 'remove_ads' && isAdFreeActive
+                        ? t('adsAdFreeStatusRemaining', {
+                            minutes: formatRemainingMinutes(remainingMs),
+                          })
+                        : null;
+                    const removeAdsFreeBadge =
+                      item.key === 'remove_ads' && !isAdFreeActive && isRewardOfferAvailable
+                        ? t('adsAdFreeSidebarBadge')
+                        : null;
+                    const rowBadgeLabel = removeAdsAdFreeBadge ?? removeAdsFreeBadge;
+                    const accessibilityLabel = rowBadgeLabel
+                      ? `${t(labelKey)}, ${rowBadgeLabel}`
+                      : t(labelKey);
+
+                    return (
+                      <Pressable
+                        key={item.key}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        accessibilityLabel={accessibilityLabel}
+                        onPress={() => onNavigate(item)}
+                        style={({ pressed }) => [
+                          styles.row,
+                          {
+                            backgroundColor: active ? primaryTint(theme, 0.14) : 'transparent',
+                            opacity: disabledHint ? 0.72 : pressed ? 0.88 : 1,
+                          },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.iconTile,
+                            { backgroundColor: withAlpha(accent, 0.12) },
+                          ]}
+                        >
+                          <Icon color={accent} size={22} strokeWidth={2} />
+                        </View>
+                        <Text
+                          style={[
+                            typography.bodyStrong,
+                            styles.rowLabel,
+                            { color: active ? theme.primary : theme.text },
+                          ]}
+                          numberOfLines={2}
+                        >
+                          {t(labelKey)}
+                        </Text>
+                        {rowBadgeLabel ? (
+                          <Badge label={rowBadgeLabel} tone="accent" />
+                        ) : disabledHint ? (
+                          <View
+                            style={[styles.offDot, { backgroundColor: theme.muted }]}
+                            accessibilityElementsHidden
+                          />
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        </View>
+      ) : null}
+
+      {!isPremium && modalVisible ? (
         <AdFreeRewardModal
           visible={modalVisible}
           canWatchVideo={isRewardOfferAvailable}
@@ -299,7 +303,7 @@ export function AppSidebar() {
           onGetPremium={onGetPremium}
         />
       ) : null}
-    </View>
+    </>
   );
 }
 
