@@ -39,7 +39,13 @@ export function CategoryPickerSheet({
               accessibilityLabel={category.name}
               style={[styles.chip, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
             >
-              <Icon size={32} color={theme.primary} strokeWidth={2} />
+              <Icon size={28} color={theme.primary} strokeWidth={2} />
+              <Text
+                style={[typography.caption, styles.label, { color: theme.text }]}
+                numberOfLines={2}
+              >
+                {category.name}
+              </Text>
             </Pressable>
           );
         })}
@@ -57,10 +63,16 @@ const styles = StyleSheet.create({
   },
   chip: {
     width: '31%',
-    aspectRatio: 1.2,
+    minHeight: 96,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.xs,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  label: {
+    marginTop: space.xs,
+    textAlign: 'center',
   },
 });
