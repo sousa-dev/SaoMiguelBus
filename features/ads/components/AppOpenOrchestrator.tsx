@@ -59,7 +59,7 @@ async function waitForAppOpenLoaded(timeoutMs: number): Promise<boolean> {
 }
 
 export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
-  const { showAds } = useAdFreeWindow();
+  const { showAds, hydrated, isAdFreeActive } = useAdFreeWindow();
   const isPremium = usePremium();
   const consentDecided = useConsentStore((s) => s.decided);
   const segments = useSegments();
@@ -99,6 +99,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       const decision = evaluateInternalAppOpenPolicy(
         {
           isPremium,
+          isAdFreeActive,
           consentDecided,
           onConsentScreen,
           isInternalFullscreenVisible: isInternalFullscreenAdVisible() || showInternal,
@@ -148,6 +149,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       canShowAds,
       consentDecided,
       enabledModuleKeys,
+      isAdFreeActive,
       isPremium,
       onConsentScreen,
       onSplashDismiss,
@@ -187,6 +189,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
             const decision = evaluateAppOpenPolicy(
               {
                 isPremium,
+                isAdFreeActive,
                 canRequestAds: isAdMobCanRequestAds(),
                 consentDecided,
                 onConsentScreen,
@@ -225,6 +228,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       attemptInternalAppOpen,
       canShowAds,
       consentDecided,
+      isAdFreeActive,
       isPremium,
       onConsentScreen,
       onSplashDismiss,
@@ -233,6 +237,10 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
   useEffect(() => {
     if (!appReady || coldStartDoneRef.current) {
+      return;
+    }
+
+    if (!hydrated) {
       return;
     }
 
@@ -254,7 +262,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
     coldStartDoneRef.current = true;
     void attemptShow('cold_start', true);
-  }, [appReady, attemptShow, canShowAds, consentDecided, onConsentScreen, onSplashDismiss]);
+  }, [appReady, attemptShow, canShowAds, consentDecided, hydrated, onConsentScreen, onSplashDismiss]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -265,6 +273,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         prevState.match(/inactive|background/) &&
         nextState === 'active' &&
         appReady &&
+        hydrated &&
         consentDecided &&
         !onConsentScreen
       ) {
@@ -275,7 +284,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
     return () => {
       subscription.remove();
     };
-  }, [appReady, attemptShow, consentDecided, onConsentScreen]);
+  }, [appReady, attemptShow, consentDecided, hydrated, onConsentScreen]);
 
   useEffect(() => {
     return onAppOpenClosed(() => {

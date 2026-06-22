@@ -5,6 +5,7 @@ export type AppOpenTrigger = 'cold_start' | 'foreground';
 
 export type AppOpenPolicyContext = {
   isPremium: boolean;
+  isAdFreeActive: boolean;
   canRequestAds: boolean;
   consentDecided: boolean;
   onConsentScreen: boolean;
@@ -24,6 +25,7 @@ export type AppOpenPolicyDecision = {
 
 export type InternalAppOpenPolicyContext = {
   isPremium: boolean;
+  isAdFreeActive: boolean;
   consentDecided: boolean;
   onConsentScreen: boolean;
   isInternalFullscreenVisible: boolean;
@@ -38,6 +40,9 @@ export function evaluateInternalAppOpenPolicy(
 ): AppOpenPolicyDecision {
   if (context.isPremium) {
     return { show: false, reason: 'premium' };
+  }
+  if (context.isAdFreeActive) {
+    return { show: false, reason: 'ad_free_reward' };
   }
   if (!context.consentDecided) {
     return { show: false, reason: 'consent_undecided' };
@@ -68,6 +73,9 @@ export function evaluateAppOpenPolicy(
 ): AppOpenPolicyDecision {
   if (context.isPremium) {
     return { show: false, reason: 'premium' };
+  }
+  if (context.isAdFreeActive) {
+    return { show: false, reason: 'ad_free_reward' };
   }
   if (!context.consentDecided) {
     return { show: false, reason: 'consent_undecided' };

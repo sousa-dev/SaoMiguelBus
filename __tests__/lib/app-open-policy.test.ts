@@ -12,6 +12,7 @@ const now = 1_000_000;
 function baseContext(overrides: Partial<AppOpenPolicyContext> = {}): AppOpenPolicyContext {
   return {
     isPremium: false,
+    isAdFreeActive: false,
     canRequestAds: true,
     consentDecided: true,
     onConsentScreen: false,
@@ -31,6 +32,12 @@ describe('evaluateAppOpenPolicy', () => {
     const decision = evaluateAppOpenPolicy(baseContext({ isPremium: true }), now);
     assert.equal(decision.show, false);
     assert.equal(decision.reason, 'premium');
+  });
+
+  it('blocks during rewarded ad-free window', () => {
+    const decision = evaluateAppOpenPolicy(baseContext({ isAdFreeActive: true }), now);
+    assert.equal(decision.show, false);
+    assert.equal(decision.reason, 'ad_free_reward');
   });
 
   it('blocks when UMP denies ad requests', () => {

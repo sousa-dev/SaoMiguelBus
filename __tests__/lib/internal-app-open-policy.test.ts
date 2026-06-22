@@ -14,6 +14,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
     const decision = evaluateInternalAppOpenPolicy(
       {
         isPremium: false,
+        isAdFreeActive: false,
         consentDecided: true,
         onConsentScreen: false,
         isInternalFullscreenVisible: false,
@@ -30,6 +31,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
     const decision = evaluateInternalAppOpenPolicy(
       {
         isPremium: false,
+        isAdFreeActive: false,
         consentDecided: true,
         onConsentScreen: false,
         isInternalFullscreenVisible: false,
@@ -47,6 +49,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
     const decision = evaluateInternalAppOpenPolicy(
       {
         isPremium: true,
+        isAdFreeActive: false,
         consentDecided: true,
         onConsentScreen: false,
         isInternalFullscreenVisible: false,
@@ -59,6 +62,23 @@ describe('evaluateInternalAppOpenPolicy', () => {
     assert.equal(decision.show, false);
     assert.equal(decision.reason, 'premium');
   });
+  it('blocks during rewarded ad-free window', () => {
+    const decision = evaluateInternalAppOpenPolicy(
+      {
+        isPremium: false,
+        isAdFreeActive: true,
+        consentDecided: true,
+        onConsentScreen: false,
+        isInternalFullscreenVisible: false,
+        isInterstitialShowing: false,
+        isFirstPartyInterstitialVisible: false,
+        lastFullScreenAdAt: null,
+      },
+      now,
+    );
+    assert.equal(decision.show, false);
+    assert.equal(decision.reason, 'ad_free_reward');
+  });
 });
 
 describe('evaluateAppOpenPolicy regression', () => {
@@ -66,6 +86,7 @@ describe('evaluateAppOpenPolicy regression', () => {
     const decision = evaluateAppOpenPolicy(
       {
         isPremium: false,
+        isAdFreeActive: false,
         canRequestAds: true,
         consentDecided: true,
         onConsentScreen: false,
