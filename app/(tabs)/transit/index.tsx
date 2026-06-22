@@ -15,6 +15,7 @@ import { InterstitialOrchestrator } from '@/features/ads/components/Interstitial
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
 import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
 import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
+import { MinibusTransitLink } from '@/features/transit/components/MinibusTransitLink';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
