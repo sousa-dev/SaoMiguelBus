@@ -260,7 +260,7 @@ export function AppSidebar() {
                         </Text>
                         {rowBadgeLabel ? (
                           <View style={styles.rowBadge}>
-                            <Badge label={rowBadgeLabel} tone="accent" />
+                            <Badge label={rowBadgeLabel} tone="accent" size="compact" />
                           </View>
                         ) : disabledHint ? (
                           <View
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
+    gap: space.sm,
     paddingVertical: space.sm,
     paddingHorizontal: space.md,
     borderRadius: radius.md,
