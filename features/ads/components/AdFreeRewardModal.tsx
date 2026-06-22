@@ -1,13 +1,16 @@
-import { PlayCircle, Sparkles } from 'lucide-react-native';
+import { Clock, PlayCircle, Sparkles } from 'lucide-react-native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { RewardModalMode } from '@/features/ads/lib/rewarded-ad-store';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   visible: boolean;
+  mode: RewardModalMode;
+  remainingMinutes: number;
   canWatchVideo: boolean;
   isLoading: boolean;
   showGetPremium: boolean;
@@ -18,6 +21,8 @@ type Props = {
 
 export function AdFreeRewardModal({
   visible,
+  mode,
+  remainingMinutes,
   canWatchVideo,
   isLoading,
   showGetPremium,
@@ -27,6 +32,14 @@ export function AdFreeRewardModal({
 }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const isStatusMode = mode === 'status';
+  const Icon = isStatusMode ? Clock : Sparkles;
+  const title = isStatusMode
+    ? t('adsAdFreeStatusModalTitle')
+    : t('adsAdFreeModalTitle');
+  const body = isStatusMode
+    ? t('adsAdFreeStatusModalBody', { minutes: remainingMinutes })
+    : t('adsAdFreeModalBody');
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
@@ -42,12 +55,12 @@ export function AdFreeRewardModal({
           </Pressable>
 
           <View style={styles.iconRow}>
-            <Sparkles size={22} color={theme.primary} strokeWidth={2.5} />
-            <Text style={[styles.title, { color: theme.text }]}>{t('adsAdFreeModalTitle')}</Text>
+            <Icon size={22} color={theme.primary} strokeWidth={2.5} />
+            <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
           </View>
-          <Text style={[styles.body, { color: theme.muted }]}>{t('adsAdFreeModalBody')}</Text>
+          <Text style={[styles.body, { color: theme.muted }]}>{body}</Text>
 
-          {canWatchVideo ? (
+          {!isStatusMode && canWatchVideo ? (
             <Pressable
               onPress={onWatchVideo}
               disabled={isLoading}
@@ -69,19 +82,31 @@ export function AdFreeRewardModal({
                 </View>
               )}
             </Pressable>
-          ) : (
+          ) : null}
+
+          {!isStatusMode && !canWatchVideo ? (
             <Text style={[styles.unavailable, { color: theme.muted }]}>
               {t('adsAdFreeRewardUnavailable')}
             </Text>
-          )}
+          ) : null}
 
           {showGetPremium ? (
             <Pressable
               onPress={onGetPremium}
-              style={[styles.premiumBtn, { borderColor: theme.border }]}
+              style={[
+                isStatusMode ? styles.primaryBtn : styles.premiumBtn,
+                isStatusMode
+                  ? { backgroundColor: theme.primary }
+                  : { borderColor: theme.border },
+              ]}
               accessibilityRole="button"
             >
-              <Text style={[styles.premiumBtnText, { color: theme.text }]}>
+              <Text
+                style={[
+                  isStatusMode ? styles.primaryBtnText : styles.premiumBtnText,
+                  { color: isStatusMode ? theme.onPrimary : theme.text },
+                ]}
+              >
                 {t('adsAdFreeModalRemoveAdsPermanently')}
               </Text>
             </Pressable>

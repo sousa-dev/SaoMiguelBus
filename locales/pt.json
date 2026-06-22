@@ -442,6 +442,8 @@
     "adsAdFreeModalDismissButton": "Agora não",
     "adsAdFreeModalRemoveAdsPermanently": "Remover anúncios definitivamente",
     "adsAdFreeStatusRemaining": "{{minutes}}m restantes",
+    "adsAdFreeStatusModalTitle": "Tempo sem anúncios",
+    "adsAdFreeStatusModalBody": "Ainda tem {{minutes}} minutos sem anúncios neste dispositivo.",
     "adsAdFreeRewardUnavailable": "Os vídeos de recompensa não estão disponíveis agora. Pode fazer upgrade para Premium.",
     "alreadySubscribed": "Já tenho uma subscrição ativada",
     "premiumTerms": "Ao subscrever, concorda com os nossos Termos de Serviço e Política de Privacidade.",

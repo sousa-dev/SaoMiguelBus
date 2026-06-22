@@ -59,7 +59,7 @@ export function AppSidebar() {
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
-  const { openModal, isRewardOfferAvailable } = useRewardedAdFree('sidebar');
+  const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('sidebar');
 
   const width = panelWidth();
   const [mounted, setMounted] = useState(open);
@@ -131,11 +131,12 @@ export function AppSidebar() {
       return;
     }
     if (item.action === 'remove_ads') {
-      if (isRewardOfferAvailable) {
-        openModal();
+      if (isAdFreeActive) {
+        openStatusModal();
         return;
       }
-      if (isAdFreeActive) {
+      if (isRewardOfferAvailable) {
+        openModal();
         return;
       }
       void openPaywall('sidebar_remove_ads');

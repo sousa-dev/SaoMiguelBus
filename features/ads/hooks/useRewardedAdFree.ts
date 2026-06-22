@@ -19,6 +19,7 @@ export type { RewardedAdFreeSource };
 
 export function useRewardedAdFree(source: RewardedAdFreeSource) {
   const isPremium = usePremium();
+  const { isAdFreeActive } = useAdFreeWindow();
   const isRewardOfferAvailable = useRewardedAdAvailability();
   const openRewardModal = useRewardedAdStore((s) => s.openRewardModal);
   const modalSource = useRewardedAdStore((s) => s.modalSource);
@@ -29,11 +30,20 @@ export function useRewardedAdFree(source: RewardedAdFreeSource) {
       return;
     }
     track('ads', 'reward_modal_open', { source });
-    openRewardModal(source);
+    openRewardModal(source, 'reward');
   }, [isPremium, isRewardOfferAvailable, openRewardModal, source]);
+
+  const openStatusModal = useCallback(() => {
+    if (isPremium || !isAdFreeActive) {
+      return;
+    }
+    track('ads', 'ad_free_status_modal_open', { source });
+    openRewardModal(source, 'status');
+  }, [isAdFreeActive, isPremium, openRewardModal, source]);
 
   return {
     openModal,
+    openStatusModal,
     isRewardOfferAvailable,
     isLoading,
     isPremium,
@@ -44,13 +54,14 @@ export function useRewardedAdFree(source: RewardedAdFreeSource) {
 /** Shared modal actions — mount {@link AdFreeRewardModalHost} once at app root. */
 export function useRewardedAdModalActions() {
   const isPremium = usePremium();
-  const { grantFromReward } = useAdFreeWindow();
+  const { grantFromReward, isAdFreeActive, remainingMs } = useAdFreeWindow();
   const { openPaywall } = usePaywall();
   const isRewardOfferAvailable = useRewardedAdAvailability();
   const closeRewardModal = useRewardedAdStore((s) => s.closeRewardModal);
   const setRewardLoading = useRewardedAdStore((s) => s.setRewardLoading);
   const isLoading = useRewardedAdStore((s) => s.isRewardLoading);
   const modalSource = useRewardedAdStore((s) => s.modalSource);
+  const modalMode = useRewardedAdStore((s) => s.modalMode);
 
   const closeModal = useCallback(() => {
     closeRewardModal();
@@ -106,6 +117,9 @@ export function useRewardedAdModalActions() {
 
   return {
     modalVisible: modalSource !== null,
+    modalMode,
+    remainingMs,
+    isAdFreeActive,
     closeModal,
     startRewardFlow,
     onGetPremium,

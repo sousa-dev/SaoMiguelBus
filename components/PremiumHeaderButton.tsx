@@ -26,7 +26,7 @@ export function PremiumHeaderButton() {
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
   const { isAdFreeActive, remainingMs } = useAdFreeWindow();
-  const { openModal, isRewardOfferAvailable } = useRewardedAdFree('header');
+  const { openModal, openStatusModal, isRewardOfferAvailable } = useRewardedAdFree('header');
 
   useEffect(() => {
     if (!isPremium && !isAdFreeActive && isRewardOfferAvailable) {
@@ -82,15 +82,11 @@ export function PremiumHeaderButton() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
-        disabled={!isRewardOfferAvailable}
         onPress={() => {
-          if (!isRewardOfferAvailable) {
-            return;
-          }
           if (Platform.OS !== 'web') {
             void Haptics.selectionAsync();
           }
-          openModal();
+          openStatusModal();
         }}
         style={({ pressed }) => [
           styles.pill,
@@ -98,7 +94,7 @@ export function PremiumHeaderButton() {
           {
             backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
             borderColor: theme.accent,
-            opacity: pressed && isRewardOfferAvailable ? 0.88 : 1,
+            opacity: pressed ? 0.88 : 1,
           },
         ]}
       >
