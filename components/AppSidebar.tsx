@@ -254,12 +254,14 @@ export function AppSidebar() {
                             styles.rowLabel,
                             { color: active ? theme.primary : theme.text },
                           ]}
-                          numberOfLines={2}
+                          numberOfLines={1}
                         >
                           {t(labelKey)}
                         </Text>
                         {rowBadgeLabel ? (
-                          <Badge label={rowBadgeLabel} tone="accent" />
+                          <View style={styles.rowBadge}>
+                            <Badge label={rowBadgeLabel} tone="accent" />
+                          </View>
                         ) : disabledHint ? (
                           <View
                             style={[styles.offDot, { backgroundColor: theme.muted }]}
@@ -316,7 +318,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowLabel: { flex: 1 },
+  rowLabel: { flex: 1, minWidth: 0 },
+  rowBadge: { flexShrink: 0 },
   offDot: {
     width: 6,
     height: 6,
