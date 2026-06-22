@@ -231,7 +231,7 @@ function attachRewardedListeners(ad: RewardedAdInstance): void {
   unsubscribeRewardedClosed?.();
   unsubscribeRewardedError?.();
 
-  unsubscribeRewardedLoaded = ad.addAdEventListener(mod.AdEventType.LOADED, () => {
+  unsubscribeRewardedLoaded = ad.addAdEventListener(mod.RewardedAdEventType.LOADED, () => {
     rewardedLoaded = true;
     rewardedScheduler.markLoadSucceeded();
     notifyRewardedLoadState();
