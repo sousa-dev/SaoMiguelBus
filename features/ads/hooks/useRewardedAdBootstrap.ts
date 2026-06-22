@@ -12,6 +12,7 @@ import {
 } from '@/features/ads/lib/admob-runtime';
 import { canInitAdMobForUser, useConsentStore } from '@/lib/consent-store';
 import { useNetwork } from '@/lib/network-provider';
+import { usePersonalizationStore } from '@/lib/personalization-store';
 import { usePremium } from '@/lib/premium-store';
 
 /**
@@ -19,6 +20,7 @@ import { usePremium } from '@/lib/premium-store';
  */
 export function useRewardedAdBootstrap() {
   const isPremium = usePremium();
+  const userType = usePersonalizationStore((s) => s.userType);
   const { isOnline } = useNetwork();
   const decided = useConsentStore((s) => s.decided);
   const adsConsent = useConsentStore((s) => s.purposes.ads);
@@ -30,7 +32,12 @@ export function useRewardedAdBootstrap() {
   const canInitAdMob = canInitAdMobForUser(isPremium);
   const isNativeAvailable = isAdMobNativeAvailable();
   const eligible =
-    !isPremium && isOnline && canInitAdMob && isNativeAvailable && hasRewardedUnit;
+    !isPremium &&
+    isOnline &&
+    userType !== 'tourist' &&
+    canInitAdMob &&
+    isNativeAvailable &&
+    hasRewardedUnit;
 
   useEffect(() => {
     if (!eligible) {
@@ -52,5 +59,5 @@ export function useRewardedAdBootstrap() {
     })();
 
     return unsubscribe;
-  }, [adsConsent, decided, eligible, reset, setCanRequestAds, setRewardedLoaded]);
+  }, [adsConsent, decided, eligible, reset, setCanRequestAds, setRewardedLoaded, userType]);
 }

@@ -6,6 +6,7 @@ import { isRewardOfferAvailable } from '@/features/ads/lib/reward-offer-availabi
 const base = {
   isPremium: false,
   isOnline: true,
+  userType: 'resident' as const,
   canInitAdMob: true,
   isNativeAvailable: true,
   hasRewardedUnit: true,
@@ -40,5 +41,14 @@ describe('isRewardOfferAvailable', () => {
 
   it('is false when AdMob native module is unavailable', () => {
     assert.equal(isRewardOfferAvailable({ ...base, isNativeAvailable: false }), false);
+  });
+
+  it('is false for tourist user type', () => {
+    assert.equal(isRewardOfferAvailable({ ...base, userType: 'tourist' }), false);
+  });
+
+  it('is true for resident and newcomer user types', () => {
+    assert.equal(isRewardOfferAvailable({ ...base, userType: 'resident' }), true);
+    assert.equal(isRewardOfferAvailable({ ...base, userType: 'newcomer' }), true);
   });
 });
