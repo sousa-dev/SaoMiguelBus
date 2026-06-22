@@ -62,15 +62,22 @@ function persistDecision(
 /**
  * First-party SMB banners (compat `/api/v1/ad`) are shown to every non-premium
  * user regardless of `purposes.ads`. The free tier is ad-supported by design.
+ * @deprecated Prefer `shouldShowAds()` from `@/features/ads/lib/ad-visibility`.
  */
 export function canShowFirstPartyAds(isPremium: boolean): boolean {
   return !isPremium;
 }
 
-/** Whether AdMob may initialize for a non-premium user after CMP decision. */
-export function canInitAdMob(isPremium: boolean): boolean {
+/** Whether AdMob may initialize after CMP decision and while ads should show. */
+export function canInitAdMob(shouldShowAds: boolean): boolean {
   const { decided } = useConsentStore.getState();
-  return canInitAdMobFromState(decided, isPremium);
+  return canInitAdMobFromState(decided, shouldShowAds);
+}
+
+/** Whether AdMob may load for a non-premium user (e.g. rewarded video while ad-free). */
+export function canInitAdMobForUser(isPremium: boolean): boolean {
+  const { decided } = useConsentStore.getState();
+  return canInitAdMobFromState(decided, !isPremium);
 }
 
 /** Product-layer opt-in to personalized AdMob ads (`purposes.ads`). */
@@ -85,8 +92,8 @@ export function canShowExternalAds(): boolean {
 }
 
 /** Whether AdMob SDK init is allowed (alias of `canInitAdMob`). */
-export function shouldInitAdMob(isPremium: boolean): boolean {
-  return canInitAdMob(isPremium);
+export function shouldInitAdMob(shouldShowAds: boolean): boolean {
+  return canInitAdMob(shouldShowAds);
 }
 
 export const useConsentStore = create<ConsentState>()(

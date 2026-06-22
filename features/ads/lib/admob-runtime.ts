@@ -1,5 +1,7 @@
 type ClosedListener = () => void;
 
+export type RewardedAdShowResult = 'earned' | 'dismissed' | 'unavailable';
+
 export function isAdMobInitialized(): boolean {
   return false;
 }
@@ -50,6 +52,24 @@ export function showAppOpenAd(): boolean {
 
 export function onAppOpenClosed(_listener: ClosedListener): () => void {
   return () => {};
+}
+
+export function preloadRewardedAd(): void {}
+
+export function isRewardedAdLoaded(): boolean {
+  return false;
+}
+
+export function onRewardedAdLoadStateChanged(_listener: (loaded: boolean) => void): () => void {
+  return () => {};
+}
+
+export function isRewardedShowing(): boolean {
+  return false;
+}
+
+export async function showRewardedAd(): Promise<RewardedAdShowResult> {
+  return 'unavailable';
 }
 
 export function isFullScreenAdActive(): boolean {

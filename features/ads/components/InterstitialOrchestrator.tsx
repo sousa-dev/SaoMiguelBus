@@ -29,9 +29,8 @@ import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
 import { track } from '@/lib/analytics';
 import { fetchAd } from '@/lib/api';
-import { canShowFirstPartyAds } from '@/lib/consent-store';
+import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { getAnalyticsPlatform } from '@/lib/platform';
-import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 type Props = {
@@ -42,7 +41,7 @@ type Props = {
 };
 
 export function InterstitialOrchestrator({ trigger, ready }: Props) {
-  const isPremium = usePremium();
+  const { showAds } = useAdFreeWindow();
   const { data: bootstrap } = useBootstrapCached();
   const enabledModuleKeys = useMemo(
     () => resolveEnabledModules(bootstrap?.island?.enabledModules),
@@ -90,7 +89,7 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
     if (!ready || trigger === 0 || trigger === lastTriggerRef.current) {
       return;
     }
-    if (!canShowFirstPartyAds(isPremium)) {
+    if (!showAds) {
       return;
     }
     if (runningRef.current) {
@@ -163,7 +162,7 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
         runningRef.current = false;
       }
     })();
-  }, [enabledModuleKeys, isPremium, ready, showInternalInterstitial, trigger]);
+  }, [enabledModuleKeys, ready, showAds, showInternalInterstitial, trigger]);
 
   useEffect(() => {
     return onInterstitialClosed(() => {

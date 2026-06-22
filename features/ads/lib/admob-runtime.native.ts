@@ -8,6 +8,7 @@ import {
 import {
   getAdMobAppOpenUnitId,
   getAdMobInterstitialUnitId,
+  getAdMobRewardedUnitId,
   isAdMobSupportedPlatform,
 } from '@/config/admob';
 import { logger } from '@/lib/logger';
@@ -19,6 +20,11 @@ type InterstitialAdInstance = ReturnType<
 type AppOpenAdInstance = ReturnType<
   NonNullable<ReturnType<typeof getAdMobModule>>['AppOpenAd']['createForAdRequest']
 >;
+type RewardedAdInstance = ReturnType<
+  NonNullable<ReturnType<typeof getAdMobModule>>['RewardedAd']['createForAdRequest']
+>;
+
+export type RewardedAdShowResult = 'earned' | 'dismissed' | 'unavailable';
 
 const APP_OPEN_MAX_AGE_MS = 4 * 60 * 60 * 1000;
 
@@ -42,6 +48,22 @@ let appOpenClosedListeners = new Set<ClosedListener>();
 let unsubscribeAppOpenLoaded: (() => void) | null = null;
 let unsubscribeAppOpenClosed: (() => void) | null = null;
 let unsubscribeAppOpenError: (() => void) | null = null;
+
+let rewarded: RewardedAdInstance | null = null;
+let rewardedLoaded = false;
+let rewardedShowing = false;
+let unsubscribeRewardedLoaded: (() => void) | null = null;
+let unsubscribeRewardedClosed: (() => void) | null = null;
+let unsubscribeRewardedError: (() => void) | null = null;
+
+type RewardedLoadListener = (loaded: boolean) => void;
+const rewardedLoadListeners = new Set<RewardedLoadListener>();
+
+function notifyRewardedLoadState(): void {
+  for (const listener of rewardedLoadListeners) {
+    listener(rewardedLoaded);
+  }
+}
 
 const interstitialScheduler = new AdLoadScheduler({
   onLoad: () => {
@@ -77,6 +99,25 @@ const appOpenScheduler = new AdLoadScheduler({
     appOpenLoaded = false;
     appOpenLoadTime = null;
     appOpen.load();
+  },
+});
+
+const rewardedScheduler = new AdLoadScheduler({
+  onLoad: () => {
+    if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
+      rewardedScheduler.markLoadSettled();
+      return;
+    }
+    if (!rewarded) {
+      rewarded = createRewardedAd();
+    }
+    if (!rewarded) {
+      rewardedScheduler.markLoadSettled();
+      return;
+    }
+    rewardedLoaded = false;
+    notifyRewardedLoadState();
+    rewarded.load();
   },
 });
 
@@ -180,6 +221,51 @@ function createAppOpenAd(): AppOpenAdInstance | null {
   return ad;
 }
 
+function attachRewardedListeners(ad: RewardedAdInstance): void {
+  const mod = getAdMobModule();
+  if (!mod) {
+    return;
+  }
+
+  unsubscribeRewardedLoaded?.();
+  unsubscribeRewardedClosed?.();
+  unsubscribeRewardedError?.();
+
+  unsubscribeRewardedLoaded = ad.addAdEventListener(mod.AdEventType.LOADED, () => {
+    rewardedLoaded = true;
+    rewardedScheduler.markLoadSucceeded();
+    notifyRewardedLoadState();
+  });
+
+  unsubscribeRewardedClosed = ad.addAdEventListener(mod.AdEventType.CLOSED, () => {
+    rewardedLoaded = false;
+    rewardedShowing = false;
+    notifyRewardedLoadState();
+    rewardedScheduler.requestImmediateLoad();
+  });
+
+  unsubscribeRewardedError = ad.addAdEventListener(mod.AdEventType.ERROR, (error) => {
+    rewardedLoaded = false;
+    rewardedShowing = false;
+    logger.warn('AdMob rewarded error', error);
+    rewardedScheduler.markLoadSettled();
+    rewardedScheduler.scheduleRetryAfterError();
+    notifyRewardedLoadState();
+  });
+}
+
+function createRewardedAd(): RewardedAdInstance | null {
+  const mod = getAdMobModule();
+  const unitId = getAdMobRewardedUnitId();
+  if (!mod || !unitId) {
+    return null;
+  }
+  const requestOptions = getAdMobRequestOptions();
+  const ad = mod.RewardedAd.createForAdRequest(unitId, requestOptions);
+  attachRewardedListeners(ad);
+  return ad;
+}
+
 export function isAdMobInitialized(): boolean {
   return initialized;
 }
@@ -241,6 +327,7 @@ export async function initializeAdMob(): Promise<void> {
       initialized = true;
       interstitialScheduler.requestImmediateLoad();
       appOpenScheduler.requestImmediateLoad();
+      rewardedScheduler.requestImmediateLoad();
     } catch (error) {
       logger.warn('AdMob init failed', error);
       umpCanRequestAds = false;
@@ -266,6 +353,13 @@ export function teardownAdMob(): void {
   unsubscribeAppOpenClosed = null;
   unsubscribeAppOpenError = null;
 
+  unsubscribeRewardedLoaded?.();
+  unsubscribeRewardedClosed?.();
+  unsubscribeRewardedError?.();
+  unsubscribeRewardedLoaded = null;
+  unsubscribeRewardedClosed = null;
+  unsubscribeRewardedError = null;
+
   interstitial = null;
   interstitialLoaded = false;
   interstitialShowing = false;
@@ -273,13 +367,18 @@ export function teardownAdMob(): void {
   appOpenLoaded = false;
   appOpenLoadTime = null;
   appOpenShowing = false;
+  rewarded = null;
+  rewardedLoaded = false;
+  rewardedShowing = false;
   initialized = false;
   initPromise = null;
   umpCanRequestAds = false;
   interstitialScheduler.cancel();
   appOpenScheduler.cancel();
+  rewardedScheduler.cancel();
   closedListeners.clear();
   appOpenClosedListeners.clear();
+  rewardedLoadListeners.clear();
 }
 
 export function preloadInterstitialAd(): void {
@@ -347,6 +446,69 @@ export function onAppOpenClosed(listener: ClosedListener): () => void {
   };
 }
 
+export function preloadRewardedAd(): void {
+  if (!initialized || !isAdMobSupportedPlatform() || !getAdMobModule()) {
+    return;
+  }
+  rewardedScheduler.requestImmediateLoad();
+}
+
+export function isRewardedAdLoaded(): boolean {
+  return rewardedLoaded;
+}
+
+export function onRewardedAdLoadStateChanged(listener: RewardedLoadListener): () => void {
+  rewardedLoadListeners.add(listener);
+  listener(rewardedLoaded);
+  return () => {
+    rewardedLoadListeners.delete(listener);
+  };
+}
+
+export function isRewardedShowing(): boolean {
+  return rewardedShowing;
+}
+
+export function showRewardedAd(): Promise<RewardedAdShowResult> {
+  const mod = getAdMobModule();
+  if (!mod || !rewarded || !rewardedLoaded) {
+    return Promise.resolve('unavailable');
+  }
+
+  return new Promise((resolve) => {
+    let earned = false;
+    let settled = false;
+
+    const finish = (result: RewardedAdShowResult) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      unsubEarn();
+      unsubClose();
+      resolve(result);
+    };
+
+    const unsubEarn = rewarded!.addAdEventListener(mod.RewardedAdEventType.EARNED_REWARD, () => {
+      earned = true;
+    });
+
+    const unsubClose = rewarded!.addAdEventListener(mod.AdEventType.CLOSED, () => {
+      finish(earned ? 'earned' : 'dismissed');
+    });
+
+    try {
+      rewarded!.show();
+      rewardedLoaded = false;
+      rewardedShowing = true;
+    } catch (error) {
+      logger.warn('AdMob rewarded show failed', error);
+      rewardedShowing = false;
+      finish('unavailable');
+    }
+  });
+}
+
 export function isFullScreenAdActive(): boolean {
-  return interstitialShowing || appOpenShowing;
+  return interstitialShowing || appOpenShowing || rewardedShowing;
 }

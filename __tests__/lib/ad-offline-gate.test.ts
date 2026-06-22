@@ -8,6 +8,7 @@ describe('canShowInternalAdsOfflineFromState', () => {
     assert.equal(
       canShowInternalAdsOfflineFromState({
         isPremium: false,
+        shouldShowAds: true,
         hydrated: false,
         backendEntitlement: null,
         storeSyncCompleted: true,
@@ -20,6 +21,7 @@ describe('canShowInternalAdsOfflineFromState', () => {
     assert.equal(
       canShowInternalAdsOfflineFromState({
         isPremium: false,
+        shouldShowAds: true,
         hydrated: true,
         backendEntitlement: {
           tier: 'free',
@@ -36,6 +38,7 @@ describe('canShowInternalAdsOfflineFromState', () => {
     assert.equal(
       canShowInternalAdsOfflineFromState({
         isPremium: true,
+        shouldShowAds: false,
         hydrated: true,
         backendEntitlement: null,
         storeSyncCompleted: true,
@@ -48,6 +51,7 @@ describe('canShowInternalAdsOfflineFromState', () => {
     assert.equal(
       canShowInternalAdsOfflineFromState({
         isPremium: false,
+        shouldShowAds: true,
         hydrated: true,
         backendEntitlement: null,
         storeSyncCompleted: true,
@@ -56,10 +60,24 @@ describe('canShowInternalAdsOfflineFromState', () => {
     );
   });
 
+  it('returns false during ad-free reward window', () => {
+    assert.equal(
+      canShowInternalAdsOfflineFromState({
+        isPremium: false,
+        shouldShowAds: false,
+        hydrated: true,
+        backendEntitlement: null,
+        storeSyncCompleted: true,
+      }),
+      false,
+    );
+  });
+
   it('returns true when DEV force-internal is enabled', () => {
     assert.equal(
       canShowInternalAdsOfflineFromState({
         isPremium: false,
+        shouldShowAds: true,
         hydrated: false,
         backendEntitlement: null,
         storeSyncCompleted: false,

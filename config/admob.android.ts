@@ -5,6 +5,7 @@ const TEST = {
   banner: 'ca-app-pub-3940256099942544/6300978111',
   interstitial: 'ca-app-pub-3940256099942544/1033173712',
   appOpen: 'ca-app-pub-3940256099942544/9257395921',
+  rewarded: 'ca-app-pub-3940256099942544/5224354917',
 } as const;
 
 function env(key: string): string | undefined {
@@ -35,6 +36,14 @@ export function getAdMobAppOpenUnitId(): string | null {
     return TEST.appOpen;
   }
   return env('EXPO_PUBLIC_ADMOB_APP_OPEN_ANDROID') ?? ADMOB_DEFAULTS.appOpenAndroid;
+}
+
+export function getAdMobRewardedUnitId(): string | null {
+  if (__DEV__) {
+    return TEST.rewarded;
+  }
+  const id = env('EXPO_PUBLIC_ADMOB_REWARDED_ANDROID') ?? ADMOB_DEFAULTS.rewardedAndroid;
+  return id?.trim() ? id : null;
 }
 
 export const ADMOB_APP_IDS = {

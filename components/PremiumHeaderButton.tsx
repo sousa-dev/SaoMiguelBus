@@ -1,15 +1,23 @@
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Crown } from 'lucide-react-native';
-import React from 'react';
+import { Clock, Crown, Sparkles } from 'lucide-react-native';
+import React, { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AdFreeRewardModal } from '@/features/ads/components/AdFreeRewardModal';
+import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
+import { useRewardedAdFree } from '@/features/ads/hooks/useRewardedAdFree';
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
+import { track } from '@/lib/analytics';
 import { withAlpha } from '@/lib/color-utils';
 import { usePremium } from '@/lib/premium-store';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+
+function formatRemainingMinutes(remainingMs: number): number {
+  return Math.max(1, Math.ceil(remainingMs / 60_000));
+}
 
 export function PremiumHeaderButton() {
   const { t } = useTranslation();
@@ -17,47 +25,187 @@ export function PremiumHeaderButton() {
   const router = useRouter();
   const isPremium = usePremium();
   const { openPaywall } = usePaywall();
+  const { isAdFreeActive, remainingMs } = useAdFreeWindow();
+  const {
+    modalVisible,
+    openModal,
+    closeModal,
+    startRewardFlow,
+    onGetPremium,
+    isRewardOfferAvailable,
+    isLoading,
+  } = useRewardedAdFree();
 
-  const label = isPremium ? t('premiumHeaderButtonActive') : t('removeAdsButton');
-  const iconColor = isPremium ? theme.onAccent : theme.accent;
+  useEffect(() => {
+    if (!isPremium && !isAdFreeActive && isRewardOfferAvailable) {
+      track('ads', 'reward_header_impression', { source: 'transit_header' });
+    }
+  }, [isAdFreeActive, isPremium, isRewardOfferAvailable]);
+
+  if (isPremium) {
+    const label = t('premiumHeaderButtonActive');
+    const iconColor = theme.onAccent;
+    const textColor = iconColor;
+
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ selected: true }}
+        onPress={() => {
+          if (Platform.OS !== 'web') {
+            void Haptics.selectionAsync();
+          }
+          router.push('/settings');
+        }}
+        style={({ pressed }) => [
+          styles.pill,
+          styles.pillActive,
+          {
+            backgroundColor: theme.accent,
+            borderColor: withAlpha(theme.onAccent, 0.12),
+            opacity: pressed ? 0.88 : 1,
+          },
+        ]}
+      >
+        <Crown
+          size={iconSize.sm}
+          color={iconColor}
+          strokeWidth={2.25}
+          fill={withAlpha(theme.onAccent, 0.25)}
+        />
+        <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  if (isAdFreeActive) {
+    const label = t('adsAdFreeStatusRemaining', { minutes: formatRemainingMinutes(remainingMs) });
+    const iconColor = theme.accent;
+    const textColor = iconColor;
+
+    return (
+      <>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          disabled={!isRewardOfferAvailable}
+          onPress={() => {
+            if (!isRewardOfferAvailable) {
+              return;
+            }
+            if (Platform.OS !== 'web') {
+              void Haptics.selectionAsync();
+            }
+            openModal();
+          }}
+          style={({ pressed }) => [
+            styles.pill,
+            styles.pillUpsell,
+            {
+              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+              borderColor: theme.accent,
+              opacity: pressed && isRewardOfferAvailable ? 0.88 : 1,
+            },
+          ]}
+        >
+          <Clock size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+            {label}
+          </Text>
+        </Pressable>
+
+        {isRewardOfferAvailable ? (
+          <AdFreeRewardModal
+            visible={modalVisible}
+            canWatchVideo
+            isLoading={isLoading}
+            showGetPremium
+            onDismiss={closeModal}
+            onWatchVideo={() => {
+              void startRewardFlow();
+            }}
+            onGetPremium={onGetPremium}
+          />
+        ) : null}
+      </>
+    );
+  }
+
+  if (isRewardOfferAvailable) {
+    const label = t('adsAdFreeHeaderCta');
+    const iconColor = theme.accent;
+    const textColor = iconColor;
+
+    return (
+      <>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              void Haptics.selectionAsync();
+            }
+            openModal();
+          }}
+          style={({ pressed }) => [
+            styles.pill,
+            styles.pillUpsell,
+            {
+              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+              borderColor: theme.accent,
+              opacity: pressed ? 0.88 : 1,
+            },
+          ]}
+        >
+          <Sparkles size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
+          <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
+            {label}
+          </Text>
+        </Pressable>
+
+        <AdFreeRewardModal
+          visible={modalVisible}
+          canWatchVideo
+          isLoading={isLoading}
+          showGetPremium
+          onDismiss={closeModal}
+          onWatchVideo={() => {
+            void startRewardFlow();
+          }}
+          onGetPremium={onGetPremium}
+        />
+      </>
+    );
+  }
+
+  const label = t('removeAdsButton');
+  const iconColor = theme.accent;
   const textColor = iconColor;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected: isPremium }}
       onPress={() => {
         if (Platform.OS !== 'web') {
           void Haptics.selectionAsync();
         }
-        if (isPremium) {
-          router.push('/settings');
-        } else {
-          void openPaywall('header');
-        }
+        void openPaywall('header');
       }}
       style={({ pressed }) => [
         styles.pill,
-        isPremium ? styles.pillActive : styles.pillUpsell,
-        isPremium
-          ? {
-              backgroundColor: theme.accent,
-              borderColor: withAlpha(theme.onAccent, 0.12),
-            }
-          : {
-              backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
-              borderColor: theme.accent,
-            },
-        { opacity: pressed ? 0.88 : 1 },
+        styles.pillUpsell,
+        {
+          backgroundColor: withAlpha(theme.accent, theme.isDark ? 0.18 : 0.1),
+          borderColor: theme.accent,
+          opacity: pressed ? 0.88 : 1,
+        },
       ]}
     >
-      <Crown
-        size={iconSize.sm}
-        color={iconColor}
-        strokeWidth={2.25}
-        fill={isPremium ? withAlpha(theme.onAccent, 0.25) : 'transparent'}
-      />
+      <Crown size={iconSize.sm} color={iconColor} strokeWidth={2.25} />
       <Text style={[typography.caption, styles.label, { color: textColor }]} numberOfLines={1}>
         {label}
       </Text>

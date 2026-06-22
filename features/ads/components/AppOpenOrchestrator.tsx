@@ -31,7 +31,8 @@ import type { InternalAdCreative } from '@/features/ads/lib/internal-ads/types';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
 import { track } from '@/lib/analytics';
-import { canInitAdMob, canShowFirstPartyAds, useConsentStore } from '@/lib/consent-store';
+import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
+import { canInitAdMob, useConsentStore } from '@/lib/consent-store';
 import { usePremium } from '@/lib/premium-store';
 
 const LOAD_TIMEOUT_MS = 3_000;
@@ -42,8 +43,8 @@ type Props = {
   onSplashDismiss: () => void;
 };
 
-function isAdMobEligible(isPremium: boolean): boolean {
-  return Platform.OS !== 'web' && isAdMobNativeAvailable() && canInitAdMob(isPremium);
+function isAdMobEligible(showAds: boolean): boolean {
+  return Platform.OS !== 'web' && isAdMobNativeAvailable() && canInitAdMob(showAds);
 }
 
 async function waitForAppOpenLoaded(timeoutMs: number): Promise<boolean> {
@@ -58,6 +59,7 @@ async function waitForAppOpenLoaded(timeoutMs: number): Promise<boolean> {
 }
 
 export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
+  const { showAds } = useAdFreeWindow();
   const isPremium = usePremium();
   const consentDecided = useConsentStore((s) => s.decided);
   const segments = useSegments();
@@ -75,8 +77,8 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
   const coldStartDoneRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  const admobEligible = isAdMobEligible(isPremium);
-  const canShowAds = canShowFirstPartyAds(isPremium);
+  const admobEligible = isAdMobEligible(showAds);
+  const canShowAds = showAds;
 
   const dismissInternal = useCallback(() => {
     setShowInternal(false);

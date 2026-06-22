@@ -6,9 +6,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
-import { canShowFirstPartyAds } from '@/lib/consent-store';
+import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { useNetwork } from '@/lib/network-provider';
-import { usePremium } from '@/lib/premium-store';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -77,13 +76,12 @@ function randomVariantIndex(): number {
 export function PremiumSearchCta() {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const isPremium = usePremium();
+  const { showAds } = useAdFreeWindow();
   const { isOnline } = useNetwork();
   const { openPaywall } = usePaywall();
   const [index, setIndex] = useState(randomVariantIndex);
 
-  const show =
-    PREMIUM_SEARCH_CTA_ENABLED && canShowFirstPartyAds(isPremium) && isOnline;
+  const show = PREMIUM_SEARCH_CTA_ENABLED && showAds && isOnline;
 
   useEffect(() => {
     if (!show) {

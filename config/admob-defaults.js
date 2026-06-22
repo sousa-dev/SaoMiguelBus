@@ -8,4 +8,7 @@ module.exports = {
   interstitialIos: 'ca-app-pub-8246676797736648/4740696523',
   appOpenAndroid: 'ca-app-pub-8246676797736648/8940132690',
   appOpenIos: 'ca-app-pub-8246676797736648/2553812035',
+  /** Set via EXPO_PUBLIC_ADMOB_REWARDED_* after creating Rewarded units in AdMob console. */
+  rewardedAndroid: '',
+  rewardedIos: '',
 };
