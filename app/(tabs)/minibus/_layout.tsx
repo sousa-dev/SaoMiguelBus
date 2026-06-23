@@ -12,6 +12,7 @@ export default function MinibusLayout() {
       <Stack.Screen name="index" options={moduleRootHeader} />
       <Stack.Screen name="search" />
       <Stack.Screen name="directions" />
+      <Stack.Screen name="live" />
       <Stack.Screen name="[slug]" />
       <Stack.Screen name="pdf" />
       <Stack.Screen name="schematic" />

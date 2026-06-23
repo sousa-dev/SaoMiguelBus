@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/Button';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
@@ -15,6 +16,10 @@ import {
 import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import { useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import {
+  isMinibusTrackingAvailable,
+  useMinibusTrackingHealth,
+} from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { localLineImageUri } from '@/features/minibus/offline';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
 import { track } from '@/lib/analytics';
@@ -24,8 +29,11 @@ import { useAppTheme } from '@/lib/theme';
 export default function MinibusLineDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const lineQuery = useMinibusLine(slug, Boolean(slug));
+  const healthQuery = useMinibusTrackingHealth({ enabled: Boolean(slug) });
+  const showLiveTracking = isMinibusTrackingAvailable(healthQuery.data);
   const { snapshot } = useMinibusOffline();
   const offlineNetwork = snapshot?.bundle?.network ?? null;
   const networkQuery = useMinibusNetwork(!offlineNetwork);
@@ -92,6 +100,18 @@ export default function MinibusLineDetailScreen() {
         <Text style={[typography.body, { color: theme.muted, marginTop: space.sm }]}>
           {formatServiceSummary(line.service_summary, t)}
         </Text>
+
+        {showLiveTracking ? (
+          <Button
+            variant="secondary"
+            label={t('minibusLiveTracking')}
+            onPress={() => {
+              track('minibus', 'live_entry_open', { source: 'line_detail', line: line.code });
+              router.push(`/minibus/live?line=${encodeURIComponent(line.slug)}`);
+            }}
+            style={{ marginTop: space.md }}
+          />
+        ) : null}
 
         <MinibusLineStopsList
           stops={stops}

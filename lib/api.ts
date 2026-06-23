@@ -58,6 +58,9 @@ import type {
   MinibusRouteSearchResponse,
   MinibusOfflineBundle,
   MinibusBundleVersionResponse,
+  MinibusVehiclesResponse,
+  MinibusVehicleDetailResponse,
+  MinibusTrackingHealthResponse,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -513,6 +516,23 @@ export async function fetchMinibusOfflineBundle(params?: {
 
 export async function fetchMinibusBundleVersion(): Promise<MinibusBundleVersionResponse> {
   return apiFetch<MinibusBundleVersionResponse>(`/api/v3/minibus/offline-bundle/version`);
+}
+
+export async function fetchMinibusVehicles(): Promise<MinibusVehiclesResponse> {
+  return apiFetch<MinibusVehiclesResponse>(`/api/v3/minibus/vehicles`);
+}
+
+export async function fetchMinibusTrackingHealth(options?: {
+  force?: boolean;
+}): Promise<MinibusTrackingHealthResponse> {
+  const query = options?.force ? '?force=1' : '';
+  return apiFetch<MinibusTrackingHealthResponse>(`/api/v3/minibus/tracking/health${query}`);
+}
+
+export async function fetchMinibusVehicle(trackingId: string): Promise<MinibusVehicleDetailResponse> {
+  return apiFetch<MinibusVehicleDetailResponse>(
+    `/api/v3/minibus/vehicles/${encodeURIComponent(trackingId)}`,
+  );
 }
 
 export async function fetchSeismicEvents(params?: {

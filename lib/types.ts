@@ -650,6 +650,69 @@ export interface MinibusBundleVersionResponse {
   version: string;
 }
 
+// --- Live vehicle tracking (Eleven Systems AVL proxy) --- //
+
+export interface MinibusTrackingMeta {
+  cachedAt: string;
+  stale: boolean;
+  cacheMaxAgeSeconds: number;
+  trackingAttribution: string;
+  trackingSourceUrl: string;
+  trackingUpstreamBaseUrl?: string;
+}
+
+export interface MinibusVehiclePosition {
+  lat: number;
+  lon: number;
+}
+
+export interface MinibusVehicleSummary {
+  id: string;
+  position: MinibusVehiclePosition;
+  status: string;
+  color: string;
+  route?: string | null;
+  fleetId?: string | null;
+}
+
+export interface MinibusCirculationStage {
+  id?: string;
+  nameShort?: string;
+  name?: string;
+}
+
+export interface MinibusCirculation {
+  sequence: number;
+  stage?: MinibusCirculationStage;
+  dueInMinutes?: number | null;
+}
+
+export interface MinibusVehicleJourney {
+  shape?: string | null;
+  circulations?: MinibusCirculation[];
+}
+
+export interface MinibusVehicleDetail extends MinibusVehicleSummary {
+  currentStopSequence?: number | null;
+  journey?: MinibusVehicleJourney | null;
+}
+
+export interface MinibusVehiclesResponse extends MinibusTrackingMeta, MinibusMeta {
+  vehicles: MinibusVehicleSummary[];
+}
+
+export interface MinibusVehicleDetailResponse extends MinibusTrackingMeta, MinibusMeta {
+  vehicle: MinibusVehicleDetail;
+}
+
+export interface MinibusTrackingHealthResponse extends MinibusMeta {
+  available: boolean;
+  checkedAt: string;
+  recheckAfterSeconds: number;
+  vehicleCount?: number;
+  reason?: string;
+}
+
 // --- First-party ads (compat /api/v1/ad) --- //
 
 /**

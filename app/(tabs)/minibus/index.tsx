@@ -1,4 +1,4 @@
-import { Route } from 'lucide-react-native';
+import { Route, Radio } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
@@ -23,7 +23,12 @@ import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
 import { MinibusTariffTable } from '@/features/minibus/components/MinibusTariffTable';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
+import { usePresentInterstitial } from '@/features/ads/hooks/usePresentInterstitial';
 import { useMinibusLines, useMinibusTariffs } from '@/features/minibus/hooks/useMinibusQueries';
+import {
+  isMinibusTrackingAvailable,
+  useMinibusTrackingHealth,
+} from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { localDocumentImageUri } from '@/features/minibus/offline';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
 import { resolveEnabledModules } from '@/config/island';
@@ -52,8 +57,13 @@ export default function MinibusScreen() {
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const enabled = modules.includes('minibus');
 
+  const [hubFocused, setHubFocused] = useState(false);
+
   const linesQuery = useMinibusLines(enabled);
   const tariffsQuery = useMinibusTariffs(enabled);
+  const healthQuery = useMinibusTrackingHealth({ enabled: enabled && hubFocused });
+  const showLiveTracking = isMinibusTrackingAvailable(healthQuery.data);
+  const { presentInterstitial } = usePresentInterstitial();
   const { snapshot } = useMinibusOffline();
 
   useFocusEffect(
@@ -61,8 +71,12 @@ export default function MinibusScreen() {
       if (!enabled) {
         return;
       }
+      setHubFocused(true);
       track('minibus', 'view', { screen: 'list' });
       void linesQuery.refetch();
+      return () => {
+        setHubFocused(false);
+      };
     }, [enabled, linesQuery.refetch]),
   );
 
@@ -157,6 +171,31 @@ export default function MinibusScreen() {
               </View>
             </Card>
           </Pressable>
+
+          {showLiveTracking ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                void (async () => {
+                  track('minibus', 'live_entry_open', { source: 'hub' });
+                  await presentInterstitial('live_entry');
+                  router.push('/minibus/live');
+                })();
+              }}
+            >
+              <Card style={styles.searchCard}>
+                <View style={[styles.searchIcon, { backgroundColor: theme.accent }]}>
+                  <Radio size={iconSize.md} color={theme.onAccent} strokeWidth={2} />
+                </View>
+                <View style={styles.searchBody}>
+                  <Text style={[typography.headline, { color: theme.text }]}>{t('minibusLiveCta')}</Text>
+                  <Text style={[typography.caption, { color: theme.muted }]}>
+                    {t('minibusLiveCtaHint')}
+                  </Text>
+                </View>
+              </Card>
+            </Pressable>
+          ) : null}
         </View>
 
         <View onLayout={(event) => onSectionLayout('lines', event)} style={styles.section}>

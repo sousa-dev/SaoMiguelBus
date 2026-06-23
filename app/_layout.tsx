@@ -21,6 +21,7 @@ import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
 import { useAdFreeWindowBootstrap } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdBootstrap } from '@/features/ads/hooks/useRewardedAdBootstrap';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
+import { InterstitialRequestHost } from '@/features/ads/components/InterstitialRequestHost';
 import { AdFreeRewardModalHost } from '@/features/ads/components/AdFreeRewardModalHost';
 import { HopOnHopOffSheetHost } from '@/features/hop-on-hop-off/components/HopOnHopOffSheetHost';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
@@ -154,6 +155,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <PremiumOfflinePrompt />
           <SaveSubscriptionPrompt />
           <AdFreeRewardModalHost />
+          <InterstitialRequestHost />
           <HopOnHopOffSheetHost />
         </ConsentGate>
         <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
