@@ -31,7 +31,7 @@ export function vehicleMatchesLineColor(
   return vehicle === line;
 }
 
-export function lineCodeFromUpstreamAvlColor(color: string | null | undefined): string | null {
+function lookupUpstreamAvlLineCode(color: string | null | undefined): string | null {
   const normalized = normalizeHexColor(color);
   if (!normalized) {
     return null;
@@ -39,11 +39,55 @@ export function lineCodeFromUpstreamAvlColor(color: string | null | undefined): 
   return UPSTREAM_AVL_LINE_BY_COLOR[normalized] ?? null;
 }
 
+/** Upstream AVL detail payload embeds route metadata; fleet list has no route. */
+function normalizeRouteCode(route: MinibusVehicleSummary['route']): string | null {
+  if (route == null) {
+    return null;
+  }
+  if (typeof route === 'object') {
+    const nameShort = route.nameShort?.trim();
+    if (!nameShort) {
+      return null;
+    }
+    if (/^[A-D]$/i.test(nameShort)) {
+      return nameShort.toUpperCase();
+    }
+    const firstChar = nameShort.charAt(0);
+    if (/^[A-D]$/i.test(firstChar)) {
+      return firstChar.toUpperCase();
+    }
+    return null;
+  }
+  const routeCode = String(route).trim();
+  if (!routeCode || !/^[A-D]$/i.test(routeCode)) {
+    return null;
+  }
+  return routeCode.toUpperCase();
+}
+
+function vehicleUpstreamColor(vehicle: MinibusVehicleSummary): string | null | undefined {
+  if (vehicle.color) {
+    return vehicle.color;
+  }
+  const route = vehicle.route;
+  if (route && typeof route === 'object' && route.color) {
+    return route.color;
+  }
+  return null;
+}
+
+export function lineCodeFromUpstreamAvlColor(color: string | null | undefined): string | null {
+  return lookupUpstreamAvlLineCode(color);
+}
+
+/** Legacy alias — some bundles referenced this shorter name during minibus live rollout. */
+export const lineCodeFromUpstream = lineCodeFromUpstreamAvlColor;
+
 export function resolveLineForVehicle(
   vehicle: MinibusVehicleSummary,
   lines: MinibusLine[],
 ): MinibusLine | null {
-  const upstreamCode = lineCodeFromUpstreamAvlColor(vehicle.color);
+  const upstreamCode = lookupUpstreamAvlLineCode(vehicleUpstreamColor(vehicle));
   if (upstreamCode) {
     const byCode = lines.find((line) => line.code.toUpperCase() === upstreamCode);
     if (byCode) {
@@ -51,16 +95,16 @@ export function resolveLineForVehicle(
     }
   }
 
-  const routeCode = vehicle.route?.trim();
-  if (routeCode && /^[A-D]$/i.test(routeCode)) {
-    const byRoute = lines.find((line) => line.code.toUpperCase() === routeCode.toUpperCase());
+  const routeCode = normalizeRouteCode(vehicle.route);
+  if (routeCode) {
+    const byRoute = lines.find((line) => line.code.toUpperCase() === routeCode);
     if (byRoute) {
       return byRoute;
     }
   }
 
   for (const line of lines) {
-    if (vehicleMatchesLineColor(vehicle.color, line.color)) {
+    if (vehicleMatchesLineColor(vehicleUpstreamColor(vehicle), line.color)) {
       return line;
     }
   }
@@ -76,7 +120,7 @@ export function vehicleLineColorHex(vehicle: MinibusVehicleSummary, lines: Minib
     }
     return line.color.startsWith('#') ? line.color : `#${line.color}`;
   }
-  const upstream = normalizeHexColor(vehicle.color);
+  const upstream = normalizeHexColor(vehicleUpstreamColor(vehicle));
   return upstream ? `#${upstream}` : '#2563eb';
 }
 

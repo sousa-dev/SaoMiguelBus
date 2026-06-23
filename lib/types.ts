@@ -667,12 +667,22 @@ export interface MinibusVehiclePosition {
   lon: number;
 }
 
+export interface MinibusVehicleRoute {
+  id?: string;
+  name?: string;
+  nameShort?: string;
+  description?: string;
+  color?: string;
+  isActive?: boolean;
+}
+
 export interface MinibusVehicleSummary {
   id: string;
   position: MinibusVehiclePosition;
   status: string;
-  color: string;
-  route?: string | null;
+  /** Fleet list includes color; detail responses may only expose route.color. */
+  color?: string;
+  route?: string | MinibusVehicleRoute | null;
   fleetId?: string | null;
 }
 

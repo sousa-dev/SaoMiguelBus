@@ -26,6 +26,14 @@ const lines: MinibusLine[] = [
     sort_order: 2,
     service_summary: {},
   },
+  {
+    code: 'C',
+    slug: 'line-c',
+    name: 'Line C',
+    color: '#2d3276',
+    sort_order: 3,
+    service_summary: {},
+  },
 ];
 
 const vehicle: MinibusVehicleSummary = {
@@ -70,6 +78,19 @@ describe('resolveLineForVehicle', () => {
   it('matches optional route code on vehicle summary', () => {
     const routed: MinibusVehicleSummary = { ...vehicle, color: '000000', route: 'C' };
     assert.equal(resolveLineForVehicle(routed, lines)?.code, 'C');
+  });
+
+  it('reads line code from upstream route detail object', () => {
+    const routed: MinibusVehicleSummary = {
+      ...vehicle,
+      color: undefined,
+      route: {
+        id: '2',
+        nameShort: 'B',
+        color: '00964C',
+      },
+    };
+    assert.equal(resolveLineForVehicle(routed, lines)?.code, 'B');
   });
 });
 
