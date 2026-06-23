@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import { Chip } from '@/components/ui/Chip';
+import { normalizeHexColor } from '@/features/minibus/lib/vehicleColor';
 import { space } from '@/lib/tokens';
 import type { MinibusLine } from '@/lib/types';
 
@@ -10,6 +11,14 @@ type Props = {
   selectedLineSlug: string | null;
   onSelectLineSlug: (slug: string | null) => void;
 };
+
+function lineAccentHex(line: MinibusLine): string {
+  const normalized = normalizeHexColor(line.color);
+  if (normalized) {
+    return `#${normalized}`;
+  }
+  return line.color.startsWith('#') ? line.color : `#${line.color}`;
+}
 
 export function MinibusLiveLineFilter({ lines, selectedLineSlug, onSelectLineSlug }: Props) {
   const { t } = useTranslation();
@@ -29,7 +38,8 @@ export function MinibusLiveLineFilter({ lines, selectedLineSlug, onSelectLineSlu
       {lines.map((line) => (
         <Chip
           key={line.slug}
-          label={line.code}
+          label={t('minibusLiveFilterLine', { line: line.code })}
+          accentColor={lineAccentHex(line)}
           selected={selectedLineSlug === line.slug}
           onPress={() => onSelectLineSlug(line.slug)}
         />

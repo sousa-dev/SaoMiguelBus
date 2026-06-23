@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Sheet } from '@/components/ui/Sheet';
 import { formatCirculationRows } from '@/features/minibus/lib/liveEtas';
+import { buildTrackingFreshnessLabels } from '@/features/minibus/lib/trackingFreshness';
 import { resolveLineForVehicle } from '@/features/minibus/lib/vehicleColor';
 import { onColorFor } from '@/lib/color-utils';
 import { radius, space, typography } from '@/lib/tokens';
@@ -39,6 +40,15 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
       minutes: (count) => t('minibusLiveEtaMinutes', { count }),
     },
   );
+
+  const freshnessLabels = buildTrackingFreshnessLabels(trackingMeta, {
+    relative: ({ count, unit }) =>
+      unit === 'second'
+        ? t('minibusLiveLastUpdatedSeconds', { count })
+        : t('minibusLiveLastUpdatedMinutes', { count }),
+    intervalSeconds: (count) => t('minibusLiveUpdateIntervalSeconds', { count }),
+    intervalMinutes: (count) => t('minibusLiveUpdateIntervalMinutes', { count }),
+  });
 
   const title = line
     ? t('minibusLiveVehicleTitle', { line: line.code })
@@ -106,6 +116,11 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
 
       {trackingMeta?.trackingAttribution ? (
         <View style={styles.footer}>
+          {freshnessLabels?.relativeTime ? (
+            <Text style={[typography.caption, { color: theme.muted }]}>
+              {t('minibusLiveLastUpdated', { relative: freshnessLabels.relativeTime })}
+            </Text>
+          ) : null}
           <Text style={[typography.caption, { color: theme.muted }]}>
             {trackingMeta.trackingAttribution}
           </Text>

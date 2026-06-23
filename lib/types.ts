@@ -655,6 +655,7 @@ export interface MinibusBundleVersionResponse {
 export interface MinibusTrackingMeta {
   cachedAt: string;
   stale: boolean;
+  trackingCacheStatus?: 'hit' | 'miss' | 'stale';
   cacheMaxAgeSeconds: number;
   trackingAttribution: string;
   trackingSourceUrl: string;

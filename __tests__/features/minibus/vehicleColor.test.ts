@@ -58,13 +58,18 @@ describe('vehicleMatchesLineColor', () => {
 });
 
 describe('resolveLineForVehicle', () => {
-  it('returns null when no line matches upstream color', () => {
-    assert.equal(resolveLineForVehicle(vehicle, lines), null);
+  it('maps Eleven Systems AVL fleet color to catalog line', () => {
+    assert.equal(resolveLineForVehicle(vehicle, lines)?.code, 'B');
   });
 
-  it('returns matching line when colors align', () => {
+  it('returns matching line when catalog hex colors align', () => {
     const matched: MinibusVehicleSummary = { ...vehicle, color: 'fbc707' };
     assert.equal(resolveLineForVehicle(matched, lines)?.code, 'A');
+  });
+
+  it('matches optional route code on vehicle summary', () => {
+    const routed: MinibusVehicleSummary = { ...vehicle, color: '000000', route: 'C' };
+    assert.equal(resolveLineForVehicle(routed, lines)?.code, 'C');
   });
 });
 
@@ -82,5 +87,15 @@ describe('filterVehiclesByLineSlug', () => {
     const filtered = filterVehiclesByLineSlug(fleet, lines, 'line-b');
     assert.equal(filtered.length, 1);
     assert.equal(filtered[0].id, '2');
+  });
+
+  it('filters AVL fleet colors that differ from catalog hex', () => {
+    const avlFleet: MinibusVehicleSummary[] = [
+      { ...vehicle, id: 'avl-a', color: 'F6BC1C' },
+      { ...vehicle, id: 'avl-b', color: '00964C' },
+    ];
+    const filtered = filterVehiclesByLineSlug(avlFleet, lines, 'line-a');
+    assert.equal(filtered.length, 1);
+    assert.equal(filtered[0].id, 'avl-a');
   });
 });

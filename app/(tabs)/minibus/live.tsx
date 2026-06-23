@@ -11,6 +11,7 @@ import {
   MinibusLiveMap,
   type MinibusLiveMapHandle,
 } from '@/features/minibus/components/MinibusLiveMap';
+import { MinibusTrackingFreshness } from '@/features/minibus/components/MinibusTrackingFreshness';
 import { MinibusTrackingUnavailable } from '@/features/minibus/components/MinibusTrackingUnavailable';
 import { MinibusVehicleSheet } from '@/features/minibus/components/MinibusVehicleSheet';
 import {
@@ -18,8 +19,8 @@ import {
   useMinibusTrackingHealth,
 } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { useMinibusLines } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusScreenActive } from '@/features/minibus/hooks/useMinibusScreenActive';
 import {
-  minibusTrackingPollIntervalMs,
   useMinibusVehicleDetail,
   useMinibusVehicles,
 } from '@/features/minibus/hooks/useMinibusTrackingQueries';
@@ -40,48 +41,34 @@ export default function MinibusLiveScreen() {
   const params = useLocalSearchParams<{ line?: string }>();
   const initialLineSlug = typeof params.line === 'string' ? params.line : null;
 
-  const [focused, setFocused] = useState(false);
+  const screenActive = useMinibusScreenActive();
   const [selectedLineSlug, setSelectedLineSlug] = useState<string | null>(initialLineSlug);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const mapRef = useRef<MinibusLiveMapHandle>(null);
 
-  const healthQuery = useMinibusTrackingHealth({ enabled: focused });
+  const healthQuery = useMinibusTrackingHealth({ enabled: screenActive });
   const trackingAvailable = isMinibusTrackingAvailable(healthQuery.data);
 
   const linesQuery = useMinibusLines(trackingAvailable);
   const lines = linesQuery.data?.lines ?? [];
 
   const fleetQuery = useMinibusVehicles({
-    enabled: focused && trackingAvailable,
-    refetchInterval: false,
+    enabled: screenActive && trackingAvailable,
+    screenActive: screenActive && trackingAvailable,
   });
 
-  const pollMs = minibusTrackingPollIntervalMs(fleetQuery.data);
-
-  useEffect(() => {
-    if (!focused || !trackingAvailable || pollMs <= 0) {
-      return;
-    }
-    const id = setInterval(() => {
-      void fleetQuery.refetch();
-    }, pollMs);
-    return () => clearInterval(id);
-  }, [focused, trackingAvailable, pollMs, fleetQuery.refetch]);
-
   const detailQuery = useMinibusVehicleDetail(selectedVehicleId, {
-    enabled: focused && trackingAvailable && selectedVehicleId != null,
-    refetchInterval: focused && trackingAvailable && selectedVehicleId ? pollMs : false,
+    enabled: screenActive && trackingAvailable && selectedVehicleId != null,
+    screenActive: screenActive && trackingAvailable && selectedVehicleId != null,
   });
 
   useFocusEffect(
     useCallback(() => {
-      setFocused(true);
       track('minibus', 'view', { screen: 'live' });
       void healthQuery.refetch();
       return () => {
-        setFocused(false);
         setSelectedVehicleId(null);
       };
     }, [healthQuery.refetch]),
@@ -193,6 +180,11 @@ export default function MinibusLiveScreen() {
             <Badge label={t('minibusLiveStale')} tone="accent" size="compact" />
           ) : null}
         </View>
+
+        <MinibusTrackingFreshness
+          meta={fleetQuery.data}
+          isFetching={fleetQuery.isFetching}
+        />
 
         <View style={styles.mapWrap}>
           <MinibusLiveMap

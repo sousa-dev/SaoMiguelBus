@@ -34,5 +34,6 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 ## PDL Mini Bus maps
 
 - Stop coordinates ship in the offline bundle (`network.lines[].stops[]`: `latitude`, `longitude`, `external_id`) and on journey leg `board`/`alight` refs from `GET /api/v3/minibus/route`.
+- **Live tracking** (`/minibus/live`, `GET /api/v3/minibus/vehicles`) is served only by the API — the app never calls Eleven Systems directly. If staging returns `tracking_unavailable`, fix upstream access on the API host (often Cloudflare blocking Hetzner; see `SaoMiguelBus-api/src/minibus/docs/tailscale-tracking-proxy.md`).
 - In-app maps only (v1): `OsmMapView` on line detail (`MinibusLineMap`) and journey directions (`MinibusJourneyMap` + `MinibusDirectionsSteps`). Polylines are straight stop-to-stop segments; no external Apple/Google Maps handoff.
 - Helpers: `features/minibus/stopCoordinates.ts` (`linePolyline`, `journeyPolylines`, `fitRegionForCoordinates`).

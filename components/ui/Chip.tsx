@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
+import { onColorFor, withAlpha } from '@/lib/color-utils';
 import { hitSlop, radius, space, typography } from '@/lib/tokens';
 import { primaryTint, useAppTheme } from '@/lib/theme';
 
@@ -10,12 +11,32 @@ type ChipProps = {
   onPress?: () => void;
   disabled?: boolean;
   accessibilityLabel?: string;
+  accentColor?: string;
 };
 
-export function Chip({ label, selected, onPress, disabled, accessibilityLabel }: ChipProps) {
+export function Chip({
+  label,
+  selected,
+  onPress,
+  disabled,
+  accessibilityLabel,
+  accentColor,
+}: ChipProps) {
   const theme = useAppTheme();
+  const accent = accentColor?.trim();
+  const hasAccent = Boolean(accent);
+
   const bg = selected ? theme.primary : theme.surfaceVariant;
   const fg = selected ? theme.onPrimary : theme.text;
+  const backgroundColor = hasAccent
+    ? selected
+      ? accent!
+      : withAlpha(accent!, theme.isDark ? 0.28 : 0.14)
+    : selected
+      ? bg
+      : primaryTint(theme, theme.isDark ? 0.2 : 0.08);
+  const borderColor = hasAccent ? accent! : selected ? theme.primary : theme.border;
+  const textColor = hasAccent ? (selected ? onColorFor(accent!) : theme.text) : fg;
 
   return (
     <Pressable
@@ -28,14 +49,14 @@ export function Chip({ label, selected, onPress, disabled, accessibilityLabel }:
       style={({ pressed }) => [
         styles.chip,
         {
-          backgroundColor: selected ? bg : primaryTint(theme, theme.isDark ? 0.2 : 0.08),
-          borderColor: selected ? theme.primary : theme.border,
+          backgroundColor,
+          borderColor,
           minHeight: hitSlop.minTouch - 8,
           opacity: disabled ? 0.5 : pressed ? 0.9 : 1,
         },
       ]}
     >
-      <Text style={[typography.label, { color: fg, fontSize: 13 }]}>{label}</Text>
+      <Text style={[typography.label, { color: textColor, fontSize: 13 }]}>{label}</Text>
     </Pressable>
   );
 }
