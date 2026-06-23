@@ -65,4 +65,25 @@ describe('formatCirculationRows', () => {
     );
     assert.equal(rows[0].stopName, 'Rua Arcanjo Lar (Igreja N. S. Fátima)');
   });
+
+  it('preserves roman numerals in stop names', () => {
+    const rows = formatCirculationRows(
+      [
+        {
+          sequence: 4,
+          stage: { name: 'AVENIDA D. JOÃO III - 1', nameShort: 'B 04' },
+          dueInMinutes: 0,
+        },
+        {
+          sequence: 5,
+          stage: { name: 'AVENIDA D. JOÃO III - 2', nameShort: 'B 05' },
+          dueInMinutes: 1,
+        },
+      ],
+      null,
+      t,
+    );
+    assert.equal(rows[0].stopName, 'Avenida D. João III - 1');
+    assert.equal(rows[1].stopName, 'Avenida D. João III - 2');
+  });
 });
