@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Sheet } from '@/components/ui/Sheet';
 import { formatCirculationRows } from '@/features/minibus/lib/liveEtas';
 import { buildTrackingFreshnessLabels } from '@/features/minibus/lib/trackingFreshness';
+import { formatVehicleStatusLabel } from '@/features/minibus/lib/vehicleStatus';
 import { resolveLineForVehicle } from '@/features/minibus/lib/vehicleColor';
 import { onColorFor } from '@/lib/color-utils';
 import { radius, space, typography } from '@/lib/tokens';
@@ -24,7 +25,7 @@ type Props = {
 
 export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onClose }: Props) {
   const theme = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (!vehicle) {
     return null;
@@ -41,18 +42,19 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
     },
   );
 
-  const freshnessLabels = buildTrackingFreshnessLabels(trackingMeta, {
-    relative: ({ count, unit }) =>
-      unit === 'second'
-        ? t('minibusLiveLastUpdatedSeconds', { count })
-        : t('minibusLiveLastUpdatedMinutes', { count }),
-    intervalSeconds: (count) => t('minibusLiveUpdateIntervalSeconds', { count }),
-    intervalMinutes: (count) => t('minibusLiveUpdateIntervalMinutes', { count }),
-  });
+  const freshnessLabels = buildTrackingFreshnessLabels(
+    trackingMeta,
+    {
+      intervalSeconds: (count) => t('minibusLiveUpdateIntervalSeconds', { count }),
+      intervalMinutes: (count) => t('minibusLiveUpdateIntervalMinutes', { count }),
+    },
+    i18n.language,
+  );
 
   const title = line
     ? t('minibusLiveVehicleTitle', { line: line.code })
     : t('minibusLiveVehicleTitleUnknown');
+  const statusLabel = formatVehicleStatusLabel(vehicle.status, t);
 
   return (
     <Sheet visible={visible} onClose={onClose} title={title}>
@@ -62,7 +64,7 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
             <Text style={[typography.label, { color: onColorFor(lineColor) }]}>{line.code}</Text>
           </View>
         ) : null}
-        <Text style={[typography.caption, { color: theme.muted }]}>{vehicle.status}</Text>
+        <Text style={[typography.caption, { color: theme.muted }]}>{statusLabel}</Text>
         {vehicle.fleetId ? (
           <Text style={[typography.caption, { color: theme.muted }]}>
             {t('minibusLiveFleetId', { id: vehicle.fleetId })}
@@ -85,27 +87,37 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
                 },
               ]}
             >
-              <Text style={[typography.caption, { color: theme.muted, width: 28 }]}>
+              <Text style={[styles.sequence, typography.caption, { color: theme.muted }]}>
                 {row.sequence}
               </Text>
+              <View style={styles.stopLabel}>
+                <Text
+                  style={[
+                    typography.body,
+                    styles.stopName,
+                    { color: theme.text },
+                    row.isCurrent && { fontWeight: '600' },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {row.stopName}
+                </Text>
+                {row.stopCode ? (
+                  <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
+                    {row.stopCode}
+                  </Text>
+                ) : null}
+              </View>
               <Text
                 style={[
                   typography.body,
-                  { color: theme.text, flex: 1 },
-                  row.isCurrent && { fontWeight: '600' },
-                ]}
-                numberOfLines={2}
-              >
-                {row.stopName}
-              </Text>
-              <Text
-                style={[
-                  typography.body,
+                  styles.eta,
                   {
                     color: row.isCurrent ? theme.primary : theme.muted,
                     fontWeight: row.isCurrent ? '600' : '400',
                   },
                 ]}
+                numberOfLines={1}
               >
                 {row.etaLabel}
               </Text>
@@ -116,9 +128,9 @@ export function MinibusVehicleSheet({ visible, vehicle, lines, trackingMeta, onC
 
       {trackingMeta?.trackingAttribution ? (
         <View style={styles.footer}>
-          {freshnessLabels?.relativeTime ? (
+          {freshnessLabels?.updatedAtTime ? (
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {t('minibusLiveLastUpdated', { relative: freshnessLabels.relativeTime })}
+              {t('minibusLiveLastUpdated', { time: freshnessLabels.updatedAtTime })}
             </Text>
           ) : null}
           <Text style={[typography.caption, { color: theme.muted }]}>
@@ -161,10 +173,30 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: space.sm,
     paddingVertical: space.sm,
     paddingHorizontal: space.sm,
+  },
+  sequence: {
+    width: 28,
+    flexShrink: 0,
+    paddingTop: 2,
+  },
+  stopLabel: {
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  stopName: {
+    flexShrink: 1,
+  },
+  eta: {
+    flexShrink: 0,
+    minWidth: 52,
+    textAlign: 'right',
+    paddingTop: 2,
   },
   footer: {
     paddingHorizontal: space.lg,

@@ -1,39 +1,23 @@
+import { formatLocalTime } from '@/lib/format-time';
 import type { MinibusTrackingMeta } from '@/lib/types';
 
 export type TrackingFreshnessLabels = {
-  relativeTime: string;
+  updatedAtTime: string;
   intervalTime: string;
   isStale: boolean;
 };
 
 export type TrackingFreshnessT = {
-  relative: (params: { count: number; unit: 'second' | 'minute' }) => string;
   intervalSeconds: (count: number) => string;
   intervalMinutes: (count: number) => string;
 };
 
-const MS_PER_SECOND = 1000;
-const MS_PER_MINUTE = 60 * MS_PER_SECOND;
-
-export function formatTrackingRelativeTime(
-  cachedAt: string,
-  nowMs: number,
-  t: TrackingFreshnessT,
-): string | null {
-  const parsed = Date.parse(cachedAt);
-  if (Number.isNaN(parsed)) {
+export function formatTrackingUpdatedAtTime(cachedAt: string, locale?: string): string | null {
+  const clock = formatLocalTime(cachedAt, locale);
+  if (!clock) {
     return null;
   }
-
-  const elapsedMs = Math.max(0, nowMs - parsed);
-  const elapsedSeconds = Math.floor(elapsedMs / MS_PER_SECOND);
-
-  if (elapsedSeconds < 60) {
-    return t.relative({ count: elapsedSeconds, unit: 'second' });
-  }
-
-  const elapsedMinutes = Math.floor(elapsedMs / MS_PER_MINUTE);
-  return t.relative({ count: elapsedMinutes, unit: 'minute' });
+  return `(${clock})`;
 }
 
 export function formatTrackingIntervalLabel(
@@ -55,22 +39,22 @@ export function formatTrackingIntervalLabel(
 export function buildTrackingFreshnessLabels(
   meta: MinibusTrackingMeta | null | undefined,
   t: TrackingFreshnessT,
-  nowMs = Date.now(),
+  locale?: string,
 ): TrackingFreshnessLabels | null {
   if (!meta?.cachedAt) {
     return null;
   }
 
-  const relativeTime = formatTrackingRelativeTime(meta.cachedAt, nowMs, t);
-  const intervalTime = formatTrackingIntervalLabel(meta.cacheMaxAgeSeconds, t);
+  const updatedAtTime = formatTrackingUpdatedAtTime(meta.cachedAt, locale) ?? '';
+  const intervalTime = formatTrackingIntervalLabel(meta.cacheMaxAgeSeconds, t) ?? '';
 
-  if (!relativeTime && !intervalTime) {
+  if (!updatedAtTime && !intervalTime) {
     return null;
   }
 
   return {
-    relativeTime: relativeTime ?? '',
-    intervalTime: intervalTime ?? '',
+    updatedAtTime,
+    intervalTime,
     isStale: meta.stale === true,
   };
 }
