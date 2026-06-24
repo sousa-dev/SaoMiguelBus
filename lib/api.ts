@@ -1,4 +1,5 @@
 import { staticIslandConfig } from '@/config/island';
+import { resolvePublicTrackingUrl } from '@/features/minibus/lib/trackingAttribution';
 import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
@@ -519,7 +520,11 @@ export async function fetchMinibusBundleVersion(): Promise<MinibusBundleVersionR
 }
 
 export async function fetchMinibusVehicles(): Promise<MinibusVehiclesResponse> {
-  return apiFetch<MinibusVehiclesResponse>(`/api/v3/minibus/vehicles`);
+  const data = await apiFetch<MinibusVehiclesResponse>(`/api/v3/minibus/vehicles`);
+  return {
+    ...data,
+    trackingSourceUrl: resolvePublicTrackingUrl(data.trackingSourceUrl),
+  };
 }
 
 export async function fetchMinibusTrackingHealth(options?: {
@@ -530,9 +535,13 @@ export async function fetchMinibusTrackingHealth(options?: {
 }
 
 export async function fetchMinibusVehicle(trackingId: string): Promise<MinibusVehicleDetailResponse> {
-  return apiFetch<MinibusVehicleDetailResponse>(
+  const data = await apiFetch<MinibusVehicleDetailResponse>(
     `/api/v3/minibus/vehicles/${encodeURIComponent(trackingId)}`,
   );
+  return {
+    ...data,
+    trackingSourceUrl: resolvePublicTrackingUrl(data.trackingSourceUrl),
+  };
 }
 
 export async function fetchSeismicEvents(params?: {
