@@ -28,6 +28,7 @@ export type MinibusLiveMapHandle = {
     routePolyline?: LatLng[];
     bottomInset?: number;
   }) => void;
+  fitLiveOverview: (options?: { bottomInset?: number }) => void;
 };
 
 type Props = {
@@ -47,6 +48,47 @@ type Props = {
 
 const FOCUS_DELTA = 0.012;
 const LIVE_VIEWPORT_PAD = 0.08;
+const LIVE_EDGE_PADDING = { top: 56, right: 28, left: 28, bottom: 28 };
+
+function vehicleCoordinates(vehicles: MinibusVehicleSummary[]): LatLng[] {
+  return vehicles
+    .map((vehicle) => {
+      const lat = vehicle.position?.lat;
+      const lon = vehicle.position?.lon;
+      if (typeof lat !== 'number' || typeof lon !== 'number') {
+        return null;
+      }
+      return { latitude: lat, longitude: lon };
+    })
+    .filter((row): row is LatLng => row !== null);
+}
+
+function fitMapToCoordinates(
+  map: React.ElementRef<typeof OsmMapView> | null,
+  coords: LatLng[],
+  bottomInset = 0,
+  regionLatitudeBias = 0,
+) {
+  if (!coords.length) {
+    map?.animateToRegion(getIslandMapRegion(saoMiguelMapBounds, LIVE_VIEWPORT_PAD), 350);
+    return;
+  }
+
+  const edgePadding = {
+    ...LIVE_EDGE_PADDING,
+    bottom: LIVE_EDGE_PADDING.bottom + bottomInset,
+  };
+  if (map && 'fitToCoordinates' in map && typeof map.fitToCoordinates === 'function') {
+    map.fitToCoordinates(coords, { edgePadding, animated: true });
+    return;
+  }
+
+  const region = fitRegionForCoordinates(coords, 0.018);
+  if (regionLatitudeBias !== 0) {
+    region.latitude += region.latitudeDelta * regionLatitudeBias;
+  }
+  map?.animateToRegion(region, 350);
+}
 
 export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function MinibusLiveMap(
   {
@@ -179,29 +221,12 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
       if (typeof lat === 'number' && typeof lon === 'number') {
         coords.push({ latitude: lat, longitude: lon });
       }
-      if (!coords.length) {
-        return;
-      }
-
-      const edgePadding = {
-        top: 56,
-        right: 28,
-        bottom: bottomInset + 28,
-        left: 28,
-      };
-      const map = mapRef.current;
-      if (map && 'fitToCoordinates' in map && typeof map.fitToCoordinates === 'function') {
-        map.fitToCoordinates(coords, { edgePadding, animated: true });
-        return;
-      }
-
-      const region = fitRegionForCoordinates(coords, 0.018);
-      if (bottomInset > 0) {
-        region.latitude += region.latitudeDelta * 0.12;
-      }
-      map?.animateToRegion(region, 350);
+      fitMapToCoordinates(mapRef.current, coords, bottomInset, bottomInset > 0 ? 0.12 : 0);
     },
-  }));
+    fitLiveOverview({ bottomInset = 0 } = {}) {
+      fitMapToCoordinates(mapRef.current, vehicleCoordinates(vehicles), bottomInset, -0.08);
+    },
+  }), [vehicles]);
 
   return (
     <View style={styles.wrap}>

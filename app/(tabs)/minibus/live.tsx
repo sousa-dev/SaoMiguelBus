@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState } from '@/components/ui/StateView';
+import { MinibusLiveFleetBar } from '@/features/minibus/components/MinibusLiveFleetBar';
 import { MinibusLiveLineFilter } from '@/features/minibus/components/MinibusLiveLineFilter';
 import {
   MinibusLiveMap,
@@ -21,6 +22,7 @@ import {
   useMinibusTrackingHealth,
 } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusFleetVehicleDetails } from '@/features/minibus/hooks/useMinibusFleetVehicleDetails';
 import { useMinibusScreenActive } from '@/features/minibus/hooks/useMinibusScreenActive';
 import {
   useMinibusVehicleDetail,
@@ -38,10 +40,10 @@ import {
   vehicleCurrentStopKey,
 } from '@/features/minibus/lib/liveNetworkMapStops';
 import { liveJourneyStopsFromCirculations } from '@/features/minibus/lib/liveJourneyStops';
-import { MINIBUS_LIVE_VEHICLE_SHEET_HEIGHT_RATIO } from '@/features/minibus/lib/liveVehicleSheetLayout';
+import { MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET } from '@/features/minibus/lib/liveVehicleSheetLayout';
 import { track } from '@/lib/analytics';
 import { decodePolyline } from '@/lib/polyline';
-import { space, typography } from '@/lib/tokens';
+import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 const TRY_AGAIN_COOLDOWN_MS = 5000;
@@ -49,19 +51,20 @@ const TRY_AGAIN_COOLDOWN_MS = 5000;
 export default function MinibusLiveScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { height: windowHeight } = useWindowDimensions();
-  const vehicleSheetHeight = Math.round(windowHeight * MINIBUS_LIVE_VEHICLE_SHEET_HEIGHT_RATIO);
   const params = useLocalSearchParams<{ line?: string }>();
   const initialLineSlug = typeof params.line === 'string' ? params.line : null;
 
   const screenActive = useMinibusScreenActive();
   const [selectedLineSlug, setSelectedLineSlug] = useState<string | null>(initialLineSlug);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const busFocused = selectedVehicleId != null;
   const [selectedStopKey, setSelectedStopKey] = useState<string | null>(null);
+  const [sheetHighlightSequence, setSheetHighlightSequence] = useState<number | null>(null);
   const [hideStops, setHideStops] = useState(false);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const mapRef = useRef<MinibusLiveMapHandle>(null);
+  const prevSelectedVehicleIdRef = useRef<string | null>(null);
 
   const healthQuery = useMinibusTrackingHealth({ enabled: screenActive });
   const trackingAvailable = isMinibusTrackingAvailable(healthQuery.data);
@@ -121,6 +124,15 @@ export default function MinibusLiveScreen() {
     const fleet = fleetQuery.data?.vehicles ?? [];
     return filterVehiclesByLineSlug(fleet, lines, selectedLineSlug);
   }, [fleetQuery.data?.vehicles, lines, selectedLineSlug]);
+
+  const fleetVehicleIds = useMemo(() => vehicles.map((vehicle) => vehicle.id), [vehicles]);
+  const { detailsById: fleetVehicleDetailsById } = useMinibusFleetVehicleDetails(
+    fleetVehicleIds,
+    {
+      enabled: screenActive && trackingAvailable,
+      screenActive: screenActive && trackingAvailable,
+    },
+  );
 
   const selectedVehicle = detailQuery.data?.vehicle ?? null;
   const routePolyline = useMemo(() => {
@@ -207,7 +219,13 @@ export default function MinibusLiveScreen() {
     vehicleLine?.slug,
     selectedVehicle?.currentStopSequence,
   );
-  const highlightedStopKey = selectedStopKey ?? autoHighlightedStopKey;
+  const sheetHighlightedStopKey = useMemo(
+    () =>
+      vehicleCurrentStopKey(mapNetworkStops, vehicleLine?.slug, sheetHighlightSequence ?? undefined),
+    [mapNetworkStops, sheetHighlightSequence, vehicleLine?.slug],
+  );
+  const highlightedStopKey =
+    sheetHighlightedStopKey ?? selectedStopKey ?? autoHighlightedStopKey;
   const selectedStopPin = findLiveMapStopPin(mapNetworkStops, selectedStopKey ?? '');
 
   const fitMapToSelectedVehicle = useCallback(() => {
@@ -224,36 +242,68 @@ export default function MinibusLiveScreen() {
     mapRef.current?.fitVehicleRoute({
       vehicle,
       routePolyline,
-      bottomInset: vehicleSheetHeight,
+      bottomInset: 0,
     });
   }, [
     fleetQuery.data?.vehicles,
     routePolyline,
     selectedVehicle,
     selectedVehicleId,
-    vehicleSheetHeight,
   ]);
 
+  const fitMapToLiveOverview = useCallback(() => {
+    mapRef.current?.fitLiveOverview({
+      bottomInset: MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET,
+    });
+  }, []);
+
   useEffect(() => {
-    if (!selectedVehicleId) {
-      return;
-    }
+    const wasSelected = prevSelectedVehicleIdRef.current != null;
+    prevSelectedVehicleIdRef.current = selectedVehicleId;
+
     const timer = setTimeout(() => {
-      fitMapToSelectedVehicle();
+      if (selectedVehicleId) {
+        fitMapToSelectedVehicle();
+        return;
+      }
+      if (wasSelected) {
+        fitMapToLiveOverview();
+      }
     }, 150);
     return () => clearTimeout(timer);
-  }, [fitMapToSelectedVehicle, selectedVehicleId]);
+  }, [fitMapToLiveOverview, fitMapToSelectedVehicle, selectedVehicleId]);
 
   const onVehiclePress = (vehicleId: string) => {
     setSelectedStopKey(null);
+    setSheetHighlightSequence(null);
     setSelectedVehicleId(vehicleId);
     track('minibus', 'live_select', { vehicle_id: vehicleId });
   };
+
+  const onVehicleSheetStopPress = useCallback(
+    (sequence: number) => {
+      setSheetHighlightSequence(sequence);
+      const stopKey = vehicleCurrentStopKey(mapNetworkStops, vehicleLine?.slug, sequence);
+      const pin = stopKey ? findLiveMapStopPin(mapNetworkStops, stopKey) : null;
+      if (pin) {
+        requestAnimationFrame(() => {
+          mapRef.current?.centerOnStop(pin.stop);
+        });
+      }
+      track('minibus', 'live_select', { stop_sequence: sequence, source: 'vehicle_sheet' });
+    },
+    [mapNetworkStops, vehicleLine?.slug],
+  );
+
+  useEffect(() => {
+    setSheetHighlightSequence(null);
+  }, [selectedVehicleId]);
 
   const onStopPress = (stopKey: string) => {
     if (hideStops && !selectedVehicleId) {
       return;
     }
+    setSheetHighlightSequence(null);
     setSelectedVehicleId(null);
     setSelectedStopKey(stopKey);
     track('minibus', 'live_select', { stop_key: stopKey });
@@ -315,21 +365,25 @@ export default function MinibusLiveScreen() {
   return (
     <Screen withStackHeader edges={['left', 'right']}>
       <View style={styles.container}>
-        <View style={styles.filterWrap}>
-          <MinibusLiveLineFilter
-            lines={lines}
-            selectedLineSlug={selectedLineSlug}
-            onSelectLineSlug={onSelectLineSlug}
-          />
-          {fleetQuery.data?.stale ? (
-            <Badge label={t('minibusLiveStale')} tone="accent" size="compact" />
-          ) : null}
-        </View>
+        {!busFocused ? (
+          <>
+            <View style={styles.filterWrap}>
+              <MinibusLiveLineFilter
+                lines={lines}
+                selectedLineSlug={selectedLineSlug}
+                onSelectLineSlug={onSelectLineSlug}
+              />
+              {fleetQuery.data?.stale ? (
+                <Badge label={t('minibusLiveStale')} tone="accent" size="compact" />
+              ) : null}
+            </View>
 
-        <MinibusTrackingFreshness
-          meta={fleetQuery.data}
-          isFetching={fleetQuery.isFetching}
-        />
+            <MinibusTrackingFreshness
+              meta={fleetQuery.data}
+              isFetching={fleetQuery.isFetching}
+            />
+          </>
+        ) : null}
 
         <View style={styles.mapWrap}>
           <MinibusLiveMap
@@ -340,7 +394,7 @@ export default function MinibusLiveScreen() {
             showStops={showMapStops}
             hideStops={hideStops}
             onHideStopsChange={onHideStopsChange}
-            showStopsToggle={selectedVehicleId == null}
+            showStopsToggle={!busFocused}
             routePolyline={routePolyline}
             routeColor={routeColor}
             highlightedStopKey={highlightedStopKey}
@@ -352,21 +406,33 @@ export default function MinibusLiveScreen() {
               <ActivityIndicator color={theme.primary} />
             </View>
           ) : null}
-          {vehicles.length === 0 && fleetQuery.data && !fleetQuery.isFetching && !selectedVehicleId ? (
-            <View style={[styles.emptyBanner, { backgroundColor: theme.surface }]}>
-              <Text style={[typography.body, { color: theme.muted }]}>{t('minibusLiveEmpty')}</Text>
-            </View>
-          ) : null}
+        </View>
+
+        {busFocused ? (
           <MinibusVehicleSheet
             docked
-            visible={selectedVehicleId != null}
+            inline
+            compact
+            visible
             vehicle={selectedVehicle}
             lines={lines}
             trackingMeta={detailQuery.data ?? fleetQuery.data}
             isFetching={detailQuery.isFetching}
+            highlightedStopSequence={sheetHighlightSequence}
+            onStopPress={onVehicleSheetStopPress}
             onClose={() => setSelectedVehicleId(null)}
           />
-        </View>
+        ) : null}
+
+        <MinibusLiveFleetBar
+          vehicles={vehicles}
+          lines={lines}
+          vehicleDetailsById={fleetVehicleDetailsById}
+          selectedVehicleId={selectedVehicleId}
+          onVehiclePress={onVehiclePress}
+          onClearVehicle={() => setSelectedVehicleId(null)}
+          compact={busFocused}
+        />
       </View>
 
       <MinibusLiveStopSheet
@@ -397,13 +463,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.08)',
-  },
-  emptyBanner: {
-    position: 'absolute',
-    left: space.md,
-    right: space.md,
-    bottom: space.lg,
-    padding: space.md,
-    borderRadius: 12,
   },
 });
