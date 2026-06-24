@@ -74,7 +74,7 @@
       "versionCode": 47,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#a9d566"
       },
       "predictiveBackGestureEnabled": true
     },
@@ -91,7 +91,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000000"
+          "backgroundColor": "#a9d566"
         }
       ],
       "@react-native-community/datetimepicker",
