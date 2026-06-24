@@ -12,6 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/lib/dev-logging';
 
 import { AppSidebar } from '@/components/AppSidebar';
+import { BrandedSplashOverlay } from '@/components/BrandedSplashOverlay';
 import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
@@ -22,6 +23,7 @@ import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
 import { useAdFreeWindowBootstrap } from '@/features/ads/hooks/useAdFreeWindow';
 import { useRewardedAdBootstrap } from '@/features/ads/hooks/useRewardedAdBootstrap';
 import { AppOpenOrchestrator } from '@/features/ads/components/AppOpenOrchestrator';
+import { useBrandedSplash } from '@/features/splash/useBrandedSplash';
 import { InterstitialRequestHost } from '@/features/ads/components/InterstitialRequestHost';
 import { AdFreeRewardModalHost } from '@/features/ads/components/AdFreeRewardModalHost';
 import { HopOnHopOffSheetHost } from '@/features/hop-on-hop-off/components/HopOnHopOffSheetHost';
@@ -49,20 +51,17 @@ function AppStatusBar() {
   return <StatusBar style={theme.isDark ? 'light' : 'dark'} />;
 }
 
-function AppShell({ appReady }: { appReady: boolean }) {
+function AppShell({
+  appReady,
+  onSplashDismiss,
+}: {
+  appReady: boolean;
+  onSplashDismiss: () => void;
+}) {
   const { data: bootstrap } = useBootstrap();
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);
-  const splashDismissedRef = React.useRef(false);
-
-  const dismissSplash = React.useCallback(() => {
-    if (splashDismissedRef.current) {
-      return;
-    }
-    splashDismissedRef.current = true;
-    void SplashScreen.hideAsync();
-  }, []);
 
   // Load token + refresh profile after persist rehydration (avoids stale cached user).
   useEffect(() => {
@@ -162,7 +161,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <InterstitialRequestHost />
           <HopOnHopOffSheetHost />
         </ConsentGate>
-        <AppOpenOrchestrator appReady={appReady} onSplashDismiss={dismissSplash} />
+        <AppOpenOrchestrator appReady={appReady} onSplashDismiss={onSplashDismiss} />
       </ThemeProvider>
     </SafeAreaProvider>
   );
@@ -172,12 +171,17 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const { overlayVisible, dismissSplash, onOverlayLayout, hideNativeForWeb } = useBrandedSplash(loaded);
 
   useEffect(() => {
     if (error) {
       throw error;
     }
   }, [error]);
+
+  useEffect(() => {
+    hideNativeForWeb();
+  }, [hideNativeForWeb]);
 
   if (!loaded) {
     return null;
@@ -187,7 +191,8 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppQueryProvider>
         <NetworkProvider>
-          <AppShell appReady={loaded} />
+          <AppShell appReady={loaded} onSplashDismiss={dismissSplash} />
+          <BrandedSplashOverlay visible={overlayVisible} onLayout={onOverlayLayout} />
         </NetworkProvider>
       </AppQueryProvider>
     </GestureHandlerRootView>
