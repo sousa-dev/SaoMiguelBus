@@ -44,9 +44,10 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 - Gated by bootstrap `inAppReviewEnabled` (from API `AppReleaseConfig.in_app_review_enabled`, **default off**). Client never calls `StoreReview.requestReview()` when false.
 - **`expo-store-review` requires a dev client or EAS build** — same as AdMob/IAP; not meaningful in Expo Go.
 - Central entry: `features/app-review/lib/maybe-request-app-review.ts` (`maybeRequestAppReview`). Local guards: native iOS/Android only, max 3 attempts, 30-day cooldown, each automatic trigger fires once per install.
+- **Satisfaction gate:** before native store review, an alert asks if the user is enjoying the app. **Yes** → store review; **Not really** → `/feedback` with `preset=appReview` (does not count as a store review attempt). Dismiss → no action.
 - **Automatic triggers (when enabled):** minibus live engaged (15s with vehicles), marketplace listing created, marketplace review submitted, 3rd successful transit search.
 - **Manual:** Settings **Rate the App** row (visible only when API flag enabled).
-- Store URL fallback uses bootstrap `storeUrls` from release config. Analytics: `app` / `review_prompt_requested` when consent allows.
+- Store URL fallback uses bootstrap `storeUrls` from release config. Analytics: `app` / `review_prompt_requested` and `review_prompt_redirected_feedback` when consent allows.
 
 ## PDL Mini Bus maps
 

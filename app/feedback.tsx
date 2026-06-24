@@ -41,6 +41,11 @@ const CATEGORIES: { value: FeedbackCategory; labelKey: string; icon: LucideIcon 
 const PRESET_SUBJECT_KEY: Record<string, string> = {
   newsSource: 'feedbackPresetNewsSource',
   trail: 'feedbackPresetTrail',
+  appReview: 'feedbackPresetAppReviewSubject',
+};
+
+const PRESET_DESCRIPTION_PLACEHOLDER_KEY: Record<string, string> = {
+  appReview: 'feedbackPresetAppReviewDescriptionPlaceholder',
 };
 
 function isCategory(value: string | undefined): value is FeedbackCategory {
@@ -61,6 +66,10 @@ export default function FeedbackScreen() {
   const presetSubject = params.preset && PRESET_SUBJECT_KEY[params.preset]
     ? t(PRESET_SUBJECT_KEY[params.preset])
     : '';
+  const presetDescriptionPlaceholder =
+    params.preset && PRESET_DESCRIPTION_PLACEHOLDER_KEY[params.preset]
+      ? t(PRESET_DESCRIPTION_PLACEHOLDER_KEY[params.preset])
+      : t('feedbackDescriptionPlaceholder');
 
   const [subject, setSubject] = useState(presetSubject);
   const [description, setDescription] = useState('');
@@ -142,6 +151,9 @@ export default function FeedbackScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <ScreenTopAdBanner embedded />
           {notice ? <Banner variant={notice.variant} message={notice.message} /> : null}
+          {params.preset === 'appReview' ? (
+            <Banner variant="info" message={t('feedbackAppReviewIntro')} />
+          ) : null}
 
           <Card elevated>
             <Text style={[typography.overline, { color: theme.muted, marginBottom: space.md }]}>
@@ -200,7 +212,7 @@ export default function FeedbackScreen() {
               label={t('feedbackDescriptionLabel')}
               value={description}
               onChangeText={setDescription}
-              placeholder={t('feedbackDescriptionPlaceholder')}
+              placeholder={presetDescriptionPlaceholder}
               multiline
               numberOfLines={5}
             />

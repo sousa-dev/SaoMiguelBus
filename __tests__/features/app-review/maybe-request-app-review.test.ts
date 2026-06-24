@@ -27,6 +27,9 @@ type TestRuntime = AppReviewRuntime & {
     openStoreUrl: number;
     trackAttempt: number;
     recordAttempt: number;
+    openNegativeFeedback: number;
+    recordDeclined: number;
+    trackSatisfactionDeclined: number;
   };
   getStorage: () => AppReviewStorageState;
 };
@@ -38,6 +41,9 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
     openStoreUrl: 0,
     trackAttempt: 0,
     recordAttempt: 0,
+    openNegativeFeedback: 0,
+    recordDeclined: 0,
+    trackSatisfactionDeclined: 0,
   };
 
   const runtime: TestRuntime = {
@@ -54,6 +60,16 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
       };
       return storage;
     },
+    recordDeclined: async (trigger, previous) => {
+      calls.recordDeclined += 1;
+      storage = {
+        ...previous,
+        seenTriggers: previous.seenTriggers.includes(trigger)
+          ? previous.seenTriggers
+          : [...previous.seenTriggers, trigger],
+      };
+      return storage;
+    },
     isStoreReviewAvailable: async () => true,
     requestStoreReview: async () => {
       calls.requestStoreReview += 1;
@@ -62,8 +78,15 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
       calls.openStoreUrl += 1;
       return true;
     },
+    askSatisfaction: async () => 'enjoying',
+    openNegativeFeedback: async () => {
+      calls.openNegativeFeedback += 1;
+    },
     trackAttempt: () => {
       calls.trackAttempt += 1;
+    },
+    trackSatisfactionDeclined: () => {
+      calls.trackSatisfactionDeclined += 1;
     },
     now: () => Date.parse('2026-06-24T12:00:00.000Z'),
     platform: () => 'ios',
@@ -90,7 +113,7 @@ describe('maybeRequestAppReview', () => {
     assert.equal(runtime.calls.requestStoreReview, 0);
   });
 
-  it('records attempt and tracks on native success', async () => {
+  it('records attempt and tracks after positive satisfaction', async () => {
     const runtime = createRuntime();
     const result = await maybeRequestAppReview(
       {
@@ -105,6 +128,45 @@ describe('maybeRequestAppReview', () => {
     assert.equal(runtime.calls.recordAttempt, 1);
     assert.equal(runtime.calls.trackAttempt, 1);
     assert.deepEqual(runtime.getStorage().seenTriggers, ['marketplace_listing_created']);
+  });
+
+  it('redirects to feedback when the user is not enjoying the app', async () => {
+    const runtime = createRuntime({
+      askSatisfaction: async () => 'not_enjoying',
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'minibus_live_engaged',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, false);
+    assert.equal(runtime.calls.openNegativeFeedback, 1);
+    assert.equal(runtime.calls.recordDeclined, 1);
+    assert.equal(runtime.calls.trackSatisfactionDeclined, 1);
+    assert.equal(runtime.calls.requestStoreReview, 0);
+    assert.equal(runtime.calls.recordAttempt, 0);
+    assert.deepEqual(runtime.getStorage().seenTriggers, ['minibus_live_engaged']);
+  });
+
+  it('does not record automatic trigger decline for manual settings flow', async () => {
+    const runtime = createRuntime({
+      askSatisfaction: async () => 'not_enjoying',
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'settings_manual',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, false);
+    assert.equal(runtime.calls.openNegativeFeedback, 1);
+    assert.equal(runtime.calls.recordDeclined, 0);
+    assert.deepEqual(runtime.getStorage().seenTriggers, []);
   });
 
   it('falls back to store URL when native review is unavailable', async () => {
@@ -140,5 +202,22 @@ describe('maybeRequestAppReview', () => {
     );
     assert.equal(result, false);
     assert.equal(runtime.calls.requestStoreReview, 0);
+  });
+
+  it('skips store review when satisfaction prompt is dismissed', async () => {
+    const runtime = createRuntime({
+      askSatisfaction: async () => 'dismissed',
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'marketplace_review_submitted',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, false);
+    assert.equal(runtime.calls.requestStoreReview, 0);
+    assert.equal(runtime.calls.recordAttempt, 0);
   });
 });

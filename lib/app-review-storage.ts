@@ -80,6 +80,23 @@ export async function incrementTransitSuccessfulSearchCount(
   };
 }
 
+export async function recordAppReviewDeclined(
+  trigger: string,
+  previous: AppReviewStorageState,
+): Promise<AppReviewStorageState> {
+  if (previous.seenTriggers.includes(trigger)) {
+    return previous;
+  }
+
+  const next: AppReviewStorageState = {
+    ...previous,
+    seenTriggers: [...previous.seenTriggers, trigger],
+  };
+
+  await AsyncStorage.setItem(SEEN_TRIGGERS_KEY, JSON.stringify(next.seenTriggers));
+  return next;
+}
+
 export async function clearAppReviewStorageForTests(): Promise<void> {
   await Promise.all([
     AsyncStorage.removeItem(LAST_ATTEMPT_AT_KEY),

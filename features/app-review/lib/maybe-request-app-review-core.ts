@@ -7,6 +7,7 @@ import {
   incrementTransitSuccessfulSearchCount,
   type AppReviewStorageState,
 } from '@/lib/app-review-storage';
+import type { AppReviewSatisfaction } from '@/features/app-review/lib/app-review-satisfaction';
 import type { BootstrapResponse } from '@/lib/types';
 
 export type MaybeRequestAppReviewInput = {
@@ -25,7 +26,14 @@ export type AppReviewRuntime = {
   isStoreReviewAvailable: () => Promise<boolean>;
   requestStoreReview: () => Promise<void>;
   openStoreUrl: (url: string) => Promise<boolean>;
+  askSatisfaction: () => Promise<AppReviewSatisfaction>;
+  openNegativeFeedback: (trigger: AppReviewTrigger) => Promise<void>;
+  recordDeclined: (
+    trigger: AppReviewTrigger,
+    previous: AppReviewStorageState,
+  ) => Promise<AppReviewStorageState>;
   trackAttempt: (trigger: AppReviewTrigger) => void;
+  trackSatisfactionDeclined: (trigger: AppReviewTrigger) => void;
   now: () => number;
   platform: () => 'ios' | 'android' | 'web';
 };
@@ -49,6 +57,19 @@ export async function maybeRequestAppReview(
       nowMs,
     })
   ) {
+    return false;
+  }
+
+  const satisfaction = await runtime.askSatisfaction();
+  if (satisfaction === 'dismissed') {
+    return false;
+  }
+  if (satisfaction === 'not_enjoying') {
+    await runtime.openNegativeFeedback(input.trigger);
+    if (input.trigger !== 'settings_manual') {
+      await runtime.recordDeclined(input.trigger, storage);
+    }
+    runtime.trackSatisfactionDeclined(input.trigger);
     return false;
   }
 
