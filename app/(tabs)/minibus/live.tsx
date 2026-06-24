@@ -42,6 +42,7 @@ import {
 import { liveJourneyStopsFromCirculations } from '@/features/minibus/lib/liveJourneyStops';
 import { MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET } from '@/features/minibus/lib/liveVehicleSheetLayout';
 import { track } from '@/lib/analytics';
+import { useNetwork } from '@/lib/network-provider';
 import { decodePolyline } from '@/lib/polyline';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -55,6 +56,7 @@ export default function MinibusLiveScreen() {
   const initialLineSlug = typeof params.line === 'string' ? params.line : null;
 
   const screenActive = useMinibusScreenActive();
+  const { isOnline } = useNetwork();
   const [selectedLineSlug, setSelectedLineSlug] = useState<string | null>(initialLineSlug);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const busFocused = selectedVehicleId != null;
@@ -66,8 +68,8 @@ export default function MinibusLiveScreen() {
   const mapRef = useRef<MinibusLiveMapHandle>(null);
   const prevSelectedVehicleIdRef = useRef<string | null>(null);
 
-  const healthQuery = useMinibusTrackingHealth({ enabled: screenActive });
-  const trackingAvailable = isMinibusTrackingAvailable(healthQuery.data);
+  const healthQuery = useMinibusTrackingHealth({ enabled: screenActive && isOnline });
+  const trackingAvailable = isOnline && isMinibusTrackingAvailable(healthQuery.data);
 
   const linesQuery = useMinibusLines(trackingAvailable);
   const lines = linesQuery.data?.lines ?? [];
@@ -340,6 +342,14 @@ export default function MinibusLiveScreen() {
     cooldownSeconds > 0
       ? t('minibusLiveTryAgainWait', { seconds: cooldownSeconds })
       : t('minibusLiveTryAgain');
+
+  if (!isOnline) {
+    return (
+      <Screen withStackHeader>
+        <MinibusTrackingUnavailable variant="offline" />
+      </Screen>
+    );
+  }
 
   if (healthQuery.isLoading && healthQuery.data == null) {
     return (

@@ -1155,6 +1155,8 @@
     "minibusLiveError": "Live tracking is unavailable. Try again later.",
     "minibusLiveUnavailable": "Live tracking isn't available right now",
     "minibusLiveUnavailableHint": "We can't reach the live bus feed at the moment. Check back in a bit.",
+    "minibusLiveOffline": "Live tracking needs internet",
+    "minibusLiveOfflineHint": "Connect to the internet to see buses on the map in real time.",
     "minibusLiveTryAgain": "Try again",
     "minibusLiveTryAgainWait": "Try again in {{seconds}}s",
     "minibusLiveStale": "Delayed data",

@@ -1155,6 +1155,8 @@
     "minibusLiveError": "A localização ao vivo está indisponível. Tente mais tarde.",
     "minibusLiveUnavailable": "A localização ao vivo está indisponível de momento",
     "minibusLiveUnavailableHint": "Não conseguimos aceder aos dados em tempo real. Tente novamente dentro de momentos.",
+    "minibusLiveOffline": "A localização ao vivo precisa de internet",
+    "minibusLiveOfflineHint": "Ligue-se à internet para ver os autocarros no mapa em tempo real.",
     "minibusLiveTryAgain": "Tentar novamente",
     "minibusLiveTryAgainWait": "Tentar novamente em {{seconds}}s",
     "minibusLiveStale": "Dados com atraso",

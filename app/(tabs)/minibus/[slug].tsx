@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { RequiresInternet } from '@/components/RequiresInternet';
 import { Button } from '@/components/ui/Button';
 import { ErrorState, LoadingState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
@@ -21,13 +22,15 @@ import {
   resolveMinibusLineDetail,
 } from '@/features/minibus/resolveLineDetail';
 import {
-  isMinibusTrackingAvailable,
-  useMinibusTrackingHealth,
-} from '@/features/minibus/hooks/useMinibusTrackingHealth';
+  isMinibusLiveEntryEnabled,
+  shouldShowMinibusLiveEntry,
+} from '@/features/minibus/lib/liveEntryVisibility';
+import { useMinibusTrackingHealth } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { localLineImageUri } from '@/features/minibus/offline';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
 import { track } from '@/lib/analytics';
 import { logger } from '@/lib/logger';
+import { useNetwork } from '@/lib/network-provider';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -38,8 +41,10 @@ export default function MinibusLineDetailScreen() {
   const slug = minibusRouteParam(useLocalSearchParams<{ slug?: string | string[] }>().slug);
   const lineQuery = useMinibusLine(slug, Boolean(slug));
   const linesQuery = useMinibusLines(Boolean(slug));
+  const { isOnline } = useNetwork();
   const healthQuery = useMinibusTrackingHealth({ enabled: Boolean(slug) });
-  const showLiveTracking = isMinibusTrackingAvailable(healthQuery.data);
+  const showLiveEntry = shouldShowMinibusLiveEntry(isOnline, healthQuery.data);
+  const liveEntryEnabled = isMinibusLiveEntryEnabled(isOnline, healthQuery.data);
   const { snapshot } = useMinibusOffline();
   const offlineNetwork = snapshot?.bundle?.network ?? null;
   const networkQuery = useMinibusNetwork(!offlineNetwork);
@@ -128,16 +133,22 @@ export default function MinibusLineDetailScreen() {
           {formatServiceSummary(line.service_summary, t)}
         </Text>
 
-        {showLiveTracking ? (
-          <Button
-            variant="secondary"
-            label={t('minibusLiveTracking')}
-            onPress={() => {
-              track('minibus', 'live_entry_open', { source: 'line_detail', line: line.code });
-              router.push(`/minibus/live?line=${encodeURIComponent(line.slug)}`);
-            }}
-            style={{ marginTop: space.md }}
-          />
+        {showLiveEntry ? (
+          <RequiresInternet hideMessage>
+            <Button
+              variant="secondary"
+              label={t('minibusLiveTracking')}
+              disabled={!liveEntryEnabled}
+              onPress={() => {
+                if (!liveEntryEnabled) {
+                  return;
+                }
+                track('minibus', 'live_entry_open', { source: 'line_detail', line: line.code });
+                router.push(`/minibus/live?line=${encodeURIComponent(line.slug)}`);
+              }}
+              style={{ marginTop: space.md }}
+            />
+          </RequiresInternet>
         ) : null}
 
         <MinibusLineStopsList

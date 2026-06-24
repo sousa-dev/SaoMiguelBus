@@ -3,18 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { staticIslandConfig } from '@/config/island';
 import { fetchMinibusTrackingHealth } from '@/lib/api';
-import type { MinibusTrackingHealthResponse } from '@/lib/types';
+
+export { isMinibusTrackingAvailable } from '@/features/minibus/lib/trackingHealth';
 
 const DEFAULT_STALE_MS = 30_000;
 
 export function minibusTrackingHealthQueryKey(islandKey: string = staticIslandConfig.islandKey) {
   return ['minibus', 'v1', 'tracking-health', islandKey] as const;
-}
-
-export function isMinibusTrackingAvailable(
-  data: MinibusTrackingHealthResponse | undefined,
-): boolean {
-  return data?.available === true;
 }
 
 type HealthQueryOptions = {
