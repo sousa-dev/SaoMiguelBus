@@ -183,6 +183,43 @@ describe('maybeRequestAppReview', () => {
     );
     assert.equal(result, true);
     assert.equal(runtime.calls.openStoreUrl, 1);
+    assert.equal(runtime.calls.requestStoreReview, 0);
+  });
+
+  it('opens the store listing directly for manual settings taps', async () => {
+    const runtime = createRuntime();
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'settings_manual',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, true);
+    assert.equal(runtime.calls.openStoreUrl, 1);
+    assert.equal(runtime.calls.requestStoreReview, 0);
+  });
+
+  it('falls back to store URL when native review throws', async () => {
+    const runtime = createRuntime({
+      isStoreReviewAvailable: async () => true,
+      requestStoreReview: async () => {
+        runtime.calls.requestStoreReview += 1;
+        throw new Error('review unavailable');
+      },
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'marketplace_listing_created',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, true);
+    assert.equal(runtime.calls.requestStoreReview, 1);
+    assert.equal(runtime.calls.openStoreUrl, 1);
   });
 
   it('skips when automatic trigger was already seen', async () => {

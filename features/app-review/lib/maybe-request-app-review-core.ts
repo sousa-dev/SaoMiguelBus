@@ -1,5 +1,5 @@
+import { attemptAppStoreReview } from '@/features/app-review/lib/attempt-app-store-review';
 import {
-  resolveStoreUrl,
   shouldAttemptAppReview,
   type AppReviewTrigger,
 } from '@/features/app-review/lib/should-attempt-app-review';
@@ -74,17 +74,14 @@ export async function maybeRequestAppReview(
   }
 
   const attemptedAt = new Date(nowMs).toISOString();
-  let didAttempt = false;
-
-  if (await runtime.isStoreReviewAvailable()) {
-    await runtime.requestStoreReview();
-    didAttempt = true;
-  } else {
-    const storeUrl = resolveStoreUrl(platform, input.storeUrls);
-    if (storeUrl) {
-      didAttempt = await runtime.openStoreUrl(storeUrl);
-    }
-  }
+  const didAttempt = await attemptAppStoreReview(
+    {
+      trigger: input.trigger,
+      platform,
+      storeUrls: input.storeUrls,
+    },
+    runtime,
+  );
 
   if (!didAttempt) {
     return false;

@@ -29,15 +29,18 @@ export function shouldAttemptAppReview(input: {
   if (!isNativeStorePlatform(input.platform)) {
     return false;
   }
-  if (input.attemptCount >= APP_REVIEW_MAX_ATTEMPTS) {
-    return false;
-  }
 
-  const nowMs = input.nowMs ?? Date.now();
-  if (input.lastAttemptAt) {
-    const lastAttemptMs = Date.parse(input.lastAttemptAt);
-    if (Number.isFinite(lastAttemptMs) && nowMs - lastAttemptMs < APP_REVIEW_COOLDOWN_MS) {
+  if (input.trigger !== 'settings_manual') {
+    if (input.attemptCount >= APP_REVIEW_MAX_ATTEMPTS) {
       return false;
+    }
+
+    const nowMs = input.nowMs ?? Date.now();
+    if (input.lastAttemptAt) {
+      const lastAttemptMs = Date.parse(input.lastAttemptAt);
+      if (Number.isFinite(lastAttemptMs) && nowMs - lastAttemptMs < APP_REVIEW_COOLDOWN_MS) {
+        return false;
+      }
     }
   }
 
@@ -48,15 +51,20 @@ export function shouldAttemptAppReview(input: {
   return true;
 }
 
+const DEFAULT_STORE_URLS = {
+  ios: 'https://apps.apple.com/app/id6777066837',
+  android: 'https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros',
+} as const;
+
 export function resolveStoreUrl(
   platform: AnalyticsPlatform,
   storeUrls?: { ios: string; android: string },
 ): string | null {
   if (platform === 'ios') {
-    return storeUrls?.ios ?? null;
+    return storeUrls?.ios ?? DEFAULT_STORE_URLS.ios;
   }
   if (platform === 'android') {
-    return storeUrls?.android ?? null;
+    return storeUrls?.android ?? DEFAULT_STORE_URLS.android;
   }
   return null;
 }

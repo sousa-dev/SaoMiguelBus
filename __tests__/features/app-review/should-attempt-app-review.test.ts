@@ -44,7 +44,7 @@ describe('shouldAttemptAppReview', () => {
       shouldAttemptAppReview({
         inAppReviewEnabled: true,
         platform: 'android',
-        trigger: 'settings_manual',
+        trigger: 'marketplace_listing_created',
         attemptCount: 3,
         lastAttemptAt: null,
         seenTriggers: [],
@@ -54,7 +54,37 @@ describe('shouldAttemptAppReview', () => {
     );
   });
 
+  it('allows manual trigger even when attempt cap reached', () => {
+    assert.equal(
+      shouldAttemptAppReview({
+        inAppReviewEnabled: true,
+        platform: 'android',
+        trigger: 'settings_manual',
+        attemptCount: 3,
+        lastAttemptAt: null,
+        seenTriggers: [],
+        nowMs: NOW,
+      }),
+      true,
+    );
+  });
+
   it('returns false during cooldown', () => {
+    assert.equal(
+      shouldAttemptAppReview({
+        inAppReviewEnabled: true,
+        platform: 'ios',
+        trigger: 'minibus_live_engaged',
+        attemptCount: 1,
+        lastAttemptAt: new Date(NOW - APP_REVIEW_COOLDOWN_MS + 1000).toISOString(),
+        seenTriggers: [],
+        nowMs: NOW,
+      }),
+      false,
+    );
+  });
+
+  it('allows manual trigger during cooldown', () => {
     assert.equal(
       shouldAttemptAppReview({
         inAppReviewEnabled: true,
@@ -65,7 +95,7 @@ describe('shouldAttemptAppReview', () => {
         seenTriggers: [],
         nowMs: NOW,
       }),
-      false,
+      true,
     );
   });
 

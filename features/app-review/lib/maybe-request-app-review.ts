@@ -28,12 +28,22 @@ const defaultRuntime: AppReviewRuntime = {
   isStoreReviewAvailable: () => StoreReview.isAvailableAsync(),
   requestStoreReview: () => StoreReview.requestReview(),
   openStoreUrl: async (url: string) => {
-    const canOpen = await Linking.canOpenURL(url);
-    if (!canOpen) {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+        return true;
+      }
+    } catch {
+      // canOpenURL can fail for valid https store links on some builds.
+    }
+
+    try {
+      await Linking.openURL(url);
+      return true;
+    } catch {
       return false;
     }
-    await Linking.openURL(url);
-    return true;
   },
   askSatisfaction: () =>
     askAppReviewSatisfaction({
