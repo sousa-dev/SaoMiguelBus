@@ -23,6 +23,16 @@ export interface BootstrapResponse {
   infos: Record<string, unknown>[];
 }
 
+export type AppUpdateMode = 'optional' | 'required';
+
+export interface AppUpdateCheckResponse {
+  updateRequired: boolean;
+  updateMode?: AppUpdateMode;
+  currentVersion: string;
+  clientVersion: string;
+  storeUrl?: string;
+}
+
 export interface Stop {
   id: number;
   name: string;

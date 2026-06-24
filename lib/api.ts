@@ -1,5 +1,6 @@
 import { staticIslandConfig } from '@/config/island';
 import { resolvePublicTrackingUrl } from '@/features/minibus/lib/trackingAttribution';
+import { buildAppUpdateCheckPath } from '@/lib/app-update-api';
 import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
@@ -13,6 +14,7 @@ import type {
   Entitlement,
   SocialProvider,
   BootstrapResponse,
+  AppUpdateCheckResponse,
   ConsentPurposes,
   PersonaProfile,
   PersonaProfileResponse,
@@ -249,6 +251,15 @@ export async function fetchEntitlement(): Promise<Entitlement> {
 
 export async function fetchBootstrap(): Promise<BootstrapResponse> {
   return apiFetch<BootstrapResponse>('/api/v3/bootstrap');
+}
+
+export { buildAppUpdateCheckPath } from '@/lib/app-update-api';
+
+export async function fetchAppUpdateCheck(params: {
+  platform: 'ios' | 'android';
+  version: string;
+}): Promise<AppUpdateCheckResponse> {
+  return apiFetch<AppUpdateCheckResponse>(buildAppUpdateCheckPath(params));
 }
 
 /** Legacy bulk payload for offline search (compat with SaoMiguelBus-webapp). */

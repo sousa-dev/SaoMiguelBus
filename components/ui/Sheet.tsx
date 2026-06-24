@@ -23,9 +23,18 @@ type SheetProps = {
   title?: string;
   children: ReactNode;
   scrollable?: boolean;
+  /** When false, scrim tap and close button are disabled (blocking sheets). */
+  dismissable?: boolean;
 };
 
-export function Sheet({ visible, onClose, title, children, scrollable = true }: SheetProps) {
+export function Sheet({
+  visible,
+  onClose,
+  title,
+  children,
+  scrollable = true,
+  dismissable = true,
+}: SheetProps) {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -45,12 +54,12 @@ export function Sheet({ visible, onClose, title, children, scrollable = true }: 
       transparent
       animationType="slide"
       presentationStyle="overFullScreen"
-      onRequestClose={onClose}
+      onRequestClose={dismissable ? onClose : () => {}}
     >
       <View style={styles.root}>
         <Pressable
           style={[styles.scrim, { backgroundColor: theme.scrim }]}
-          onPress={onClose}
+          onPress={dismissable ? onClose : undefined}
           accessibilityRole="button"
           accessibilityLabel="Close"
         />
@@ -64,7 +73,9 @@ export function Sheet({ visible, onClose, title, children, scrollable = true }: 
           {title ? (
             <View style={styles.titleRow}>
               <Text style={[typography.headline, styles.titleText, { color: theme.text }]}>{title}</Text>
-              <IconButton icon={X} accessibilityLabel="Close" onPress={onClose} />
+              {dismissable ? (
+                <IconButton icon={X} accessibilityLabel="Close" onPress={onClose} />
+              ) : null}
             </View>
           ) : null}
           {body}

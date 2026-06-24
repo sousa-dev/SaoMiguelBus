@@ -31,6 +31,14 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 - Env: `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`, optional `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` (default `Sao Miguel Hub Premium`).
 - Requires a dev client or EAS build — IAP does not run in Expo Go.
 
+## App update prompt
+
+- On cold start and foreground (when online), the app calls `GET /api/v3/app/update-check` with `platform` + `expo.version`. If the installed build is behind the API release, `AppUpdatePrompt` opens the correct store via `Linking.openURL`.
+- Release versions and update modes are edited live in the API Django admin (`App release configs` per island), not in the mobile app env.
+- **`optional`** (default): dismissible `Alert` — “Later” is remembered until the API bumps `currentVersion` (`app_update_dismissed_version` in AsyncStorage).
+- **`required`**: blocking sheet (no dismiss) until the user taps Update — configured per platform on the API (`APP_UPDATE_IOS_MODE` / `APP_UPDATE_ANDROID_MODE`).
+- Skipped on web. Analytics: `app` / `update_prompt_shown` and `update_prompt_click` when consent allows.
+
 ## PDL Mini Bus maps
 
 - Stop coordinates ship in the offline bundle (`network.lines[].stops[]`: `latitude`, `longitude`, `external_id`) and on journey leg `board`/`alight` refs from `GET /api/v3/minibus/route`.

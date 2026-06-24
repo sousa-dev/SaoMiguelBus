@@ -16,6 +16,7 @@ import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
+import { AppUpdatePrompt } from '@/features/app-update/components/AppUpdatePrompt';
 import { SaveSubscriptionPrompt } from '@/features/premium/components/SaveSubscriptionPrompt';
 import { useAdMobInit } from '@/features/ads/hooks/useAdMobInit';
 import { useAdFreeWindowBootstrap } from '@/features/ads/hooks/useAdFreeWindow';
@@ -155,6 +156,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
           <AppSidebar />
           <GlobalOfflineBanner />
           <PremiumOfflinePrompt />
+          <AppUpdatePrompt />
           <SaveSubscriptionPrompt />
           <AdFreeRewardModalHost />
           <InterstitialRequestHost />
