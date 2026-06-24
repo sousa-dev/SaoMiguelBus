@@ -10,6 +10,8 @@ import {
   voteTrip,
 } from '@/lib/api';
 import { track } from '@/lib/analytics';
+import { resolveInAppReviewConfig } from '@/features/app-review/lib/in-app-review-config';
+import { recordTransitSearchSuccessAndMaybeReview } from '@/features/app-review/lib/maybe-request-app-review';
 import {
   resolveVoteVerb,
   useProfileStore,
@@ -49,6 +51,7 @@ export function useTransitSearch(params: {
   start: string;
   enabled: boolean;
 }) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ['transit', 'search', params],
     queryFn: async () => {
@@ -64,6 +67,13 @@ export function useTransitSearch(params: {
         day_type: params.day,
         start_time: params.start,
         results_count: results.length,
+      });
+      const bootstrap = queryClient.getQueryData<BootstrapResponse>(['bootstrap', 'v3']);
+      const reviewConfig = resolveInAppReviewConfig(bootstrap);
+      void recordTransitSearchSuccessAndMaybeReview({
+        resultsCount: results.length,
+        inAppReviewEnabled: reviewConfig.enabled,
+        storeUrls: reviewConfig.storeUrls,
       });
       return results;
     },

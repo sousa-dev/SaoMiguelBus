@@ -4,6 +4,7 @@ import {
   Megaphone,
   ShieldCheck,
   Sparkles,
+  Star,
   TimerReset,
   Trash2,
   UserRound,
@@ -23,6 +24,8 @@ import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
+import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
+import { maybeRequestAppReview } from '@/features/app-review/lib/maybe-request-app-review';
 import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
@@ -74,6 +77,7 @@ export default function SettingsScreen() {
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
   const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
   const requestSplashPreview = useSplashDevStore((s) => s.requestPreview);
+  const reviewConfig = useInAppReviewConfig();
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
 
@@ -345,6 +349,19 @@ export default function SettingsScreen() {
             title={t('privacyPolicy')}
             onPress={() => void WebBrowser.openBrowserAsync(LEGAL_URLS.privacy)}
           />
+          {reviewConfig.enabled ? (
+            <ListRow
+              icon={Star}
+              title={t('rateApp')}
+              onPress={() =>
+                void maybeRequestAppReview({
+                  trigger: 'settings_manual',
+                  inAppReviewEnabled: reviewConfig.enabled,
+                  storeUrls: reviewConfig.storeUrls,
+                })
+              }
+            />
+          ) : null}
         </View>
       </ScrollView>
     </Screen>

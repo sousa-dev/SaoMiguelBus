@@ -16,6 +16,8 @@ import { MinibusTrackingFreshness } from '@/features/minibus/components/MinibusT
 import { MinibusTrackingUnavailable } from '@/features/minibus/components/MinibusTrackingUnavailable';
 import { MinibusLiveStopSheet } from '@/features/minibus/components/MinibusLiveStopSheet';
 import { MinibusVehicleSheet } from '@/features/minibus/components/MinibusVehicleSheet';
+import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
+import { maybeRequestAppReview } from '@/features/app-review/lib/maybe-request-app-review';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import {
   isMinibusTrackingAvailable,
@@ -48,6 +50,7 @@ import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 const TRY_AGAIN_COOLDOWN_MS = 5000;
+const LIVE_REVIEW_ENGAGEMENT_MS = 15000;
 
 export default function MinibusLiveScreen() {
   const theme = useAppTheme();
@@ -67,6 +70,8 @@ export default function MinibusLiveScreen() {
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const mapRef = useRef<MinibusLiveMapHandle>(null);
   const prevSelectedVehicleIdRef = useRef<string | null>(null);
+  const liveReviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reviewConfig = useInAppReviewConfig();
 
   const healthQuery = useMinibusTrackingHealth({ enabled: screenActive && isOnline });
   const trackingAvailable = isOnline && isMinibusTrackingAvailable(healthQuery.data);
@@ -94,6 +99,10 @@ export default function MinibusLiveScreen() {
       track('minibus', 'view', { screen: 'live' });
       void healthQuery.refetch();
       return () => {
+        if (liveReviewTimerRef.current) {
+          clearTimeout(liveReviewTimerRef.current);
+          liveReviewTimerRef.current = null;
+        }
         setSelectedVehicleId(null);
         setSelectedStopKey(null);
       };
@@ -126,6 +135,38 @@ export default function MinibusLiveScreen() {
     const fleet = fleetQuery.data?.vehicles ?? [];
     return filterVehiclesByLineSlug(fleet, lines, selectedLineSlug);
   }, [fleetQuery.data?.vehicles, lines, selectedLineSlug]);
+
+  useEffect(() => {
+    if (liveReviewTimerRef.current) {
+      clearTimeout(liveReviewTimerRef.current);
+      liveReviewTimerRef.current = null;
+    }
+
+    if (!screenActive || !trackingAvailable || vehicles.length === 0 || !reviewConfig.enabled) {
+      return;
+    }
+
+    liveReviewTimerRef.current = setTimeout(() => {
+      void maybeRequestAppReview({
+        trigger: 'minibus_live_engaged',
+        inAppReviewEnabled: reviewConfig.enabled,
+        storeUrls: reviewConfig.storeUrls,
+      });
+    }, LIVE_REVIEW_ENGAGEMENT_MS);
+
+    return () => {
+      if (liveReviewTimerRef.current) {
+        clearTimeout(liveReviewTimerRef.current);
+        liveReviewTimerRef.current = null;
+      }
+    };
+  }, [
+    reviewConfig.enabled,
+    reviewConfig.storeUrls,
+    screenActive,
+    trackingAvailable,
+    vehicles.length,
+  ]);
 
   const fleetVehicleIds = useMemo(() => vehicles.map((vehicle) => vehicle.id), [vehicles]);
   const { detailsById: fleetVehicleDetailsById } = useMinibusFleetVehicleDetails(

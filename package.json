@@ -28,6 +28,7 @@
     "expo-secure-store": "~56.0.4",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
+    "expo-store-review": "~56.0.3",
     "expo-symbols": "~56.0.5",
     "expo-system-ui": "~56.0.5",
     "expo-tracking-transparency": "~56.0.5",

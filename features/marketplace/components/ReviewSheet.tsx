@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { Sheet } from '@/components/ui/Sheet';
 import { useSubmitReview } from '@/features/marketplace/hooks/useMarketplaceQueries';
+import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
+import { maybeRequestAppReview } from '@/features/app-review/lib/maybe-request-app-review';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -24,6 +26,7 @@ export function ReviewSheet({
   const theme = useAppTheme();
   const { t } = useTranslation();
   const mutation = useSubmitReview(providerId);
+  const reviewConfig = useInAppReviewConfig();
   const [rating, setRating] = useState(5);
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +35,11 @@ export function ReviewSheet({
     setError(null);
     try {
       await mutation.mutateAsync({ rating, text: text.trim() || undefined });
+      void maybeRequestAppReview({
+        trigger: 'marketplace_review_submitted',
+        inAppReviewEnabled: reviewConfig.enabled,
+        storeUrls: reviewConfig.storeUrls,
+      });
       onClose();
       setText('');
       setRating(5);

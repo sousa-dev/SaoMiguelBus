@@ -15,6 +15,11 @@ export interface BootstrapResponse {
   version: string;
   mapsEnabled: boolean;
   consentPolicyVersion: string;
+  inAppReviewEnabled?: boolean;
+  storeUrls?: {
+    ios: string;
+    android: string;
+  };
   socialAuth?: {
     google: boolean;
     apple: boolean;
