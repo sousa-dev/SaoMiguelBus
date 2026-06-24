@@ -1,4 +1,13 @@
-import { Download, Megaphone, ShieldCheck, Sparkles, TimerReset, Trash2, UserRound } from 'lucide-react-native';
+import {
+  AppWindow,
+  Download,
+  Megaphone,
+  ShieldCheck,
+  Sparkles,
+  TimerReset,
+  Trash2,
+  UserRound,
+} from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
@@ -32,6 +41,7 @@ import { LEGAL_URLS } from '@/lib/legal-urls';
 import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
+import { useSplashDevStore } from '@/features/splash/splash-dev-store';
 import { usePremiumStore } from '@/lib/premium-store';
 import { useProfileStore } from '@/lib/profile-store';
 import { usePersonalizationStore } from '@/lib/personalization-store';
@@ -63,6 +73,7 @@ export default function SettingsScreen() {
   const forceInternalAds = useAdsDevStore((s) => s.forceInternalAdsFallback);
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
   const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
+  const requestSplashPreview = useSplashDevStore((s) => s.requestPreview);
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
 
@@ -301,6 +312,15 @@ export default function SettingsScreen() {
                   void resetAdFreeWindow().then(() => {
                     notify(t('settingsResetAdFreeWindowDoneTitle'), t('settingsResetAdFreeWindowDone'));
                   });
+                }}
+              />
+              <ListRow
+                icon={AppWindow}
+                title={t('settingsShowSplash')}
+                subtitle={t('settingsShowSplashHint')}
+                onPress={() => {
+                  requestSplashPreview();
+                  void Haptics.selectionAsync();
                 }}
               />
             </View>

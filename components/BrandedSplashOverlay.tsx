@@ -5,6 +5,7 @@ import {
   Appearance,
   Image,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -29,11 +30,19 @@ function normalizeSplashColorScheme(
 
 type Props = {
   visible: boolean;
+  devPreview?: boolean;
   onLayout?: () => void;
   onFadeOutComplete?: () => void;
+  onDevPreviewDismiss?: () => void;
 };
 
-export function BrandedSplashOverlay({ visible, onLayout, onFadeOutComplete }: Props) {
+export function BrandedSplashOverlay({
+  visible,
+  devPreview = false,
+  onLayout,
+  onFadeOutComplete,
+  onDevPreviewDismiss,
+}: Props) {
   const { t } = useTranslation();
   const [colorScheme, setColorScheme] = useState<SplashColorScheme>(() =>
     normalizeSplashColorScheme(Appearance.getColorScheme()),
@@ -123,6 +132,20 @@ export function BrandedSplashOverlay({ visible, onLayout, onFadeOutComplete }: P
         color={theme.indicator}
         style={styles.loader}
       />
+
+      {devPreview ? (
+        <>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsShowSplashDismiss')}
+            onPress={onDevPreviewDismiss}
+            style={StyleSheet.absoluteFill}
+          />
+          <Text style={[typography.caption, styles.devHint, { color: theme.textMuted }]}>
+            {t('settingsShowSplashDismissHint')}
+          </Text>
+        </>
+      ) : null}
     </Animated.View>
   );
 }
@@ -157,5 +180,11 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginBottom: space['4xl'],
+  },
+  devHint: {
+    position: 'absolute',
+    bottom: space['2xl'],
+    alignSelf: 'center',
+    textAlign: 'center',
   },
 });

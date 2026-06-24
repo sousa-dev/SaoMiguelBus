@@ -171,7 +171,14 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  const { overlayVisible, dismissSplash, onOverlayLayout, hideNativeForWeb } = useBrandedSplash(loaded);
+  const {
+    overlayVisible,
+    devPreviewVisible,
+    dismissSplash,
+    dismissDevPreview,
+    onOverlayLayout,
+    hideNativeForWeb,
+  } = useBrandedSplash(loaded);
 
   useEffect(() => {
     if (error) {
@@ -192,7 +199,12 @@ export default function RootLayout() {
       <AppQueryProvider>
         <NetworkProvider>
           <AppShell appReady={loaded} onSplashDismiss={dismissSplash} />
-          <BrandedSplashOverlay visible={overlayVisible} onLayout={onOverlayLayout} />
+          <BrandedSplashOverlay
+            visible={overlayVisible}
+            devPreview={devPreviewVisible}
+            onLayout={onOverlayLayout}
+            onDevPreviewDismiss={dismissDevPreview}
+          />
         </NetworkProvider>
       </AppQueryProvider>
     </GestureHandlerRootView>
