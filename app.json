@@ -24,7 +24,16 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleDevelopmentRegion": "pt",
-        "CFBundleLocalizations": ["pt", "en", "de", "es", "fr", "it", "uk", "zh-Hans"],
+        "CFBundleLocalizations": [
+          "pt",
+          "en",
+          "de",
+          "es",
+          "fr",
+          "it",
+          "uk",
+          "zh-Hans"
+        ],
         "NSUserTrackingUsageDescription": "Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.",
         "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
         "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
@@ -35,19 +44,27 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
-            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
-            "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "35F9.1"
+            ]
           },
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
-            "NSPrivacyAccessedAPITypeReasons": ["E174.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "E174.1"
+            ]
           }
         ]
       }
@@ -56,10 +73,8 @@
       "package": "com.hsousa_apps.Autocarros",
       "versionCode": 47,
       "adaptiveIcon": {
-        "backgroundColor": "#7AA377",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": true
     },
@@ -74,13 +89,9 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#218732",
-          "imageWidth": 180,
-          "dark": {
-            "image": "./assets/images/splash-icon-dark.png",
-            "backgroundColor": "#0f1a12"
-          }
+          "backgroundColor": "#000000"
         }
       ],
       "@react-native-community/datetimepicker",
