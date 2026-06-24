@@ -25,6 +25,7 @@ import { InterstitialRequestHost } from '@/features/ads/components/InterstitialR
 import { AdFreeRewardModalHost } from '@/features/ads/components/AdFreeRewardModalHost';
 import { HopOnHopOffSheetHost } from '@/features/hop-on-hop-off/components/HopOnHopOffSheetHost';
 import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
+import { usePersonalizationPlatformBackfill } from '@/features/account/hooks/usePersonalizationPlatformBackfill';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useAuthStore } from '@/lib/auth-store';
@@ -74,6 +75,7 @@ function AppShell({ appReady }: { appReady: boolean }) {
     return useAuthStore.persist.onFinishHydration(runHydrate);
   }, []);
   useEntitlementSync();
+  usePersonalizationPlatformBackfill();
   useRevenueCatBootstrap();
   useAdFreeWindowBootstrap();
   useAdMobInit();

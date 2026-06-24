@@ -59,16 +59,20 @@ export interface ConsentPurposes {
 
 export type UserType = 'tourist' | 'resident' | 'newcomer';
 
+export type PersonalizationPlatform = 'ios' | 'android' | 'web';
+
 export interface PersonaProfile {
   user_type: UserType;
   interests: string[];
   home_municipality: string;
+  platform?: PersonalizationPlatform;
 }
 
 export interface PersonaProfileResponse {
   user_type: UserType | null;
   interests: string[];
   home_municipality: string;
+  platform: PersonalizationPlatform | '';
   updated_at: string | null;
 }
 

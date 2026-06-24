@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { ModuleKey } from '@/config/island';
 import { postPersonalization } from '@/lib/api';
 import { useConsentStore } from '@/lib/consent-store';
+import { getAnalyticsPlatform } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
 import { staticIslandConfig } from '@/config/island';
 import type { UserType } from '@/lib/types';
@@ -41,6 +42,7 @@ async function syncToBackend(state: Pick<PersonalizationState, 'userType' | 'int
       user_type: state.userType,
       interests: state.interests,
       home_municipality: state.homeMunicipality ?? '',
+      platform: getAnalyticsPlatform(),
     });
   } catch {
     // Offline / dev without backend — local personalization still applies.
