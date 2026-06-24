@@ -17,6 +17,7 @@ function emptyStorage(): AppReviewStorageState {
     lastAttemptAt: null,
     attemptCount: 0,
     seenTriggers: [],
+    reviewCompletedAt: null,
     transitSuccessfulSearchCount: 0,
   };
 }
@@ -30,6 +31,7 @@ type TestRuntime = AppReviewRuntime & {
     openNegativeFeedback: number;
     recordDeclined: number;
     trackSatisfactionDeclined: number;
+    askSatisfaction: number;
   };
   getStorage: () => AppReviewStorageState;
 };
@@ -44,6 +46,7 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
     openNegativeFeedback: 0,
     recordDeclined: 0,
     trackSatisfactionDeclined: 0,
+    askSatisfaction: 0,
   };
 
   const runtime: TestRuntime = {
@@ -54,6 +57,7 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
         ...previous,
         lastAttemptAt: attemptedAt,
         attemptCount: previous.attemptCount + 1,
+        reviewCompletedAt: previous.reviewCompletedAt ?? attemptedAt,
         seenTriggers: previous.seenTriggers.includes(trigger)
           ? previous.seenTriggers
           : [...previous.seenTriggers, trigger],
@@ -78,7 +82,10 @@ function createRuntime(overrides: Partial<AppReviewRuntime> = {}): TestRuntime {
       calls.openStoreUrl += 1;
       return true;
     },
-    askSatisfaction: async () => 'enjoying',
+    askSatisfaction: async () => {
+      calls.askSatisfaction += 1;
+      return 'enjoying';
+    },
     openNegativeFeedback: async () => {
       calls.openNegativeFeedback += 1;
     },
@@ -256,5 +263,57 @@ describe('maybeRequestAppReview', () => {
     assert.equal(result, false);
     assert.equal(runtime.calls.requestStoreReview, 0);
     assert.equal(runtime.calls.recordAttempt, 0);
+  });
+
+  it('skips automatic prompts after the review flow was completed', async () => {
+    const runtime = createRuntime({
+      loadStorage: async () => ({
+        ...emptyStorage(),
+        reviewCompletedAt: '2026-06-01T12:00:00.000Z',
+      }),
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'transit_search_success_3',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, false);
+    assert.equal(runtime.calls.askSatisfaction, 0);
+  });
+
+  it('skips the satisfaction prompt for completed manual settings taps', async () => {
+    const runtime = createRuntime({
+      loadStorage: async () => ({
+        ...emptyStorage(),
+        reviewCompletedAt: '2026-06-01T12:00:00.000Z',
+      }),
+    });
+    const result = await maybeRequestAppReview(
+      {
+        trigger: 'settings_manual',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(result, true);
+    assert.equal(runtime.calls.askSatisfaction, 0);
+    assert.equal(runtime.calls.openStoreUrl, 1);
+  });
+
+  it('persists review completion after a successful positive flow', async () => {
+    const runtime = createRuntime();
+    await maybeRequestAppReview(
+      {
+        trigger: 'marketplace_listing_created',
+        inAppReviewEnabled: true,
+        storeUrls: STORE_URLS,
+      },
+      runtime,
+    );
+    assert.equal(runtime.getStorage().reviewCompletedAt, '2026-06-24T12:00:00.000Z');
   });
 });

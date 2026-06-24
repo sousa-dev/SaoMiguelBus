@@ -143,4 +143,36 @@ describe('shouldAttemptAppReview', () => {
       true,
     );
   });
+
+  it('returns false for automatic triggers after review flow completion', () => {
+    assert.equal(
+      shouldAttemptAppReview({
+        inAppReviewEnabled: true,
+        platform: 'ios',
+        trigger: 'minibus_live_engaged',
+        attemptCount: 0,
+        lastAttemptAt: null,
+        seenTriggers: [],
+        reviewCompletedAt: '2026-06-01T12:00:00.000Z',
+        nowMs: NOW,
+      }),
+      false,
+    );
+  });
+
+  it('allows manual settings trigger after review flow completion', () => {
+    assert.equal(
+      shouldAttemptAppReview({
+        inAppReviewEnabled: true,
+        platform: 'ios',
+        trigger: 'settings_manual',
+        attemptCount: 0,
+        lastAttemptAt: null,
+        seenTriggers: [],
+        reviewCompletedAt: '2026-06-01T12:00:00.000Z',
+        nowMs: NOW,
+      }),
+      true,
+    );
+  });
 });

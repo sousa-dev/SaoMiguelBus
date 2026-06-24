@@ -44,9 +44,10 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 - Gated by bootstrap `inAppReviewEnabled` (from API `AppReleaseConfig.in_app_review_enabled`, **default off**). Client never calls `StoreReview.requestReview()` when false.
 - **`expo-store-review` requires a dev client or EAS build** — same as AdMob/IAP; not meaningful in Expo Go.
 - Central entry: `features/app-review/lib/maybe-request-app-review.ts` (`maybeRequestAppReview`). Local guards: native iOS/Android only, max 3 attempts, 30-day cooldown, each automatic trigger fires once per install. **Settings manual bypasses attempt cap and cooldown.**
-- **Satisfaction gate:** before native store review, an alert asks if the user is enjoying the app. **Yes** → in-app review when available, otherwise the public store listing; **Settings → Rate the App** opens the store listing directly after a positive answer. **Not really** → `/feedback` with `preset=appReview` (does not count as a store review attempt). Dismiss → no action.
-- **Automatic triggers (when enabled):** minibus live engaged (15s with vehicles), marketplace listing created, marketplace review submitted, 3rd successful transit search.
-- **Manual:** Settings **Rate the App** row (visible only when API flag enabled).
+- **Satisfaction gate:** before native store review, an alert asks if the user is enjoying the app. **Yes** → in-app review when available, otherwise the public store listing; **Settings → Rate the App** opens the store listing directly after a positive answer. **Not really** → `/feedback` with `preset=appReview` (does not count as a store review attempt). Dismiss → no action. After a successful positive flow, automatic prompts stop and Settings skips the satisfaction question (store opens directly).
+- **Automatic triggers (when enabled):** minibus live engaged (15s on screen with live vehicles), marketplace listing created, marketplace review submitted, 3rd successful transit search. Each automatic trigger fires at most once; global cap of 3 attempts with 30-day cooldown still applies until completion.
+- **Manual:** Settings **Rate the App** row (visible only when API flag enabled). Manual bypasses attempt cap/cooldown.
+- **Completion tracking:** AsyncStorage key `app_review_completed_at` is set when the user answers yes and native review or the store listing opens successfully. We cannot detect an actual store rating — this flag means “already sent them to review.” Blocks future automatic satisfaction prompts.
 - Store URL fallback uses bootstrap `storeUrls` from release config. Analytics: `app` / `review_prompt_requested` and `review_prompt_redirected_feedback` when consent allows.
 
 ## PDL Mini Bus maps

@@ -3,22 +3,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const LAST_ATTEMPT_AT_KEY = 'app_review_last_attempt_at';
 const ATTEMPT_COUNT_KEY = 'app_review_attempt_count';
 const SEEN_TRIGGERS_KEY = 'app_review_seen_triggers';
+const REVIEW_COMPLETED_AT_KEY = 'app_review_completed_at';
 const TRANSIT_SUCCESS_SEARCH_COUNT_KEY = 'transit_successful_search_count';
 
 export type AppReviewStorageState = {
   lastAttemptAt: string | null;
   attemptCount: number;
   seenTriggers: string[];
+  /** Set when the user confirms they enjoy the app and we open native review or the store listing. */
+  reviewCompletedAt: string | null;
   transitSuccessfulSearchCount: number;
 };
 
 export async function loadAppReviewStorage(): Promise<AppReviewStorageState> {
-  const [lastAttemptAt, attemptCountRaw, seenTriggersRaw, transitCountRaw] = await Promise.all([
-    AsyncStorage.getItem(LAST_ATTEMPT_AT_KEY),
-    AsyncStorage.getItem(ATTEMPT_COUNT_KEY),
-    AsyncStorage.getItem(SEEN_TRIGGERS_KEY),
-    AsyncStorage.getItem(TRANSIT_SUCCESS_SEARCH_COUNT_KEY),
-  ]);
+  const [lastAttemptAt, attemptCountRaw, seenTriggersRaw, reviewCompletedAt, transitCountRaw] =
+    await Promise.all([
+      AsyncStorage.getItem(LAST_ATTEMPT_AT_KEY),
+      AsyncStorage.getItem(ATTEMPT_COUNT_KEY),
+      AsyncStorage.getItem(SEEN_TRIGGERS_KEY),
+      AsyncStorage.getItem(REVIEW_COMPLETED_AT_KEY),
+      AsyncStorage.getItem(TRANSIT_SUCCESS_SEARCH_COUNT_KEY),
+    ]);
 
   let seenTriggers: string[] = [];
   if (seenTriggersRaw) {
@@ -39,6 +44,7 @@ export async function loadAppReviewStorage(): Promise<AppReviewStorageState> {
     lastAttemptAt,
     attemptCount: Number.isFinite(attemptCount) ? attemptCount : 0,
     seenTriggers,
+    reviewCompletedAt,
     transitSuccessfulSearchCount: Number.isFinite(transitSuccessfulSearchCount)
       ? transitSuccessfulSearchCount
       : 0,
@@ -53,10 +59,12 @@ export async function recordAppReviewAttempt(
   const seenTriggers = previous.seenTriggers.includes(trigger)
     ? previous.seenTriggers
     : [...previous.seenTriggers, trigger];
+  const reviewCompletedAt = previous.reviewCompletedAt ?? attemptedAt;
   const next: AppReviewStorageState = {
     lastAttemptAt: attemptedAt,
     attemptCount: previous.attemptCount + 1,
     seenTriggers,
+    reviewCompletedAt,
     transitSuccessfulSearchCount: previous.transitSuccessfulSearchCount,
   };
 
@@ -64,6 +72,7 @@ export async function recordAppReviewAttempt(
     AsyncStorage.setItem(LAST_ATTEMPT_AT_KEY, next.lastAttemptAt),
     AsyncStorage.setItem(ATTEMPT_COUNT_KEY, String(next.attemptCount)),
     AsyncStorage.setItem(SEEN_TRIGGERS_KEY, JSON.stringify(next.seenTriggers)),
+    AsyncStorage.setItem(REVIEW_COMPLETED_AT_KEY, reviewCompletedAt),
   ]);
 
   return next;
@@ -102,6 +111,7 @@ export async function clearAppReviewStorageForTests(): Promise<void> {
     AsyncStorage.removeItem(LAST_ATTEMPT_AT_KEY),
     AsyncStorage.removeItem(ATTEMPT_COUNT_KEY),
     AsyncStorage.removeItem(SEEN_TRIGGERS_KEY),
+    AsyncStorage.removeItem(REVIEW_COMPLETED_AT_KEY),
     AsyncStorage.removeItem(TRANSIT_SUCCESS_SEARCH_COUNT_KEY),
   ]);
 }

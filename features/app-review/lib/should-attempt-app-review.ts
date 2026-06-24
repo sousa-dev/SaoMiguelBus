@@ -21,12 +21,17 @@ export function shouldAttemptAppReview(input: {
   attemptCount: number;
   lastAttemptAt: string | null;
   seenTriggers: string[];
+  reviewCompletedAt?: string | null;
   nowMs?: number;
 }): boolean {
   if (!input.inAppReviewEnabled) {
     return false;
   }
   if (!isNativeStorePlatform(input.platform)) {
+    return false;
+  }
+
+  if (input.trigger !== 'settings_manual' && input.reviewCompletedAt) {
     return false;
   }
 

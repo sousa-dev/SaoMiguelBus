@@ -54,23 +54,29 @@ export async function maybeRequestAppReview(
       attemptCount: storage.attemptCount,
       lastAttemptAt: storage.lastAttemptAt,
       seenTriggers: storage.seenTriggers,
+      reviewCompletedAt: storage.reviewCompletedAt,
       nowMs,
     })
   ) {
     return false;
   }
 
-  const satisfaction = await runtime.askSatisfaction();
-  if (satisfaction === 'dismissed') {
-    return false;
-  }
-  if (satisfaction === 'not_enjoying') {
-    await runtime.openNegativeFeedback(input.trigger);
-    if (input.trigger !== 'settings_manual') {
-      await runtime.recordDeclined(input.trigger, storage);
+  const skipSatisfaction =
+    input.trigger === 'settings_manual' && storage.reviewCompletedAt !== null;
+
+  if (!skipSatisfaction) {
+    const satisfaction = await runtime.askSatisfaction();
+    if (satisfaction === 'dismissed') {
+      return false;
     }
-    runtime.trackSatisfactionDeclined(input.trigger);
-    return false;
+    if (satisfaction === 'not_enjoying') {
+      await runtime.openNegativeFeedback(input.trigger);
+      if (input.trigger !== 'settings_manual') {
+        await runtime.recordDeclined(input.trigger, storage);
+      }
+      runtime.trackSatisfactionDeclined(input.trigger);
+      return false;
+    }
   }
 
   const attemptedAt = new Date(nowMs).toISOString();
