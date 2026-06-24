@@ -4,10 +4,7 @@ import { AppState, Linking } from 'react-native';
 
 import { shouldShowAppUpdatePrompt } from '@/features/app-update/lib/should-show-update-prompt';
 import { fetchAppUpdateCheck } from '@/lib/api';
-import {
-  getDismissedAppUpdateVersion,
-  setDismissedAppUpdateVersion,
-} from '@/lib/app-update-dismiss';
+import { setDismissedAppUpdateVersion } from '@/lib/app-update-dismiss';
 import { useNetworkStatus } from '@/lib/network-status';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import type { AppUpdateMode } from '@/lib/types';
@@ -25,16 +22,10 @@ export function useAppUpdateCheck() {
   const [dismissedVersion, setDismissedVersionState] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!nativePlatform) {
-      return;
-    }
-    void getDismissedAppUpdateVersion().then(setDismissedVersionState);
-  }, [nativePlatform]);
-
-  useEffect(() => {
     if (!nativePlatform || !isOnline) {
       return;
     }
+    void queryClient.invalidateQueries({ queryKey: ['app-update-check', platform, version] });
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
         void queryClient.invalidateQueries({ queryKey: ['app-update-check', platform, version] });
@@ -47,7 +38,9 @@ export function useAppUpdateCheck() {
     queryKey: ['app-update-check', platform, version],
     queryFn: () => fetchAppUpdateCheck({ platform, version }),
     enabled: isOnline && nativePlatform,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
     retry: 1,
   });
 
@@ -61,12 +54,12 @@ export function useAppUpdateCheck() {
       })
     : false;
 
-  const dismiss = useCallback(async () => {
+  const dismiss = useCallback(() => {
     if (!data?.currentVersion) {
       return;
     }
-    await setDismissedAppUpdateVersion(data.currentVersion);
     setDismissedVersionState(data.currentVersion);
+    void setDismissedAppUpdateVersion(data.currentVersion);
   }, [data?.currentVersion]);
 
   const openStore = useCallback(async () => {

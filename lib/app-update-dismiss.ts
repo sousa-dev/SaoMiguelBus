@@ -1,25 +1,17 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/** Session-only dismiss for optional update prompts (resets on cold start). */
 
-const DISMISSED_VERSION_KEY = 'app_update_dismissed_version';
+let sessionDismissedVersion: string | null = null;
 
-type DismissStorage = Pick<typeof AsyncStorage, 'getItem' | 'setItem' | 'removeItem'>;
-
-let dismissStorage: DismissStorage = AsyncStorage;
-
-/** Test hook — reset to default AsyncStorage when passed null. */
-export function setAppUpdateDismissStorage(storage: DismissStorage | null): void {
-  dismissStorage = storage ?? AsyncStorage;
+/** Test hook — reset session dismiss state. */
+export function resetAppUpdateDismissSession(): void {
+  sessionDismissedVersion = null;
 }
 
-export async function getDismissedAppUpdateVersion(): Promise<string | null> {
-  const value = await dismissStorage.getItem(DISMISSED_VERSION_KEY);
-  return value?.trim() || null;
+export function getDismissedAppUpdateVersion(): Promise<string | null> {
+  return Promise.resolve(sessionDismissedVersion);
 }
 
-export async function setDismissedAppUpdateVersion(version: string): Promise<void> {
-  await dismissStorage.setItem(DISMISSED_VERSION_KEY, version);
-}
-
-export async function clearDismissedAppUpdateVersion(): Promise<void> {
-  await dismissStorage.removeItem(DISMISSED_VERSION_KEY);
+export function setDismissedAppUpdateVersion(version: string): Promise<void> {
+  sessionDismissedVersion = version;
+  return Promise.resolve();
 }

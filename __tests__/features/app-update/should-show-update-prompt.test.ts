@@ -15,7 +15,7 @@ describe('shouldShowAppUpdatePrompt', () => {
     );
   });
 
-  it('returns false for optional updates dismissed for the same current version', () => {
+  it('returns false for optional updates dismissed for the same current version this session', () => {
     assert.equal(
       shouldShowAppUpdatePrompt({
         updateRequired: true,

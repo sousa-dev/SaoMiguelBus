@@ -35,7 +35,7 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before 
 
 - On cold start and foreground (when online), the app calls `GET /api/v3/app/update-check` with `platform` + `expo.version`. If the installed build is behind the API release, `AppUpdatePrompt` opens the correct store via `Linking.openURL`.
 - Release versions and update modes are edited live in the API Django admin (`App release configs` per island), not in the mobile app env.
-- **`optional`** (default): dismissible `Alert` — “Later” is remembered until the API bumps `currentVersion` (`app_update_dismissed_version` in AsyncStorage).
+- **`optional`** (default): dismissible `Alert` — “Later” hides until the app process restarts (cold start); shows again on every cold start while still behind the API version.
 - **`required`**: blocking sheet (no dismiss) until the user taps Update — configured per platform on the API (`APP_UPDATE_IOS_MODE` / `APP_UPDATE_ANDROID_MODE`).
 - Skipped on web. Analytics: `app` / `update_prompt_shown` and `update_prompt_click` when consent allows.
 

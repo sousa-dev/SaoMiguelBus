@@ -23,7 +23,13 @@ export function AppQueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 24,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => query.queryKey[0] !== 'app-update-check',
+        },
+      }}
     >
       {children}
     </PersistQueryClientProvider>
