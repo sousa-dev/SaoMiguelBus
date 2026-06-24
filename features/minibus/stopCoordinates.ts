@@ -1,11 +1,13 @@
 import type { Region } from 'react-native-maps';
 
+import { decodePolyline } from '@/lib/polyline';
 import { getIslandMapRegion } from '@/lib/island-map';
 import type {
   MinibusJourney,
   MinibusLeg,
   MinibusNetwork,
   MinibusNetworkStop,
+  MinibusRouteShape,
   MinibusStopRef,
 } from '@/lib/types';
 
@@ -90,6 +92,41 @@ export function linePolyline(stops: MinibusNetworkStop[]): MapCoordinate[] {
   return lineMapStops(stops)
     .map((stop) => stopCoordinate(stop))
     .filter((coord): coord is MapCoordinate => coord !== null);
+}
+
+function routeShapeCoordinates(routeShapes: MinibusRouteShape[] | null | undefined): MapCoordinate[] {
+  if (!routeShapes?.length) {
+    return [];
+  }
+
+  const preferred =
+    routeShapes.find((shape) => shape.direction === 0) ??
+    routeShapes.find((shape) => typeof shape.encoded_polyline === 'string') ??
+    null;
+  if (!preferred?.encoded_polyline) {
+    return [];
+  }
+
+  const decoded = decodePolyline(preferred.encoded_polyline);
+  if (decoded.length < 2) {
+    return [];
+  }
+  const plausible = decoded.every(
+    (coord) => Math.abs(coord.latitude) > 1 && Math.abs(coord.longitude) > 1,
+  );
+  return plausible ? decoded : [];
+}
+
+/** Prefer stored AVL route geometry; fall back to stop-to-stop segments. */
+export function lineRoutePolyline(
+  stops: MinibusNetworkStop[],
+  routeShapes?: MinibusRouteShape[] | null,
+): MapCoordinate[] {
+  const fromShape = routeShapeCoordinates(routeShapes);
+  if (fromShape.length > 1) {
+    return fromShape;
+  }
+  return linePolyline(stops);
 }
 
 export function stopsByKey(network: MinibusNetwork): Map<string, MinibusNetworkStop> {

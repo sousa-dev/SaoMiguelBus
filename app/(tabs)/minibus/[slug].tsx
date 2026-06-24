@@ -126,6 +126,7 @@ export default function MinibusLineDetailScreen() {
             stops={stops}
             lineColor={line.color}
             lineCode={line.code}
+            routeShapes={line.route_shapes}
             highlightedStopKey={highlightedStopKey}
           />
         </View>

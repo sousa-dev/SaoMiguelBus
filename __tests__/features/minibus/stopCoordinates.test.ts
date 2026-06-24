@@ -10,6 +10,7 @@ import {
   journeyPolylines,
   lineMapStops,
   linePolyline,
+  lineRoutePolyline,
   normalizeMapHighlightKey,
 } from '@/features/minibus/stopCoordinates';
 import type { MinibusJourney, MinibusNetwork, MinibusNetworkStop } from '@/lib/types';
@@ -37,6 +38,36 @@ describe('stopCoordinates', () => {
     assert.equal(coords.length, 2);
     assert.equal(coords[0]?.latitude, 37.73);
     assert.equal(coords[1]?.latitude, 37.74);
+  });
+
+  it('lineRoutePolyline prefers stored AVL encoded polyline', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, [
+      { direction: 0, encoded_polyline: 'uxieF~tt{CLMRA' },
+    ]);
+    assert.ok(coords.length > 2);
+    assert.notEqual(coords[0]?.latitude, 37.73);
+  });
+
+  it('lineRoutePolyline falls back to stop coordinates when shapes missing', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, []);
+    assert.deepEqual(coords, linePolyline(stops));
+  });
+
+  it('lineRoutePolyline falls back when encoded polyline is invalid', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, [{ direction: 0, encoded_polyline: '!!!' }]);
+    assert.deepEqual(coords, linePolyline(stops));
   });
 
   it('linePolyline skips stops missing coordinates', () => {

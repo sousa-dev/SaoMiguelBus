@@ -490,6 +490,14 @@ export interface MinibusServiceSummary {
   saturday_departures?: string[] | null;
 }
 
+export interface MinibusRouteShape {
+  direction: number;
+  encoded_polyline: string;
+  journey_id?: string | null;
+  source_vehicle_id?: string | null;
+  captured_at?: string | null;
+}
+
 export interface MinibusLine {
   code: string;
   slug: string;
@@ -497,6 +505,7 @@ export interface MinibusLine {
   color: string;
   sort_order: number;
   service_summary: MinibusServiceSummary;
+  route_shapes?: MinibusRouteShape[];
   timetable_slug?: string | null;
   timetable_file_url?: string | null;
 }

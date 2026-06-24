@@ -15,13 +15,13 @@ import { minibusStopMarkerOverlay } from '@/features/minibus/lib/minibus-stop-ma
 import {
   fitRegionForCoordinates,
   lineMapStops,
-  linePolyline,
+  lineRoutePolyline,
   normalizeMapHighlightKey,
   stopCoordinate,
 } from '@/features/minibus/stopCoordinates';
 import { coordinateToRegion } from '@/lib/island-map';
 import { radius, space, typography } from '@/lib/tokens';
-import type { MinibusNetworkStop } from '@/lib/types';
+import type { MinibusNetworkStop, MinibusRouteShape } from '@/lib/types';
 import { useAppTheme } from '@/lib/theme';
 
 const MAP_HEIGHT = 240;
@@ -35,11 +35,12 @@ type Props = {
   stops: MinibusNetworkStop[];
   lineColor: string | null;
   lineCode: string;
+  routeShapes?: MinibusRouteShape[] | null;
   highlightedStopKey?: string | null;
 };
 
 export const MinibusLineMap = forwardRef<MinibusLineMapHandle, Props>(function MinibusLineMap(
-  { stops, lineColor, lineCode, highlightedStopKey = null },
+  { stops, lineColor, lineCode, routeShapes = null, highlightedStopKey = null },
   ref,
 ) {
   const theme = useAppTheme();
@@ -53,7 +54,7 @@ export const MinibusLineMap = forwardRef<MinibusLineMapHandle, Props>(function M
     [highlightedStopKey, stops],
   );
 
-  const coordinates = useMemo(() => linePolyline(stops), [stops]);
+  const coordinates = useMemo(() => lineRoutePolyline(stops, routeShapes), [routeShapes, stops]);
   const region = useMemo(() => fitRegionForCoordinates(coordinates), [coordinates]);
 
   const androidOverlays = useMemo(
