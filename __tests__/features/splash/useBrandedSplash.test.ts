@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveSplashOverlayVisible } from '@/features/splash/useBrandedSplash';
+import { resolveSplashOverlayVisible } from '@/features/splash/branded-splash-theme';
 
 describe('resolveSplashOverlayVisible', () => {
   it('waits for fonts before showing the overlay', () => {

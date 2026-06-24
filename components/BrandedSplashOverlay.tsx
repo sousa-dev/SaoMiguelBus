@@ -14,7 +14,7 @@ import {
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
-import { AzoresMapBackground } from '@/features/hub/components/previews/AzoresMapBackground';
+import { SaoMiguelSplashOutline } from '@/features/splash/components/SaoMiguelSplashOutline';
 import { resolveSplashTheme, type SplashColorScheme } from '@/features/splash/branded-splash-theme';
 import { space, typography } from '@/lib/tokens';
 
@@ -111,10 +111,6 @@ export function BrandedSplashOverlay({
       style={[styles.root, { backgroundColor: theme.background }, animatedStyle]}
       onLayout={handleLayout}
     >
-      <View pointerEvents="none" style={[styles.mapWatermark, { opacity: theme.mapOpacity }]}>
-        <AzoresMapBackground />
-      </View>
-
       <View style={styles.content}>
         <Image
           accessibilityIgnoresInvertColors
@@ -125,6 +121,7 @@ export function BrandedSplashOverlay({
         <Text style={[typography.body, styles.tagline, { color: theme.textMuted }]}>
           {t('splashTagline')}
         </Text>
+        <SaoMiguelSplashOutline color={theme.text} opacity={theme.outlineOpacity} />
       </View>
 
       <ActivityIndicator
@@ -155,10 +152,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     zIndex: 9999,
     elevation: 9999,
-  },
-  mapWatermark: {
-    ...StyleSheet.absoluteFill,
-    top: '35%',
   },
   content: {
     flex: 1,

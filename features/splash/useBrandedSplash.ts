@@ -2,17 +2,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
-import { createNativeSplashHideGuard } from '@/features/splash/branded-splash-theme';
+import { createNativeSplashHideGuard, resolveSplashOverlayVisible } from '@/features/splash/branded-splash-theme';
 import { useSplashDevStore } from '@/features/splash/splash-dev-store';
 
-export function resolveSplashOverlayVisible(options: {
-  fontsLoaded: boolean;
-  splashDismissed: boolean;
-  devPreviewVisible: boolean;
-}): boolean {
-  const { fontsLoaded, splashDismissed, devPreviewVisible } = options;
-  return fontsLoaded && (!splashDismissed || devPreviewVisible);
-}
+export { resolveSplashOverlayVisible } from '@/features/splash/branded-splash-theme';
 
 export function useBrandedSplash(fontsLoaded: boolean) {
   const [splashDismissed, setSplashDismissed] = useState(false);
