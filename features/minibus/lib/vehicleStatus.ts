@@ -36,7 +36,14 @@ const STATUS_I18N_KEY: Readonly<Record<MinibusVehicleStatusKey, string>> = {
   unknown: 'minibusLiveVehicleStatusUnknown',
 };
 
-type StatusTranslate = (key: string, options?: { defaultValue?: string }) => string;
+type StatusTranslate = (
+  key: string,
+  options?: { defaultValue?: string; stop?: string },
+) => string;
+
+export type VehicleStatusLabelOptions = {
+  nextStopName?: string | null;
+};
 
 export function normalizeVehicleStatus(status: string | null | undefined): MinibusVehicleStatusKey {
   if (!status?.trim()) {
@@ -59,11 +66,16 @@ function humanizeRawStatus(status: string): string {
 export function formatVehicleStatusLabel(
   status: string | null | undefined,
   t: StatusTranslate,
+  options?: VehicleStatusLabelOptions,
 ): string {
   const key = normalizeVehicleStatus(status);
   if (key === 'unknown') {
     const raw = status?.trim();
     return raw ? humanizeRawStatus(raw) : t(STATUS_I18N_KEY.unknown);
+  }
+  const nextStopName = options?.nextStopName?.trim();
+  if (key === 'inTransitTo' && nextStopName) {
+    return t('minibusLiveVehicleStatusInTransitToStop', { stop: nextStopName });
   }
   return t(STATUS_I18N_KEY[key]);
 }

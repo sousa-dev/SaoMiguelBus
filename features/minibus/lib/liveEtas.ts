@@ -57,10 +57,60 @@ function circulationStopLabels(stage: MinibusCirculation['stage'], sequence: num
   return { stopName, stopCode };
 }
 
+/** Display name for the circulation row matching upstream currentStopSequence (next/target stop). */
+export function stopDisplayNameFromCirculations(
+  circulations: MinibusCirculation[] | null | undefined,
+  sequence: number | null | undefined,
+): string | null {
+  if (sequence == null || !circulations?.length) {
+    return null;
+  }
+  const row = circulations.find((circulation) => circulation.sequence === sequence);
+  if (!row) {
+    return null;
+  }
+  return circulationStopLabels(row.stage, row.sequence).stopName;
+}
+
 type EtaTranslate = {
   now: string;
   minutes: (count: number) => string;
+  unavailable: string;
 };
+
+const ETA_UNAVAILABLE = '—';
+
+function formatEtaLabel(
+  row: MinibusCirculation,
+  currentStopSequence: number | null | undefined,
+  t: EtaTranslate,
+): string {
+  const due = row.dueInMinutes;
+
+  if (currentStopSequence != null) {
+    if (row.sequence < currentStopSequence) {
+      return ETA_UNAVAILABLE;
+    }
+    if (row.sequence === currentStopSequence) {
+      return t.now;
+    }
+    if (due != null && due > 0) {
+      return t.minutes(due);
+    }
+    if (due === 0) {
+      return t.now;
+    }
+    return t.unavailable;
+  }
+
+  if (due != null && due > 0) {
+    return t.minutes(due);
+  }
+  if (due != null && due <= 0) {
+    return t.now;
+  }
+  return t.unavailable;
+}
 
 export function formatCirculationRows(
   circulations: MinibusCirculation[] | null | undefined,
@@ -74,14 +124,7 @@ export function formatCirculationRows(
   const sorted = [...circulations].sort((a, b) => a.sequence - b.sequence);
 
   return sorted.map((row) => {
-    const due = row.dueInMinutes;
-    let etaLabel: string;
-    if (due == null || due <= 0) {
-      etaLabel = t.now;
-    } else {
-      etaLabel = t.minutes(due);
-    }
-
+    const etaLabel = formatEtaLabel(row, currentStopSequence, t);
     const { stopName, stopCode } = circulationStopLabels(row.stage, row.sequence);
 
     return {

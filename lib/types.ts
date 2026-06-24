@@ -686,10 +686,16 @@ export interface MinibusVehicleSummary {
   fleetId?: string | null;
 }
 
+export interface MinibusCirculationStagePosition {
+  lat: number;
+  lon: number;
+}
+
 export interface MinibusCirculationStage {
   id?: string;
   nameShort?: string;
   name?: string;
+  position?: MinibusCirculationStagePosition;
 }
 
 export interface MinibusCirculation {

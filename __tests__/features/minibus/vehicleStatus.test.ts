@@ -6,17 +6,22 @@ import {
   normalizeVehicleStatus,
 } from '@/features/minibus/lib/vehicleStatus';
 
-const t = (key: string) =>
-  (
-    {
-      minibusLiveVehicleStatusIncomingAt: 'Approaching stop',
-      minibusLiveVehicleStatusIdleAt: 'At stop',
-      minibusLiveVehicleStatusInTransitTo: 'En route',
-      minibusLiveVehicleStatusOnTime: 'On time',
-      minibusLiveVehicleStatusDelayed: 'Delayed',
-      minibusLiveVehicleStatusUnknown: 'Unknown',
-    } as Record<string, string>
-  )[key] ?? key;
+const t = (key: string, options?: { stop?: string }) => {
+  const templates: Record<string, string> = {
+    minibusLiveVehicleStatusIncomingAt: 'Approaching stop',
+    minibusLiveVehicleStatusIdleAt: 'At stop',
+    minibusLiveVehicleStatusInTransitTo: 'En route',
+    minibusLiveVehicleStatusInTransitToStop: 'En route to {{stop}}',
+    minibusLiveVehicleStatusOnTime: 'On time',
+    minibusLiveVehicleStatusDelayed: 'Delayed',
+    minibusLiveVehicleStatusUnknown: 'Unknown',
+  };
+  const template = templates[key] ?? key;
+  if (options?.stop) {
+    return template.replace('{{stop}}', options.stop);
+  }
+  return template;
+};
 
 describe('normalizeVehicleStatus', () => {
   it('maps upstream camelCase statuses', () => {
@@ -43,5 +48,13 @@ describe('formatVehicleStatusLabel', () => {
 
   it('humanizes unknown upstream values', () => {
     assert.equal(formatVehicleStatusLabel('someNewStatus', t), 'Some new status');
+  });
+
+  it('includes next stop name for inTransitTo when available', () => {
+    assert.equal(
+      formatVehicleStatusLabel('inTransitTo', t, { nextStopName: 'Praça Vasco da Gama' }),
+      'En route to Praça Vasco da Gama',
+    );
+    assert.equal(formatVehicleStatusLabel('inTransitTo', t), 'En route');
   });
 });

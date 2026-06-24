@@ -7,6 +7,7 @@ import type { MinibusCirculation } from '@/lib/types';
 const t = {
   now: 'Now',
   minutes: (count: number) => `${count} min`,
+  unavailable: '—',
 };
 
 describe('formatCirculationRows', () => {
@@ -85,5 +86,20 @@ describe('formatCirculationRows', () => {
     );
     assert.equal(rows[0].stopName, 'Avenida D. João III - 1');
     assert.equal(rows[1].stopName, 'Avenida D. João III - 2');
+  });
+
+  it('shows Now only for the current stop when past stops lack dueInMinutes', () => {
+    const circulations: MinibusCirculation[] = [
+      { sequence: 13, stage: { nameShort: 'D 15' } },
+      { sequence: 14, stage: { nameShort: 'D 16' }, dueInMinutes: 0 },
+      { sequence: 15, stage: { nameShort: 'D 17' }, dueInMinutes: 1 },
+      { sequence: 16, stage: { nameShort: 'D 18' } },
+    ];
+
+    const rows = formatCirculationRows(circulations, 14, t);
+    assert.equal(rows.find((row) => row.sequence === 13)?.etaLabel, '—');
+    assert.equal(rows.find((row) => row.sequence === 14)?.etaLabel, 'Now');
+    assert.equal(rows.find((row) => row.sequence === 15)?.etaLabel, '1 min');
+    assert.equal(rows.find((row) => row.sequence === 16)?.etaLabel, '—');
   });
 });

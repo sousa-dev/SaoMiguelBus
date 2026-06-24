@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
-import { MINIBUS_STOP_MARKER_SIZE } from '@/features/minibus/lib/minibus-stop-marker-overlay';
+import { MINIBUS_STOP_MARKER_SIZE, MINIBUS_STOP_MARKER_OPACITY, MINIBUS_STOP_MARKER_HIGHLIGHTED_OPACITY } from '@/features/minibus/lib/minibus-stop-marker-overlay';
 import { onColorFor } from '@/lib/color-utils';
 import { elevation } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -11,9 +11,10 @@ type Props = {
   stop: MinibusNetworkStop;
   lineColor: string;
   highlighted?: boolean;
+  onPress?: () => void;
 };
 
-export function MinibusStopMarker({ stop, lineColor, highlighted = false }: Props) {
+export function MinibusStopMarker({ stop, lineColor, highlighted = false, onPress }: Props) {
   const theme = useAppTheme();
   const lat = stop.latitude;
   const lng = stop.longitude;
@@ -23,6 +24,7 @@ export function MinibusStopMarker({ stop, lineColor, highlighted = false }: Prop
 
   const onFill = onColorFor(lineColor);
   const size = highlighted ? MINIBUS_STOP_MARKER_SIZE + 4 : MINIBUS_STOP_MARKER_SIZE;
+  const markerOpacity = highlighted ? MINIBUS_STOP_MARKER_HIGHLIGHTED_OPACITY : MINIBUS_STOP_MARKER_OPACITY;
 
   return (
     <Marker
@@ -32,8 +34,9 @@ export function MinibusStopMarker({ stop, lineColor, highlighted = false }: Prop
       tracksViewChanges={highlighted}
       anchor={{ x: 0.5, y: 0.5 }}
       zIndex={highlighted ? 2 : 1}
+      onPress={onPress}
     >
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, { opacity: markerOpacity }]}>
         {highlighted ? (
           <View style={[styles.halo, { borderColor: theme.text, shadowColor: theme.text }]} />
         ) : null}

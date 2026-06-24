@@ -10,6 +10,8 @@ export type MapMarkerOverlay = {
   label?: string;
   /** Pin diameter in px; defaults to 28 on Android WebView. */
   size?: number;
+  /** 0–1 marker opacity on Android WebView. */
+  opacity?: number;
   highlighted?: boolean;
   title?: string;
   draggable?: boolean;

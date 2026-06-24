@@ -88,6 +88,7 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
         label: marker.label,
         size: marker.size,
         highlighted: marker.highlighted,
+        opacity: marker.opacity,
         title: marker.title,
         draggable: marker.draggable,
       };

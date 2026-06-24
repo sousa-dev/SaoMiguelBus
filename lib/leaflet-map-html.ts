@@ -123,6 +123,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           const m = L.marker([marker.latitude, marker.longitude], {
             icon: markerIcon(marker.pinColor, marker.title, marker.label, marker.size, marker.highlighted),
             draggable: !!marker.draggable,
+            opacity: typeof marker.opacity === 'number' ? marker.opacity : 1,
           });
           m.on('click', function () { post('markerPress', { id: marker.id }); });
           if (marker.draggable) {
