@@ -13,8 +13,9 @@ import {
   vehicleLineColorHex,
 } from '@/features/minibus/lib/vehicleColor';
 import { vehicleMarkerOverlay } from '@/features/minibus/lib/vehicle-marker-overlay';
+import { getPdlMinibusMapRegion } from '@/features/minibus/lib/mapRegion';
 import { fitRegionForCoordinates } from '@/features/minibus/stopCoordinates';
-import { coordinateToRegion, getIslandMapRegion, saoMiguelMapBounds } from '@/lib/island-map';
+import { coordinateToRegion } from '@/lib/island-map';
 import type { LatLng } from '@/lib/polyline';
 import { space } from '@/lib/tokens';
 import type { MinibusLine, MinibusNetworkStop, MinibusVehicleSummary } from '@/lib/types';
@@ -47,7 +48,6 @@ type Props = {
 };
 
 const FOCUS_DELTA = 0.012;
-const LIVE_VIEWPORT_PAD = 0.08;
 const LIVE_EDGE_PADDING = { top: 56, right: 28, left: 28, bottom: 28 };
 
 function vehicleCoordinates(vehicles: MinibusVehicleSummary[]): LatLng[] {
@@ -70,7 +70,7 @@ function fitMapToCoordinates(
   regionLatitudeBias = 0,
 ) {
   if (!coords.length) {
-    map?.animateToRegion(getIslandMapRegion(saoMiguelMapBounds, LIVE_VIEWPORT_PAD), 350);
+    map?.animateToRegion(getPdlMinibusMapRegion(), 350);
     return;
   }
 
@@ -140,7 +140,7 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
     if (coords.length) {
       return fitRegionForCoordinates(coords);
     }
-    return getIslandMapRegion(saoMiguelMapBounds, LIVE_VIEWPORT_PAD);
+    return getPdlMinibusMapRegion();
   }, [routePolyline, vehicles]);
 
   const strokeColor = routeColor ?? theme.primary;
