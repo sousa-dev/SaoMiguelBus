@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,11 @@ import {
 } from '@/features/minibus/components/MinibusLineMap';
 import { MinibusLineStopsList } from '@/features/minibus/components/MinibusLineStopsList';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
-import { useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusLine, useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import {
+  minibusRouteParam,
+  resolveMinibusLineDetail,
+} from '@/features/minibus/resolveLineDetail';
 import {
   isMinibusTrackingAvailable,
   useMinibusTrackingHealth,
@@ -23,6 +27,7 @@ import {
 import { localLineImageUri } from '@/features/minibus/offline';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
 import { track } from '@/lib/analytics';
+import { logger } from '@/lib/logger';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -30,8 +35,9 @@ export default function MinibusLineDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const slug = minibusRouteParam(useLocalSearchParams<{ slug?: string | string[] }>().slug);
   const lineQuery = useMinibusLine(slug, Boolean(slug));
+  const linesQuery = useMinibusLines(Boolean(slug));
   const healthQuery = useMinibusTrackingHealth({ enabled: Boolean(slug) });
   const showLiveTracking = isMinibusTrackingAvailable(healthQuery.data);
   const { snapshot } = useMinibusOffline();
@@ -43,9 +49,15 @@ export default function MinibusLineDetailScreen() {
   const [mapScrollY, setMapScrollY] = useState(0);
   const [highlightedStopKey, setHighlightedStopKey] = useState<string | null>(null);
 
-  // Offline-aware: fall back to the cached snapshot line when the query has no data.
-  const cachedLine = snapshot?.bundle?.lines.find((l) => l.slug === slug) ?? null;
-  const line = lineQuery.data ?? cachedLine;
+  const line = useMemo(
+    () =>
+      resolveMinibusLineDetail(slug, {
+        lineQuery: lineQuery.data,
+        linesList: linesQuery.data?.lines,
+        offlineLines: snapshot?.bundle?.lines,
+      }),
+    [lineQuery.data, linesQuery.data?.lines, slug, snapshot?.bundle?.lines],
+  );
   const networkLine = line ? network?.lines.find((row) => row.slug === line.slug) ?? null : null;
   const stops = networkLine?.stops ?? [];
 
@@ -54,6 +66,20 @@ export default function MinibusLineDetailScreen() {
       track('minibus', 'view', { screen: 'line', line: line.code });
     }
   }, [line?.code]);
+
+  useEffect(() => {
+    if (!__DEV__ || !line) {
+      return;
+    }
+    logger.debug('minibus line map shapes', {
+      slug,
+      shapeCount: line.route_shapes?.length ?? 0,
+      polylineLen: line.route_shapes?.[0]?.encoded_polyline?.length ?? 0,
+      fromLineQuery: Boolean(lineQuery.data?.route_shapes?.length),
+      fromLinesList: Boolean(linesQuery.data?.lines.find((row) => row.slug === slug)?.route_shapes?.length),
+      fromOffline: Boolean(snapshot?.bundle?.lines.find((row) => row.slug === slug)?.route_shapes?.length),
+    });
+  }, [line, lineQuery.data?.route_shapes, linesQuery.data?.lines, slug, snapshot?.bundle?.lines]);
 
   useEffect(() => {
     if (stops.length > 0 && line) {
@@ -73,9 +99,10 @@ export default function MinibusLineDetailScreen() {
   };
 
   if (!line) {
+    const loading = lineQuery.isLoading || linesQuery.isLoading;
     return (
       <Screen withStackHeader>
-        {lineQuery.isLoading ? <LoadingState /> : <ErrorState title={t('minibusLoadError')} />}
+        {loading ? <LoadingState /> : <ErrorState title={t('minibusLoadError')} />}
       </Screen>
     );
   }

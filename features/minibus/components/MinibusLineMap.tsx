@@ -20,6 +20,7 @@ import {
   stopCoordinate,
 } from '@/features/minibus/stopCoordinates';
 import { coordinateToRegion } from '@/lib/island-map';
+import type { MapOverlaySpec } from '@/lib/map-overlays';
 import { radius, space, typography } from '@/lib/tokens';
 import type { MinibusNetworkStop, MinibusRouteShape } from '@/lib/types';
 import { useAppTheme } from '@/lib/theme';
@@ -57,17 +58,26 @@ export const MinibusLineMap = forwardRef<MinibusLineMapHandle, Props>(function M
   const coordinates = useMemo(() => lineRoutePolyline(stops, routeShapes), [routeShapes, stops]);
   const region = useMemo(() => fitRegionForCoordinates(coordinates), [coordinates]);
 
-  const androidOverlays = useMemo(
-    () => ({
+  const androidOverlays = useMemo((): MapOverlaySpec => {
+    return {
       markers: mapStops
         .map((stop) =>
           minibusStopMarkerOverlay(stop, strokeColor, stop.key === mapHighlightKey),
         )
         .filter((marker): marker is NonNullable<typeof marker> => marker !== null),
-      polylines: [],
-    }),
-    [mapHighlightKey, mapStops, strokeColor],
-  );
+      polylines:
+        coordinates.length > 1
+          ? [
+              {
+                id: `line-${lineCode}`,
+                coordinates,
+                strokeColor,
+                strokeWidth: 4,
+              },
+            ]
+          : [],
+    };
+  }, [coordinates, lineCode, mapHighlightKey, mapStops, strokeColor]);
 
   useImperativeHandle(ref, () => ({
     focusStop(stopKey: string) {
