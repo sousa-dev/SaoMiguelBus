@@ -12,6 +12,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { useStackBackHeader } from '@/components/StackBackButton';
 import { ErrorState } from '@/components/ui/StateView';
 import { DayHourlySheet } from '@/features/weather/components/DayHourlySheet';
 import { HourlyForecastStrip } from '@/features/weather/components/HourlyForecastStrip';
@@ -41,6 +42,7 @@ export default function WeatherDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  useStackBackHeader('/(tabs)/weather');
   const parishSlug = typeof slug === 'string' ? slug : '';
   const { data: bootstrap } = useBootstrap();
   const modules = bootstrap?.island?.enabledModules ?? staticIslandConfig.enabledModules;

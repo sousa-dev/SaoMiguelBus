@@ -18,9 +18,11 @@ import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHop
 import { MinibusTransitLink } from '@/features/transit/components/MinibusTransitLink';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
+import { RouteWeatherGrid } from '@/features/transit/components/RouteWeatherGrid';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
 import { TransitPlannerCard } from '@/features/transit/components/TransitPlannerCard';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import { useRouteWeather } from '@/features/transit/hooks/useRouteWeather';
 import {
   useCanSearchOffline,
   useTransitSearchWithOffline,
@@ -96,6 +98,19 @@ export default function TransitScreen() {
   );
 
   const search = useTransitSearchWithOffline(searchParams);
+  const hasResults = Boolean(search.data && search.data.length > 0);
+  const earliestArrival = search.data?.[0]?.end;
+  const routeWeather = useRouteWeather({
+    origin,
+    destination,
+    date,
+    time,
+    earliestArrival,
+    enabled: searchParams.enabled && hasResults,
+  });
+  const showRouteWeather = Boolean(
+    routeWeather.data?.origin && routeWeather.data.destination,
+  );
 
   useEffect(() => {
     if (search.data && search.data.length > 0 && searchEnabled) {
@@ -143,7 +158,6 @@ export default function TransitScreen() {
 
   const showEmptyResults =
     searchEnabled && !search.isFetching && search.data && search.data.length === 0;
-  const hasResults = Boolean(search.data && search.data.length > 0);
   const showInstructions = !searchEnabled && !hasResults;
 
   return (
@@ -199,6 +213,13 @@ export default function TransitScreen() {
               description={t('noRoutesSubtitle')}
               actionLabel={isOnline ? t('tryDirectionsButton') : undefined}
               onAction={isOnline ? openDirections : undefined}
+            />
+          ) : null}
+
+          {showRouteWeather && routeWeather.data?.origin && routeWeather.data.destination ? (
+            <RouteWeatherGrid
+              origin={routeWeather.data.origin}
+              destination={routeWeather.data.destination}
             />
           ) : null}
 

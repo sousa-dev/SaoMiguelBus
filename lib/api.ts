@@ -51,6 +51,7 @@ import type {
   WeatherParishesResponse,
   ParishWeather,
   ParishWeatherHourly,
+  RouteWeather,
   MinibusLinesResponse,
   MinibusTariffsResponse,
   MinibusDocumentsResponse,
@@ -462,6 +463,21 @@ export async function fetchWeatherParishHourly(
   return apiFetch<ParishWeatherHourly>(
     `/api/v3/weather/parishes/${encodeURIComponent(slug)}/hourly?${query.toString()}`,
   );
+}
+
+export async function fetchRouteWeather(params: {
+  origin: string;
+  destination: string;
+  originAt?: string;
+  destinationAt?: string;
+}): Promise<RouteWeather> {
+  const query = new URLSearchParams({
+    origin: params.origin,
+    destination: params.destination,
+  });
+  if (params.originAt) query.set('origin_at', params.originAt);
+  if (params.destinationAt) query.set('destination_at', params.destinationAt);
+  return apiFetch<RouteWeather>(`/api/v3/transit/route-weather?${query.toString()}`);
 }
 
 function minibusQuery(locale?: string): string {
