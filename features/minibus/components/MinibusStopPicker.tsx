@@ -42,6 +42,10 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
           placeholder={placeholder}
           placeholderTextColor={theme.muted}
           value={value}
+          autoCorrect={false}
+          spellCheck={false}
+          autoComplete="off"
+          autoCapitalize="none"
           onChangeText={onChangeText}
           style={[styles.input, typography.body, { color: theme.text }]}
           returnKeyType="search"

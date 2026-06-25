@@ -61,6 +61,10 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
           placeholder={placeholder}
           placeholderTextColor={theme.muted}
           value={query}
+          autoCorrect={false}
+          spellCheck={false}
+          autoComplete="off"
+          autoCapitalize="none"
           onFocus={() => setSuggestionsOpen(true)}
           onChangeText={(text) => {
             setQuery(text);
