@@ -87,18 +87,34 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         };
       }
 
-      function markerIcon(color, title, label, size, highlighted) {
-        const fill = color || '#3388ff';
-        const px = size || 28;
+      function busIconSvg(strokeColor, markerSize) {
+        const iconSize = Math.max(12, Math.round((markerSize || 28) * 0.5));
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" width="' + iconSize + '" height="' + iconSize + '" viewBox="0 0 24 24" fill="none" stroke="' + strokeColor + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/>' +
+          '<path d="M18 18h3s1-1.4 1-4.6V8a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v5.4C0 16.6 1 18 1 18h3"/>' +
+          '<path d="M23 18h-4.5"/><path d="M5 18H1.5"/><path d="M6 18v-4.5"/><path d="M18 18v-4.5"/>' +
+          '</svg>'
+        );
+      }
+
+      function markerIcon(marker) {
+        const fill = marker.pinColor || '#3388ff';
+        const px = marker.size || 28;
         const radius = px / 2;
-        const inner = label || '';
+        const inner = marker.label || '';
         const fontSize = px <= 20 ? 10 : 11;
-        const innerHtml = inner
-          ? '<div style="color:#fff;font:700 ' + fontSize + 'px/1 system-ui,sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.45)">' + inner + '</div>'
+        var innerHtml = '';
+        if (marker.iconKind === 'bus') {
+          innerHtml = busIconSvg(marker.iconColor || '#ffffff', px);
+        } else if (inner) {
+          innerHtml =
+            '<div style="color:#fff;font:700 ' + fontSize + 'px/1 system-ui,sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.45)">' + inner + '</div>';
+        }
+        const caption = marker.title && marker.iconKind !== 'bus' && !inner
+          ? '<div class="hub-marker-label">' + marker.title + '</div>'
           : '';
-        const caption = title && !inner
-          ? '<div class="hub-marker-label">' + title + '</div>'
-          : '';
+        const highlighted = !!marker.highlighted;
         const halo = highlighted
           ? '<div style="position:absolute;inset:-5px;border-radius:999px;border:2px solid #111;box-shadow:0 0 0 2px #fff"></div>'
           : '';
@@ -121,7 +137,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         polylineLayer.clearLayers();
         (overlays.markers || []).forEach(function (marker) {
           const m = L.marker([marker.latitude, marker.longitude], {
-            icon: markerIcon(marker.pinColor, marker.title, marker.label, marker.size, marker.highlighted),
+            icon: markerIcon(marker),
             draggable: !!marker.draggable,
             opacity: typeof marker.opacity === 'number' ? marker.opacity : 1,
           });

@@ -1,11 +1,17 @@
 import React from 'react';
 import { Marker, Polyline } from 'react-native-maps';
 
+export type MapMarkerIconKind = 'default' | 'bus';
+
 export type MapMarkerOverlay = {
   id: string;
   latitude: number;
   longitude: number;
   pinColor?: string;
+  /** Android WebView pin glyph — bus renders a Lucide-style icon instead of label text. */
+  iconKind?: MapMarkerIconKind;
+  /** Foreground stroke/fill for iconKind glyphs (e.g. bus icon on line color). */
+  iconColor?: string;
   /** Shown inside the pin circle (e.g. stop sequence). */
   label?: string;
   /** Pin diameter in px; defaults to 28 on Android WebView. */

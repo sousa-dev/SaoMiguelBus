@@ -1,4 +1,5 @@
 import type { MapMarkerOverlay } from '@/lib/map-overlays';
+import { onColorFor } from '@/lib/color-utils';
 import type { MinibusVehicleSummary } from '@/lib/types';
 
 export const MINIBUS_VEHICLE_MARKER_SIZE = 28;
@@ -20,7 +21,8 @@ export function vehicleMarkerOverlay(
     latitude: lat,
     longitude: lon,
     pinColor,
-    label,
+    iconKind: 'bus',
+    iconColor: onColorFor(pinColor),
     size: MINIBUS_VEHICLE_MARKER_SIZE,
     highlighted: false,
     title: label,
