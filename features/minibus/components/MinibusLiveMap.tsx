@@ -14,6 +14,7 @@ import {
 } from '@/features/minibus/lib/vehicleColor';
 import { vehicleMarkerOverlay } from '@/features/minibus/lib/vehicle-marker-overlay';
 import { getPdlMinibusMapRegion } from '@/features/minibus/lib/mapRegion';
+import { trackLiveMapControl } from '@/features/minibus/lib/live-analytics';
 import { fitRegionForCoordinates } from '@/features/minibus/stopCoordinates';
 import { coordinateToRegion } from '@/lib/island-map';
 import type { LatLng } from '@/lib/polyline';
@@ -243,6 +244,7 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
         showsUserLocation={userLocationEnabled}
         userLocationCoordinate={userNavigateCoords}
         centerCoordinate={userNavigateCoords}
+        onMapControlPress={trackLiveMapControl}
         scrollEnabled
         zoomEnabled
         androidOverlays={androidOverlays}

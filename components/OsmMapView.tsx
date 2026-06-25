@@ -19,6 +19,7 @@ export type OsmMapViewProps = MapViewProps & {
   /** Blue-dot position on Android WebView; defaults to centerCoordinate when omitted. */
   userLocationCoordinate?: { lat: number; lng: number } | null;
   showCenterControl?: boolean;
+  onMapControlPress?: (action: 'center' | 'zoom_in' | 'zoom_out') => void;
   /** Extra Android overlays when children are wrapper components (traffic / seismic markers). */
   androidOverlays?: MapOverlaySpec;
 };
@@ -43,6 +44,7 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
     centerCoordinate,
     userLocationCoordinate,
     showCenterControl = true,
+    onMapControlPress,
     showsUserLocation,
     scrollEnabled = true,
     zoomEnabled = true,
@@ -111,6 +113,7 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
     if (!targetRegion) {
       return;
     }
+    onMapControlPress?.(factor < 1 ? 'zoom_in' : 'zoom_out');
     const next = {
       ...targetRegion,
       latitudeDelta: targetRegion.latitudeDelta * factor,
@@ -124,6 +127,7 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
     if (!centerCoordinate) {
       return;
     }
+    onMapControlPress?.('center');
     const next = coordinateToRegion(centerCoordinate, 0.012);
     setCurrentRegion(next);
     mapRef.current?.animateToRegion(next, 220);

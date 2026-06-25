@@ -16,7 +16,7 @@ Every meaningful interaction across **all 7 modules** emits an `AnalyticsEvent` 
 ```
 AnalyticsEvent
   island          FK (tenant)
-  module          transit | news | earthquakes | marketplace | trails | traffic | events
+  module          transit | news | earthquakes | marketplace | trails | traffic | events | minibus
   event_type      search | filter | view | engage | impression | click | load | submit | confirm
   properties      JSON   # normalized per (module, event_type), NO PII
   session_hash    str    # pseudonymous rolling hash (see SDD 07), NULL if no analytics consent
@@ -40,8 +40,20 @@ AnalyticsEvent
 | traffic | submit | `{report_type, has_location: true}` |
 | events | engage | `{action: "view"|"submit"|"promote", event_id}` — community events (**planned**) |
 | tours | view / open / book_click | `{screen?, tour_code, title?}` — **shipped** Expo client uses module key `tours` (not `events`) for Viator tab ([`09`](./09-modules.md) §7) |
+| minibus | search | `{origin, destination, results_count, offline, source: "api"|"offline"}` |
+| minibus | engage | `{action: "select_journey"|"offline_sync"|"open_from_hub"|"open_from_transit", …}` — journey props on `select_journey`; sync phase/outcome on `offline_sync` |
+| minibus | view | `{screen: "list"|"search"|"line"|"line_map"|"line_map_stop"|"live"|"directions", …}` |
+| minibus | live_entry_open | `{source: "hub"|"line_detail", line?}` |
+| minibus | live_filter | `{line_slug, source?: "chip"|"deep_link"|"stops_toggle"}` — `line_slug` is slug or `"all"` |
+| minibus | live_toggle | `{show_stops: bool}` |
+| minibus | live_select | `{source: "map"|"fleet_bar"|"vehicle_sheet", vehicle_id? \| stop_key? \| stop_sequence?}` — exactly one selection key |
+| minibus | live_map_control | `{action: "center"|"zoom_in"|"zoom_out"}` |
+| minibus | live_fleet_bar | `{action: "expand"|"collapse"|"clear_vehicle"}` |
+| minibus | live_permission | `{outcome: "granted"|"denied"}` |
+| minibus | live_health | `{action: "retry"}` |
+| minibus | live_navigate | `{action: "view_line", line_slug, source: "stop_sheet"}` |
 
-Property schemas are validated server-side (a registry per module/event_type) to keep the table analyzable.
+Property schemas are validated server-side (a registry per module/event_type) to keep the table analyzable. **Shipped (v1):** `minibus` only — see `SaoMiguelBus-api/src/analytics/event_registry/minibus.py`. Other modules pass through unchanged until registered. Expo live helpers: `SaoMiguelBus/features/minibus/lib/live-analytics.ts`.
 
 ## 3. Ingestion
 

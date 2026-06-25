@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Sheet } from '@/components/ui/Sheet';
 import type { MinibusLiveMapStopPin } from '@/features/minibus/lib/liveNetworkMapStops';
+import { trackLiveNavigateViewLine } from '@/features/minibus/lib/live-analytics';
 import { onColorFor } from '@/lib/color-utils';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -43,6 +44,7 @@ export function MinibusLiveStopSheet({ visible, pin, onClose }: Props) {
               accessibilityRole="button"
               accessibilityLabel={t('minibusLiveStopViewLine', { line: line.code })}
               onPress={() => {
+                trackLiveNavigateViewLine(line.slug);
                 onClose();
                 router.push(`/minibus/${encodeURIComponent(line.slug)}`);
               }}

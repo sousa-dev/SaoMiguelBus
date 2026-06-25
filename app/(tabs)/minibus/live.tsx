@@ -47,8 +47,17 @@ import {
   liveFilteredLineRoutePolyline,
 } from '@/features/minibus/lib/liveFilteredLineRoute';
 import { MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET } from '@/features/minibus/lib/liveVehicleSheetLayout';
+import {
+  trackLiveFilter,
+  trackLiveHealth,
+  trackLivePermission,
+  trackLiveSelectStop,
+  trackLiveSelectStopSequence,
+  trackLiveSelectVehicle,
+  trackLiveToggle,
+  trackMinibusView,
+} from '@/features/minibus/lib/live-analytics';
 import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
-import { track } from '@/lib/analytics';
 import { useNetwork } from '@/lib/network-provider';
 import { decodePolyline } from '@/lib/polyline';
 import { space } from '@/lib/tokens';
@@ -75,6 +84,8 @@ export default function MinibusLiveScreen() {
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const mapRef = useRef<MinibusLiveMapHandle>(null);
   const prevSelectedVehicleIdRef = useRef<string | null>(null);
+  const deepLinkFilterTrackedRef = useRef(false);
+  const permissionTrackedRef = useRef(false);
   const liveReviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reviewConfig = useInAppReviewConfig();
 
@@ -107,7 +118,7 @@ export default function MinibusLiveScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      track('minibus', 'view', { screen: 'live' });
+      trackMinibusView('live');
       void healthQuery.refetch();
       return () => {
         if (liveReviewTimerRef.current) {
@@ -126,6 +137,22 @@ export default function MinibusLiveScreen() {
       setShowStops(true);
     }
   }, [initialLineSlug]);
+
+  useEffect(() => {
+    if (!initialLineSlug || deepLinkFilterTrackedRef.current) {
+      return;
+    }
+    deepLinkFilterTrackedRef.current = true;
+    trackLiveFilter(initialLineSlug, 'deep_link');
+  }, [initialLineSlug]);
+
+  useEffect(() => {
+    if (permission === 'undetermined' || permissionTrackedRef.current) {
+      return;
+    }
+    permissionTrackedRef.current = true;
+    trackLivePermission(permission === 'granted' ? 'granted' : 'denied');
+  }, [permission]);
 
   useEffect(() => {
     if (cooldownUntil <= Date.now()) {
@@ -358,11 +385,11 @@ export default function MinibusLiveScreen() {
     return () => clearTimeout(timer);
   }, [fitMapToLiveOverview, fitMapToSelectedVehicle, selectedVehicleId]);
 
-  const onVehiclePress = (vehicleId: string) => {
+  const onVehiclePress = (vehicleId: string, source: 'map' | 'fleet_bar' = 'map') => {
     setSelectedStopKey(null);
     setSheetHighlightSequence(null);
     setSelectedVehicleId(vehicleId);
-    track('minibus', 'live_select', { vehicle_id: vehicleId });
+    trackLiveSelectVehicle(vehicleId, source);
   };
 
   const onVehicleSheetStopPress = useCallback(
@@ -375,7 +402,7 @@ export default function MinibusLiveScreen() {
           mapRef.current?.centerOnStop(pin.stop);
         });
       }
-      track('minibus', 'live_select', { stop_sequence: sequence, source: 'vehicle_sheet' });
+      trackLiveSelectStopSequence(sequence, 'vehicle_sheet');
     },
     [mapNetworkStops, vehicleLine?.slug],
   );
@@ -391,7 +418,7 @@ export default function MinibusLiveScreen() {
     setSheetHighlightSequence(null);
     setSelectedVehicleId(null);
     setSelectedStopKey(stopKey);
-    track('minibus', 'live_select', { stop_key: stopKey });
+    trackLiveSelectStop(stopKey, 'map');
     const pin = findLiveMapStopPin(mapNetworkStops, stopKey);
     if (pin) {
       requestAnimationFrame(() => {
@@ -406,9 +433,10 @@ export default function MinibusLiveScreen() {
       setSelectedStopKey(null);
       if (selectedLineSlug) {
         setSelectedLineSlug(null);
+        trackLiveFilter('all', 'stops_toggle');
       }
     }
-    track('minibus', 'live_toggle', { show_stops: next });
+    trackLiveToggle(next);
   };
 
   const onSelectLineSlug = (slug: string | null) => {
@@ -417,13 +445,14 @@ export default function MinibusLiveScreen() {
     if (!slug) {
       setSelectedStopKey(null);
     }
-    track('minibus', 'live_filter', { line_slug: slug ?? 'all' });
+    trackLiveFilter(slug, 'chip');
   };
 
   const onTryAgain = () => {
     if (cooldownUntil > Date.now()) {
       return;
     }
+    trackLiveHealth('retry');
     setCooldownUntil(Date.now() + TRY_AGAIN_COOLDOWN_MS);
     void healthQuery.refetchHealth({ force: true });
   };

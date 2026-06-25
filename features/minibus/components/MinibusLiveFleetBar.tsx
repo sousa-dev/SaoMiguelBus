@@ -4,6 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { fleetVehicleListSubtitle } from '@/features/minibus/lib/fleetVehicleListSubtitle';
+import {
+  liveFleetBarActionFromHeader,
+  trackLiveFleetBar,
+} from '@/features/minibus/lib/live-analytics';
 import { liveFleetBarTitle } from '@/features/minibus/lib/liveFleetBarTitle';
 import {
   resolveLineForVehicle,
@@ -21,7 +25,7 @@ type Props = {
   vehicleDetailsById: Map<string, MinibusVehicleDetail>;
   selectedVehicleId: string | null;
   selectedLineSlug?: string | null;
-  onVehiclePress: (vehicleId: string) => void;
+  onVehiclePress: (vehicleId: string, source?: 'map' | 'fleet_bar') => void;
   onClearVehicle: () => void;
   compact?: boolean;
 };
@@ -63,10 +67,12 @@ export function MinibusLiveFleetBar({
 
   const handleVehiclePress = (vehicleId: string) => {
     setExpanded(false);
-    onVehiclePress(vehicleId);
+    onVehiclePress(vehicleId, 'fleet_bar');
   };
 
   const handleHeaderPress = () => {
+    const clearingVehicle = !expanded && selectedVehicleId != null;
+    trackLiveFleetBar(liveFleetBarActionFromHeader(expanded, clearingVehicle));
     if (expanded) {
       setExpanded(false);
       return;
