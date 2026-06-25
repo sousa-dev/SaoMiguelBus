@@ -23,7 +23,7 @@ import {
   isMinibusTrackingAvailable,
   useMinibusTrackingHealth,
 } from '@/features/minibus/hooks/useMinibusTrackingHealth';
-import { useMinibusLines, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusLines, useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { useMinibusFleetVehicleDetails } from '@/features/minibus/hooks/useMinibusFleetVehicleDetails';
 import { useMinibusScreenActive } from '@/features/minibus/hooks/useMinibusScreenActive';
 import {
@@ -42,6 +42,10 @@ import {
   vehicleCurrentStopKey,
 } from '@/features/minibus/lib/liveNetworkMapStops';
 import { liveJourneyStopsFromCirculations } from '@/features/minibus/lib/liveJourneyStops';
+import {
+  liveFilteredLineColor,
+  liveFilteredLineRoutePolyline,
+} from '@/features/minibus/lib/liveFilteredLineRoute';
 import { MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET } from '@/features/minibus/lib/liveVehicleSheetLayout';
 import { track } from '@/lib/analytics';
 import { useNetwork } from '@/lib/network-provider';
@@ -78,6 +82,8 @@ export default function MinibusLiveScreen() {
 
   const linesQuery = useMinibusLines(trackingAvailable);
   const lines = linesQuery.data?.lines ?? [];
+  const lineFilterActive = selectedLineSlug != null && selectedVehicleId == null;
+  const filteredLineQuery = useMinibusLine(selectedLineSlug ?? '', lineFilterActive && trackingAvailable);
 
   const { snapshot } = useMinibusOffline();
   const offlineNetwork = snapshot?.bundle?.network ?? null;
@@ -209,6 +215,35 @@ export default function MinibusLiveScreen() {
     }
     return vehicleLineColorHex(vehicle, lines);
   }, [fleetQuery.data?.vehicles, lines, selectedVehicle, selectedVehicleId]);
+
+  const lineRouteSources = useMemo(
+    () => ({
+      lineQuery: filteredLineQuery.data,
+      linesList: lines,
+      offlineLines: snapshot?.bundle?.lines,
+    }),
+    [filteredLineQuery.data, lines, snapshot?.bundle?.lines],
+  );
+
+  const filteredLineRoutePolyline = useMemo(
+    () =>
+      lineFilterActive
+        ? liveFilteredLineRoutePolyline(network, selectedLineSlug, lineRouteSources)
+        : undefined,
+    [lineFilterActive, lineRouteSources, network, selectedLineSlug],
+  );
+
+  const mapRoutePolyline = routePolyline ?? filteredLineRoutePolyline;
+
+  const mapRouteColor = useMemo(() => {
+    if (routeColor) {
+      return routeColor;
+    }
+    if (!lineFilterActive) {
+      return null;
+    }
+    return liveFilteredLineColor(selectedLineSlug, lineRouteSources);
+  }, [lineFilterActive, lineRouteSources, routeColor, selectedLineSlug]);
 
   const networkStops = useMemo(
     () => liveNetworkMapStops(network, lines, selectedLineSlug),
@@ -446,8 +481,8 @@ export default function MinibusLiveScreen() {
             hideStops={hideStops}
             onHideStopsChange={onHideStopsChange}
             showStopsToggle={!busFocused}
-            routePolyline={routePolyline}
-            routeColor={routeColor}
+            routePolyline={mapRoutePolyline}
+            routeColor={mapRouteColor}
             highlightedStopKey={highlightedStopKey}
             onVehiclePress={onVehiclePress}
             onStopPress={onStopPress}
