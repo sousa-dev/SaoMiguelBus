@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { fleetVehicleListSubtitle } from '@/features/minibus/lib/fleetVehicleListSubtitle';
+import { liveFleetBarTitle } from '@/features/minibus/lib/liveFleetBarTitle';
 import {
   resolveLineForVehicle,
   vehicleLineColorHex,
@@ -19,6 +20,7 @@ type Props = {
   lines: MinibusLine[];
   vehicleDetailsById: Map<string, MinibusVehicleDetail>;
   selectedVehicleId: string | null;
+  selectedLineSlug?: string | null;
   onVehiclePress: (vehicleId: string) => void;
   onClearVehicle: () => void;
   compact?: boolean;
@@ -34,6 +36,7 @@ export function MinibusLiveFleetBar({
   lines,
   vehicleDetailsById,
   selectedVehicleId,
+  selectedLineSlug = null,
   onVehiclePress,
   onClearVehicle,
   compact = false,
@@ -73,6 +76,9 @@ export function MinibusLiveFleetBar({
   };
 
   const selectedLine = selectedVehicle ? resolveLineForVehicle(selectedVehicle, lines) : null;
+  const filteredLineCode = selectedLineSlug
+    ? lines.find((line) => line.slug === selectedLineSlug)?.code ?? null
+    : null;
   const selectedLabel = selectedLine?.code ?? selectedVehicle?.id;
   const selectedSubtitle =
     selectedVehicle != null
@@ -119,7 +125,7 @@ export function MinibusLiveFleetBar({
         </View>
         <View style={styles.headerText}>
           <Text style={[typography.caption, { color: theme.muted }]}>
-            {t('minibusLiveFleetBarTitle', { count: sorted.length })}
+            {liveFleetBarTitle(t, sorted.length, filteredLineCode)}
           </Text>
           {!expanded && selectedVehicle && selectedLabel ? (
             <Text style={[typography.label, { color: theme.text }]} numberOfLines={1}>

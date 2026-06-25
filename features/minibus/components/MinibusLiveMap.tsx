@@ -36,12 +36,16 @@ type Props = {
   vehicles: MinibusVehicleSummary[];
   lines: MinibusLine[];
   networkStops: MinibusLiveMapStopPin[];
+  /** When false, stop pins are omitted (vehicle journey stops may still show via networkStops). */
   showStops?: boolean;
-  hideStops?: boolean;
-  onHideStopsChange?: (hideStops: boolean) => void;
   showStopsToggle?: boolean;
+  stopsToggleEnabled?: boolean;
+  onShowStopsChange?: (showStops: boolean) => void;
   routePolyline?: LatLng[];
   routeColor?: string | null;
+  userNavigateCoords?: { lat: number; lng: number } | null;
+  /** When true, show the platform user-location indicator (permission granted). */
+  userLocationEnabled?: boolean;
   highlightedStopKey?: string | null;
   onVehiclePress: (vehicleId: string) => void;
   onStopPress: (stopKey: string) => void;
@@ -96,11 +100,13 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
     lines,
     networkStops,
     showStops = true,
-    hideStops = false,
-    onHideStopsChange,
-    showStopsToggle = true,
+    showStopsToggle = false,
+    stopsToggleEnabled = true,
+    onShowStopsChange,
     routePolyline,
     routeColor,
+    userNavigateCoords = null,
+    userLocationEnabled = false,
     highlightedStopKey = null,
     onVehiclePress,
     onStopPress,
@@ -234,7 +240,9 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
         ref={mapRef}
         style={styles.map}
         initialRegion={region}
-        showsUserLocation
+        showsUserLocation={userLocationEnabled}
+        userLocationCoordinate={userNavigateCoords}
+        centerCoordinate={userNavigateCoords}
         scrollEnabled
         zoomEnabled
         androidOverlays={androidOverlays}
@@ -265,9 +273,12 @@ export const MinibusLiveMap = forwardRef<MinibusLiveMapHandle, Props>(function M
             ))
           : null}
       </OsmMapView>
-      {onHideStopsChange && showStopsToggle ? (
+      {onShowStopsChange && stopsToggleEnabled ? (
         <View style={styles.overlayTopLeft} pointerEvents="box-none">
-          <MinibusLiveStopsToggle hideStops={hideStops} onHideStopsChange={onHideStopsChange} />
+          <MinibusLiveStopsToggle
+            showStops={showStopsToggle}
+            onShowStopsChange={onShowStopsChange}
+          />
         </View>
       ) : null}
     </View>

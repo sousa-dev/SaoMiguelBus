@@ -6,20 +6,20 @@ import { radius, space, typography, elevation } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type Props = {
-  hideStops: boolean;
-  onHideStopsChange: (hideStops: boolean) => void;
+  showStops: boolean;
+  onShowStopsChange: (showStops: boolean) => void;
 };
 
-export function MinibusLiveStopsToggle({ hideStops, onHideStopsChange }: Props) {
+export function MinibusLiveStopsToggle({ showStops, onShowStopsChange }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: hideStops }}
-      accessibilityLabel={t('minibusLiveHideStops')}
-      onPress={() => onHideStopsChange(!hideStops)}
+      accessibilityState={{ checked: showStops }}
+      accessibilityLabel={t('minibusLiveShowStops')}
+      onPress={() => onShowStopsChange(!showStops)}
       style={({ pressed }) => [
         styles.chip,
         elevation(3, '#000'),
@@ -31,14 +31,14 @@ export function MinibusLiveStopsToggle({ hideStops, onHideStopsChange }: Props) 
         style={[
           styles.box,
           {
-            borderColor: hideStops ? theme.primary : theme.outline,
-            backgroundColor: hideStops ? theme.primary : theme.surface,
+            borderColor: showStops ? theme.primary : theme.outline,
+            backgroundColor: showStops ? theme.primary : theme.surface,
           },
         ]}
       >
-        {hideStops ? <Check size={14} color={theme.onPrimary} strokeWidth={3} /> : null}
+        {showStops ? <Check size={14} color={theme.onPrimary} strokeWidth={3} /> : null}
       </View>
-      <Text style={[typography.caption, { color: theme.text }]}>{t('minibusLiveHideStops')}</Text>
+      <Text style={[typography.caption, { color: theme.text }]}>{t('minibusLiveShowStops')}</Text>
     </Pressable>
   );
 }

@@ -47,6 +47,7 @@ import {
   liveFilteredLineRoutePolyline,
 } from '@/features/minibus/lib/liveFilteredLineRoute';
 import { MINIBUS_LIVE_FLEET_BAR_OVERVIEW_BOTTOM_INSET } from '@/features/minibus/lib/liveVehicleSheetLayout';
+import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
 import { track } from '@/lib/analytics';
 import { useNetwork } from '@/lib/network-provider';
 import { decodePolyline } from '@/lib/polyline';
@@ -69,7 +70,7 @@ export default function MinibusLiveScreen() {
   const busFocused = selectedVehicleId != null;
   const [selectedStopKey, setSelectedStopKey] = useState<string | null>(null);
   const [sheetHighlightSequence, setSheetHighlightSequence] = useState<number | null>(null);
-  const [hideStops, setHideStops] = useState(false);
+  const [showStops, setShowStops] = useState(Boolean(initialLineSlug));
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const mapRef = useRef<MinibusLiveMapHandle>(null);
@@ -95,6 +96,10 @@ export default function MinibusLiveScreen() {
     screenActive: screenActive && trackingAvailable,
   });
 
+  const { coords: userCoords, permission } = useNearbyLocation(screenActive && trackingAvailable);
+  const userNavigateCoords =
+    permission === 'granted' && userCoords ? userCoords : null;
+
   const detailQuery = useMinibusVehicleDetail(selectedVehicleId, {
     enabled: screenActive && trackingAvailable && selectedVehicleId != null,
     screenActive: screenActive && trackingAvailable && selectedVehicleId != null,
@@ -118,6 +123,7 @@ export default function MinibusLiveScreen() {
   useEffect(() => {
     if (initialLineSlug) {
       setSelectedLineSlug(initialLineSlug);
+      setShowStops(true);
     }
   }, [initialLineSlug]);
 
@@ -274,13 +280,14 @@ export default function MinibusLiveScreen() {
         selectedVehicle?.journey?.circulations,
       );
     }
-    if (hideStops) {
+    if (!showStops && !selectedLineSlug) {
       return [];
     }
     return networkStops;
   }, [
     focusedLine,
-    hideStops,
+    showStops,
+    selectedLineSlug,
     lines,
     network,
     networkStops,
@@ -289,7 +296,7 @@ export default function MinibusLiveScreen() {
     selectedVehicleId,
   ]);
 
-  const showMapStops = !hideStops || selectedVehicleId != null;
+  const showMapStops = showStops || selectedLineSlug != null || selectedVehicleId != null;
 
   const vehicleLine = focusedLine;
   const autoHighlightedStopKey = vehicleCurrentStopKey(
@@ -378,7 +385,7 @@ export default function MinibusLiveScreen() {
   }, [selectedVehicleId]);
 
   const onStopPress = (stopKey: string) => {
-    if (hideStops && !selectedVehicleId) {
+    if (!showStops && !selectedLineSlug && !selectedVehicleId) {
       return;
     }
     setSheetHighlightSequence(null);
@@ -393,16 +400,23 @@ export default function MinibusLiveScreen() {
     }
   };
 
-  const onHideStopsChange = (next: boolean) => {
-    setHideStops(next);
-    if (next) {
+  const onShowStopsChange = (next: boolean) => {
+    setShowStops(next);
+    if (!next) {
       setSelectedStopKey(null);
+      if (selectedLineSlug) {
+        setSelectedLineSlug(null);
+      }
     }
-    track('minibus', 'live_toggle', { hide_stops: next });
+    track('minibus', 'live_toggle', { show_stops: next });
   };
 
   const onSelectLineSlug = (slug: string | null) => {
     setSelectedLineSlug(slug);
+    setShowStops(slug != null);
+    if (!slug) {
+      setSelectedStopKey(null);
+    }
     track('minibus', 'live_filter', { line_slug: slug ?? 'all' });
   };
 
@@ -478,11 +492,13 @@ export default function MinibusLiveScreen() {
             lines={lines}
             networkStops={mapNetworkStops}
             showStops={showMapStops}
-            hideStops={hideStops}
-            onHideStopsChange={onHideStopsChange}
-            showStopsToggle={!busFocused}
+            showStopsToggle={showStops}
+            stopsToggleEnabled={!busFocused}
+            onShowStopsChange={onShowStopsChange}
             routePolyline={mapRoutePolyline}
             routeColor={mapRouteColor}
+            userNavigateCoords={userNavigateCoords}
+            userLocationEnabled={permission === 'granted'}
             highlightedStopKey={highlightedStopKey}
             onVehiclePress={onVehiclePress}
             onStopPress={onStopPress}
@@ -515,6 +531,7 @@ export default function MinibusLiveScreen() {
           lines={lines}
           vehicleDetailsById={fleetVehicleDetailsById}
           selectedVehicleId={selectedVehicleId}
+          selectedLineSlug={selectedLineSlug}
           onVehiclePress={onVehiclePress}
           onClearVehicle={() => setSelectedVehicleId(null)}
           compact={busFocused}
