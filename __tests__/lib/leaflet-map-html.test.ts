@@ -13,5 +13,7 @@ describe('leafletMapHtml', () => {
     assert.match(source, /if \(next\.overlays !== undefined\)/);
     assert.match(source, /updateOptions: function \(next\) \{[\s\S]*applyMapOptions\(next\);/);
     assert.doesNotMatch(source, /applyMapOptions\(config\);/);
+    assert.match(source, /userLocationLayer/);
+    assert.match(source, /refreshUserLocationFromConfig/);
   });
 });

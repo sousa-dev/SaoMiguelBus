@@ -7,14 +7,18 @@ import { useTranslation } from 'react-i18next';
 import { AndroidOsmWebMap, type AndroidOsmWebMapHandle } from '@/components/AndroidOsmWebMap';
 import { IconButton } from '@/components/ui/IconButton';
 import { MapLoadingOverlay } from '@/components/MapLoadingOverlay';
-import { getIslandMapRegion } from '@/lib/island-map';
+import { getIslandMapRegion, coordinateToRegion } from '@/lib/island-map';
 import { mergeMapOverlays, mapOverlaysFromChildren, type MapOverlaySpec } from '@/lib/map-overlays';
 import { osmMapViewProps } from '@/lib/osm-map-props';
 
 export type OsmMapViewProps = MapViewProps & {
   isDark?: boolean;
   showLoadingIndicator?: boolean;
+  /** Pan target for the optional center-on-location control. */
   centerCoordinate?: { lat: number; lng: number } | null;
+  /** Blue-dot position on Android WebView; defaults to centerCoordinate when omitted. */
+  userLocationCoordinate?: { lat: number; lng: number } | null;
+  showCenterControl?: boolean;
   /** Extra Android overlays when children are wrapper components (traffic / seismic markers). */
   androidOverlays?: MapOverlaySpec;
 };
@@ -37,6 +41,8 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
     initialRegion,
     region,
     centerCoordinate,
+    userLocationCoordinate,
+    showCenterControl = true,
     showsUserLocation,
     scrollEnabled = true,
     zoomEnabled = true,
@@ -115,17 +121,19 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
   };
 
   const centerOnUser = () => {
-    if (!centerCoordinate || !targetRegion) {
+    if (!centerCoordinate) {
       return;
     }
-    const next = {
-      ...targetRegion,
-      latitude: centerCoordinate.lat,
-      longitude: centerCoordinate.lng,
-    };
+    const next = coordinateToRegion(centerCoordinate, 0.012);
     setCurrentRegion(next);
     mapRef.current?.animateToRegion(next, 220);
   };
+
+  const dotCoordinate = userLocationCoordinate ?? centerCoordinate;
+  const userLocation =
+    showsUserLocation && dotCoordinate
+      ? { latitude: dotCoordinate.lat, longitude: dotCoordinate.lng }
+      : null;
 
   const controls = [
     {
@@ -140,7 +148,7 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
       label: t('mapZoomOut'),
       onPress: () => zoomBy(1.8),
     },
-    ...(centerCoordinate
+    ...(centerCoordinate && showCenterControl
       ? [
           {
             key: 'center',
@@ -151,11 +159,6 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
         ]
       : []),
   ];
-
-  const userLocation =
-    showsUserLocation && centerCoordinate
-      ? { latitude: centerCoordinate.lat, longitude: centerCoordinate.lng }
-      : null;
 
   if (Platform.OS === 'android') {
     return (

@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { getPdlMinibusMapRegion } from '@/features/minibus/lib/mapRegion';
+import {
+  isWithinPdlMinibusBounds,
+  pdlMinibusMapBounds,
+} from '@/features/minibus/lib/mapRegion';
 
-describe('getPdlMinibusMapRegion', () => {
-  it('centers on Ponta Delgada, not the island midpoint', () => {
-    const region = getPdlMinibusMapRegion();
+describe('isWithinPdlMinibusBounds', () => {
+  it('accepts coordinates inside the PDL minibus network box', () => {
+    const lat = (pdlMinibusMapBounds.southWest.lat + pdlMinibusMapBounds.northEast.lat) / 2;
+    const lng = (pdlMinibusMapBounds.southWest.lng + pdlMinibusMapBounds.northEast.lng) / 2;
+    assert.equal(isWithinPdlMinibusBounds(lat, lng), true);
+  });
 
-    assert.ok(region.latitude > 37.73 && region.latitude < 37.76);
-    assert.ok(region.longitude < -25.66 && region.longitude > -25.7);
-    assert.ok(region.latitudeDelta < 0.05);
-    assert.ok(region.longitudeDelta < 0.08);
+  it('rejects coordinates outside the PDL minibus network box', () => {
+    assert.equal(isWithinPdlMinibusBounds(37.8, -25.2), false);
   });
 });

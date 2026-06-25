@@ -22,3 +22,13 @@ export function getPdlMinibusMapRegion(viewportPad = VIEWPORT_PAD): Region {
     longitudeDelta: lngSpan * viewportPad,
   };
 }
+
+export function isWithinPdlMinibusBounds(lat: number, lng: number): boolean {
+  const { southWest, northEast } = pdlMinibusMapBounds;
+  return (
+    lat >= southWest.lat &&
+    lat <= northEast.lat &&
+    lng >= southWest.lng &&
+    lng <= northEast.lng
+  );
+}

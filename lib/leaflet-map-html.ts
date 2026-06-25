@@ -1,3 +1,4 @@
+import { busMarkerSvgFunctionSource } from '@/lib/bus-marker-svg';
 import type { MapOverlaySpec } from '@/lib/map-overlays';
 import { ANDROID_LIGHT_TILE_URL, CARTO_DARK_TILE_URL } from '@/lib/map-tiles';
 
@@ -60,6 +61,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
       let tileLayer = null;
       let markerLayer = null;
       let polylineLayer = null;
+      let userLocationLayer = null;
       let userMarker = null;
       let config = null;
       let moveEndTimer = null;
@@ -87,16 +89,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         };
       }
 
-      function busIconSvg(strokeColor, markerSize) {
-        const iconSize = Math.max(12, Math.round((markerSize || 28) * 0.5));
-        return (
-          '<svg xmlns="http://www.w3.org/2000/svg" width="' + iconSize + '" height="' + iconSize + '" viewBox="0 0 24 24" fill="none" stroke="' + strokeColor + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/>' +
-          '<path d="M18 18h3s1-1.4 1-4.6V8a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v5.4C0 16.6 1 18 1 18h3"/>' +
-          '<path d="M23 18h-4.5"/><path d="M5 18H1.5"/><path d="M6 18v-4.5"/><path d="M18 18v-4.5"/>' +
-          '</svg>'
-        );
-      }
+      ${busMarkerSvgFunctionSource}
 
       function markerIcon(marker) {
         const fill = marker.pinColor || '#3388ff';
@@ -163,19 +156,39 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         });
       }
 
+      function refreshUserLocationFromConfig() {
+        if (!config) return;
+        applyUserLocation(!!config.showsUserLocation, config.userLocation || null);
+      }
+
       function applyUserLocation(show, point) {
-        if (userMarker) {
-          map.removeLayer(userMarker);
-          userMarker = null;
-        }
+        if (!userLocationLayer) return;
+        userLocationLayer.clearLayers();
+        userMarker = null;
         if (!show || !point) return;
-        userMarker = L.circleMarker([point.latitude, point.longitude], {
-          radius: 7,
-          color: '#fff',
-          weight: 2,
+        const latlng = [point.latitude, point.longitude];
+        userLocationLayer.addLayer(
+          L.circleMarker(latlng, {
+            radius: 14,
+            color: '#1a73e8',
+            weight: 1,
+            fillColor: '#1a73e8',
+            fillOpacity: 0.18,
+            interactive: false,
+            zIndexOffset: 2000,
+          }),
+        );
+        userMarker = L.circleMarker(latlng, {
+          radius: 8,
+          color: '#ffffff',
+          weight: 3,
           fillColor: '#1a73e8',
           fillOpacity: 1,
-        }).addTo(map);
+          interactive: false,
+          zIndexOffset: 2001,
+        });
+        userLocationLayer.addLayer(userMarker);
+        userLocationLayer.bringToFront();
       }
 
       function setTileStyle(isDark) {
@@ -218,8 +231,11 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         if (next.overlays !== undefined) {
           applyOverlays(next.overlays);
         }
-        if (typeof next.showsUserLocation === 'boolean') {
-          applyUserLocation(next.showsUserLocation, next.userLocation || null);
+        if (
+          typeof next.showsUserLocation === 'boolean' ||
+          next.userLocation !== undefined
+        ) {
+          refreshUserLocationFromConfig();
         }
       }
 
@@ -258,6 +274,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           });
           markerLayer = L.layerGroup().addTo(map);
           polylineLayer = L.layerGroup().addTo(map);
+          userLocationLayer = L.layerGroup().addTo(map);
           map.on('click', function (e) {
             post('press', { latitude: e.latlng.lat, longitude: e.latlng.lng });
           });
@@ -284,14 +301,22 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
 
       window.__mapBridge = {
         applyConfig: applyConfig,
-        updateOverlays: function (overlays) {
-          if (!map) return;
-          applyOverlays(overlays || { markers: [], polylines: [] });
-        },
         updateOptions: function (next) {
           if (!map) return;
           config = config ? Object.assign({}, config, next) : next;
           applyMapOptions(next);
+          refreshUserLocationFromConfig();
+          if (userLocationLayer) {
+            userLocationLayer.bringToFront();
+          }
+        },
+        updateOverlays: function (overlays) {
+          if (!map) return;
+          applyOverlays(overlays || { markers: [], polylines: [] });
+          refreshUserLocationFromConfig();
+          if (userLocationLayer) {
+            userLocationLayer.bringToFront();
+          }
         },
         flyTo: function (region, durationMs) {
           if (!map) return;
