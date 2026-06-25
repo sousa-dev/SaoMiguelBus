@@ -186,13 +186,25 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         if (!map) return;
         if (next.minZoom != null) map.setMinZoom(next.minZoom);
         if (next.maxZoom != null) map.setMaxZoom(next.maxZoom);
-        map.dragging[next.scrollEnabled ? 'enable' : 'disable']();
-        map.touchZoom[next.zoomEnabled ? 'enable' : 'disable']();
-        map.doubleClickZoom[next.zoomEnabled ? 'enable' : 'disable']();
-        map.boxZoom[next.zoomEnabled ? 'enable' : 'disable']();
-        setTileStyle(!!next.isDark);
-        applyOverlays(next.overlays || { markers: [], polylines: [] });
-        applyUserLocation(!!next.showsUserLocation, next.userLocation || null);
+        if (typeof next.scrollEnabled === 'boolean') {
+          map.dragging[next.scrollEnabled ? 'enable' : 'disable']();
+        }
+        if (typeof next.zoomEnabled === 'boolean') {
+          map.touchZoom[next.zoomEnabled ? 'enable' : 'disable']();
+          map.doubleClickZoom[next.zoomEnabled ? 'enable' : 'disable']();
+          map.boxZoom[next.zoomEnabled ? 'enable' : 'disable']();
+        }
+        if (typeof next.isDark === 'boolean') {
+          setTileStyle(next.isDark);
+        }
+        // Only touch markers when overlays are explicitly provided — options-only
+        // updates (scroll/zoom/theme/user location) must not replay stale config overlays.
+        if (next.overlays !== undefined) {
+          applyOverlays(next.overlays);
+        }
+        if (typeof next.showsUserLocation === 'boolean') {
+          applyUserLocation(next.showsUserLocation, next.userLocation || null);
+        }
       }
 
       function setViewFromRegion(nextRegion, animate) {
@@ -263,7 +275,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         updateOptions: function (next) {
           if (!map) return;
           config = config ? Object.assign({}, config, next) : next;
-          applyMapOptions(config);
+          applyMapOptions(next);
         },
         flyTo: function (region, durationMs) {
           if (!map) return;
