@@ -14,14 +14,17 @@ import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Switch, Text, View, InteractionManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
 import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
 import { useAdFreeStore } from '@/features/ads/lib/ad-free-store';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
-import { showAdPrivacyOptionsForm } from '@/features/ads/lib/admob-runtime';
+import {
+  refreshAdPrivacyOptionsRequired,
+  showAdPrivacyOptionsForm,
+} from '@/features/ads/lib/admob-runtime';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
 import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
@@ -80,10 +83,29 @@ export default function SettingsScreen() {
   const reviewConfig = useInAppReviewConfig();
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
+  const [adPrivacyOptionsRequired, setAdPrivacyOptionsRequired] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       void useAuthStore.getState().refreshUser();
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAdMobNativeAvailable()) {
+        setAdPrivacyOptionsRequired(false);
+        return;
+      }
+      let active = true;
+      void refreshAdPrivacyOptionsRequired().then((required) => {
+        if (active) {
+          setAdPrivacyOptionsRequired(required);
+        }
+      });
+      return () => {
+        active = false;
+      };
     }, []),
   );
 
@@ -190,6 +212,37 @@ export default function SettingsScreen() {
 
   const appVersion = Constants.expoConfig?.version ?? '5.1.6';
 
+  const openAdPrivacyOptions = () => {
+    void (async () => {
+      if (Platform.OS === 'ios') {
+        router.back();
+        await new Promise<void>((resolve) => {
+          InteractionManager.runAfterInteractions(() => resolve());
+        });
+      }
+
+      const outcome = await showAdPrivacyOptionsForm();
+      switch (outcome) {
+        case 'shown':
+          break;
+        case 'not_required':
+          notify(
+            t('settingsAdPreferencesUnavailableTitle'),
+            t('settingsAdPreferencesUnavailableMessage'),
+          );
+          break;
+        case 'unavailable':
+        case 'error':
+          notify(t('settingsAdPreferencesErrorTitle'), t('settingsAdPreferencesErrorMessage'));
+          break;
+        default: {
+          const _exhaustive: never = outcome;
+          return _exhaustive;
+        }
+      }
+    })();
+  };
+
   return (
     <Screen withStackHeader collapsable={false}>
       <ScrollView
@@ -249,11 +302,11 @@ export default function SettingsScreen() {
             title={t('settingsManageConsent')}
             onPress={() => router.push('/onboarding/consent')}
           />
-          {isAdMobNativeAvailable() ? (
+          {adPrivacyOptionsRequired ? (
             <ListRow
               icon={Megaphone}
               title={t('settingsManageAdPreferences')}
-              onPress={() => void showAdPrivacyOptionsForm()}
+              onPress={openAdPrivacyOptions}
             />
           ) : null}
           <ListRow

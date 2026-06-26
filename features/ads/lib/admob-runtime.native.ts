@@ -1,3 +1,7 @@
+import {
+  type AdPrivacyOptionsOutcome,
+  isAdPrivacyOptionsRequired,
+} from '@/features/ads/lib/ad-privacy-options';
 import { getAdMobRequestOptions } from '@/features/ads/lib/admob-request-options';
 import { AdLoadScheduler } from '@/features/ads/lib/admob-load-backoff';
 import { getAdMobModule } from '@/features/ads/lib/admob-native';
@@ -275,16 +279,37 @@ export function isAdMobCanRequestAds(): boolean {
 }
 
 export { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
+export type { AdPrivacyOptionsOutcome } from '@/features/ads/lib/ad-privacy-options';
 
-export async function showAdPrivacyOptionsForm(): Promise<void> {
+export async function refreshAdPrivacyOptionsRequired(): Promise<boolean> {
   const mod = getAdMobModule();
   if (!mod || !isAdMobSupportedPlatform()) {
-    return;
+    return false;
   }
   try {
+    const consentInfo = await mod.AdsConsent.requestInfoUpdate();
+    return isAdPrivacyOptionsRequired(consentInfo.privacyOptionsRequirementStatus);
+  } catch (error) {
+    logger.warn('AdMob privacy options status refresh failed', error);
+    return false;
+  }
+}
+
+export async function showAdPrivacyOptionsForm(): Promise<AdPrivacyOptionsOutcome> {
+  const mod = getAdMobModule();
+  if (!mod || !isAdMobSupportedPlatform()) {
+    return 'unavailable';
+  }
+  try {
+    const consentInfo = await mod.AdsConsent.requestInfoUpdate();
+    if (!isAdPrivacyOptionsRequired(consentInfo.privacyOptionsRequirementStatus)) {
+      return 'not_required';
+    }
     await mod.AdsConsent.showPrivacyOptionsForm();
+    return 'shown';
   } catch (error) {
     logger.warn('AdMob privacy options form failed', error);
+    return 'error';
   }
 }
 

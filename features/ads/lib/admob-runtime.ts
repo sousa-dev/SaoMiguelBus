@@ -1,6 +1,9 @@
+import type { AdPrivacyOptionsOutcome } from '@/features/ads/lib/ad-privacy-options';
+
 type ClosedListener = () => void;
 
 export type RewardedAdShowResult = 'earned' | 'dismissed' | 'unavailable';
+export type { AdPrivacyOptionsOutcome } from '@/features/ads/lib/ad-privacy-options';
 
 export function isAdMobInitialized(): boolean {
   return false;
@@ -12,7 +15,13 @@ export function isAdMobCanRequestAds(): boolean {
 
 export { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 
-export async function showAdPrivacyOptionsForm(): Promise<void> {}
+export async function refreshAdPrivacyOptionsRequired(): Promise<boolean> {
+  return false;
+}
+
+export async function showAdPrivacyOptionsForm(): Promise<AdPrivacyOptionsOutcome> {
+  return 'unavailable';
+}
 
 export async function initializeAdMob(): Promise<void> {}
 
