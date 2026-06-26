@@ -32,6 +32,10 @@ export function showInterstitialAd(): boolean {
   return false;
 }
 
+export function showInterstitialAdAndWait(): Promise<boolean> {
+  return Promise.resolve(false);
+}
+
 export function onInterstitialClosed(_listener: ClosedListener): () => void {
   return () => {};
 }

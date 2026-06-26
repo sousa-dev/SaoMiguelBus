@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { InterstitialModals } from '@/features/ads/components/InterstitialModals';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { markFullScreenAdShown } from '@/features/ads/lib/app-open-storage';
-import { onInterstitialClosed } from '@/features/ads/lib/admob-runtime';
+import { showInterstitialAdAndWait } from '@/features/ads/lib/admob-runtime';
 import {
   setFirstPartyInterstitialVisible,
   setInternalFullscreenAdVisible,
@@ -63,7 +63,6 @@ export function InterstitialRequestHost() {
     setShowInternal(false);
     setInternalCreative(null);
     setInternalFullscreenAdVisible(false);
-    // Unblock live-entry navigation before optional upsell.
     void finishPresentation();
     setShowUpsell(true);
   }, [finishPresentation]);
@@ -83,7 +82,6 @@ export function InterstitialRequestHost() {
           track('transit', 'ad_impression', { on: 'interstitial', adId: plan.ad.id, intent: 'live_entry' });
           return;
         case 'admob':
-          void markFullScreenAdShown(Date.now());
           return;
         case 'internal':
           setInternalCreative(plan.creative);
@@ -117,12 +115,24 @@ export function InterstitialRequestHost() {
 
       void (async () => {
         try {
-          const plan = await planInterstitialShow(intent, enabledModuleKeys);
+          const plan = await planInterstitialShow(intent, enabledModuleKeys, {
+            deferAdMobPresentation: true,
+          });
           await applyPlan(plan);
+
           if (plan.kind === 'admob') {
-            // Upsell follows AdMob close via onInterstitialClosed.
+            const shown = await showInterstitialAdAndWait();
+            if (shown) {
+              void markFullScreenAdShown(Date.now());
+              track('transit', 'ad_mob_interstitial_shown', { on: 'interstitial', intent: 'live_entry' });
+            }
+            await finishPresentation();
+            if (shown) {
+              setShowUpsell(true);
+            }
             return;
           }
+
           if (plan.kind === 'none') {
             return;
           }
@@ -131,18 +141,7 @@ export function InterstitialRequestHost() {
         }
       })();
     });
-  }, [applyPlan, enabledModuleKeys, showAds]);
-
-  useEffect(() => {
-    return onInterstitialClosed(() => {
-      if (!awaitingExternalRef.current) {
-        return;
-      }
-      // AdMob close must unblock router.push('/minibus/live') before upsell.
-      void finishPresentation();
-      setShowUpsell(true);
-    });
-  }, [finishPresentation]);
+  }, [applyPlan, enabledModuleKeys, finishPresentation, showAds]);
 
   return (
     <InterstitialModals

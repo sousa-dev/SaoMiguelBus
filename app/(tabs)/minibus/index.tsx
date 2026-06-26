@@ -31,6 +31,7 @@ import {
   isMinibusLiveEntryEnabled,
   shouldShowMinibusLiveEntry,
 } from '@/features/minibus/lib/liveEntryVisibility';
+import { openMinibusLiveMap } from '@/features/minibus/lib/openLiveTracking';
 import { localDocumentImageUri } from '@/features/minibus/offline';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
 import { resolveEnabledModules } from '@/config/island';
@@ -186,7 +187,7 @@ export default function MinibusScreen() {
                   try {
                     await presentInterstitial('live_entry');
                   } finally {
-                    router.push('/minibus/live');
+                    openMinibusLiveMap(router);
                   }
                 })();
               }}

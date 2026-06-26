@@ -406,6 +406,49 @@ export function showInterstitialAd(): boolean {
   return true;
 }
 
+const INTERSTITIAL_WAIT_TIMEOUT_MS = 120_000;
+
+/** Present a loaded interstitial and resolve when it closes, errors, or times out. */
+export function showInterstitialAdAndWait(): Promise<boolean> {
+  if (!interstitial || !interstitialLoaded) {
+    return Promise.resolve(false);
+  }
+
+  const mod = getAdMobModule();
+  if (!mod) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const ad = interstitial!;
+    const finish = (shown: boolean) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      unsubClose();
+      unsubError();
+      clearTimeout(timeout);
+      resolve(shown);
+    };
+
+    const unsubClose = onInterstitialClosed(() => {
+      finish(true);
+    });
+    const unsubError = ad.addAdEventListener(mod.AdEventType.ERROR, () => {
+      finish(false);
+    });
+    const timeout = setTimeout(() => {
+      finish(false);
+    }, INTERSTITIAL_WAIT_TIMEOUT_MS);
+
+    if (!showInterstitialAd()) {
+      finish(false);
+    }
+  });
+}
+
 export function onInterstitialClosed(listener: ClosedListener): () => void {
   closedListeners.add(listener);
   return () => {

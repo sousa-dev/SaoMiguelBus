@@ -28,9 +28,15 @@ export type InterstitialShowPlan =
   | { kind: 'internal'; creative: InternalAdCreative }
   | { kind: 'upsell' };
 
+type PlanInterstitialOptions = {
+  /** When true, return `{ kind: 'admob' }` without calling `showInterstitialAd()` yet. */
+  deferAdMobPresentation?: boolean;
+};
+
 export async function planInterstitialShow(
   intent: InterstitialIntent,
   enabledModuleKeys: ModuleKey[],
+  options?: PlanInterstitialOptions,
 ): Promise<InterstitialShowPlan> {
   if (intent === 'search') {
     const state = await loadInterstitialSessionState();
@@ -70,9 +76,14 @@ export async function planInterstitialShow(
     isAdMobInitialized() &&
     isInterstitialAdLoaded();
 
-  if (canAdMob && showInterstitialAd()) {
-    track('transit', 'ad_mob_interstitial_shown', { on: 'interstitial', intent });
-    return { kind: 'admob' };
+  if (canAdMob) {
+    if (options?.deferAdMobPresentation) {
+      return { kind: 'admob' };
+    }
+    if (showInterstitialAd()) {
+      track('transit', 'ad_mob_interstitial_shown', { on: 'interstitial', intent });
+      return { kind: 'admob' };
+    }
   }
 
   if (Platform.OS !== 'web') {
