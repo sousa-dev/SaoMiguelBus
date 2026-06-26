@@ -63,9 +63,10 @@ export function InterstitialRequestHost() {
     setShowInternal(false);
     setInternalCreative(null);
     setInternalFullscreenAdVisible(false);
+    // Unblock live-entry navigation before optional upsell.
+    void finishPresentation();
     setShowUpsell(true);
-    void markInterstitialDismissed(Date.now());
-  }, []);
+  }, [finishPresentation]);
 
   const applyPlan = useCallback(
     async (plan: Awaited<ReturnType<typeof planInterstitialShow>>) => {
@@ -134,11 +135,14 @@ export function InterstitialRequestHost() {
 
   useEffect(() => {
     return onInterstitialClosed(() => {
-      if (awaitingExternalRef.current) {
-        setShowUpsell(true);
+      if (!awaitingExternalRef.current) {
+        return;
       }
+      // AdMob close must unblock router.push('/minibus/live') before upsell.
+      void finishPresentation();
+      setShowUpsell(true);
     });
-  }, []);
+  }, [finishPresentation]);
 
   return (
     <InterstitialModals

@@ -183,8 +183,11 @@ export default function MinibusScreen() {
               onPress={() => {
                 void (async () => {
                   track('minibus', 'live_entry_open', { source: 'hub' });
-                  await presentInterstitial('live_entry');
-                  router.push('/minibus/live');
+                  try {
+                    await presentInterstitial('live_entry');
+                  } finally {
+                    router.push('/minibus/live');
+                  }
                 })();
               }}
             />
