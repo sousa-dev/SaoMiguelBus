@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
-# Patches Expo/RN iOS deps for Xcode 26 (Swift 6) and paths with spaces. Re-run after npm install.
+# Patches Expo/RN native deps for local/CI builds. Re-run after npm install.
 set -euo pipefail
 
-# EAS Android (and other Linux CI) runs npm postinstall on Ubuntu/GNU sed.
-# This script only touches iOS native sources and uses BSD sed -i '' syntax.
-if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "skip expo iOS native patches (non-macOS host)"
-  exit 0
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# --- @react-native/gradle-plugin (Gradle 9 + foojay 0.5.0) ---
+RN_GRADLE_SETTINGS="${ROOT}/node_modules/@react-native/gradle-plugin/settings.gradle.kts"
+if [[ -f "${RN_GRADLE_SETTINGS}" ]]; then
+  sed -i.bak 's/foojay-resolver-convention").version("0.5.0")/foojay-resolver-convention").version("1.0.0")/' "${RN_GRADLE_SETTINGS}"
+  rm -f "${RN_GRADLE_SETTINGS}.bak"
 fi
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# iOS-only patches below (BSD sed -i '').
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  echo "patched Android native build (Gradle 9 foojay); skip iOS patches (non-macOS host)"
+  exit 0
+fi
 
 # --- expo-modules-jsi (Swift 6) ---
 JSI="${ROOT}/node_modules/expo-modules-jsi/apple"
@@ -57,4 +63,4 @@ if [[ -d "${ROOT}/ios" ]]; then
   node "${ROOT}/scripts/fix-ios-xcode-paths.mjs"
 fi
 
-echo "patched expo native iOS build (Swift 6 + path spaces)"
+echo "patched expo native build (Gradle 9 foojay + Swift 6 + path spaces)"
