@@ -10,11 +10,15 @@ export interface FavoriteRoute {
   origin: string;
   destination: string;
   createdAt: string;
+  /** Endpoints that no longer resolve, for the tap-to-fix affordance (03 §5d). */
+  unresolved?: ('origin' | 'destination')[];
 }
 
 export interface FavoriteStop {
   id: number;
   name: string;
+  /** Set by the changeover migration when the name has no match (03 §5d). */
+  unavailable?: boolean;
 }
 
 export interface RecentSearch {
@@ -134,6 +138,15 @@ interface ProfileState {
   pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => boolean;
   unpinRoute: (pinId: string) => void;
   pruneTracking: (now?: number) => void;
+  /**
+   * Re-point saved data at the active network after the changeover (03 §5d).
+   * Never deletes: unresolvable favourites are kept and flagged.
+   */
+  applyUserDataMigration: (next: {
+    favoriteStops: FavoriteStop[];
+    favoriteRoutes: FavoriteRoute[];
+    recentSearches: RecentSearch[];
+  }) => void;
   /** Wipe all on-device profile data (used by the GDPR "delete my data" flow). */
   resetAll: () => void;
 }
@@ -350,6 +363,13 @@ export const useProfileStore = create<ProfileState>()(
           },
         });
       },
+
+      applyUserDataMigration: (next) =>
+        set({
+          favoriteStops: next.favoriteStops,
+          favoriteRoutes: next.favoriteRoutes,
+          recentSearches: next.recentSearches,
+        }),
 
       resetAll: () => {
         set({

@@ -28,6 +28,7 @@ import {
   useTransitSearchWithOffline,
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
+import { useUserDataMigration } from '@/features/transit/hooks/useUserDataMigration';
 import { useNetwork } from '@/lib/network-provider';
 import { WifiOff } from 'lucide-react-native';
 import { migrateLegacyFavorites, useProfileStore } from '@/lib/profile-store';
@@ -57,6 +58,9 @@ export default function TransitScreen() {
   const showMinibus = resolveEnabledModules(bootstrap.data?.island?.enabledModules).includes('minibus');
   const { visible: showHopOnOff } = useHopOnHopOffPromo();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
+  // Re-point saved favourites and recents whenever the active network changes
+  // (03 §5d). Driven by the stop list, never by a date.
+  useUserDataMigration();
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
   const [origin, setOrigin] = useState(() => searchParam(params.origin));
