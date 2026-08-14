@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { RouteTimeline } from '@/features/transit/components/RouteTimeline';
 import { ShareTripButton } from '@/features/transit/components/ShareTripButton';
 import { TrackButton } from '@/features/transit/components/TrackButton';
+import { SchedulePreviewChip } from '@/features/transit/components/SchedulePreviewNotice';
+import { arrivesNextDay, resolveBoardingPole } from '@/features/transit/lib/boarding-pole';
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
 import {
   countTransfers,
@@ -34,6 +36,10 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
   const currentVote = getVote(trip.id);
   const needsConfirmation = needsRouteConfirmation(trip.likesPercent);
   const transfers = countTransfers(trip.route, trip.stops.length);
+  // The pole code and the +1 badge render only when the server sent them:
+  // legacy-dataset results carry neither (03 §5b, 98 B2).
+  const boardingPole = resolveBoardingPole(trip);
+  const nextDay = arrivesNextDay(trip);
   const firstStop = trip.stops[0];
   const lastStop = trip.stops[trip.stops.length - 1];
 
@@ -64,6 +70,18 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
               {displayRouteNumber(trip.route)}
             </Text>
           </View>
+          {boardingPole ? (
+            <View style={[styles.poleChip, { borderColor: theme.border }]}>
+              <Text style={[typography.caption, { color: theme.muted }]}>
+                {boardingPole.code}
+              </Text>
+            </View>
+          ) : null}
+          {nextDay ? (
+            <View style={[styles.poleChip, { borderColor: theme.warning }]}>
+              <Text style={[typography.caption, { color: theme.warning }]}>+1</Text>
+            </View>
+          ) : null}
           {transfers > 0 ? (
             <View style={styles.transferRow}>
               <Shuffle size={14} color={theme.muted} />
@@ -73,6 +91,8 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
             </View>
           ) : null}
         </View>
+
+        <SchedulePreviewChip />
 
         {needsConfirmation ? (
           <Pressable
@@ -182,6 +202,12 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
 }
 
 const styles = StyleSheet.create({
+  poleChip: {
+    borderWidth: 1,
+    borderRadius: radius.sm,
+    paddingHorizontal: space.sm,
+    paddingVertical: 1,
+  },
   card: {
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,

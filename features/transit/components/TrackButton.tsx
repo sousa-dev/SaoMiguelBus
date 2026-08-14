@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { IconButton } from '@/components/ui/IconButton';
 import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
+import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
 import { useProfileStore } from '@/lib/profile-store';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -19,6 +20,9 @@ type Props = {
 export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  // Scheduling a track against timetables that are not yet in force would fire
+  // countdowns on the wrong days (03 §3).
+  const { canTrackTrips } = useScheduleConfig();
   const { canStartMore, startFromTrip, stopTracking, pinFromTrip, isTrackingTrip } = useBusTracking();
   const { guardPremiumAction } = usePremiumGate();
   const active = useProfileStore((s) => s.tracking.active);
@@ -48,6 +52,11 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   const onPin = () => {
     void guardPremiumAction(() => pinFromTrip(trip, searchDay), 'track_pin');
   };
+
+  // A previewed timetable is not in force, so there is nothing to track against.
+  if (!canTrackTrips) {
+    return null;
+  }
 
   return (
     <View style={styles.row}>

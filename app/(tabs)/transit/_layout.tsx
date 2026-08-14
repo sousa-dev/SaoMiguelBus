@@ -16,6 +16,10 @@ export default function TransitLayout() {
         options={stackBackScreenOptions('/(tabs)/transit')}
       />
       <Stack.Screen
+        name="prices"
+        options={stackBackScreenOptions('/(tabs)/transit')}
+      />
+      <Stack.Screen
         name="[tripId]"
         options={stackBackScreenOptions('/(tabs)/transit')}
       />

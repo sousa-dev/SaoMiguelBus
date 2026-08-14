@@ -1251,5 +1251,16 @@
     "minibusTimetableImageAlt": "Horário da {{line}}",
     "minibusTimetableUnavailable": "Imagem de horário indisponível",
     "minibusTimetableOpenFullscreen": "Abrir horário da {{line}} em ecrã inteiro",
-    "minibusTimetableTapToZoom": "Toque para ver em ecrã inteiro"
+    "minibusTimetableTapToZoom": "Toque para ver em ecrã inteiro",
+    "transitSchedulePreviewToggle": "Ver os novos horários",
+    "transitSchedulePreviewChip": "Ainda não em vigor",
+    "transitSchedulePreviewWarning": "Horários válidos apenas a partir de {{date}}.",
+    "transitPricesTitle": "Tarifários",
+    "transitPricesEmpty": "Os tarifários ainda não estão disponíveis.",
+    "transitPricesUnavailable": "Não foi possível carregar os tarifários.",
+    "transitPricesEffective": "Em vigor a partir de {{date}}",
+    "transitPricesUpdated": "Atualizado a {{date}}",
+    "transitOfflineExpiredTitle": "Estes horários expiraram",
+    "transitOfflineExpiredBody": "A rede mudou. Liga-te à internet uma vez para atualizar.",
+    "transitOfflineShowAnyway": "Ver mesmo assim"
 }

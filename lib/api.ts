@@ -5,6 +5,7 @@ import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
+import type { TariffsResponse } from '@/features/transit/lib/tariffs';
 import type { OfflineBundleV2 } from '@/lib/offline-bundle-v2';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
@@ -313,6 +314,11 @@ export async function fetchOfflineBundleVersion(): Promise<OfflineBundleVersionR
 /** Self-contained transit dataset for offline route search (v3). */
 export async function fetchOfflineBundle(): Promise<OfflineBundleResponse> {
   return apiFetch<OfflineBundleResponse>('/api/v3/transit/offline-bundle');
+}
+
+/** Fare TABLES (03 §6). 404 means no snapshot has been synced yet. */
+export async function fetchTransitTariffs(): Promise<TariffsResponse> {
+  return apiFetch<TariffsResponse>('/api/v3/transit/tariffs');
 }
 
 /** Schema-versioned bundle (03 §5.1). Only builds carrying the phase hook ask for it. */

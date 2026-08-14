@@ -1198,5 +1198,16 @@
     "minibusTimetableImageAlt": "Розклад {{line}}",
     "minibusTimetableUnavailable": "Зображення розкладу недоступне",
     "minibusTimetableOpenFullscreen": "Відкрити розклад {{line}} на весь екран",
-    "minibusTimetableTapToZoom": "Торкніться для повноекранного перегляду"
+    "minibusTimetableTapToZoom": "Торкніться для повноекранного перегляду",
+    "transitSchedulePreviewToggle": "Show the new timetables",
+    "transitSchedulePreviewChip": "Not yet in force",
+    "transitSchedulePreviewWarning": "These times are only valid from {{date}}.",
+    "transitPricesTitle": "Fares",
+    "transitPricesEmpty": "Fares are not available yet.",
+    "transitPricesUnavailable": "Could not load the fares.",
+    "transitPricesEffective": "In force from {{date}}",
+    "transitPricesUpdated": "Updated {{date}}",
+    "transitOfflineExpiredTitle": "These timetables have expired",
+    "transitOfflineExpiredBody": "The network changed. Connect once to update.",
+    "transitOfflineShowAnyway": "Show anyway"
 }

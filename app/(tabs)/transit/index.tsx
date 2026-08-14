@@ -16,8 +16,11 @@ import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrack
 import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
 import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
 import { MinibusTransitLink } from '@/features/transit/components/MinibusTransitLink';
+import { TransitPricesLink } from '@/features/transit/components/TransitPricesLink';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
+import { ScheduleChangeBanner } from '@/features/transit/components/ScheduleChangeBanner';
+import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
 import { RouteWeatherGrid } from '@/features/transit/components/RouteWeatherGrid';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
 import { TransitPlannerCard } from '@/features/transit/components/TransitPlannerCard';
@@ -185,6 +188,9 @@ export default function TransitScreen() {
 
           <AdBanner on="home" slot="top" />
 
+          {/* Renders nothing until the server arms a cutover instant (03 §2). */}
+          <ScheduleChangeBanner />
+
           {!stopsLoading || !isOnline ? (
             <TransitPlannerCard
               origin={origin}
@@ -227,6 +233,9 @@ export default function TransitScreen() {
             />
           ) : null}
 
+          {/* The caveat rides with the RESULTS, not the screen (03 §3). */}
+          {hasResults ? <SchedulePreviewStrip /> : null}
+
           {hasResults && search.data ? (
             <RouteResults
               results={search.data}
@@ -237,6 +246,7 @@ export default function TransitScreen() {
             />
           ) : null}
 
+          {showInstructions ? <TransitPricesLink /> : null}
           {showInstructions && showMinibus ? <MinibusTransitLink /> : null}
           {showInstructions && showMinibus && showHopOnOff ? (
             <HopOnHopOffCtaRow source="transit" />
