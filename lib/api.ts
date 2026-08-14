@@ -65,6 +65,7 @@ import type {
   MinibusVehiclesResponse,
   MinibusVehicleDetailResponse,
   MinibusTrackingHealthResponse,
+  TransitDataset,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -313,8 +314,11 @@ export async function fetchOfflineBundle(): Promise<OfflineBundleResponse> {
   return apiFetch<OfflineBundleResponse>('/api/v3/transit/offline-bundle');
 }
 
-export async function fetchStops(): Promise<Stop[]> {
-  const data = await apiFetch<{ stops: Stop[] }>('/api/v3/transit/stops');
+export async function fetchStops(dataset?: TransitDataset | null): Promise<Stop[]> {
+  // `dataset` is the preview toggle only. Never populated from a cached
+  // activeDataset, and never `legacy` on a public URL (98 §4 gap).
+  const query = dataset ? `?dataset=${encodeURIComponent(dataset)}` : '';
+  const data = await apiFetch<{ stops: Stop[] }>(`/api/v3/transit/stops${query}`);
   const seen = new Set<number>();
   return data.stops.filter((stop) => {
     if (seen.has(stop.id)) {
@@ -330,8 +334,13 @@ export async function searchTransit(params: {
   destination: string;
   day: string;
   start: string;
+  dataset?: TransitDataset | null;
 }): Promise<TransitSearchResult[]> {
-  const query = new URLSearchParams(params);
+  const { dataset, ...rest } = params;
+  const query = new URLSearchParams(rest);
+  if (dataset) {
+    query.set('dataset', dataset);
+  }
   const data = await apiFetch<{ results: TransitSearchResult[] }>(
     `/api/v3/transit/search?${query.toString()}`,
   );

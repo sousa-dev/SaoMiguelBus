@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import {
-  fetchBootstrap,
   fetchDirections,
   fetchStops,
   fetchTripDetail,
@@ -18,29 +17,22 @@ import {
   type TripVote,
   type TripVoteMeta,
 } from '@/lib/profile-store';
+import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import type { BootstrapResponse, TransitSearchResult } from '@/lib/types';
 
-export function useBootstrap() {
-  return useQuery({
-    queryKey: ['bootstrap', 'v3'],
-    queryFn: fetchBootstrap,
-    staleTime: 1000 * 60 * 5,
-  });
-}
-
-/** Cached bootstrap only — does not refetch when the screen mounts. */
-export function useBootstrapCached() {
-  return useQuery<BootstrapResponse>({
-    queryKey: ['bootstrap', 'v3'],
-    queryFn: fetchBootstrap,
-    enabled: false,
-  });
-}
+// Bootstrap lives in its own module so `useScheduleConfig` — which the search
+// and stops queries below now depend on — can read it without an import cycle.
+export { useBootstrap, useBootstrapCached } from '@/features/transit/hooks/useBootstrapQueries';
 
 export function useStops() {
+  // The pickers must offer the previewed network's stops, or a user picks a stop
+  // that does not exist in the dataset being searched (03 §3). The key carries
+  // the dataset even outside preview so a midnight rollover cannot serve
+  // yesterday's network from a permanent key (98 §4 gap).
+  const dataset = useTransitDataset();
   return useQuery({
-    queryKey: ['transit', 'stops'],
-    queryFn: fetchStops,
+    queryKey: ['transit', 'stops', dataset ?? 'server'],
+    queryFn: () => fetchStops(dataset),
   });
 }
 
@@ -52,14 +44,16 @@ export function useTransitSearch(params: {
   enabled: boolean;
 }) {
   const queryClient = useQueryClient();
+  const dataset = useTransitDataset();
   return useQuery({
-    queryKey: ['transit', 'search', params],
+    queryKey: ['transit', 'search', params, dataset ?? 'server'],
     queryFn: async () => {
       const results = await searchTransit({
         origin: params.origin,
         destination: params.destination,
         day: params.day,
         start: params.start,
+        dataset,
       });
       track('transit', 'search', {
         origin: params.origin,
@@ -67,6 +61,7 @@ export function useTransitSearch(params: {
         day_type: params.day,
         start_time: params.start,
         results_count: results.length,
+        dataset: dataset ?? 'server',
       });
       const bootstrap = queryClient.getQueryData<BootstrapResponse>(['bootstrap', 'v3']);
       const reviewConfig = resolveInAppReviewConfig(bootstrap);

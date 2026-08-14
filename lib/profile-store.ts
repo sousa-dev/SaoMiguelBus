@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { staticIslandConfig } from '@/config/island';
 import { track } from '@/lib/analytics';
-import type { TripStop } from '@/lib/types';
+import type { TransitDataset, TripStop } from '@/lib/types';
 
 export interface FavoriteRoute {
   origin: string;
@@ -107,7 +107,17 @@ interface ProfileState {
   recentSearches: RecentSearch[];
   votes: Record<number, TripVoteEntry>;
   tracking: TrackingState;
+  /**
+   * The changeover preview toggle (03 §1). Cleared automatically once the server
+   * stops offering a preview, so an August toggle does not strand a user in a
+   * meaningless mode in September.
+   */
+  transitPreviewDataset: TransitDataset | null;
+  /** Which schedule banner the user dismissed, keyed on `banner.id`. */
+  dismissedScheduleBannerId: string | null;
   setDisplayName: (name: string | null) => void;
+  setTransitPreviewDataset: (dataset: TransitDataset | null) => void;
+  dismissScheduleBanner: (bannerId: string) => void;
   isFavoriteRoute: (origin: string, destination: string) => boolean;
   toggleFavoriteRoute: (origin: string, destination: string) => void;
   removeFavoriteRoute: (origin: string, destination: string) => void;
@@ -143,11 +153,17 @@ export const useProfileStore = create<ProfileState>()(
       recentSearches: [],
       votes: {},
       tracking: defaultTracking(),
+      transitPreviewDataset: null,
+      dismissedScheduleBannerId: null,
 
       setDisplayName: (name) => {
         const trimmed = name?.trim();
         set({ displayName: trimmed ? trimmed : null });
       },
+
+      setTransitPreviewDataset: (dataset) => set({ transitPreviewDataset: dataset }),
+
+      dismissScheduleBanner: (bannerId) => set({ dismissedScheduleBannerId: bannerId }),
 
       isFavoriteRoute: (origin, destination) => {
         const key = pairKey(origin, destination);
@@ -343,6 +359,8 @@ export const useProfileStore = create<ProfileState>()(
           recentSearches: [],
           votes: {},
           tracking: defaultTracking(),
+          transitPreviewDataset: null,
+          dismissedScheduleBannerId: null,
         });
       },
     }),

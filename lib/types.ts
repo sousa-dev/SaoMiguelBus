@@ -26,6 +26,46 @@ export interface BootstrapResponse {
   };
   holidays: { id: number; date: string; name: string }[];
   infos: Record<string, unknown>[];
+  transitSchedule?: TransitScheduleConfig;
+}
+
+export type TransitDataset = 'legacy' | 'azoresbus';
+export type SchedulePhase = 'preview' | 'live' | 'settled';
+
+export interface TransitScheduleBanner {
+  /** Dismissal key — changing it server-side re-shows the banner to everyone. */
+  id: string;
+  tone: 'info' | 'warning';
+  dismissible: boolean;
+  /** locale → copy. */
+  text: Record<string, string>;
+}
+
+/**
+ * `bootstrap.transitSchedule` — which network is active and when that stops
+ * being true (00 Decision 1). The app renders it; it never computes it.
+ *
+ * Two things differ from the mobile plan's sketch, both confirmed against the
+ * deployed API:
+ *
+ *  - The block is ALWAYS sent, even for an island with no azoresbus flags, with
+ *    `cutoverAt: null` and `phase: 'preview'`. So `cutoverAt != null` is the
+ *    "is this configured" test, not the presence of the block.
+ *  - `banner` and `badge` are sent in every phase, so the phase gate is ours.
+ *  - `trackingEnabled` lives in here, not at the top level of the bootstrap.
+ */
+export interface TransitScheduleConfig {
+  activeDataset: TransitDataset;
+  /** Non-null ⇒ offer the preview toggle. */
+  previewDataset: TransitDataset | null;
+  /** ISO INSTANT, or null when no cutover is armed. Never a calendar date. */
+  cutoverAt: string | null;
+  /** When this config stops being true, so a 24h-cached copy can be invalidated. */
+  nextTransitionAt: string | null;
+  phase: SchedulePhase;
+  banner: TransitScheduleBanner | null;
+  badge: { text: Record<string, string> } | null;
+  trackingEnabled: boolean;
 }
 
 export type AppUpdateMode = 'optional' | 'required';

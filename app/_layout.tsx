@@ -31,6 +31,7 @@ import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { usePersonalizationPlatformBackfill } from '@/features/account/hooks/usePersonalizationPlatformBackfill';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useScheduleTransition } from '@/features/transit/hooks/useScheduleTransition';
 import { useAuthStore } from '@/lib/auth-store';
 import '@/lib/i18n';
 import { loadSavedLocale } from '@/lib/locale-prefs';
@@ -59,6 +60,10 @@ function AppShell({
   onSplashDismiss: () => void;
 }) {
   const { data: bootstrap } = useBootstrap();
+  // Invalidate bootstrap, search and stops at the changeover instant the server
+  // published — a 24h-persisted config would otherwise still be applied after it
+  // stopped being true (03 §1, 98 §4 gap "Stale bootstrap").
+  useScheduleTransition(bootstrap?.transitSchedule);
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);
