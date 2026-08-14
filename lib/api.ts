@@ -5,6 +5,7 @@ import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
+import type { OfflineBundleV2 } from '@/lib/offline-bundle-v2';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
 import { getOrCreateSessionId } from '@/lib/session';
 import type {
@@ -312,6 +313,16 @@ export async function fetchOfflineBundleVersion(): Promise<OfflineBundleVersionR
 /** Self-contained transit dataset for offline route search (v3). */
 export async function fetchOfflineBundle(): Promise<OfflineBundleResponse> {
   return apiFetch<OfflineBundleResponse>('/api/v3/transit/offline-bundle');
+}
+
+/** Schema-versioned bundle (03 §5.1). Only builds carrying the phase hook ask for it. */
+export async function fetchOfflineBundleV2(): Promise<OfflineBundleV2> {
+  return apiFetch<OfflineBundleV2>('/api/v3/transit/offline-bundle/v2');
+}
+
+/** Fingerprint only, for the staleness probe. Returns `{version}` — no island. */
+export async function fetchOfflineBundleV2Version(): Promise<{ version: string }> {
+  return apiFetch<{ version: string }>('/api/v3/transit/offline-bundle/v2/version');
 }
 
 export async function fetchStops(dataset?: TransitDataset | null): Promise<Stop[]> {

@@ -19,6 +19,10 @@ import {
   loadCachedBundle,
   refreshOfflineBundleIfStale,
 } from '@/lib/offline-bundle';
+import {
+  loadCachedBundleV2,
+  refreshBundleV2IfStale,
+} from '@/lib/offline-bundle-v2-storage';
 import { usePremium } from '@/lib/premium-store';
 
 import { getNetworkOnline, setNetworkOnline } from '@/lib/network-online';
@@ -104,6 +108,11 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
 
   // --- Track cached-bundle availability --- //
   const refreshBundleState = useCallback(async () => {
+    const v2 = await loadCachedBundleV2();
+    if (v2?.routes?.length) {
+      setHasBundle(true);
+      return;
+    }
     const cached = await loadCachedBundle();
     setHasBundle(Boolean(cached?.routes?.length));
   }, []);
@@ -125,10 +134,27 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       phase: 'start',
     });
     try {
-      const { bundle, updated } = await refreshOfflineBundleIfStale();
+      // Prefer the schema-versioned bundle. Only a genuinely absent endpoint
+      // downgrades to v1; a 5xx or a parse failure keeps what is on disk (98 B3).
+      const v2 = await refreshBundleV2IfStale();
+      let updated = v2.updated;
+      let version = v2.bundle?.version ?? '';
+      let routeCount = v2.bundle?.routes?.length ?? 0;
+      let schema: 1 | 2 = 2;
+      let bytes = v2.bytes;
+
+      if (v2.downgraded) {
+        const v1 = await refreshOfflineBundleIfStale();
+        updated = v1.updated;
+        version = v1.bundle?.version ?? '';
+        routeCount = v1.bundle?.routes?.length ?? 0;
+        schema = 1;
+        bytes = 0;
+      }
+
       lastSyncRef.current = Date.now();
       setLastSyncAt(lastSyncRef.current);
-      setHasBundle(Boolean(bundle?.routes?.length));
+      setHasBundle(routeCount > 0);
       setOfflineBundleStale(false);
       if (updated) {
         await queryClient.invalidateQueries({ queryKey: ['transit', 'offline-cache'] });
@@ -138,7 +164,10 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
         bundle: 'transit',
         outcome: 'success',
         updated,
-        version: bundle?.version ?? '',
+        version,
+        // The only way we find out the real bundle size in the field (03 §8).
+        schema,
+        bytes,
       });
     } catch (error) {
       logger.warn('offline sync failed', error);

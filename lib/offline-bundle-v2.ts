@@ -1,0 +1,321 @@
+/**
+ * The schema-versioned offline bundle: one network, date-resolved services.
+ *
+ * Types are taken from the deployed payload, not the plan's sketch. The
+ * differences matter:
+ *   - there is no `schedule` block, only a flat `phase` string, so the offline
+ *     banner cannot be rendered from the bundle;
+ *   - stops are `{id, name, latitude, longitude}`, not `{name, lat, lon}`;
+ *   - `service`, and entries in `codes` and `stops`, are nullable.
+ *
+ * `services` replaces the WEEKDAY|SATURDAY|SUNDAY enum. That enum cannot express
+ * line 112 (Tuesday AND Thursday only), 102's distinct Wednesday and Friday
+ * extras, or 307's 33 <-> 38 school-term flip (98 B0), so the client resolves
+ * eligibility for an ISO date using the server's own rule.
+ */
+
+import { normalizeStopKey } from '@/lib/offline-search';
+import { selectPair, stopTimeMinutes, type SequencedStop } from '@/lib/trip-segment';
+import type { TransitDataset, TransitSearchResult, TripStop } from '@/lib/types';
+
+export interface OfflineServiceRule {
+  /** Mon…Sun bitstring, e.g. "1111100". */
+  days: string;
+  /** ISO date, inclusive. Null ⇒ unbounded. */
+  from: string | null;
+  to: string | null;
+  added: string[];
+  removed: string[];
+}
+
+export interface OfflineStopV2 {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface OfflineRouteRowV2 {
+  id: number;
+  line: string;
+  /** Key into `bundle.services`. Null when a trip carries no service pattern. */
+  service: string | null;
+  /** Indices into `bundle.stops`; null when a stop fell outside the dataset. */
+  stops: (number | null)[];
+  /** Pole code per position; null on legacy rows, which have no ExternalStop. */
+  codes: (string | null)[];
+  /** Seconds since midnight. */
+  times: number[];
+  /** day_offset per position — the night wrap (98 B2). */
+  offsets: number[];
+}
+
+export interface OfflineBundleV2 {
+  schema: 2;
+  version: string;
+  generatedAt: string;
+  island: string;
+  /** The ONE network this bundle contains (00 Decision 4). Never a row filter. */
+  dataset: TransitDataset;
+  /** INSTANT, or null when no cutover is armed. */
+  cutoverAt: string | null;
+  nextTransitionAt: string | null;
+  phase: string;
+  holidays: { date: string; name: string }[];
+  stops: OfflineStopV2[];
+  services: Record<string, OfflineServiceRule>;
+  routes: OfflineRouteRowV2[];
+}
+
+/** Monday = 0 … Sunday = 6, matching `ServicePattern.WEEKDAY_FIELDS`. */
+export function mondayFirstIndex(isoDate: string): number {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  // UTC, so the index cannot shift with the device's timezone.
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return (weekday + 6) % 7;
+}
+
+export function isHoliday(holidays: { date: string }[], isoDate: string): boolean {
+  return holidays.some((holiday) => holiday.date.slice(0, 10) === isoDate);
+}
+
+/**
+ * Does this trip run on this ISO date?
+ *
+ * Mirrors `transit/services/search.py:eligible_trips` exactly, including two
+ * things the mobile plan's sketch got wrong:
+ *
+ *  - On a holiday the server sets `on_date = None` and filters on the Sunday
+ *    flag ALONE — no date bounds, no exceptions. Applying bounds here would make
+ *    offline stricter than online on holidays.
+ *  - `added` is never honoured. `eligible_trips` only excludes REMOVED; it has no
+ *    branch that forces a date on. Honouring it here would make offline more
+ *    permissive than online on exactly the dates nobody would think to check.
+ *
+ * Agreeing with the server matters more than either rule being ideal.
+ */
+export function runsOn(
+  bundle: Pick<OfflineBundleV2, 'services' | 'holidays'>,
+  row: Pick<OfflineRouteRowV2, 'service'>,
+  isoDate: string,
+): boolean {
+  const service = row.service ? bundle.services[row.service] : undefined;
+  if (!service) {
+    // No pattern means no evidence that it runs. Under-inclusive is the right
+    // failure for transit: a bus that is not coming strands someone at a stop.
+    return false;
+  }
+
+  if (isHoliday(bundle.holidays, isoDate)) {
+    return service.days[6] === '1';
+  }
+
+  if (service.from && isoDate < service.from) {
+    return false;
+  }
+  if (service.to && isoDate > service.to) {
+    return false;
+  }
+  if (service.removed.includes(isoDate)) {
+    return false;
+  }
+  return service.days[mondayFirstIndex(isoDate)] === '1';
+}
+
+function formatSeconds(seconds: number): string {
+  const wrapped = ((seconds % 86400) + 86400) % 86400;
+  const hours = Math.floor(wrapped / 3600);
+  const minutes = Math.floor((wrapped % 3600) / 60);
+  return `${String(hours).padStart(2, '0')}h${String(minutes).padStart(2, '0')}`;
+}
+
+function sequencedRow(row: OfflineRouteRowV2, stops: OfflineStopV2[]): SequencedStop[] {
+  return row.stops.map((stopIndex, position) => {
+    const seconds = row.times[position] ?? 0;
+    return {
+      key: stopIndex == null ? `__missing_${position}` : normalizeStopKey(stops[stopIndex]?.name ?? ''),
+      sequence: position + 1,
+      minutes: stopTimeMinutes(
+        row.offsets[position] ?? 0,
+        Math.floor(seconds / 3600),
+        Math.floor((seconds % 3600) / 60),
+      ),
+    };
+  });
+}
+
+/**
+ * Offline search over one date. Shares `selectPair` with the online path so the
+ * two cannot disagree about which leg of a loop to show (98 B7).
+ */
+export function offlineSearchV2(
+  bundle: OfflineBundleV2,
+  params: { origin: string; destination: string; isoDate: string },
+): TransitSearchResult[] {
+  const originKey = normalizeStopKey(params.origin);
+  const destinationKey = normalizeStopKey(params.destination);
+
+  const results: TransitSearchResult[] = [];
+  for (const row of bundle.routes) {
+    if (!runsOn(bundle, row, params.isoDate)) {
+      continue;
+    }
+    const pair = selectPair(sequencedRow(row, bundle.stops), originKey, destinationKey);
+    if (!pair) {
+      continue;
+    }
+
+    const [board, alight] = pair;
+    const segment: TripStop[] = [];
+    for (let position = board.sequence - 1; position < alight.sequence; position += 1) {
+      const stopIndex = row.stops[position];
+      segment.push({
+        name: stopIndex == null ? '' : bundle.stops[stopIndex]?.name ?? '',
+        time: formatSeconds(row.times[position] ?? 0),
+        sequence: position + 1,
+      });
+    }
+
+    results.push({
+      id: row.id,
+      route: row.line,
+      origin: params.origin,
+      destination: params.destination,
+      start: formatSeconds(row.times[board.sequence - 1] ?? 0),
+      end: formatSeconds(row.times[alight.sequence - 1] ?? 0),
+      typeOfDay: params.isoDate,
+      likesPercent: 0,
+      dislikesPercent: 0,
+      information: {},
+      stops: segment,
+      boarding: poleRef(row, board.sequence),
+      alighting: poleRef(row, alight.sequence),
+      segmentExact: true,
+    });
+  }
+  return results;
+}
+
+function poleRef(row: OfflineRouteRowV2, sequence: number) {
+  const position = sequence - 1;
+  return {
+    code: row.codes[position] ?? '',
+    lat: 0,
+    lon: 0,
+    sequence,
+    dayOffset: row.offsets[position] ?? 0,
+  };
+}
+
+export type BundleFreshness = 'fresh' | 'expired';
+
+/**
+ * Has this bundle outlived the network it describes? (03 §5.2)
+ *
+ * The bundle carries ONE network. A pre-cutover bundle used after the cutover
+ * describes buses that no longer run — showing those silently is worse than
+ * saying nothing, so `expired` is a UI state, not a filter.
+ *
+ * Instants, never local calendar dates: a phone still on Lisbon time would
+ * otherwise mark the bundle expired an hour before Azores midnight.
+ */
+export function bundleFreshness(
+  bundle: Pick<OfflineBundleV2, 'cutoverAt' | 'dataset'>,
+  now: number = Date.now(),
+): BundleFreshness {
+  if (!bundle.cutoverAt) {
+    return 'fresh';
+  }
+  if (bundle.dataset !== 'legacy') {
+    return 'fresh';
+  }
+  const cutover = Date.parse(bundle.cutoverAt);
+  if (!Number.isFinite(cutover)) {
+    return 'fresh';
+  }
+  return now >= cutover ? 'expired' : 'fresh';
+}
+
+/**
+ * The holiday list must span the dates the `services` rules cover, or the
+ * holiday→Sunday branch is wrong for every date that matters. Production shipped
+ * a list ending 2025-06-19 as recently as 2026-08-14.
+ */
+export function isBundleHolidayCoverageStale(
+  bundle: Pick<OfflineBundleV2, 'holidays'>,
+  now: number = Date.now(),
+): boolean {
+  if (bundle.holidays.length === 0) {
+    return true;
+  }
+  const latest = bundle.holidays.reduce(
+    (max, holiday) => (holiday.date > max ? holiday.date : max),
+    '',
+  );
+  return latest < new Date(now).toISOString().slice(0, 10);
+}
+
+/**
+ * A parsed bundle, or null.
+ *
+ * The checks are deliberately structural. A payload the parser accepts but cannot
+ * search is worse than no payload at all, because the write path would replace a
+ * good bundle with it.
+ */
+export function parseBundle(text: string): OfflineBundleV2 | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const bundle = parsed as OfflineBundleV2 | null;
+  if (
+    !bundle ||
+    bundle.schema !== 2 ||
+    typeof bundle.version !== 'string' ||
+    !Array.isArray(bundle.stops) ||
+    !Array.isArray(bundle.routes) ||
+    !Array.isArray(bundle.holidays) ||
+    typeof bundle.services !== 'object' ||
+    bundle.services === null
+  ) {
+    return null;
+  }
+  return bundle;
+}
+
+export type OfflineUiState = 'ready' | 'expired' | 'empty';
+
+/**
+ * What the offline results area should show (03 §5.2).
+ *
+ * `expired` hides results behind an explicit panel rather than filtering them:
+ * showing departures for buses that no longer run is worse than saying nothing.
+ * The "show anyway" escape hatch exists because a tourist with no signal is badly
+ * served by a blank screen — `showAnyway` is the user having taken it.
+ */
+export function resolveOfflineUiState(
+  bundle: Pick<OfflineBundleV2, 'cutoverAt' | 'dataset' | 'routes'> | null | undefined,
+  options: { showAnyway?: boolean; now?: number } = {},
+): OfflineUiState {
+  if (!bundle || bundle.routes.length === 0) {
+    return 'empty';
+  }
+  if (options.showAnyway) {
+    return 'ready';
+  }
+  return bundleFreshness(bundle, options.now ?? Date.now()) === 'expired' ? 'expired' : 'ready';
+}
+
+/**
+ * Only a genuinely absent endpoint downgrades a client to the v1 payload.
+ *
+ * `refreshOfflineBundle` fell back on ANY thrown error, so a 5xx or a schema the
+ * parser choked on silently dropped a client onto the single-network v2 compat
+ * load (98 B3). A transient failure must keep the existing bundle instead.
+ */
+export function shouldDowngradeToV1(error: unknown): boolean {
+  const status = (error as { status?: number } | null | undefined)?.status;
+  return status === 404 || status === 501;
+}
