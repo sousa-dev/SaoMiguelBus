@@ -3,16 +3,47 @@ title: "AzoresBus plan review — adversarial findings"
 status: review
 date: 2026-08-14
 reviewed: docs/azoresbus/{README,00,01,02,03}
-method: live serial GET against azb.elevensystems.pt + azoresbus.pt (≥0.35 s apart, 305 requests); source inspection of SaoMiguelBus-api, SaoMiguelBus, SaoMiguelBus-webapp
+method: live serial GET against azb.elevensystems.pt + azoresbus.pt (≥0.35 s apart; 305 + ~50 follow-up + 1,143 from a second full-week sweep); source inspection of SaoMiguelBus-api, SaoMiguelBus, SaoMiguelBus-webapp
 ---
 
 # AzoresBus changeover — review findings
 
 ## 1. Verdict
 
-Do not start implementation from this plan set as written. The Calendar mapping (three day-types, holidays → Sunday) holds up under a 51-date seasonal sweep, and most of `01`’s payload-shape measurements are correct. But the load-bearing story in `00`/`01` §4.3 — that `?day=` already serves the *outgoing* network before 1 September and the *new* network after — is false. This API has no legacy timetable: dates before ~August 2026 return `[]`, and non-holiday August dates already return the same journey IDs as September. Combined with a wrong midnight-time encoding (`>86400` never happens; night routes wrap to `0…600`), an `isActive: false` weekend route that still has journeys, unfiltered `Trip`/`Stop`/`Line` queries that would mix networks, a dual-bundle that old clients would swallow whole, and a client `extractTripSegment` that would throw away the loop-route fix even after the server is patched — this is not a safe build spec. Fix the blockers below, then it is.
+Do not start implementation from this plan set as written. The load-bearing claim that upstream has **exactly three** service patterns mapping 1:1 onto `transit.Calendar` (`WEEKDAY`/`SATURDAY`/`SUNDAY`) is **false**: service is weekday-specific and seasonal/school-term (transition observed **2026-09-14**). Syncing three canonical dates after cutover would ship the *summer* 307 timetable and miss entire lines (112 Tue/Thu, 321/324/325 weekday) that only appear in the school-term week. Separately, `01` §4.3’s “outgoing operator before 1 Sep” story is also false (AzoresBus-only feed from ~2026-07-27). Combined with wrap-around night times, incomplete `dataset` isolation, a dual-bundle old clients would swallow, and `extractTripSegment` undoing loop matching — this is not a safe build spec. Fix the blockers below, then it is.
 
 ## 2. Blocking issues
+
+### B0. The calendar is not WEEKDAY / SATURDAY / SUNDAY — school-term and per-weekday sets exist
+
+`01` §4.2 / `00` Decision 3 / `02` §1: “exactly three patterns”, “no school-day, summer, or exception calendar”, map onto `transit.Calendar`. A Wed/Sat/Sun-only sample (and this review’s first 51-date sweep of only 101/301/335) missed it.
+
+**School-term vs summer — line 307 (`routeId=31`):**
+
+| Date | Role | n | first | extra vs summer |
+|------|------|---|-------|-----------------|
+| 2026-08-31 / 09-02 / 09-11 | pre-term / Friday before switch | **33** | 07:30 | — |
+| **2026-09-14** (Mon) | term starts | **38** | 07:00 | ids `633,645,647,661,662` |
+| 2027-01-11 | winter | **38** | 07:00 | same extras |
+| 2027-07-12 | summer | **33** | 07:30 | extras gone |
+
+A 3-date sync of “next Wednesday after 1 Sep” lands on 2026-09-02 and **stores the summer set**. From 14 Sep the live API has five extra school runs the app would not have.
+
+**Per-weekday sets — week 2026-09-14…20:**
+
+| Line | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
+|------|-----|-----|-----|-----|-----|-----|-----|
+| 102 | 27 | 27 | 28 (id `1009`) | 27 | 28 (id `1011`, **not** the Wed extra) | 13 | 12 |
+| 112 | 0 | **2** (`236,237`) | 0 | **2** | 0 | 0 | 0 |
+| 315 | 24 | 24 | **23** | 24 | 24 | 9 | 7 |
+| 318 | 12 | 12 | 12 | 12 | 12 **different ids** vs Mon–Thu | 8 | 8 |
+| 307 | 38 | 38 | 38 | 38 | 38 | 13 | 0 |
+
+**Lines the plan called empty are not empty after 14 Sep:** `321` ids 898–899, `324` 926–931, `325` 932–933 on Tue/Wed/Thu of that week (Wed 2026-09-02 was still `[]`). `112` is Tue/Thu only, and `isActive: false`.
+
+A full Mon–Sun sweep of all 55 routes that week found **989 unique journey IDs** (doc said 895). Six IDs appear only on non-Wed weekdays, including `236,237` (112) and `1011` (102 Friday). 270 gaps vs max id 1259 remain unexplained (`/api/journeys` 404).
+
+**Required schema:** stop treating `Calendar.WEEKDAY` as one bucket. Need GTFS-like service: per-journey operating weekdays **and** date ranges (or explicit operating dates collected by sampling). `get_type_of_day` → Sunday on holidays still matches upstream for the holidays probed; it is not sufficient for 102/112/315/318/307. Search and the offline bundle must resolve “does this trip run on *this ISO date*?”, not `WEEKDAY|SAT|SUN`. Sync cannot be 3 GETs per route — it needs a bounded date sample that covers a full week **inside each season** (at least one week in Sep–Jun and one in Jul–Aug), plus holidays. Cost goes up (55 × ~10 dates, still hundreds not thousands).
 
 ### B1. Upstream does not serve a pre-cutover / post-cutover pair
 
@@ -35,7 +66,7 @@ Non-holiday Saturdays *before* 1 September already match September:
 
 Command: `GET https://azb.elevensystems.pt/api/routes/25/journeys?day=2026-08-22` → 10 journeys, ids 505–514, first `06:30:00`. Same body size (1591 B) as `?day=2026-09-05`.
 
-**Implication:** do not design a sync that pulls “legacy-period” rows from this host. Legacy stays the data already in `transit.*`. This API is AzoresBus-only; `?day=` selects the weekday/Sat/Sun pattern (and holidays), not the concession.
+**Implication:** do not sync a “legacy period” from this host. Observed validity floor: empty on 2026-07-25/07-26, populated from **2026-07-27**. Legacy stays in our DB. `?day=` selects *which AzoresBus journeys run that date* — including weekday-specific and seasonal sets (B0) — not the concession.
 
 ### B2. Night times wrap below 86400 — the planned `day_offset` converter will not fire
 
@@ -114,20 +145,21 @@ Accept that pre-`03` installs only switch while online. Do not claim otherwise.
 
 `GET /api/routes?active=true&passengerInfo=true` still returns 55 routes; 5 have `"isActive": false` (`112,321,324,325,328`). Omitting `?active=true` returns the same 55 (5878 B both URLs).
 
-| Line | Route id | Unfiltered `/journeys` | Wed 09-02 | Sat 09-05 | Sun 09-06 | 2027-07-07 |
-|------|----------|------------------------|-----------|-----------|-----------|------------|
-| 112, 321, 324, 325 | 9, 41, 44, 45 | `[]` | 0 | 0 | 0 | 0 |
-| **328** | 47 | `[]` (today is Friday) | 0 | **4** (ids 942–945, 13:10–17:30) | 4 | 0 |
+| Line | Route id | Wed 2026-09-02 (pre-term) | Tue 2026-09-15 (term) | Notes |
+|------|----------|---------------------------|------------------------|-------|
+| 112 | 9 | 0 | **2** (`236,237`); also Thu; other weekdays 0 | `isActive: false`; school-term Tue/Thu |
+| 321 | 41 | 0 | **2** (`898,899`); also Wed/Thu | not empty |
+| 324 | 44 | 0 | **6** (`926–931`); also Wed/Thu | not empty |
+| 325 | 45 | 0 | **2** (`932,933`); also Wed/Thu | not empty |
+| **328** | 47 | 0 | (weekday 0) | weekend 4 ids 942–945; `isActive: false` |
 
-Sync algorithm `02` §4.1 step 2 uses `?active=true` and never discusses `isActive`. If the worker skips `isActive: false`, 328’s weekend circuit disappears. If it includes them, 112/321/324/325 stay empty shells. Treat `isActive` as a display flag, not a journeys predicate; import journeys for every listed route.
+Treat `isActive` as a display flag, not a journeys predicate. The plan’s “4 routes returned zero on Wed/Sat/Sun” used **pre-term** canonical dates and is stale after B0.
 
-Unfiltered `/journeys` (no `?day=`) is **today’s** set, not the catalogue. That is why 328 unfiltered is empty on a Friday and why 101 unfiltered is 8 weekday ids. The sync must keep using `?day=` on canonical **non-holiday** Wed/Sat/Sun.
+Unfiltered `/journeys` (no `?day=`) is **today’s** set, not the catalogue. The sync must sample real ISO dates across a full week in **each season**, not three canonical day-types.
 
-### B6. Canonical sync dates that land on a holiday will poison WEEKDAY
+### B6. Three canonical dates are the wrong sync strategy (holiday poisoning is a subset)
 
-`02` §4.1: “next Wednesday, next Saturday, next Sunday” after `max(today, cutover)`. 2026-12-01 (Tue, Restoration of Independence) and 2026-12-08 (Tue) both returned the Sunday set on every swept route. A “next Wednesday” that is a holiday would store Sunday journeys on `Calendar.WEEKDAY`.
-
-Skip dates that upstream itself treats as Sunday (or skip against our `Holiday` table, which already matches for the holidays we probed). Do not prune against a holiday Wednesday.
+`02` §4.1 “next Wednesday, next Saturday, next Sunday” after cutover fails twice: (1) a holiday Wednesday stores Sunday journeys on `WEEKDAY` (2026-12-01 / 12-08 are Tuesdays that already return Sunday sets); (2) even a clean Wednesday in 1–13 Sep stores the **summer** pattern (B0). Do not prune against a short sample. Date-sample inside term and inside summer; skip dates upstream treats as Sunday when you are trying to capture a weekday.
 
 ### B7. Sequence matching is not end-to-end — the app will discard the server’s pair
 
@@ -164,7 +196,7 @@ After uniqueness includes `dataset`, these raise `MultipleObjectsReturned` or up
 
 ## 3. Corrections
 
-Measured 2026-08-14. Probe log: 291 serial requests in `/tmp/azoresbus_review/` plus 14 follow-ups.
+Measured 2026-08-14. First probe ~305 req; calendar follow-up ~50; independent full-week 55-route sweep 2026-09-14…20 (serial, 0.35 s).
 
 | # | Claim | Result |
 |---|-------|--------|
@@ -179,7 +211,7 @@ Measured 2026-08-14. Probe log: 291 serial requests in `/tmp/azoresbus_review/` 
 | 9 | Route 25 Wed 17 ids 488–504; Sat 10 ids 505–514; Sun 8 ids 515–522 | **Confirmed.** Clarify: route **id** 25 is public line **301**, not “line 25” |
 | 10 | listed holidays → Sunday set, no new IDs | **Confirmed** for 2026-10-05, 12-08, 12-25, 08-15, 2027-01-01 on route 25. Also 2026-12-01, 2027-04-04 (Easter), 2027-06-10 (Portugal Day) |
 | 11 | Sep change: 08-15 Sat 8@08:00 vs 09-05 Sat 10@06:30 | **False as a cutover proof.** 08-15 is a holiday (B1). Non-holiday August Saturdays already match September |
-| 12 | 13/50 routes revisit a name; 335 does it 37/97; 5 loops; 10 single-direction | **Mostly.** 335 weekday journey `950`: 97 stops, **36** distinct names that repeat, **37 extra visits**, not “37 repeated names”. Loops confirmed on 301/303/306/323/N03 (first name = last). 335 is **not** a loop (Alfândega → Forte S. Brás). Did not re-sweep all 50 routes |
+| 12 | 13/50 routes revisit a name; 335 does it 37/97; 5 loops; 10 single-direction | **Understated.** First-journey sample matches 13 routes / 335 extras / 5 loops. Other journeys add repeaters (at least 102, 305); 305 journey `608` is a loop; 328 is a weekend loop. Do not generalize one journey to the route |
 | 13 | `/api/locations` → 200 `[]`; `/publicapi/locations` → 404; PDL live | **Confirmed.** PDL fleet n=10. `cf-ray` LIS on both hosts |
 | 14 | PDL vehicle detail top-level keys | **Confirmed exact set:** `currentStopSequence, fleetId, id, journey, licensePlate, position, route, speed, status`. List endpoint keys are only `color,id,position,status` — the plan’s list example is the list shape, detail is the 9-key set |
 | 15 | tariffs Last-Modified/ETag, date 2026-09-01, 4 categories, fareUnits text | **Confirmed.** 32066 B, `last-modified: Wed, 05 Aug 2026 13:47:25 GMT`, etag `"80d474f2e024dd1:0"`, categories as listed, `fareUnits` all strings (`"0 a 5"`, `"6 a 7"`, `"8"`, …) |
@@ -190,13 +222,13 @@ Measured 2026-08-14. Probe log: 291 serial requests in `/tmp/azoresbus_review/` 
 
 **`02` §3.2 “30 groups >75 m”:** measured **14**. Worst three match the named stops (Covoada 164 m, Alfândega 134 m, Forte S. Brás 108 m). No same-name pair looks like two different places; all 14 far groups still have consecutive (or +2) pole codes.
 
-**Unfiltered journey lists are not the full ID space.** `/api/routes/1/journeys` with no `day` returned 8 ids (1–8) on a Friday; Saturday adds 9–10. This is why 895 unique ≪ max id 1259: unused IDs, weekend IDs absent from a weekday fetch, and four routes with no journeys at all. Not a fourth calendar (see §7).
+**Unfiltered journey lists are not the full ID space.** `/api/routes/1/journeys` with no `day` returned 8 ids (1–8) on a Friday. Full week 2026-09-14…20 across 55 routes: **989 unique IDs** (doc: 895). Remaining gaps vs 1259 are still unexplained — not “just weekend + inactive.” See B0.
 
 ## 4. Gaps
 
 - **No `transit` search tests.** `src/transit/tests/` has ads, directions, offline bundle, weather — nothing for `search_routes`. The “write back-compat first” test in `02` §9 does not exist today; adding `dataset` plus sequence matching will change results (today filters on the **trip’s first stop time**, `search.py:113–118`, not boarding time). That behaviour change is desirable but will fail a naïve “identical to today” snapshot unless the snapshot is taken *before* the matcher rewrite.
-- **Holiday-aware canonical dates** — see B6.
-- **Prune safety.** `02` §4.1 step 7 prunes trips absent from the run, inside one transaction. A 200 with a partial list (upstream deploy) still looks complete. Need a floor (e.g. abort prune if journey count drops >X% vs last successful `SyncRun`) and do not prune when any route’s three day-types all come back empty.
+- **Season-aware date sampling** — see B0/B6. Three canonical day-types are the wrong model.
+- **Prune safety.** `02` §4.1 step 7 prunes trips absent from the run, inside one transaction. A 200 with a partial list (upstream deploy) still looks complete. Need a floor (e.g. abort prune if journey count drops >X% vs last successful `SyncRun`) and do not prune when a season’s full-week sample comes back empty.
 - **Stale bootstrap vs offline cutover.** Bootstrap is persisted 24 h (`lib/query-provider.tsx:28`) with `staleTime` 5 min on `useBootstrap` (`useTransitQueries.ts:27`). `useBootstrapCached` never refetches (`enabled: false`). App foreground only flushes analytics (`app/_layout.tsx:113–123`) — it does not invalidate bootstrap, stops, or search. `03` §1 says the hook reads bootstrap first, then the bundle. A cached `phase: preview` / `activeDataset: legacy` from 31 Aug, used offline on 1 Sep, will override `cutoverDate` if `activeDataset` is passed as `resolveOfflineDataset`’s `override`. Spec: override is **only** the preview toggle; never send `dataset=legacy` on the public search URL (`02` §7.1: explicit request wins forever). Add `nextTransitionAt` and invalidate at that instant.
 - **Mid-session midnight.** Unversioned search is date-resolved per request (good). Search keys omit dataset and start (`useOfflineSearch.ts:31–36`; `useTransitQueries.ts:56`). Stops use a permanent `['transit', 'stops']` key. A screen left open across midnight on two weekdays (31 Aug / 1 Sep) can keep August results. The webapp is worse: `staleTime` 30 min, `gcTime` 24 h, **`refetchOnWindowFocus: false`** (`SaoMiguelBus-webapp/src/lib/queryClient.ts:3–11`).
 - **Directions cache is dataset-blind.** `build_cache_key` (`directions_cache.py:14–36`) hashes origin/destination/day/start/locale only, TTL 24 h. Preview vs live, or post-cutover same stop names, can serve the other network’s Google result. Include `dataset`. Same for `directions_v3.py:87` / `gmaps.py:53` / `route_weather.py:19` `.first()` stop resolve.
@@ -207,7 +239,7 @@ Measured 2026-08-14. Probe log: 291 serial requests in `/tmp/azoresbus_review/` 
 - **Fare distance.** `fareUnitType: "km"` bands exist; nothing in `/api/stops`, journeys, or `tariffs.json` gives km between two stops. Shapes exist (encoded polylines) but the plan never computes path length. Pricing page can render tables; “what will *this* ride cost?” cannot ship from this data without extra work.
 - **Transfers.** 55-route network, five loops, 328 weekend-only, 10 single-direction lines. `minibus` already has a transfer search (`minibus/tests/test_minibus_routes.py`). Ignoring transfers is a conscious v1 product cut, not a small omission — call it one.
 - **Sync ID stability across a *republish*.** IDs 505–514 were stable from 2026-08-08 through 2026-09-05. That is not evidence they survive a timetable rewrite that changes times. `payload_hash` keyed by journey id would then miss updates if they reuse IDs, or create orphans if they reallocate. Log `id → (start,end,route)` diffs in `SyncRun.stats`.
-- **Empty-before-window.** `?day=2026-06-10` (Portugal Day) and `2026-04-05` (Easter), plus 2026-06-11…14, return `[]` on 101/102/301/335/N02. `?day=2027-06-10` returns the Sunday set. June 10 2026 is empty because **the feed has no data that far back**, not because holidays are special. `01` open question 4 (112 etc. seasonal) — 112/321/324/325 are empty on 2027-07-07 too; they are unloaded, not summer-only. 328 is weekend-only.
+- **Empty-before-window.** `?day=2026-06-10` (Portugal Day) and `2026-04-05` (Easter), plus 2026-06-11…14, return `[]` on 101/102/301/335/N02. `?day=2027-06-10` returns the Sunday set. June 10 2026 is empty because **the feed has no data that far back**, not because holidays are special. `01` open question 4 (112 etc. seasonal): 112/321/324/325 are **school-term**, not unloaded — empty on 2026-09-02 and 2027-07-07, populated from **2026-09-14**. 328 is weekend-only (`isActive: false`).
 
 ## 5. Design challenges
 
@@ -223,32 +255,34 @@ Measured 2026-08-14. Probe log: 291 serial requests in `/tmp/azoresbus_review/` 
 
 6. **Tracking dark — reasonable, not week-1.** Endpoint exists, fleet is `[]`, PDL shapes match. Building a second copy of `minibus/tracking_client.py` + a full `features/azoresbus/` surface before the preview banner is opportunity cost against a hard August deadline (`00` L164). Flag-gated empty states are cheap to get wrong. Ship the gateway path and `trackingEnabled: false`; defer the map UI until `/locations` is non-empty *or* until after preview ships.
 
-7. **Missing: journey fares, alerts, transfers, GTFS.** No GTFS anywhere probed. Alerts stay on `RouteInfo` — fine. Fares cannot be computed per ride from km bands without distances. Transfers: acceptable for v1 only if search copy does not imply “we’ll get you there” for pairs the 55 lines don’t connect; the old network was simpler and users *will* try Povoação laterals (321/324/325 are empty).
+7. **Missing: journey fares, alerts, transfers, GTFS.** No GTFS anywhere probed. Alerts stay on `RouteInfo` — fine. Fares cannot be computed per ride from km bands without distances. Transfers: acceptable for v1 only if search copy does not imply “we’ll get you there” for pairs the 55 lines don’t connect; users *will* try Povoação laterals (321/324/325 exist in term, empty in summer).
 
 ## 6. Confirmed
 
-- `Calendar` is exactly `WEEKDAY/SATURDAY/SUNDAY` — `transit/models.py:23–31`.
-- `get_type_of_day` maps holidays → Sunday — `search.py:11–19`. Upstream does the same for the holidays probed, so storing three patterns and using this helper is a 1:1 map **if canonical dates are not themselves holidays**.
-- First-occurrence bug at `search.py:106` and `offline-bundle.ts:218`.
+- `Calendar` is exactly `WEEKDAY/SATURDAY/SUNDAY` **in our schema** — `transit/models.py:23–31`. That is **not** an exact match for upstream (B0). Expanding or replacing it is required.
+- `get_type_of_day` maps holidays → Sunday — `search.py:11–19`. Upstream does the same for the holidays probed; necessary, not sufficient.
+- First-occurrence bug at `search.py:106`, `offline-bundle.ts:218`, and `extractTripSegment` (`transit-format.ts:196–198`).
 - `Island.feature_flags` JSON — `tenancy/models.py:28`. Bootstrap today exposes modules + `maps`/`version`, not arbitrary nested flags (`tenancy/bootstrap.py:33–75`); `transitSchedule` is new work, not a reuse.
 - `data_revision` + `compute_bundle_version` — `offline_bundle.py:51–90`. Fingerprint is `island.key:revision:stops_count:routes_count`; must add dataset counts + cutover as planned or a phase change will not invalidate.
 - Minibus tracking client / cache / stale-grace / health probe is a fair template — `minibus/tracking_client.py`, `services_tracking.py`.
 - Tailscale Pi proxy exists and is documented to forward `/publicapi/*` only — `minibus/docs/tailscale-tracking-proxy.md:60`.
 - `MinibusImportMeta` shape — `minibus/models.py:83–87`.
 - Celery beat via migration — `minibus/migrations/0006_periodic_task_harvest_route_shapes.py`.
-- Three service patterns on 101 / 301 / 335 across 51 dates (2026-09-01 … 2027-01-31 weekly, 2027-07–08 weekly, plus holidays): only empty / weekday / Saturday / Sunday fingerprints. Summer 2027 weekdays match September weekdays. **No seasonal fourth timetable in this window.**
+- Three service patterns on **101 / 301 / 335** across 51 dates: those three lines really are Wed=Sat-except/Sun (plus empty-before-window). **Do not generalize.** 307/102/112/315/318/321/324/325 are not.
 - `?day=` is ISO-date only; holidays resolve to Sunday when data exists.
 - Locations endpoint live and empty; PDL detail key set matches `01` §6.
+- No `departureTime` > 86400 on a 55-route canonical listing (max `86340`) or night-route details (max `86369`).
+- With an `Origin` header, azb/PDL send `Access-Control-Allow-Origin: *`. Tariffs do not. No `Retry-After` / `X-RateLimit-*`.
 
 ## 7. Still unknown
 
-- **Full 895 vs max id 1259 accounting.** Did not repeat the 55×3 journey-list sweep (165 extra requests). Mechanism is explained (today-only unfiltered lists, empty inactive routes, ID gaps, weekend IDs). A one-off 55×3 recount after cutover still worth doing; not a fourth pattern on the routes that matter.
+- **Exact school-term date table** beyond the 307 33↔38 flip on **2026-09-14** / summer 2027. Need a start/end calendar (or sample weekly until it flips) before coding `Calendar`.
+- **270 unused IDs** (989 observed in one week vs max 1259). No global `/api/journeys`. Historical/deleted remains plausible.
 - **Journey ID reuse on a timetable republish** that actually changes stop times. Stable from 08-08 to 09-05 is the only window observed.
 - **When `/api/locations` will populate**, and whether Hetzner is 403 on `azb` the way it is on `pdl` (this probe egressed via LIS and got 200).
-- **112 / 321 / 324 / 325** — still zero through summer 2027. Operator question, not a calendar mystery.
-- **Real offline bundle bytes** gzipped and as an AsyncStorage string — not measured; current `transit_line` table in `src/db.sqlite3` is empty so a local `build_offline_bundle()` is not a production-sized sample.
-- **Whether any of the 14 groups >75 m is the “wrong” collapse for boarding** (Covoada 164 m in particular) — needs a person on the street, not another GET.
-- **GTFS** published somewhere other than the site/API (email the operator). Homepage and the obvious URL guesses are clean.
+- **Real dual-bundle bytes** — local `transit_*` tables are empty.
+- **Whether any of the 14 groups >75 m is the “wrong” collapse for boarding** (Covoada 164 m).
+- **GTFS** unlinked/private feed. Conventional URLs and the public site have none.
 
 ---
 
