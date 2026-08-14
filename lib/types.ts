@@ -51,6 +51,19 @@ export interface TripStop {
   sequence?: number;
 }
 
+/**
+ * The physical pole the server selected for boarding or alighting (02 §7.1b).
+ * `sequence` is load-bearing, not decorative: the client slices on it instead of
+ * re-matching names (98 B7). Absent on legacy-dataset results and older APIs.
+ */
+export interface StopRef {
+  code: string;
+  lat: number;
+  lon: number;
+  sequence: number;
+  dayOffset: number;
+}
+
 export interface TransitSearchResult {
   id: number;
   route: string;
@@ -63,6 +76,14 @@ export interface TransitSearchResult {
   dislikesPercent: number;
   information: Record<string, unknown>;
   stops: TripStop[];
+  boarding?: StopRef;
+  alighting?: StopRef;
+  /**
+   * False when the segment was rebuilt from a stop list the API had collapsed,
+   * so the intermediate stops are approximate. Times always come from the
+   * server's selected pair. Absent on the legacy name-matching path.
+   */
+  segmentExact?: boolean;
 }
 
 export interface ConsentPurposes {

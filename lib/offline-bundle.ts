@@ -3,115 +3,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { staticIslandConfig } from '@/config/island';
 import { fetchOfflineBundle, fetchOfflineBundleVersion, fetchWebappLoad } from '@/lib/api';
 import { logger } from '@/lib/logger';
-import type { TransitSearchResult, TripStop } from '@/lib/types';
+import type {
+  OfflineBundle,
+  OfflineHoliday,
+  OfflineRouteRow,
+  OfflineStop,
+} from '@/lib/offline-search';
+
+// The search itself is pure and lives in `lib/offline-search.ts`; this module
+// owns storage and refresh. Re-exported because every consumer imports from here.
+export {
+  offlineSearch,
+  type OfflineBundle,
+  type OfflineHoliday,
+  type OfflineRouteRow,
+  type OfflineStop,
+} from '@/lib/offline-search';
 
 /** Minimum spacing between successful syncs (foreground/staleness driven). */
 export const MIN_SYNC_INTERVAL = 1000 * 60 * 60; // 1h
 
-export interface OfflineHoliday {
-  date: string;
-}
-
-export interface OfflineStop {
-  name: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface OfflineRouteRow {
-  id: number;
-  route: string;
-  stops: string[];
-  times: string[];
-  weekday: string;
-  likes_percent?: number;
-  dislikes_percent?: number;
-  information?: Record<string, unknown> | string;
-}
-
-export interface OfflineBundle {
-  /** Server version fingerprint; `null` when sourced from the legacy v2 fallback. */
-  version: string | null;
-  stops: OfflineStop[];
-  holidays: OfflineHoliday[];
-  infos: Record<string, unknown>[];
-  routes: OfflineRouteRow[];
-  fetchedAt: string;
-}
-
 function bundleKey() {
   return `azores_hub_offline_bundle_${staticIslandConfig.islandKey}`;
-}
-
-function normalizeStopKey(str: string): string {
-  return str
-    .toLowerCase()
-    .replace(/[-áàâãäéèêëíìîïóòôõöúùûüç]/g, (match) => {
-      const from = 'áàâãäéèêëíìîïóòôõöúùûüç';
-      const to = 'aaaaaeeeeiiiiooooouuuuc';
-      const idx = from.indexOf(match);
-      return idx >= 0 ? to[idx] : match;
-    })
-    .replace(/-/g, '');
-}
-
-function dayTypeToWeekday(day: string, holidays: OfflineHoliday[], referenceDate = new Date()): string {
-  const isHoliday = holidays.some((h) => {
-    const d = new Date(h.date);
-    return (
-      d.getFullYear() === referenceDate.getFullYear() &&
-      d.getMonth() === referenceDate.getMonth() &&
-      d.getDate() === referenceDate.getDate()
-    );
-  });
-  if (isHoliday) {
-    return 'SUNDAY';
-  }
-  if (day === 'saturday') {
-    return 'SATURDAY';
-  }
-  if (day === 'sunday') {
-    return 'SUNDAY';
-  }
-  const dow = referenceDate.getDay();
-  if (dow === 0) {
-    return 'SUNDAY';
-  }
-  if (dow === 6) {
-    return 'SATURDAY';
-  }
-  return 'WEEKDAY';
-}
-
-function mapRowToResult(
-  row: OfflineRouteRow,
-  originIndex: number,
-  destIndex: number,
-  originalOrigin: string,
-  originalDestination: string,
-  dayOfWeek: string,
-): TransitSearchResult {
-  const segmentStops: TripStop[] = [];
-  for (let i = originIndex; i <= destIndex; i++) {
-    segmentStops.push({ name: row.stops[i], time: row.times[i], sequence: i });
-  }
-  const info =
-    typeof row.information === 'object' && row.information !== null
-      ? row.information
-      : { text: row.information ?? '' };
-  return {
-    id: row.id,
-    route: String(row.route).startsWith('C') ? String(row.route) : String(row.route),
-    origin: originalOrigin,
-    destination: originalDestination,
-    start: row.times[originIndex] ?? '',
-    end: row.times[destIndex] ?? '',
-    typeOfDay: dayOfWeek,
-    likesPercent: row.likes_percent ?? 0,
-    dislikesPercent: row.dislikes_percent ?? 0,
-    information: info as Record<string, unknown>,
-    stops: segmentStops,
-  };
 }
 
 export async function loadCachedBundle(): Promise<OfflineBundle | null> {
@@ -198,39 +111,6 @@ export async function refreshOfflineBundleIfStale(): Promise<{
   }
   const bundle = await refreshOfflineBundle();
   return { bundle, updated: Boolean(bundle) };
-}
-
-export function offlineSearch(
-  bundle: OfflineBundle,
-  params: {
-    origin: string;
-    destination: string;
-    day: string;
-  },
-): TransitSearchResult[] {
-  const originKey = normalizeStopKey(params.origin);
-  const destKey = normalizeStopKey(params.destination);
-  const dayOfWeek = dayTypeToWeekday(params.day, bundle.holidays);
-
-  return bundle.routes
-    .filter((row) => {
-      const stopKeys = row.stops.map(normalizeStopKey);
-      const originIndex = stopKeys.indexOf(originKey);
-      const destIndex = stopKeys.indexOf(destKey);
-      if (originIndex < 0 || destIndex < 0 || originIndex >= destIndex) {
-        return false;
-      }
-      if (row.weekday !== dayOfWeek) {
-        return false;
-      }
-      return true;
-    })
-    .map((row) => {
-      const stopKeys = row.stops.map(normalizeStopKey);
-      const originIndex = stopKeys.indexOf(originKey);
-      const destIndex = stopKeys.indexOf(destKey);
-      return mapRowToResult(row, originIndex, destIndex, params.origin, params.destination, dayOfWeek);
-    });
 }
 
 export async function hasOfflineCache(): Promise<boolean> {
