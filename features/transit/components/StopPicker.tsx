@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { IconButton } from '@/components/ui/IconButton';
 import { radius, space, typography } from '@/lib/tokens';
 import { useProfileStore } from '@/lib/profile-store';
+import { rankStopSuggestions } from '@/lib/stop-search';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
 
@@ -31,18 +32,13 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
     setSuggestionsOpen(false);
   }, [value, query]);
 
-  const filtered = useMemo(() => {
-    const favIds = new Set(favoriteStops.map((s) => s.id));
-    const q = query.trim().toLowerCase();
-    const base = q ? stops.filter((s) => s.name.toLowerCase().includes(q)) : stops;
-    return [...base]
-      .sort((a, b) => {
-        const af = favIds.has(a.id) ? 0 : 1;
-        const bf = favIds.has(b.id) ? 0 : 1;
-        return af - bf || a.name.localeCompare(b.name);
-      })
-      .slice(0, 40);
-  }, [query, stops, favoriteStops]);
+  const filtered = useMemo(
+    () =>
+      rankStopSuggestions(stops, query, {
+        favoriteIds: new Set(favoriteStops.map((s) => s.id)),
+      }),
+    [query, stops, favoriteStops],
+  );
 
   return (
     <View style={styles.wrap}>
