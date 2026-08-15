@@ -5,6 +5,7 @@ import { ApiRequestError, parseApiErrorBody } from '@/lib/api-errors';
 import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
+import { dedupeStopsByName } from '@/lib/stop-list';
 import type { TariffsResponse } from '@/features/transit/lib/tariffs';
 import type { OfflineBundleV2 } from '@/lib/offline-bundle-v2';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
@@ -336,14 +337,10 @@ export async function fetchStops(dataset?: TransitDataset | null): Promise<Stop[
   // activeDataset, and never `legacy` on a public URL (98 §4 gap).
   const query = dataset ? `?dataset=${encodeURIComponent(dataset)}` : '';
   const data = await apiFetch<{ stops: Stop[] }>(`/api/v3/transit/stops${query}`);
-  const seen = new Set<number>();
-  return data.stops.filter((stop) => {
-    if (seen.has(stop.id)) {
-      return false;
-    }
-    seen.add(stop.id);
-    return true;
-  });
+  // Suppress only an exact repeat of a name already listed — never a stop that
+  // merely sits close to another. Keying this on the stop ID dropped the
+  // short-name aliases, which are distinct searchable names sharing an id.
+  return dedupeStopsByName(data.stops);
 }
 
 export async function searchTransit(params: {
