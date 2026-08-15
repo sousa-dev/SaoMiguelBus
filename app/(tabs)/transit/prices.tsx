@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -7,7 +7,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView'
 import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
 import { TariffTable } from '@/features/transit/components/TariffTable';
 import { useTariffs } from '@/features/transit/hooks/useTariffs';
-import { resolveTariffsState } from '@/features/transit/lib/tariffs';
+import { resolveTariffsState, tariffInfoLinks } from '@/features/transit/lib/tariffs';
 import { track } from '@/lib/analytics';
 import { formatAppDate } from '@/lib/date-format';
 import { radius, space, typography } from '@/lib/tokens';
@@ -93,6 +93,21 @@ export default function TransitPricesScreen() {
             {data.notes ? (
               <Text style={[typography.caption, { color: theme.muted }]}>{data.notes}</Text>
             ) : null}
+
+            {/*
+              The operator's own documentation. It carries more weight now that
+              the bands are labelled as distances: the app cannot say how many
+              kilometres a journey is, so this is where that question goes.
+            */}
+            {tariffInfoLinks(data.infos).map((info) => (
+              <Pressable
+                key={info.url}
+                accessibilityRole="link"
+                onPress={() => void Linking.openURL(info.url)}
+              >
+                <Text style={[typography.caption, { color: theme.primary }]}>{info.text}</Text>
+              </Pressable>
+            ))}
           </>
         ) : null}
       </ScrollView>

@@ -17,7 +17,9 @@ import {
   resolveBoardingPole,
 } from '@/features/transit/lib/boarding-pole';
 import {
+  fareBandUnit,
   resolveTariffsState,
+  tariffInfoLinks,
   tariffRenderer,
   tariffRows,
   type TariffsResponse,
@@ -115,12 +117,22 @@ describe('tariffs — tables only, never a computed fare (03 §6)', () => {
     ],
   };
 
-  it('renders a banded table when there are multiple labelled bands', () => {
+  it('renders a banded table when the payload declares a fare unit', () => {
     assert.equal(tariffRenderer(payload.categories[0].tariffs[0]), 'banded');
   });
 
-  it('renders a single price when there is no band', () => {
+  it('renders a single price when there is no fare unit', () => {
     assert.equal(tariffRenderer(payload.categories[0].tariffs[1]), 'single');
+  });
+
+  it('keys off fareUnitType, not the band count', () => {
+    // 01 §7: the two shapes are distinguished by the PRESENCE of fareUnitType.
+    // A distance-banded tariff that happens to have one band is still banded.
+    const oneBand = {
+      name: 'Mensal', note: '', fareUnitType: 'km',
+      prices: [{ band: '0 a 5', price: '31.75' }],
+    };
+    assert.equal(tariffRenderer(oneBand), 'banded');
   });
 
   it('keeps band labels verbatim and in payload order', () => {
@@ -148,6 +160,43 @@ describe('tariffs — tables only, never a computed fare (03 §6)', () => {
 
   it('is ready when there is something to show', () => {
     assert.equal(resolveTariffsState(payload), 'ready');
+  });
+});
+
+describe('fare bands are distances — 01 §7', () => {
+  it('reports the unit the payload declares', () => {
+    assert.equal(fareBandUnit({ fareUnitType: 'km' }), 'km');
+  });
+
+  it('reports no unit for a flat price, so no distance column is drawn', () => {
+    assert.equal(fareBandUnit({ fareUnitType: null }), null);
+    assert.equal(fareBandUnit({ fareUnitType: '' }), null);
+    assert.equal(fareBandUnit({ fareUnitType: '   ' }), null);
+  });
+
+  it('passes an unknown unit through rather than assuming km', () => {
+    // The operator can restructure this; a new unit must still render.
+    assert.equal(fareBandUnit({ fareUnitType: 'zonas' }), 'zonas');
+  });
+});
+
+describe('operator link-outs — the honest answer to "what will my ride cost?"', () => {
+  it('returns usable links only', () => {
+    const links = tariffInfoLinks([
+      { text: 'Info passes', url: 'https://azoresbus.pt/downloads/docs/Info_passes.pdf' },
+      { text: 'No link' },
+      { url: 'https://example.com' },
+      'nonsense',
+      null,
+    ]);
+    assert.equal(links.length, 2);
+    assert.equal(links[0].text, 'Info passes');
+    assert.equal(links[1].text, 'https://example.com', 'falls back to the url as its own label');
+  });
+
+  it('is empty when the payload has none', () => {
+    assert.deepEqual(tariffInfoLinks([]), []);
+    assert.deepEqual(tariffInfoLinks(undefined), []);
   });
 });
 

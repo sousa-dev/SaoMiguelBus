@@ -1262,5 +1262,9 @@
     "transitPricesUpdated": "Atualizado a {{date}}",
     "transitOfflineExpiredTitle": "Estes horários expiraram",
     "transitOfflineExpiredBody": "A rede mudou. Liga-te à internet uma vez para atualizar.",
-    "transitOfflineShowAnyway": "Ver mesmo assim"
+    "transitOfflineShowAnyway": "Ver mesmo assim",
+    "transitFaresBandKm": "Distância percorrida (km)",
+    "transitFaresBandGeneric": "Escalão ({{unit}})",
+    "transitFaresPriceHeader": "Preço",
+    "transitFaresDistanceNote": "Os escalões são a distância da viagem em quilómetros. A app não calcula a distância entre duas paragens — consulta a informação do operador."
 }

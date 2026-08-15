@@ -28,6 +28,12 @@ export interface TariffCategory {
   tariffs: Tariff[];
 }
 
+/** Operator link-out, passed through verbatim from the upstream payload. */
+export interface TariffInfoLink {
+  text: string;
+  url: string;
+}
+
 export interface TariffsResponse {
   effectiveDate: string | null;
   lastUpdatedAt: string | null;
@@ -65,12 +71,57 @@ export function resolveTariffsState(
 export type TariffRenderer = 'banded' | 'single';
 
 /**
- * Two renderers, chosen from the data rather than a hardcoded category list —
- * the operator will restructure the categories.
+ * What the band labels measure — `"km"` today (01 §7).
+ *
+ * The bands are DISTANCES: "0 a 5" is a journey of up to 5 km, not a zone or a
+ * ticket count. A table of bare numbers next to prices is unreadable without
+ * that, so the unit is surfaced as the column header.
+ *
+ * Read from the payload rather than assumed: the operator can restructure this,
+ * and an unknown unit must still render its own name.
  */
-export function tariffRenderer(tariff: Pick<Tariff, 'prices'>): TariffRenderer {
-  const labelled = tariff.prices.filter((price) => Boolean(price.band));
-  return labelled.length > 1 ? 'banded' : 'single';
+export function fareBandUnit(tariff: Pick<Tariff, 'fareUnitType'>): string | null {
+  return tariff.fareUnitType?.trim() || null;
+}
+
+/**
+ * Two renderers, chosen from the data rather than a hardcoded category list.
+ *
+ * 01 §7: the two price shapes are distinguished by the PRESENCE of
+ * `fareUnitType`, not by how many bands happen to be listed — a distance-banded
+ * tariff with a single band is still a distance table.
+ */
+export function tariffRenderer(tariff: Pick<Tariff, 'prices' | 'fareUnitType'>): TariffRenderer {
+  if (fareBandUnit(tariff)) {
+    return 'banded';
+  }
+  return tariff.prices.filter((price) => Boolean(price.band)).length > 1 ? 'banded' : 'single';
+}
+
+/**
+ * The operator's own link-outs.
+ *
+ * These matter more now that the bands are labelled as distances: the obvious
+ * next question is "how many kilometres is my journey?", and nothing upstream
+ * answers it (98 §4 gap "Fare distance"). The honest response is the band table
+ * plus the operator's documentation, so it is rendered rather than dropped.
+ */
+export function tariffInfoLinks(infos: unknown[] | undefined): TariffInfoLink[] {
+  if (!Array.isArray(infos)) {
+    return [];
+  }
+  const links: TariffInfoLink[] = [];
+  for (const info of infos) {
+    if (!info || typeof info !== 'object') {
+      continue;
+    }
+    const { text, url } = info as { text?: unknown; url?: unknown };
+    if (typeof url !== 'string' || !url) {
+      continue;
+    }
+    links.push({ text: typeof text === 'string' && text ? text : url, url });
+  }
+  return links;
 }
 
 /**

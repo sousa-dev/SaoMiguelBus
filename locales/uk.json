@@ -1209,5 +1209,9 @@
     "transitPricesUpdated": "Updated {{date}}",
     "transitOfflineExpiredTitle": "These timetables have expired",
     "transitOfflineExpiredBody": "The network changed. Connect once to update.",
-    "transitOfflineShowAnyway": "Show anyway"
+    "transitOfflineShowAnyway": "Show anyway",
+    "transitFaresBandKm": "Distance travelled (km)",
+    "transitFaresBandGeneric": "Band ({{unit}})",
+    "transitFaresPriceHeader": "Price",
+    "transitFaresDistanceNote": "Bands are the journey distance in kilometres. The app cannot work out the distance between two stops — see the operator’s information."
 }
