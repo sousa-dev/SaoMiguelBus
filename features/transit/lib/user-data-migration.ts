@@ -13,8 +13,18 @@
  *
  * Recents are the exception: they are disposable, so unresolvable ones are
  * filtered rather than repaired. Spending repair UI on them is not worth it.
+ *
+ * A village search ("Capelas") is a valid, working search term (AzoresBus
+ * only), but it is not a literal `Stop.name` — it only exists as a derived
+ * grouping over 2+ real stops. `resolveFavoriteRoutes`/`resolveRecentSearches`
+ * treat it as resolvable; `resolveFavoriteStops` deliberately does NOT, since
+ * it rewrites a favourite's stored id to whatever it matches, and there is no
+ * real `Stop` row for "Capelas" to rewrite to — extending it would silently
+ * reassign a stop favourite to an arbitrary member id, the exact PK-reuse
+ * failure this file exists to prevent.
  */
 
+import { groupStopsIntoAreas } from '@/lib/stop-areas';
 import { foldStopName } from '@/lib/stop-match';
 import type { FavoriteRoute, FavoriteStop, RecentSearch } from '@/lib/profile-store';
 import type { Stop } from '@/lib/types';
@@ -42,6 +52,24 @@ function nameIndex(stops: Stop[]): Map<string, Stop> {
 
 function lookup(index: Map<string, Stop>, name: string): Stop | undefined {
   return index.get(foldStopName(name));
+}
+
+/** Folded village keys — same fold as `lookup`, so a query and a key agree. */
+function foldedAreaKeys(stops: Stop[]): Set<string> {
+  return new Set([...groupStopsIntoAreas(stops).keys()].map(foldStopName));
+}
+
+/**
+ * Resolvable as either a real stop OR a village area — used ONLY by the two
+ * string resolvers below, never by `resolveFavoriteStops` (see module doc).
+ */
+function resolvesToStopOrArea(
+  name: string,
+  stopIndex: Map<string, Stop>,
+  areaKeys: Set<string>,
+): boolean {
+  const key = foldStopName(name);
+  return stopIndex.has(key) || areaKeys.has(key);
 }
 
 /**
@@ -78,13 +106,14 @@ export function resolveFavoriteRoutes(
     return routes;
   }
   const index = nameIndex(stops);
+  const areaKeys = foldedAreaKeys(stops);
 
   return routes.map((route) => {
     const unresolved: ('origin' | 'destination')[] = [];
-    if (!lookup(index, route.origin)) {
+    if (!resolvesToStopOrArea(route.origin, index, areaKeys)) {
       unresolved.push('origin');
     }
-    if (!lookup(index, route.destination)) {
+    if (!resolvesToStopOrArea(route.destination, index, areaKeys)) {
       unresolved.push('destination');
     }
     if (unresolved.length === 0) {
@@ -101,8 +130,11 @@ export function resolveRecentSearches(recents: RecentSearch[], stops: Stop[]): R
     return recents;
   }
   const index = nameIndex(stops);
+  const areaKeys = foldedAreaKeys(stops);
   return recents.filter(
-    (recent) => lookup(index, recent.origin) && lookup(index, recent.destination),
+    (recent) =>
+      resolvesToStopOrArea(recent.origin, index, areaKeys) &&
+      resolvesToStopOrArea(recent.destination, index, areaKeys),
   );
 }
 

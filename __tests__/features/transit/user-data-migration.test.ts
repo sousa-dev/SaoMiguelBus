@@ -134,6 +134,68 @@ describe('resolveRecentSearches — disposable, so filtered', () => {
   });
 });
 
+/**
+ * A village search ("Capelas") is now a valid, working search term (this
+ * session's area-search feature) — but "Capelas" is not a literal `Stop.name`,
+ * it only exists as a derived grouping over 2+ real stops. Without this fix, a
+ * favourited "Capelas -> Ponta Delgada" route would be incorrectly flagged
+ * `unresolved`, and a recent search for the same pair would be silently
+ * dropped — both regressions the area feature would otherwise have introduced
+ * into this already-shipped file.
+ *
+ * `resolveFavoriteStops` is deliberately NOT covered here with area-shaped
+ * data: it REWRITES a favourite's stored id to whatever it matches
+ * (`match.id`), and there is no real `Stop` row for "Capelas" to rewrite to —
+ * extending its lookup to areas would silently reassign a stop favourite to
+ * an arbitrary member id, which is the exact PK-reuse failure this file's own
+ * docstring says it exists to prevent. That boundary is pinned below.
+ */
+const AREA_STOPS = [
+  ...NEW_STOPS,
+  { id: 101, name: 'CAPELAS (IGREJA)', latitude: 37.79, longitude: -25.7 },
+  { id: 102, name: 'CAPELAS (MOAGEM)', latitude: 37.8, longitude: -25.71 },
+];
+
+describe('area-aware resolution — favourite routes and recents, not favourite stops', () => {
+  it('a favourited village route is no longer flagged unresolved', () => {
+    const routes = [
+      { origin: 'Capelas', destination: 'Ajuda - Igreja', createdAt: '2026-08-01' },
+    ];
+    const [resolved] = resolveFavoriteRoutes(routes, AREA_STOPS);
+    assert.equal(resolved.unresolved, undefined);
+  });
+
+  it('still flags a route naming a village with no real area behind it', () => {
+    const routes = [
+      { origin: 'Vila Fantasma', destination: 'Ajuda - Igreja', createdAt: '' },
+    ];
+    const [resolved] = resolveFavoriteRoutes(routes, AREA_STOPS);
+    assert.deepEqual(resolved.unresolved, ['origin']);
+  });
+
+  it('a recent search for a village pair survives rather than being dropped', () => {
+    const recents = [
+      { origin: 'Capelas', destination: 'Ajuda - Igreja', day: 'weekday', time: '08h00', at: '' },
+    ];
+    assert.equal(resolveRecentSearches(recents, AREA_STOPS).length, 1);
+  });
+
+  it('area matching is case- and accent-insensitive, like stop matching', () => {
+    const routes = [{ origin: 'capelas', destination: 'Ajuda - Igreja', createdAt: '' }];
+    const [resolved] = resolveFavoriteRoutes(routes, AREA_STOPS);
+    assert.equal(resolved.unresolved, undefined);
+  });
+
+  it('resolveFavoriteStops does NOT gain area awareness — no id to rewrite to', () => {
+    // "Capelas" is not a real Stop; a favourite STOP literally named "Capelas"
+    // must stay flagged unavailable, never silently reassigned to a member id.
+    const favorites = [{ id: 5, name: 'Capelas' }];
+    const [resolved] = resolveFavoriteStops(favorites, AREA_STOPS);
+    assert.equal(resolved.unavailable, true);
+    assert.equal(resolved.id, 5, 'never reassigned to CAPELAS (IGREJA) or (MOAGEM)');
+  });
+});
+
 describe('migrateUserData — driven by the transition, never a date literal', () => {
   const state = {
     favoriteStops: [{ id: 41, name: 'Ajuda - Igreja' }],

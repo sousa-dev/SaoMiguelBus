@@ -1,13 +1,22 @@
-import { MapPin, Star } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, MapPin, Star } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { radius, space, typography } from '@/lib/tokens';
 import { useProfileStore } from '@/lib/profile-store';
-import { SEARCH_DEBOUNCE_MS, filterStops } from '@/lib/stop-search';
+import { SEARCH_DEBOUNCE_MS, buildStopEntries } from '@/lib/stop-search';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
+
+/** Cosmetic only — the value sent via `onSelect` is always the raw area key. */
+function titleCase(raw: string): string {
+  return raw
+    .toLowerCase()
+    .split(' ')
+    .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
+    .join(' ');
+}
 
 type Props = {
   placeholder: string;
@@ -26,6 +35,11 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
   // by a cap, but refiltering on every keystroke is still wasted work).
   const [debouncedQuery, setDebouncedQuery] = useState(value);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  // Collapsed-by-key, not collapsed-by-default: today's list is effectively
+  // "always expanded", so a village section starts expanded too — collapsing
+  // is something the user does to scan past it faster, not a default state
+  // that would hide something nobody asked to hide.
+  const [collapsedAreas, setCollapsedAreas] = useState<Set<string>>(() => new Set());
   const isFavoriteStop = useProfileStore((s) => s.isFavoriteStop);
   const toggleFavoriteStop = useProfileStore((s) => s.toggleFavoriteStop);
   const iconColor = pinColor ?? theme.muted;
@@ -42,8 +56,32 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Every stop the query matches, alphabetically — no rank, no cap.
-  const filtered = useMemo(() => filterStops(stops, debouncedQuery), [stops, debouncedQuery]);
+  // Every stop the query matches, alphabetically — no rank, no cap. On
+  // AzoresBus, same-village stops collapse into one section; on legacy (no
+  // groupable names) this is identical to a flat list.
+  const entries = useMemo(
+    () => buildStopEntries(stops, debouncedQuery),
+    [stops, debouncedQuery],
+  );
+
+  const toggleAreaCollapsed = (key: string) => {
+    setCollapsedAreas((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const selectStop = (name: string) => {
+    setQuery(name);
+    setDebouncedQuery(name);
+    onSelect(name);
+    setSuggestionsOpen(false);
+  };
 
   return (
     <View style={styles.wrap}>
@@ -74,7 +112,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
           }}
         />
       </View>
-      {suggestionsOpen && query.length > 0 && filtered.length > 0 ? (
+      {suggestionsOpen && query.length > 0 && entries.length > 0 ? (
         <View
           style={[
             styles.suggestions,
@@ -95,29 +133,82 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
-            {filtered.map((item, index) => (
-              <View key={`${item.id}-${index}`} style={styles.suggestionRow}>
-                <Pressable
-                  style={styles.suggestionPress}
-                  onPress={() => {
-                    setQuery(item.name);
-                    setDebouncedQuery(item.name);
-                    onSelect(item.name);
-                    setSuggestionsOpen(false);
-                  }}
-                >
-                  <Text style={[typography.body, { color: theme.text }]}>{item.name}</Text>
-                </Pressable>
-                <IconButton
-                  icon={Star}
-                  size="sm"
-                  variant="ghost"
-                  color={isFavoriteStop(item.id) ? theme.warning : theme.muted}
-                  accessibilityLabel="favorite stop"
-                  onPress={() => toggleFavoriteStop({ id: item.id, name: item.name })}
-                />
-              </View>
-            ))}
+            {entries.map((entry) => {
+              if (entry.type === 'stop') {
+                const item = entry.stop;
+                return (
+                  <View key={item.id} style={styles.suggestionRow}>
+                    <Pressable
+                      style={styles.suggestionPress}
+                      onPress={() => selectStop(item.name)}
+                    >
+                      <Text style={[typography.body, { color: theme.text }]}>{item.name}</Text>
+                    </Pressable>
+                    <IconButton
+                      icon={Star}
+                      size="sm"
+                      variant="ghost"
+                      color={isFavoriteStop(item.id) ? theme.warning : theme.muted}
+                      accessibilityLabel="favorite stop"
+                      onPress={() => toggleFavoriteStop({ id: item.id, name: item.name })}
+                    />
+                  </View>
+                );
+              }
+
+              // A village section: tapping the LABEL selects the whole area
+              // (searches every member — the server does the union, this
+              // component only displays the grouping); tapping the CHEVRON
+              // only collapses it. Two sibling Pressables, same pattern as the
+              // label/star split on a plain row, so no novel gesture handling.
+              const collapsed = collapsedAreas.has(entry.key);
+              const Chevron = collapsed ? ChevronRight : ChevronDown;
+              return (
+                <View key={entry.key}>
+                  <View style={styles.suggestionRow}>
+                    <Pressable
+                      style={styles.areaChevron}
+                      accessibilityRole="button"
+                      accessibilityLabel={collapsed ? 'expand' : 'collapse'}
+                      hitSlop={8}
+                      onPress={() => toggleAreaCollapsed(entry.key)}
+                    >
+                      <Chevron size={18} color={theme.muted} />
+                    </Pressable>
+                    <Pressable
+                      style={styles.suggestionPress}
+                      onPress={() => selectStop(entry.key)}
+                    >
+                      <Text style={[typography.bodyStrong, { color: theme.text }]}>
+                        {titleCase(entry.key)}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  {!collapsed
+                    ? entry.members.map((member) => (
+                        <View key={member.id} style={[styles.suggestionRow, styles.areaMemberRow]}>
+                          <Pressable
+                            style={styles.suggestionPress}
+                            onPress={() => selectStop(member.name)}
+                          >
+                            <Text style={[typography.body, { color: theme.text }]}>
+                              {member.name}
+                            </Text>
+                          </Pressable>
+                          <IconButton
+                            icon={Star}
+                            size="sm"
+                            variant="ghost"
+                            color={isFavoriteStop(member.id) ? theme.warning : theme.muted}
+                            accessibilityLabel="favorite stop"
+                            onPress={() => toggleFavoriteStop({ id: member.id, name: member.name })}
+                          />
+                        </View>
+                      ))
+                    : null}
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
       ) : null}
@@ -155,4 +246,6 @@ const styles = StyleSheet.create({
   },
   suggestionRow: { flexDirection: 'row', alignItems: 'center' },
   suggestionPress: { flex: 1, paddingHorizontal: space.md, paddingVertical: space.sm },
+  areaChevron: { paddingLeft: space.md, paddingVertical: space.sm },
+  areaMemberRow: { paddingLeft: space.lg },
 });
