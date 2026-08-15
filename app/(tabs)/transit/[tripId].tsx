@@ -1,5 +1,6 @@
 import { Share2 } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { BackHandler, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { shareTrip } from '@/features/transit/share-trip';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
+import { findCachedTrip } from '@/features/transit/lib/cached-trip';
 import { useFabActions } from '@/lib/fab-store';
 import { resolveInfo } from '@/lib/infos';
 import { useNetworkStatus } from '@/lib/network-status';
@@ -67,13 +69,30 @@ export default function TripDetailScreen() {
 
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();
+  const queryClient = useQueryClient();
+
+  /*
+   * GET /api/v3/transit/trips/{id} resolves its dataset from the server's own
+   * date and ignores ?dataset=, so while previewing the NOT-yet-active network
+   * every trip detail 404s. The search result the user tapped carries everything
+   * this screen renders, so fall back to it rather than showing an error.
+   */
+  const cachedTrip = useMemo(() => {
+    if (!tripQuery.isError && tripQuery.data) {
+      return null;
+    }
+    const caches = queryClient
+      .getQueriesData<TransitSearchResult[]>({ queryKey: ['transit', 'search'] })
+      .map(([, data]) => data);
+    return findCachedTrip(caches, id);
+  }, [queryClient, id, tripQuery.isError, tripQuery.data]);
 
   const fabActions = useMemo(() => {
     const detail = tripQuery.data;
-    if (!detail) {
+    const trip = detail ? tripFromDetail(detail) : cachedTrip;
+    if (!trip) {
       return [];
     }
-    const trip = tripFromDetail(detail);
     return [
       {
         key: 'share-trip',
@@ -82,11 +101,13 @@ export default function TripDetailScreen() {
         onPress: () => void shareTrip(trip, { alertTitle: t('transitShareTitle') }),
       },
     ];
-  }, [tripQuery.data, t]);
+  }, [tripQuery.data, cachedTrip, t]);
 
   useFabActions(fabActions);
 
-  if (tripQuery.isLoading) {
+  // With a cached trip in hand there is nothing to wait for — render it now and
+  // let the detail request upgrade it if it succeeds.
+  if (tripQuery.isLoading && !cachedTrip) {
     return (
       <Screen withStackHeader>
         <LoadingState />
@@ -94,7 +115,7 @@ export default function TripDetailScreen() {
     );
   }
 
-  if (tripQuery.isError || !tripQuery.data) {
+  if ((tripQuery.isError || !tripQuery.data) && !cachedTrip) {
     return (
       <Screen withStackHeader>
         <ErrorState
@@ -106,13 +127,13 @@ export default function TripDetailScreen() {
     );
   }
 
-  const detail = tripQuery.data;
-  const trip = tripFromDetail(detail);
+  const detail = tripQuery.data ?? null;
+  const trip = detail ? tripFromDetail(detail) : cachedTrip!;
 
   const infoNotice =
     bootstrap.data?.infos?.find((info) => {
       const route = typeof info.route === 'string' ? info.route : '';
-      return route === detail.route;
+      return route === trip.route;
     }) ?? null;
 
   const resolvedNotice = infoNotice ? resolveInfo(infoNotice, i18n.language) : null;
