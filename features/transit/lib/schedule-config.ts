@@ -63,6 +63,31 @@ export function searchDataset(
   return config.previewDataset === 'azoresbus' ? 'azoresbus' : null;
 }
 
+/**
+ * The banner for the current phase.
+ *
+ * The server sends one `banner` in every phase, but the copy has to differ:
+ * "preview the new timetables" is not "the new timetables are live". An optional
+ * `phases` map on the banner is merged over the base, so one admin edit covers
+ * the whole changeover and nobody has to touch a flag on 1 September.
+ *
+ * Each phase can carry its own `id`, which is the dismissal key — so dismissing
+ * the preview banner in August does not hide the live one in September.
+ */
+export function resolveBanner(
+  config: TransitScheduleConfig | null | undefined,
+): TransitScheduleBanner | null {
+  const banner = config?.banner;
+  if (!banner) {
+    return null;
+  }
+  const override = config?.phase ? banner.phases?.[config.phase] : undefined;
+  if (!override) {
+    return banner;
+  }
+  return { ...banner, ...override };
+}
+
 export function resolveScheduleUi(
   config: TransitScheduleConfig | null | undefined,
   options: { isPreviewing: boolean; now?: number },

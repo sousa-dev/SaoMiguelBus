@@ -39,6 +39,16 @@ export interface TransitScheduleBanner {
   dismissible: boolean;
   /** locale → copy. */
   text: Record<string, string>;
+  /**
+   * Optional per-phase overrides, merged over the fields above.
+   *
+   * The server sends one banner in every phase, but "preview the new timetables"
+   * and "the new timetables are live" are different sentences. Editing the flag
+   * by hand on the day would work and is precisely what the plan says must not be
+   * necessary. The block is arbitrary JSON passed straight through, so this is a
+   * config convention rather than an API change.
+   */
+  phases?: Partial<Record<SchedulePhase, Partial<TransitScheduleBanner>>>;
 }
 
 /**

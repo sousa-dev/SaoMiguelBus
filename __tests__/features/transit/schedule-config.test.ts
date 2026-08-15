@@ -21,6 +21,7 @@ import {
   bannerCopy,
   canTrack,
   nextPreviewDataset,
+  resolveBanner,
   resolveScheduleUi,
   searchDataset,
   shouldInvalidateAt,
@@ -285,6 +286,74 @@ describe('cutoverAt is an INSTANT, not a local calendar date (98 §5 ch. 2)', ()
   it('never claims a crossing when no cutover is armed', () => {
     const ui = resolveScheduleUi(PRODUCTION_TODAY, { isPreviewing: false });
     assert.equal(ui.hasCrossedCutover, false);
+  });
+});
+
+/**
+ * The server sends ONE banner object in every phase — `serialize_transit_schedule`
+ * returns `flags['banner']` unconditionally — but the copy has to differ between
+ * "preview the new timetables" and "the new timetables are live". Editing the
+ * flag by hand on 1 September would work and is exactly the thing the plan says
+ * must not be needed ("on 1 September the app team does nothing").
+ *
+ * The block is arbitrary JSON passed straight through, so an optional `phases`
+ * map is a config convention the app understands, not an API change.
+ */
+describe('resolveBanner — per-phase copy from one flag', () => {
+  const phased = {
+    id: 'azoresbus-live-2026-09',
+    tone: 'info' as const,
+    dismissible: false,
+    text: { pt: 'Já estão em vigor.', en: 'Now in effect.' },
+    phases: {
+      preview: {
+        id: 'azoresbus-preview-2026-08',
+        text: { pt: 'Espreita os novos horários.', en: 'Preview the new timetables.' },
+      },
+    },
+  };
+
+  it('uses the phase copy during preview', () => {
+    const banner = resolveBanner(config({ phase: 'preview', banner: phased }));
+    assert.equal(banner?.text.pt, 'Espreita os novos horários.');
+  });
+
+  it('falls back to the top-level copy once live', () => {
+    const banner = resolveBanner(config({ phase: 'live', banner: phased }));
+    assert.equal(banner?.text.pt, 'Já estão em vigor.');
+  });
+
+  it('gives each phase its own dismissal id, so a new phase re-shows it', () => {
+    // Dismissing the preview banner in August must not hide the live one.
+    assert.equal(
+      resolveBanner(config({ phase: 'preview', banner: phased }))?.id,
+      'azoresbus-preview-2026-08',
+    );
+    assert.equal(
+      resolveBanner(config({ phase: 'live', banner: phased }))?.id,
+      'azoresbus-live-2026-09',
+    );
+  });
+
+  it('inherits tone and dismissibility unless the phase overrides them', () => {
+    const banner = resolveBanner(config({ phase: 'preview', banner: phased }));
+    assert.equal(banner?.tone, 'info');
+    assert.equal(banner?.dismissible, false);
+  });
+
+  it('lets a phase override the tone', () => {
+    const warned = { ...phased, phases: { preview: { tone: 'warning' as const } } };
+    assert.equal(resolveBanner(config({ phase: 'preview', banner: warned }))?.tone, 'warning');
+  });
+
+  it('is unchanged for a plain banner with no phases map', () => {
+    const banner = resolveBanner(config({ phase: 'preview', banner: BANNER }));
+    assert.deepEqual(banner, BANNER);
+  });
+
+  it('is null when there is no banner or no config', () => {
+    assert.equal(resolveBanner(config({ banner: null })), null);
+    assert.equal(resolveBanner(null), null);
   });
 });
 

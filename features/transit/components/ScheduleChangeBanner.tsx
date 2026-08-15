@@ -26,14 +26,14 @@ export function ScheduleChangeBanner() {
     bannerText,
     isPreviewing,
     setPreviewing,
-    config,
+    banner,
     isBannerDismissed,
     dismissBanner,
     phase,
   } = useScheduleConfig(i18n.language);
 
-  const dismissible = config?.banner?.dismissible ?? false;
-  const warning = config?.banner?.tone === 'warning';
+  const dismissible = banner?.dismissible ?? false;
+  const warning = banner?.tone === 'warning';
   const accent = warning ? theme.warning : theme.primary;
 
   if (!showBanner || !bannerText) {
@@ -93,7 +93,7 @@ export function ScheduleChangeBanner() {
             onPress={() => {
               dismissBanner();
               track('transit', 'schedule_banner_dismissed', {
-                banner_id: config?.banner?.id ?? '',
+                banner_id: banner?.id ?? '',
                 phase: phase ?? '',
               });
             }}

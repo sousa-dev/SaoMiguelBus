@@ -11,16 +11,23 @@ import {
   bannerCopy,
   canTrack,
   nextPreviewDataset,
+  resolveBanner,
   resolveScheduleUi,
   searchDataset,
   type ScheduleUi,
 } from '@/features/transit/lib/schedule-config';
 import { useBootstrapCached } from '@/features/transit/hooks/useBootstrapQueries';
 import { useProfileStore } from '@/lib/profile-store';
-import type { TransitDataset, TransitScheduleConfig } from '@/lib/types';
+import type {
+  TransitDataset,
+  TransitScheduleBanner,
+  TransitScheduleConfig,
+} from '@/lib/types';
 
 export interface ScheduleConfigView extends ScheduleUi {
   config: TransitScheduleConfig | null;
+  /** The banner for the current phase, with any per-phase overrides applied. */
+  banner: TransitScheduleBanner | null;
   isPreviewing: boolean;
   setPreviewing: (on: boolean) => void;
   bannerText: string | null;
@@ -58,21 +65,26 @@ export function useScheduleConfig(locale = 'pt'): ScheduleConfigView {
     [config, setStored],
   );
 
+  // The phase-resolved banner: copy and dismissal id both follow the phase, so a
+  // banner dismissed during preview reappears when the changeover goes live.
+  const banner = useMemo(() => resolveBanner(config), [config]);
+
   const dismissBanner = useCallback(() => {
-    if (config?.banner) {
-      dismiss(config.banner.id);
+    if (banner) {
+      dismiss(banner.id);
     }
-  }, [config, dismiss]);
+  }, [banner, dismiss]);
 
   return {
     ...ui,
     config,
     isPreviewing,
     setPreviewing,
-    bannerText: ui.showBanner ? bannerCopy(config?.banner, locale) : null,
+    banner,
+    bannerText: ui.showBanner ? bannerCopy(banner, locale) : null,
     badgeText: ui.showBadge ? bannerCopy(config?.badge, locale) : null,
     // Dismissal is keyed on the banner id, so changing it server-side re-shows it.
-    isBannerDismissed: config?.banner != null && dismissedId === config.banner.id,
+    isBannerDismissed: banner != null && dismissedId === banner.id,
     dismissBanner,
     canTrackTrips: canTrack(config, isPreviewing),
   };
