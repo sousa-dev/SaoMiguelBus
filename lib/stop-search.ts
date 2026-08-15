@@ -1,26 +1,32 @@
 /**
- * Ranking and limiting for the stop pickers.
+ * Filtering for the stop pickers.
  *
- * The old rule — filter by substring, sort alphabetically, cut at 40 — was sized
- * for a 108-stop legacy network. AzoresBus has 816 stops named
- * "VILLAGE (STREET)", so a user typing a village name matches dozens: 66 for
- * "ribeira", 47 for "arrifes", 36 for "capelas". Cutting at 40 alphabetically
- * silently hid the rest, and alphabetical order buried the stop whose name IS
- * the query under its own sub-stops.
+ * No match is ever hidden. Every stop whose name contains the query is
+ * returned, alphabetically — no relevance ranking, no cap, no favourites
+ * floating to the top. A village with 66 stops shows all 66.
  *
- * So: rank by how well the match fits, and only cap far enough out that the cap
- * is a safety valve rather than an editorial decision.
+ * That makes two things load-bearing, both here rather than left to the
+ * component to get right independently:
+ *
+ *   - a MINIMUM QUERY LENGTH, so a one- or two-letter prefix does not run a
+ *     match against 816 similarly-named AzoresBus stops before the user has
+ *     finished typing what they mean;
+ *   - the component debounces input by SEARCH_DEBOUNCE_MS before calling this,
+ *     so the same is true between keystrokes, not just below the minimum.
  */
 
 import type { Stop } from '@/lib/types';
 
-/** High enough that a village-name query shows every stop in that village. */
-export const STOP_SUGGESTION_LIMIT = 250;
+/** Below this many characters, nothing is matched — see the module doc. */
+export const MIN_QUERY_LENGTH = 3;
+
+/** How long the component waits after the last keystroke before filtering. */
+export const SEARCH_DEBOUNCE_MS = 300;
 
 const ACCENTS = 'áàâãäéèêëíìîïóòôõöúùûüç';
 const PLAIN = 'aaaaaeeeeiiiiooooouuuuc';
 
-/** Fold for MATCHING only — never for deciding whether two stops are the same. */
+/** Fold for MATCHING only — never for deciding whether two stops share a name. */
 export function foldForSearch(value: string): string {
   return value
     .toLowerCase()
@@ -29,48 +35,19 @@ export function foldForSearch(value: string): string {
     .trim();
 }
 
-/** Lower sorts first. */
-function matchRank(name: string, query: string): number {
-  if (name === query) return 0;                    // exact
-  if (name.startsWith(query)) return 1;            // "capelas" -> "capelas (igreja)"
-  if (name.includes(` ${query}`)) return 2;        // word start
-  if (name.includes(query)) return 3;              // anywhere
-  return 4;                                        // no match
-}
-
-export interface RankedStopOptions {
-  favoriteIds?: Set<number>;
-  limit?: number;
-}
-
 /**
- * The stops to offer for a query, best match first.
+ * Every stop whose name contains the query, in alphabetical order.
  *
- * Favourites still float to the top, but only among stops that actually match —
- * a favourite is a shortcut, not a reason to show an irrelevant stop.
+ * Empty below `MIN_QUERY_LENGTH`. Otherwise unfiltered by rank and uncapped: a
+ * mid-name match is exactly as visible as a prefix match, and a query that
+ * matches 200 stops returns 200 stops.
  */
-export function rankStopSuggestions<T extends Pick<Stop, 'id' | 'name'>>(
-  stops: T[],
-  query: string,
-  options: RankedStopOptions = {},
-): T[] {
-  const favoriteIds = options.favoriteIds ?? new Set<number>();
-  const limit = options.limit ?? STOP_SUGGESTION_LIMIT;
+export function filterStops<T extends Pick<Stop, 'name'>>(stops: T[], query: string): T[] {
   const q = foldForSearch(query);
-
-  const scored = (q ? stops.filter((s) => matchRank(foldForSearch(s.name), q) < 4) : stops)
-    .map((stop) => ({
-      stop,
-      rank: q ? matchRank(foldForSearch(stop.name), q) : 0,
-      favorite: favoriteIds.has(stop.id) ? 0 : 1,
-    }));
-
-  scored.sort(
-    (a, b) =>
-      a.favorite - b.favorite ||
-      a.rank - b.rank ||
-      a.stop.name.localeCompare(b.stop.name),
-  );
-
-  return scored.slice(0, limit).map((entry) => entry.stop);
+  if (q.length < MIN_QUERY_LENGTH) {
+    return [];
+  }
+  return [...stops]
+    .filter((stop) => foldForSearch(stop.name).includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
