@@ -17,7 +17,9 @@ import {
   resolveBoardingPole,
 } from '@/features/transit/lib/boarding-pole';
 import {
+  categorySummary,
   fareBandUnit,
+  formatTariffPrice,
   resolveTariffsState,
   tariffInfoLinks,
   tariffRenderer,
@@ -138,7 +140,7 @@ describe('tariffs — tables only, never a computed fare (03 §6)', () => {
   it('keeps band labels verbatim and in payload order', () => {
     const rows = tariffRows(payload.categories[0].tariffs[0]);
     assert.deepEqual(rows.map((r) => r.band), ['0 a 5', '6 a 7', '8']);
-    assert.equal(rows[0].price, '31.75', 'rendered as sent, never reformatted');
+    assert.equal(rows[0].price, '31.75', 'the payload value is carried through unchanged');
   });
 
   it('treats a 404 as empty, not as an error — production returns it today', () => {
@@ -180,6 +182,59 @@ describe('fare bands are distances — 01 §7', () => {
   });
 });
 
+describe('prices render as euros', () => {
+  it('formats a payload number as currency', () => {
+    const formatted = formatTariffPrice(31.75, 'pt-PT');
+    assert.match(formatted, /€/, 'the amount must carry its currency');
+    assert.match(formatted, /31/, 'and it is the payload amount, not a rounded one');
+  });
+
+  it('formats a numeric string the same way', () => {
+    assert.equal(formatTariffPrice('31.75', 'pt-PT'), formatTariffPrice(31.75, 'pt-PT'));
+  });
+
+  it('shows the cents on a whole number — 7 is a price, not a count', () => {
+    const formatted = formatTariffPrice(7, 'pt-PT');
+    assert.match(formatted, /7[.,]00/);
+  });
+
+  it('formats a free fare rather than blanking it', () => {
+    // The social passes are genuinely €0.00; an empty cell would read as missing.
+    assert.match(formatTariffPrice(0, 'pt-PT'), /0[.,]00/);
+  });
+
+  it('renders nothing when the payload has no price', () => {
+    assert.equal(formatTariffPrice(null, 'pt-PT'), '');
+    assert.equal(formatTariffPrice('', 'pt-PT'), '');
+  });
+
+  it('passes a non-numeric value through verbatim rather than inventing one', () => {
+    assert.equal(formatTariffPrice('sob consulta', 'pt-PT'), 'sob consulta');
+  });
+
+  it('never fabricates an amount for an unusable locale', () => {
+    assert.match(formatTariffPrice(31.75, 'not-a-locale'), /31/);
+  });
+});
+
+describe('category summary — what is inside a collapsed section', () => {
+  const category = {
+    name: 'Passes Mensais',
+    tariffs: [
+      { name: 'Mensal', note: '', fareUnitType: 'km', prices: [] },
+      { name: 'Mensal Jovem', note: '', fareUnitType: 'km', prices: [] },
+    ],
+  };
+
+  it('lists the tariff names, so a collapsed section still says what it holds', () => {
+    assert.equal(categorySummary(category), 'Mensal · Mensal Jovem');
+  });
+
+  it('is empty for a category with no tariffs', () => {
+    assert.equal(categorySummary({ name: 'Vazio', tariffs: [] }), '');
+  });
+});
+
 describe('operator link-outs — the honest answer to "what will my ride cost?"', () => {
   it('returns usable links only', () => {
     const links = tariffInfoLinks([
@@ -208,14 +263,27 @@ describe('no price literal anywhere in the pricing path (03 §6)', () => {
     'features/transit/components/TariffTable.tsx',
   ];
 
-  it('contains no currency literal', () => {
-    // Every number renders from the payload. Not €7, not €31.75, not the €6 card
-    // fee — a fallback price is worse than an empty state because it is wrong
-    // silently.
-    const currency = /(?:€|EUR\b)\s*\d|\d\s*(?:€|EUR\b)/;
+  // A currency SYMBOL is allowed — prices render as euros, and the formatter
+  // needs one. An AMOUNT is not: not €7, not €31.75, not the €6 card fee. A
+  // fallback price is worse than an empty state because it is silently wrong.
+  const PRICE_LITERAL = /(?:€|EUR\b)\s*\d|\d\s*(?:€|EUR\b)/;
+
+  it('would catch a hardcoded price', () => {
+    // Without this the guard could rot into a regex that matches nothing.
+    for (const sample of ['€7', '31.75 €', 'price = 6 EUR', 'EUR 12']) {
+      assert.equal(PRICE_LITERAL.test(sample), true, `missed ${sample}`);
+    }
+  });
+
+  it('allows a bare currency symbol used for formatting', () => {
+    assert.equal(PRICE_LITERAL.test('`${amount.toFixed(2)} €`'), false);
+    assert.equal(PRICE_LITERAL.test("currency: 'EUR'"), false);
+  });
+
+  it('contains no price literal', () => {
     for (const file of FILES) {
       const source = readFileSync(join(process.cwd(), file), 'utf8');
-      assert.equal(currency.test(source), false, `${file} contains a currency literal`);
+      assert.equal(PRICE_LITERAL.test(source), false, `${file} contains a price literal`);
     }
   });
 });

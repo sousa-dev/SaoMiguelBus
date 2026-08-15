@@ -99,6 +99,54 @@ export function tariffRenderer(tariff: Pick<Tariff, 'prices' | 'fareUnitType'>):
 }
 
 /**
+ * The currency the operator prices in. There is no currency field in the payload
+ * — the amounts are bare numbers (01 §7) — and the Azores use the euro, so this
+ * is presentation, not a fare.
+ */
+const TARIFF_CURRENCY = 'EUR';
+
+/**
+ * A payload amount, rendered as money.
+ *
+ * The NUMBER always comes from the payload; only the currency and the local
+ * grouping convention are ours. A value that is not a number is passed through
+ * verbatim rather than coerced, and a missing price renders as nothing — never
+ * as a fabricated amount.
+ *
+ * Falls back to a plain format if `Intl` is unavailable, matching
+ * `lib/format-time.ts`.
+ */
+export function formatTariffPrice(
+  value: string | number | null | undefined,
+  locale: string,
+): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  const amount = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
+  if (!Number.isFinite(amount)) {
+    // "sob consulta" and anything else the operator writes stays as written.
+    return String(value);
+  }
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: TARIFF_CURRENCY,
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} €`;
+  }
+}
+
+/**
+ * What a collapsed category holds, so the header is still informative when the
+ * section is shut — which is how the screen opens.
+ */
+export function categorySummary(category: Pick<TariffCategory, 'tariffs'>): string {
+  return category.tariffs.map((tariff) => tariff.name).filter(Boolean).join(' · ');
+}
+
+/**
  * The operator's own link-outs.
  *
  * These matter more now that the bands are labelled as distances: the obvious

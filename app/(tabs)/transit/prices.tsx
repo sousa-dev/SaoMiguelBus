@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Ticket } from 'lucide-react-native';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -6,11 +7,13 @@ import { Screen } from '@/components/Screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
 import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
 import { TariffTable } from '@/features/transit/components/TariffTable';
+import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
 import { useTariffs } from '@/features/transit/hooks/useTariffs';
-import { resolveTariffsState, tariffInfoLinks } from '@/features/transit/lib/tariffs';
+import { categorySummary, resolveTariffsState, tariffInfoLinks } from '@/features/transit/lib/tariffs';
 import { track } from '@/lib/analytics';
 import { formatAppDate } from '@/lib/date-format';
-import { radius, space, typography } from '@/lib/tokens';
+import { withAlpha } from '@/lib/color-utils';
+import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 /**
@@ -81,13 +84,27 @@ export default function TransitPricesScreen() {
               ) : null}
             </View>
 
+            {/*
+              Collapsed by default: four categories of dense band tables is a wall
+              of numbers, and a user usually wants one of them. The summary keeps
+              each header informative while it is shut.
+            */}
             {data.categories.map((category) => (
-              <View key={category.name} style={styles.section}>
-                <Text style={[typography.headline, { color: theme.text }]}>{category.name}</Text>
+              <TransitCollapsibleSection
+                key={category.name}
+                defaultOpen={false}
+                icon={<Ticket size={iconSize.sm} color={theme.primary} />}
+                iconBackground={withAlpha(theme.primary, 0.12)}
+                title={category.name}
+                subtitle={categorySummary(category)}
+                countLabel={String(category.tariffs.length)}
+                countBackground={withAlpha(theme.primary, 0.12)}
+                countColor={theme.primary}
+              >
                 {category.tariffs.map((tariff) => (
                   <TariffTable key={tariff.name} tariff={tariff} />
                 ))}
-              </View>
+              </TransitCollapsibleSection>
             ))}
 
             {data.notes ? (

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   fareBandUnit,
+  formatTariffPrice,
   tariffRenderer,
   tariffRows,
   type Tariff,
@@ -23,11 +24,12 @@ import { useAppTheme } from '@/lib/theme';
  * Labels are printed verbatim, in payload order. Parsing them into ranges or
  * sorting them numerically would reorder a table the operator laid out.
  *
- * There is no price in this file. Every number comes from the data.
+ * There is no price in this file. Every amount comes from the payload; only the
+ * currency and the local grouping convention are ours.
  */
 export function TariffTable({ tariff }: { tariff: Tariff }) {
   const theme = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const rows = tariffRows(tariff);
   const unit = fareBandUnit(tariff);
   const banded = tariffRenderer(tariff) === 'banded';
@@ -60,7 +62,9 @@ export function TariffTable({ tariff }: { tariff: Tariff }) {
           ) : (
             <View style={styles.spacer} />
           )}
-          <Text style={[typography.bodyStrong, { color: theme.text }]}>{row.price}</Text>
+          <Text style={[typography.bodyStrong, { color: theme.text }]}>
+            {formatTariffPrice(row.price, i18n.language)}
+          </Text>
         </View>
       ))}
 
