@@ -68,10 +68,14 @@ export function resolveScheduleUi(
   options: { isPreviewing: boolean; now?: number },
 ): ScheduleUi {
   const cutover = instant(config?.cutoverAt);
+  // Gates the BANNER and the BADGE, both of which announce a dated changeover.
   const isConfigured = config != null && cutover != null;
   const phase = config?.phase ?? null;
   const dataset = searchDataset(config, options.isPreviewing);
-  const canPreview = isConfigured && phase === 'preview' && config?.previewDataset != null;
+  // The TOGGLE is gated separately and deliberately. `previewDataset` is the
+  // server explicitly saying "offer a preview"; requiring a cutover on top meant
+  // an admin could switch previewEnabled on and see nothing happen.
+  const canPreview = phase === 'preview' && config?.previewDataset != null;
 
   return {
     isConfigured,

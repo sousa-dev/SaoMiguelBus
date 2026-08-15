@@ -32,13 +32,38 @@ export function ScheduleChangeBanner() {
     phase,
   } = useScheduleConfig(i18n.language);
 
-  if (!showBanner || !bannerText) {
-    return null;
-  }
-
   const dismissible = config?.banner?.dismissible ?? false;
   const warning = config?.banner?.tone === 'warning';
   const accent = warning ? theme.warning : theme.primary;
+
+  if (!showBanner || !bannerText) {
+    // The server can offer a preview before a cutover instant is armed, and the
+    // banner is gated on that instant because its copy announces a dated
+    // changeover. The toggle carries no such claim, so it still needs a home.
+    if (!showToggle) {
+      return null;
+    }
+    return (
+      <View style={[styles.wrap, { borderColor: accent, backgroundColor: theme.card }]}>
+        <View style={styles.row}>
+          <Info size={18} color={accent} />
+          <Text style={[typography.label, { color: theme.text, flex: 1 }]}>
+            {t('transitSchedulePreviewToggle')}
+          </Text>
+          <Switch
+            value={isPreviewing}
+            onValueChange={(next) => {
+              setPreviewing(next);
+              track('transit', 'schedule_preview_toggled', {
+                enabled: next,
+                phase: phase ?? '',
+              });
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
 
   // Dismissed collapses to a slim chip rather than disappearing: while a preview
   // is on offer the user needs the way back to it.

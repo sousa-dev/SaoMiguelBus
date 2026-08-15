@@ -1266,5 +1266,6 @@
     "transitFaresBandKm": "Distance travelled (km)",
     "transitFaresBandGeneric": "Band ({{unit}})",
     "transitFaresPriceHeader": "Price",
-    "transitFaresDistanceNote": "Bands are the journey distance in kilometres. The app cannot work out the distance between two stops — see the operator’s information."
+    "transitFaresDistanceNote": "Bands are the journey distance in kilometres. The app cannot work out the distance between two stops — see the operator’s information.",
+    "transitSchedulePreviewWarningUndated": "New network timetables — not in force yet."
 }

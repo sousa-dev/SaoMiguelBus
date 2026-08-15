@@ -1266,5 +1266,6 @@
     "transitFaresBandKm": "Distância percorrida (km)",
     "transitFaresBandGeneric": "Escalão ({{unit}})",
     "transitFaresPriceHeader": "Preço",
-    "transitFaresDistanceNote": "Os escalões são a distância da viagem em quilómetros. A app não calcula a distância entre duas paragens — consulta a informação do operador."
+    "transitFaresDistanceNote": "Os escalões são a distância da viagem em quilómetros. A app não calcula a distância entre duas paragens — consulta a informação do operador.",
+    "transitSchedulePreviewWarningUndated": "Horários da nova rede, ainda não em vigor."
 }

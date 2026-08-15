@@ -20,18 +20,21 @@ export function SchedulePreviewStrip() {
   const { t, i18n } = useTranslation();
   const { showPreviewWarning, config } = useScheduleConfig(i18n.language);
 
-  if (!showPreviewWarning || !config?.cutoverAt) {
+  if (!showPreviewWarning) {
     return null;
   }
+
+  // The caveat must never depend on a cutover being armed. A preview can be
+  // offered before the date is set, and "these times are not in force yet" is
+  // exactly what the user needs to know either way.
+  const message = config?.cutoverAt
+    ? t('transitSchedulePreviewWarning', { date: formatAppDate(new Date(config.cutoverAt)) })
+    : t('transitSchedulePreviewWarningUndated');
 
   return (
     <View style={[styles.strip, { borderColor: theme.warning, backgroundColor: theme.card }]}>
       <AlertTriangle size={16} color={theme.warning} />
-      <Text style={[typography.caption, { color: theme.text, flex: 1 }]}>
-        {t('transitSchedulePreviewWarning', {
-          date: formatAppDate(new Date(config.cutoverAt)),
-        })}
-      </Text>
+      <Text style={[typography.caption, { color: theme.text, flex: 1 }]}>{message}</Text>
     </View>
   );
 }

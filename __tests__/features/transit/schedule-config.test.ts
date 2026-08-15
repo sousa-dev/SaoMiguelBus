@@ -69,12 +69,58 @@ describe('resolveScheduleUi — back-compat', () => {
     assert.equal(ui.isConfigured, false, 'no cutover armed means nothing to announce');
     assert.equal(ui.showBanner, false, 'would otherwise say the new timetables are live');
     assert.equal(ui.showBadge, false);
-    assert.equal(ui.showToggle, false);
+    assert.equal(ui.showToggle, false, 'and the server is not offering a preview either');
   });
 
   it('treats a missing azoresbus block the same as an unconfigured one', () => {
     const bare = config({ cutoverAt: null, banner: null, badge: null });
     assert.equal(resolveScheduleUi(bare, { isPreviewing: false }).isConfigured, false);
+  });
+});
+
+/**
+ * The banner and the toggle are gated separately, and the reason matters.
+ *
+ * The banner is gated on `cutoverAt` because its copy is seeded server-side with
+ * live-phase wording — announcing a changeover with no date behind it would be a
+ * lie. The TOGGLE carries no such claim: when the server sets `previewDataset` it
+ * is explicitly saying "offer a preview", and the app must not second-guess that.
+ * Requiring a cutover for the toggle meant an admin could turn preview on and see
+ * nothing happen.
+ */
+describe('resolveScheduleUi — preview is offered by the server, not inferred', () => {
+  const previewOffered = config({
+    phase: 'preview',
+    previewDataset: 'azoresbus',
+    cutoverAt: null,
+    banner: BANNER,
+  });
+
+  it('offers the toggle when the server does, even with no cutover armed', () => {
+    const ui = resolveScheduleUi(previewOffered, { isPreviewing: false });
+    assert.equal(ui.showToggle, true);
+  });
+
+  it('still refuses to announce a changeover that has no date', () => {
+    const ui = resolveScheduleUi(previewOffered, { isPreviewing: false });
+    assert.equal(ui.showBanner, false);
+    assert.equal(ui.isConfigured, false);
+  });
+
+  it('sends the preview dataset once the user turns it on', () => {
+    assert.equal(searchDataset(previewOffered, true), 'azoresbus');
+  });
+
+  it('still warns on the results, with or without a cutover date', () => {
+    assert.equal(
+      resolveScheduleUi(previewOffered, { isPreviewing: true }).showPreviewWarning,
+      true,
+    );
+  });
+
+  it('offers nothing once the phase moves on, cutover or not', () => {
+    const live = config({ phase: 'live', previewDataset: null, cutoverAt: null });
+    assert.equal(resolveScheduleUi(live, { isPreviewing: false }).showToggle, false);
   });
 });
 
