@@ -16,6 +16,11 @@
  *
  * Never stop count. On 335, with 36 repeated names, "fewest stops" selects a
  * one- or two-stop hop that is not the ride the user asked for (98 §5 ch. 4).
+ *
+ * `originKeys`/`destinationKeys` are SETS: a village search ("Capelas")
+ * resolves to every stop-name key sharing that village's prefix, and the
+ * matcher must not care whether it received one key or forty-seven —
+ * mirrors `matcher.py`'s `origin_stop_ids` generalization exactly.
  */
 
 import { stopMatchesQuery } from '@/lib/stop-match';
@@ -41,11 +46,11 @@ export function stopTimeMinutes(dayOffset: number, hours: number, minutes: numbe
 /** Every (board, alight) on this trip where board precedes alight. */
 export function validPairs<T extends SequencedStop>(
   stops: T[],
-  originKey: string | number,
-  destinationKey: string | number,
+  originKeys: Set<string | number>,
+  destinationKeys: Set<string | number>,
 ): [T, T][] {
-  const boards = stops.filter((stop) => stop.key === originKey);
-  const alights = stops.filter((stop) => stop.key === destinationKey);
+  const boards = stops.filter((stop) => originKeys.has(stop.key));
+  const alights = stops.filter((stop) => destinationKeys.has(stop.key));
 
   const pairs: [T, T][] = [];
   for (const board of boards) {
@@ -68,11 +73,11 @@ export function validPairs<T extends SequencedStop>(
  */
 export function selectPair<T extends SequencedStop>(
   stops: T[],
-  originKey: string | number,
-  destinationKey: string | number,
+  originKeys: Set<string | number>,
+  destinationKeys: Set<string | number>,
   options: { earliestMinutes?: number } = {},
 ): [T, T] | null {
-  let pairs = validPairs(stops, originKey, destinationKey);
+  let pairs = validPairs(stops, originKeys, destinationKeys);
 
   const earliest = options.earliestMinutes;
   if (earliest !== undefined) {

@@ -15,6 +15,7 @@
  */
 
 import { normalizeStopKey } from '@/lib/offline-search';
+import { findAreaByQuery, groupStopsIntoAreas } from '@/lib/stop-areas';
 import { selectPair, stopTimeMinutes, type SequencedStop } from '@/lib/trip-segment';
 import type { TransitDataset, TransitSearchResult, TripStop } from '@/lib/types';
 
@@ -129,6 +130,43 @@ function formatSeconds(seconds: number): string {
   return `${String(hours).padStart(2, '0')}h${String(minutes).padStart(2, '0')}`;
 }
 
+/**
+ * Every stop-name key the query resolves to.
+ *
+ * Offline has no server to ask, so it resolves "Capelas" to the whole village
+ * itself — mirroring the server's own precedence (`_resolve_stop_ids`): an
+ * exact stop name always wins first, so a query naming one specific landmark
+ * is never widened into its village's union. Only when nothing matches
+ * exactly is the query tried against `lib/stop-areas.ts`'s village grouping
+ * (the SAME module the picker's sections use — one implementation, not a
+ * third divergent one). No prefix fallback: offline never had one before
+ * areas existed either, and adding one now would be scope this feature
+ * didn't ask for.
+ *
+ * Two fold domains, deliberately different, matching the plan exactly:
+ * `findAreaByQuery` folds via `foldStopName` internally (the same structural
+ * fold `groupStopsIntoAreas`'s collision check uses); the returned SET is
+ * built from `normalizeStopKey`, because that is the key domain
+ * `SequencedStop.key` already uses throughout this file (`sequencedRow`,
+ * below). The two folds strip the same characters, so this is about keeping
+ * the established key domain coherent, not papering over a mismatch.
+ */
+function resolveKeys(query: string, stops: OfflineStopV2[]): Set<string> {
+  const exactKey = normalizeStopKey(query);
+  const hasExactStop = stops.some((stop) => normalizeStopKey(stop.name) === exactKey);
+  if (hasExactStop) {
+    return new Set([exactKey]);
+  }
+
+  const members = findAreaByQuery(groupStopsIntoAreas(stops), query);
+  if (members) {
+    return new Set(members.map((member) => normalizeStopKey(member.name)));
+  }
+
+  // No match either way -- selectPair naturally finds nothing for this key.
+  return new Set([exactKey]);
+}
+
 function sequencedRow(row: OfflineRouteRowV2, stops: OfflineStopV2[]): SequencedStop[] {
   return row.stops.map((stopIndex, position) => {
     const seconds = row.times[position] ?? 0;
@@ -152,15 +190,15 @@ export function offlineSearchV2(
   bundle: OfflineBundleV2,
   params: { origin: string; destination: string; isoDate: string },
 ): TransitSearchResult[] {
-  const originKey = normalizeStopKey(params.origin);
-  const destinationKey = normalizeStopKey(params.destination);
+  const originKeys = resolveKeys(params.origin, bundle.stops);
+  const destinationKeys = resolveKeys(params.destination, bundle.stops);
 
   const results: TransitSearchResult[] = [];
   for (const row of bundle.routes) {
     if (!runsOn(bundle, row, params.isoDate)) {
       continue;
     }
-    const pair = selectPair(sequencedRow(row, bundle.stops), originKey, destinationKey);
+    const pair = selectPair(sequencedRow(row, bundle.stops), originKeys, destinationKeys);
     if (!pair) {
       continue;
     }

@@ -10,6 +10,12 @@
  * earliest BOARD, then shortest ELAPSED DURATION, then board sequence.
  * Never stop count — on 335, with 36 repeated names, fewest-stops picks a hop
  * nobody asked for (98 §5 challenge 4).
+ *
+ * `originKey`/`destinationKey` are SETS now, not single values — a village
+ * search ("Capelas", offline) resolves to every stop-name key sharing that
+ * village's prefix, mirroring `matcher.py`'s `origin_stop_ids` generalization.
+ * Existing single-value calls below are wrapped in a singleton `Set` —
+ * call-site shape only, no behavioural change to those tests.
  */
 
 import assert from 'node:assert/strict';
@@ -86,7 +92,7 @@ describe('fixture integrity — the upstream captures still exercise the bug', (
 
 describe('selectPair — 98 B7 loop matching', () => {
   it('finds the later leg of a loop that first-occurrence matching drops', () => {
-    const pairs = validPairs(sequenced(LINE_301), ARRIFES_VALADOS, PDL_ALFANDEGA);
+    const pairs = validPairs(sequenced(LINE_301), new Set([ARRIFES_VALADOS]), new Set([PDL_ALFANDEGA]));
     assert.equal(pairs.length, 1);
     assert.deepEqual(
       [pairs[0][0].sequence, pairs[0][1].sequence],
@@ -97,14 +103,14 @@ describe('selectPair — 98 B7 loop matching', () => {
 
   it('never returns a pair that travels backwards', () => {
     assert.equal(
-      selectPair(sequenced(LINE_301), PDL_ALFANDEGA, ARRIFES_VALADOS)?.[0].sequence,
+      selectPair(sequenced(LINE_301), new Set([PDL_ALFANDEGA]), new Set([ARRIFES_VALADOS]))?.[0].sequence,
       1,
       'ALFÂNDEGA seq 1 does precede ARRIFES seq 40',
     );
     const backwards = validPairs(
       synthetic([['A', '06:00', 0], ['B', '06:30', 0]]),
-      'B',
-      'A',
+      new Set(['B']),
+      new Set(['A']),
     );
     assert.deepEqual(backwards, []);
   });
@@ -112,7 +118,7 @@ describe('selectPair — 98 B7 loop matching', () => {
 
 describe('selectPair — tie-break, identical to matcher.py select_pair', () => {
   it('earliest board wins on 335, where stop count would disagree', () => {
-    const pair = selectPair(sequenced(LINE_335), CABOUCO_AMELIA, PDL_ALFANDEGA);
+    const pair = selectPair(sequenced(LINE_335), new Set([CABOUCO_AMELIA]), new Set([PDL_ALFANDEGA]));
     assert.deepEqual(
       [pair?.[0].sequence, pair?.[1].sequence],
       [41, 96],
@@ -120,7 +126,7 @@ describe('selectPair — tie-break, identical to matcher.py select_pair', () => 
     );
 
     // The rule we are explicitly NOT using would have picked the shortest hop.
-    const pairs = validPairs(sequenced(LINE_335), CABOUCO_AMELIA, PDL_ALFANDEGA);
+    const pairs = validPairs(sequenced(LINE_335), new Set([CABOUCO_AMELIA]), new Set([PDL_ALFANDEGA]));
     const fewestStops = [...pairs].sort(
       (a, b) => b[0].sequence - a[0].sequence,
     )[0];
@@ -134,7 +140,7 @@ describe('selectPair — tie-break, identical to matcher.py select_pair', () => 
       ['MID', '06:30', 0],
       ['Y', '06:45', 0], // fast leg from the same board: 45 min
     ]);
-    const pair = selectPair(trip, 'X', 'Y');
+    const pair = selectPair(trip, new Set(['X']), new Set(['Y']));
     assert.equal(pair?.[0].sequence, 1);
     assert.equal(pair?.[1].sequence, 4, 'the longer leg from the same board was selected');
   });
@@ -148,19 +154,19 @@ describe('selectPair — tie-break, identical to matcher.py select_pair', () => 
       ['X', '07:00', 0],
       ['Y', '09:00', 0], // 1 stop, 2 hours
     ]);
-    const pair = selectPair(trip, 'X', 'Y');
+    const pair = selectPair(trip, new Set(['X']), new Set(['Y']));
     assert.deepEqual([pair?.[0].sequence, pair?.[1].sequence], [1, 4]);
   });
 
   it('returns null when no pair exists', () => {
-    assert.equal(selectPair(synthetic([['X', '06:00', 0]]), 'X', 'Y'), null);
+    assert.equal(selectPair(synthetic([['X', '06:00', 0]]), new Set(['X']), new Set(['Y'])), null);
   });
 });
 
 describe('selectPair — night wrap (98 B2)', () => {
   it('a leg across midnight has a positive elapsed duration', () => {
     const trip = synthetic([['X', '23:15', 0], ['Y', '00:10', 1]]);
-    const pair = selectPair(trip, 'X', 'Y');
+    const pair = selectPair(trip, new Set(['X']), new Set(['Y']));
     assert.equal(pair![1].minutes - pair![0].minutes, 55);
   });
 
@@ -171,7 +177,7 @@ describe('selectPair — night wrap (98 B2)', () => {
       ['X', '23:50', 0],
       ['Y', '00:20', 1],
     ]);
-    assert.equal(selectPair(trip, 'X', 'Y')?.[0].sequence, 1);
+    assert.equal(selectPair(trip, new Set(['X']), new Set(['Y']))?.[0].sequence, 1);
   });
 
   it('orders N03 by sequence, never by raw time', () => {
@@ -190,13 +196,13 @@ describe('selectPair — board-time filter (02 §3.4)', () => {
       ['X', '09:00', 0],
       ['Y', '09:30', 0],
     ]);
-    const pair = selectPair(trip, 'X', 'Y', { earliestMinutes: 8 * 60 + 30 });
+    const pair = selectPair(trip, new Set(['X']), new Set(['Y']), { earliestMinutes: 8 * 60 + 30 });
     assert.equal(pair?.[0].sequence, 2, 'today this trip is dropped because it left at 06:00');
   });
 
   it('excludes a board before the requested time', () => {
     const trip = synthetic([['X', '06:00', 0], ['Y', '06:30', 0]]);
-    assert.equal(selectPair(trip, 'X', 'Y', { earliestMinutes: 8 * 60 + 30 }), null);
+    assert.equal(selectPair(trip, new Set(['X']), new Set(['Y']), { earliestMinutes: 8 * 60 + 30 }), null);
   });
 
   it('picks the first qualifying leg, not the first leg', () => {
@@ -204,8 +210,64 @@ describe('selectPair — board-time filter (02 §3.4)', () => {
       ['X', '06:00', 0], ['Y', '06:30', 0],
       ['X', '09:00', 0], ['Y', '09:30', 0],
     ]);
-    const pair = selectPair(trip, 'X', 'Y', { earliestMinutes: 8 * 60 + 30 });
+    const pair = selectPair(trip, new Set(['X']), new Set(['Y']), { earliestMinutes: 8 * 60 + 30 });
     assert.equal(pair?.[0].sequence, 3);
+  });
+});
+
+describe('selectPair — multi-key sets (offline village search)', () => {
+  it('finds a trip via only one member of the origin set', () => {
+    // Neither CAPELAS_A nor CAPELAS_B alone is the query -- the caller passed
+    // every member's key, and only one of them is on this trip.
+    const trip = synthetic([
+      ['CAPELAS_B', '07:00', 0],
+      ['PONTA_DELGADA', '07:30', 0],
+    ]);
+    const originKeys = new Set(['CAPELAS_A', 'CAPELAS_B']);
+    const pair = selectPair(trip, originKeys, new Set(['PONTA_DELGADA']));
+    assert.equal(pair?.[0].key, 'CAPELAS_B');
+    assert.equal(pair?.[1].key, 'PONTA_DELGADA');
+  });
+
+  it('finds nothing when the trip serves none of the set', () => {
+    const trip = synthetic([
+      ['ARRIFES', '07:00', 0],
+      ['PONTA_DELGADA', '07:30', 0],
+    ]);
+    const originKeys = new Set(['CAPELAS_A', 'CAPELAS_B']);
+    assert.equal(selectPair(trip, originKeys, new Set(['PONTA_DELGADA'])), null);
+  });
+
+  it('picks the earliest board across different set members', () => {
+    const trip = synthetic([
+      ['CAPELAS_B', '06:00', 0],
+      ['CAPELAS_A', '06:30', 0],
+      ['PONTA_DELGADA', '07:00', 0],
+    ]);
+    const originKeys = new Set(['CAPELAS_A', 'CAPELAS_B']);
+    const pair = selectPair(trip, originKeys, new Set(['PONTA_DELGADA']));
+    assert.equal(pair?.[0].key, 'CAPELAS_B');
+  });
+
+  it('an empty set on either side matches nothing', () => {
+    const trip = synthetic([['X', '06:00', 0], ['Y', '06:30', 0]]);
+    assert.deepEqual(validPairs(trip, new Set(), new Set(['Y'])), []);
+    assert.deepEqual(validPairs(trip, new Set(['X']), new Set()), []);
+  });
+
+  it('searching an area against itself finds an intra-village hop', () => {
+    // A trip serving two DIFFERENT stops in the same village is a real,
+    // wanted local ride -- "board precedes alight" is the whole rule, exactly
+    // as already established for the ALFA->ALFA loop case.
+    const trip = synthetic([
+      ['CAPELAS_A', '06:00', 0],
+      ['ARRIFES', '06:15', 0],
+      ['CAPELAS_B', '06:30', 0],
+    ]);
+    const capelasKeys = new Set(['CAPELAS_A', 'CAPELAS_B']);
+    const pair = selectPair(trip, capelasKeys, capelasKeys);
+    assert.equal(pair?.[0].key, 'CAPELAS_A');
+    assert.equal(pair?.[1].key, 'CAPELAS_B');
   });
 });
 

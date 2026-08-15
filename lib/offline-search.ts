@@ -160,7 +160,9 @@ export function offlineSearch(
     if (row.weekday !== dayOfWeek) {
       continue;
     }
-    const pair = selectPair(sequencedStops(row), originKey, destKey);
+    // v1 (already-installed builds) is frozen — no area-search here, ever.
+    // Just the mechanical singleton-Set wrap the generalized signature needs.
+    const pair = selectPair(sequencedStops(row), new Set([originKey]), new Set([destKey]));
     if (!pair) {
       continue;
     }

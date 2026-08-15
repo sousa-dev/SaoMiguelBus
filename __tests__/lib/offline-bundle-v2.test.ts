@@ -233,6 +233,101 @@ describe('offlineSearchV2 — date-resolved, sequence-matched', () => {
   });
 });
 
+/**
+ * Offline has no server to ask, so it must resolve "Capelas" to the whole
+ * village itself — the online path just sends the raw text to
+ * /api/v3/transit/search, which does its own identical union server-side.
+ * `resolveKeys` mirrors that server-side precedence (exact match first) using
+ * the SAME lib/stop-areas.ts module the picker's sections use.
+ *
+ * Fixture design note, same reasoning as the backend's end-to-end test: the
+ * route under test serves CAPELAS (MOAGEM), not CAPELAS (ESCOLA) — which
+ * sorts first alphabetically. Offline has no prefix fallback to accidentally
+ * mask a broken area lookup the way the backend's startswith fallback could,
+ * but keeping the fixture non-alphabetically-first costs nothing and rules
+ * out a coincidental pass either way.
+ */
+describe('offlineSearchV2 — village area search (AzoresBus only, data-gated)', () => {
+  const areaBundle = bundle({
+    stops: [
+      { id: 1, name: 'CAPELAS (ESCOLA)', latitude: 37.79, longitude: -25.7 },
+      { id: 2, name: 'CAPELAS (IGREJA)', latitude: 37.8, longitude: -25.71 },
+      { id: 3, name: 'CAPELAS (MOAGEM)', latitude: 37.81, longitude: -25.72 },
+      { id: 4, name: 'PONTA DELGADA (ALFÂNDEGA)', latitude: 37.73, longitude: -25.67 },
+      { id: 5, name: 'ARRIFES (ESCOLA)', latitude: 37.76, longitude: -25.66 },
+    ],
+  });
+
+  it('finds a trip via a non-alphabetically-first member of the village', () => {
+    const onMoagem = {
+      id: 1, line: 'L1', service: 'everyday',
+      stops: [2, 3], codes: [null, null], times: [25200, 27000], offsets: [0, 0],
+    };
+    const results = offlineSearchV2(
+      { ...areaBundle, routes: [onMoagem] },
+      { origin: 'Capelas', destination: 'Ponta Delgada (Alfândega)', isoDate: MONDAY },
+    );
+    assert.equal(results.length, 1);
+    assert.equal(results[0].start, '07h00');
+  });
+
+  it('does not match a trip entirely outside the village', () => {
+    const onArrifes = {
+      id: 2, line: 'L2', service: 'everyday',
+      stops: [4, 3], codes: [null, null], times: [25200, 27000], offsets: [0, 0],
+    };
+    assert.deepEqual(
+      offlineSearchV2(
+        { ...areaBundle, routes: [onArrifes] },
+        { origin: 'Capelas', destination: 'Ponta Delgada (Alfândega)', isoDate: MONDAY },
+      ),
+      [],
+    );
+  });
+
+  it('an exact stop name still wins over the area it belongs to', () => {
+    const onEscolaOnly = {
+      id: 3, line: 'L3', service: 'everyday',
+      stops: [0, 3], codes: [null, null], times: [25200, 27000], offsets: [0, 0],
+    };
+    const onMoagemOnly = {
+      id: 4, line: 'L4', service: 'everyday',
+      stops: [2, 3], codes: [null, null], times: [30000, 31000], offsets: [0, 0],
+    };
+    const results = offlineSearchV2(
+      { ...areaBundle, routes: [onEscolaOnly, onMoagemOnly] },
+      { origin: 'CAPELAS (ESCOLA)', destination: 'Ponta Delgada (Alfândega)', isoDate: MONDAY },
+    );
+    assert.equal(results.length, 1, 'only the trip actually serving that ONE stop');
+    assert.equal(results[0].start, '07h00');
+  });
+
+  it('a legacy-shaped bundle (no groupable names) is unaffected — data-gated, not flag-gated', () => {
+    const legacyBundle = bundle({
+      dataset: 'legacy',
+      stops: [
+        { id: 1, name: 'Capelas - Navio', latitude: 0, longitude: 0 },
+        { id: 2, name: 'Capelas - Rossio', latitude: 0, longitude: 0 },
+        { id: 3, name: 'Ponta Delgada', latitude: 0, longitude: 0 },
+      ],
+      routes: [
+        {
+          id: 5, line: 'L5', service: 'everyday',
+          stops: [0, 2], codes: [null, null], times: [25200, 27000], offsets: [0, 0],
+        },
+      ],
+    });
+    // No bare "Capelas" stop and no " (" convention -- nothing groups, so
+    // "Capelas" resolves to nothing (offline has no prefix fallback either).
+    assert.deepEqual(
+      offlineSearchV2(legacyBundle, {
+        origin: 'Capelas', destination: 'Ponta Delgada', isoDate: MONDAY,
+      }),
+      [],
+    );
+  });
+});
+
 describe('bundleFreshness — 03 §5.2', () => {
   const past = Date.parse('2026-09-02T00:00:00Z');
   const before = Date.parse('2026-08-20T00:00:00Z');
