@@ -111,15 +111,19 @@ export function useDirections(params: {
 }
 
 export function useTripDetail(tripId: number, enabled = true) {
+  // The dataset belongs in the key as well as the request: a previewed trip and
+  // a live one can share a PK across networks.
+  const dataset = useTransitDataset();
   return useQuery({
-    queryKey: ['transit', 'trip', tripId],
-    queryFn: () => fetchTripDetail(tripId),
+    queryKey: ['transit', 'trip', tripId, dataset ?? 'server'],
+    queryFn: () => fetchTripDetail(tripId, dataset),
     enabled: enabled && tripId > 0,
   });
 }
 
 export function useTripVote() {
   const queryClient = useQueryClient();
+  const dataset = useTransitDataset();
   const getVote = useProfileStore((s) => s.getVote);
   const setVote = useProfileStore((s) => s.setVote);
 
@@ -135,7 +139,7 @@ export function useTripVote() {
     }) => {
       const current = getVote(tripId);
       const verb = resolveVoteVerb(current, intent);
-      const detail = await voteTrip(tripId, verb);
+      const detail = await voteTrip(tripId, verb, dataset);
       const nextVote =
         verb === 'undo_like' || verb === 'undo_dislike'
           ? undefined
@@ -147,7 +151,7 @@ export function useTripVote() {
       return detail;
     },
     onSuccess: (detail, { tripId }) => {
-      queryClient.setQueryData(['transit', 'trip', tripId], detail);
+      queryClient.setQueryData(['transit', 'trip', tripId, dataset ?? 'server'], detail);
       queryClient.setQueriesData<TransitSearchResult[]>(
         { queryKey: ['transit', 'search'] },
         (old) =>

@@ -367,8 +367,10 @@ export async function searchTransit(params: {
 export async function voteTrip(
   tripId: number,
   vote: 'like' | 'dislike' | 'undo_like' | 'undo_dislike' | 'switch_to_like',
+  dataset?: TransitDataset | null,
 ) {
-  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}/vote`, {
+  const query = dataset ? `?dataset=${encodeURIComponent(dataset)}` : '';
+  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}/vote${query}`, {
     method: 'POST',
     body: JSON.stringify({ vote }),
   });
@@ -382,8 +384,14 @@ export async function fetchConsent(sessionId: string) {
   }>(`/api/v3/consent/?session_id=${encodeURIComponent(sessionId)}`);
 }
 
-export async function fetchTripDetail(tripId: number): Promise<TripDetail> {
-  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}`);
+export async function fetchTripDetail(
+  tripId: number,
+  dataset?: TransitDataset | null,
+): Promise<TripDetail> {
+  // Preview ids come from a ?dataset=azoresbus search, so the detail read has to
+  // carry the dataset too or it resolves by server date and 404s.
+  const query = dataset ? `?dataset=${encodeURIComponent(dataset)}` : '';
+  return apiFetch<TripDetail>(`/api/v3/transit/trips/${tripId}${query}`);
 }
 
 export async function fetchDirections(params: {
