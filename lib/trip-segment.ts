@@ -43,7 +43,18 @@ export function stopTimeMinutes(dayOffset: number, hours: number, minutes: numbe
   return dayOffset * MINUTES_PER_DAY + hours * 60 + minutes;
 }
 
-/** Every (board, alight) on this trip where board precedes alight. */
+/**
+ * Every (board, alight) on this trip where the rider actually gets there.
+ *
+ * TWO conditions, and the second is not redundant. Sequence order says the
+ * alight comes later along the route; it does NOT say the clock agrees. Legacy
+ * line 206 reaches sequence 12 at 08h20 and sequence 13 at 08h10, with no day
+ * offset to explain it, and that row shipped as "departs 08h20, arrives 08h10"
+ * for years. A ride that arrives before it departs is not a ride.
+ *
+ * Compared in ABSOLUTE minutes, so a genuine overnight leg — 23h50 to 00h40
+ * with day offset 1 — still advances and is kept.
+ */
 export function validPairs<T extends SequencedStop>(
   stops: T[],
   originKeys: Set<string | number>,
@@ -55,7 +66,7 @@ export function validPairs<T extends SequencedStop>(
   const pairs: [T, T][] = [];
   for (const board of boards) {
     for (const alight of alights) {
-      if (board.sequence < alight.sequence) {
+      if (board.sequence < alight.sequence && alight.minutes > board.minutes) {
         pairs.push([board, alight]);
       }
     }
