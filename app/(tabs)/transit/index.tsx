@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
-import { Bus } from 'lucide-react-native';
+import { Bus, Shuffle } from 'lucide-react-native';
 
 import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
@@ -54,7 +54,11 @@ export default function TransitScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ origin?: string; destination?: string }>();
+  // `stop` is the Azores Offline Map app's bus-stop deep link (saomiguelhub://transit?stop=…,
+  // SDD 03 §6.3 in that repo) — treated as an alias for `destination` since there's no
+  // dedicated stop-timetable view to jump to yet; this is the "acceptable" degraded target
+  // that doc names explicitly.
+  const params = useLocalSearchParams<{ origin?: string; destination?: string; stop?: string }>();
   const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
@@ -67,22 +71,26 @@ export default function TransitScreen() {
   const addRecentSearch = useProfileStore((s) => s.addRecentSearch);
 
   const [origin, setOrigin] = useState(() => searchParam(params.origin));
-  const [destination, setDestination] = useState(() => searchParam(params.destination));
+  const [destination, setDestination] = useState(() => searchParam(params.destination) || searchParam(params.stop));
   const [date, setDate] = useState(() => new Date());
   const [time, setTime] = useState(DEFAULT_SEARCH_TIME);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  // ON unless the rider says otherwise, and it resets with the screen: a rider
+  // who once wanted a single bus should not silently keep getting fewer options
+  // days later without remembering why.
+  const [allowTransfers, setAllowTransfers] = useState(true);
   const [interstitialTrigger, setInterstitialTrigger] = useState(0);
 
   useEffect(() => {
     const nextOrigin = searchParam(params.origin);
-    const nextDestination = searchParam(params.destination);
+    const nextDestination = searchParam(params.destination) || searchParam(params.stop);
     if (nextOrigin) {
       setOrigin(nextOrigin);
     }
     if (nextDestination) {
       setDestination(nextDestination);
     }
-  }, [params.origin, params.destination]);
+  }, [params.origin, params.destination, params.stop]);
 
   const day = useMemo(
     () => resolveDayType(date, bootstrap.data?.holidays),
@@ -99,9 +107,10 @@ export default function TransitScreen() {
       destination,
       day,
       userTime: time.replace(':', 'h'),
+      allowTransfers,
       enabled: searchEnabled && Boolean(origin && destination),
     }),
-    [origin, destination, day, time, searchEnabled],
+    [origin, destination, day, time, searchEnabled, allowTransfers],
   );
 
   const search = useTransitSearchWithOffline(searchParams);
@@ -165,6 +174,13 @@ export default function TransitScreen() {
 
   const showEmptyResults =
     searchEnabled && !search.isFetching && search.data && search.data.length === 0;
+  // Offer the retry only when a change of bus would actually find something.
+  // `transfersAvailable` is undefined when there is no honest number to show
+  // (transfers were already allowed, or the API is too old to say) and 0 when a
+  // change genuinely would not help — neither should promise a rider anything.
+  const canOfferTransfers = Boolean(
+    showEmptyResults && !allowTransfers && (search.transfersAvailable ?? 0) > 0,
+  );
   const showInstructions = !searchEnabled && !hasResults;
 
   return (
@@ -201,12 +217,14 @@ export default function TransitScreen() {
               isOnline={canSearchOffline}
               directionsOnline={isOnline}
               searching={search.isFetching}
+              allowTransfers={allowTransfers}
               onOriginChange={setOrigin}
               onDestinationChange={setDestination}
               onDateChange={setDate}
               onTimeChange={setTime}
               onSearch={runSearch}
               onDirections={openDirections}
+              onAllowTransfersChange={setAllowTransfers}
             />
           ) : (
             <ActivityIndicator color={theme.primary} style={{ marginVertical: space.xl }} />
@@ -217,13 +235,25 @@ export default function TransitScreen() {
           ) : null}
 
           {showEmptyResults ? (
-            <EmptyState
-              icon={Bus}
-              title={t('noRoutesMessage', { origin, destination })}
-              description={t('noRoutesSubtitle')}
-              actionLabel={isOnline ? t('tryDirectionsButton') : undefined}
-              onAction={isOnline ? openDirections : undefined}
-            />
+            canOfferTransfers ? (
+              <EmptyState
+                icon={Shuffle}
+                title={t('noDirectRoutesMessage', { origin, destination })}
+                description={t('noDirectRoutesSubtitle', {
+                  count: search.transfersAvailable ?? 0,
+                })}
+                actionLabel={t('enableTransfersButton')}
+                onAction={() => setAllowTransfers(true)}
+              />
+            ) : (
+              <EmptyState
+                icon={Bus}
+                title={t('noRoutesMessage', { origin, destination })}
+                description={t('noRoutesSubtitle')}
+                actionLabel={isOnline ? t('tryDirectionsButton') : undefined}
+                onAction={isOnline ? openDirections : undefined}
+              />
+            )
           ) : null}
 
           {showRouteWeather && routeWeather.data?.origin && routeWeather.data.destination ? (

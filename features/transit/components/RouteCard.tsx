@@ -1,4 +1,4 @@
-import { Bus, ChevronDown, ChevronUp, Phone, Shuffle, ThumbsDown, ThumbsUp } from 'lucide-react-native';
+import { Bus, ChevronDown, ChevronUp, Phone, ThumbsDown, ThumbsUp } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -10,11 +10,7 @@ import { TrackButton } from '@/features/transit/components/TrackButton';
 import { SchedulePreviewChip } from '@/features/transit/components/SchedulePreviewNotice';
 import { arrivesNextDay, resolveBoardingPole } from '@/features/transit/lib/boarding-pole';
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
-import {
-  countTransfers,
-  displayRouteNumber,
-  needsRouteConfirmation,
-} from '@/lib/transit-format';
+import { displayRouteNumber, needsRouteConfirmation } from '@/lib/transit-format';
 import { useProfileStore } from '@/lib/profile-store';
 import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -35,7 +31,6 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
   const [expanded, setExpanded] = useState(expandedByDefault);
   const currentVote = getVote(trip.id);
   const needsConfirmation = needsRouteConfirmation(trip.likesPercent);
-  const transfers = countTransfers(trip.route, trip.stops.length);
   // The pole code and the +1 badge render only when the server sent them:
   // legacy-dataset results carry neither (03 §5b, 98 B2).
   const boardingPole = resolveBoardingPole(trip);
@@ -80,14 +75,6 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
           {nextDay ? (
             <View style={[styles.poleChip, { borderColor: theme.warning }]}>
               <Text style={[typography.caption, { color: theme.warning }]}>+1</Text>
-            </View>
-          ) : null}
-          {transfers > 0 ? (
-            <View style={styles.transferRow}>
-              <Shuffle size={14} color={theme.muted} />
-              <Text style={[typography.caption, { color: theme.muted, marginLeft: 4 }]}>
-                {transfers} {transfers === 1 ? t('transfer') : t('transfers')}
-              </Text>
             </View>
           ) : null}
         </View>
@@ -221,7 +208,6 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   routeNumber: { fontSize: 20, fontWeight: '700' },
-  transferRow: { flexDirection: 'row', alignItems: 'center' },
   charterBanner: {
     flexDirection: 'row',
     alignItems: 'center',

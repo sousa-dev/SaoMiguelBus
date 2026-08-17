@@ -48,11 +48,6 @@ export function splitStopLabel(name: string): { title: string; subtitle: string 
   };
 }
 
-export function countTransfers(route: string, stopCount: number): number {
-  const raw = route.split('/').length - 1;
-  return Math.min(Math.max(raw, 0), Math.max(stopCount - 2, 0));
-}
-
 export function displayRouteNumber(route: string): string {
   return route.replace(/C/gi, '');
 }

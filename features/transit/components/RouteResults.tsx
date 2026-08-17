@@ -3,13 +3,13 @@ import { StyleSheet, View } from 'react-native';
 
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { FavoritesPanel } from '@/features/transit/components/FavoritesPanel';
-import { RouteCard } from '@/features/transit/components/RouteCard';
+import { JourneyCard } from '@/features/transit/components/JourneyCard';
 import { RouteResultsToolbar } from '@/features/transit/components/RouteResultsToolbar';
 import { space } from '@/lib/tokens';
-import type { TransitSearchResult } from '@/lib/types';
+import type { TransitJourney } from '@/lib/types';
 
 type Props = {
-  results: TransitSearchResult[];
+  results: TransitJourney[];
   searchDay: string;
   origin: string;
   destination: string;
@@ -31,13 +31,13 @@ export function RouteResults({ results, searchDay, origin, destination, onFavori
         onShowFavorites={() => setShowFavorites(true)}
       />
       {showFavorites ? <FavoritesPanel onSelect={onFavoriteSelect} /> : null}
-      {results.map((trip, index) => {
+      {results.map((journey, index) => {
         // Mirror the webapp: insert an inline ad after every 2 result cards
         // (never after the last one). Premium/offline users render nothing.
         const showInlineAd = (index + 1) % 2 === 0 && index < results.length - 1;
         return (
-          <Fragment key={trip.id}>
-            <RouteCard trip={trip} searchDay={searchDay} />
+          <Fragment key={journey.id}>
+            <JourneyCard journey={journey} searchDay={searchDay} />
             {showInlineAd ? <AdBanner on="home" slot={`inline-${index}`} /> : null}
           </Fragment>
         );

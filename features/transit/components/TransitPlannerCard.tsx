@@ -1,7 +1,7 @@
 import { ThemedDateTimePicker } from '@/components/ui/ThemedDateTimePicker';
-import { ArrowUpDown, Calendar, Clock, Route, Search } from 'lucide-react-native';
+import { ArrowUpDown, Calendar, Clock, Route, Search, Shuffle } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { PremiumSearchCta } from '@/features/ads/components/PremiumSearchCta';
@@ -20,12 +20,15 @@ type TransitPlannerCardProps = {
   isOnline: boolean;
   directionsOnline: boolean;
   searching?: boolean;
+  /** Allow itineraries with a change of bus. ON unless the rider says otherwise. */
+  allowTransfers: boolean;
   onOriginChange: (v: string) => void;
   onDestinationChange: (v: string) => void;
   onDateChange: (d: Date) => void;
   onTimeChange: (t: string) => void;
   onSearch: () => void;
   onDirections: () => void;
+  onAllowTransfersChange: (value: boolean) => void;
 };
 
 function parseTime(time: string): Date {
@@ -50,12 +53,14 @@ export function TransitPlannerCard({
   isOnline,
   directionsOnline,
   searching,
+  allowTransfers,
   onOriginChange,
   onDestinationChange,
   onDateChange,
   onTimeChange,
   onSearch,
   onDirections,
+  onAllowTransfersChange,
 }: TransitPlannerCardProps) {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
@@ -217,6 +222,31 @@ export function TransitPlannerCard({
         </View>
       ) : null}
 
+      <Pressable
+        onPress={() => onAllowTransfersChange(!allowTransfers)}
+        style={styles.transferToggle}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: allowTransfers }}
+        accessibilityLabel={t('transitAllowTransfers')}
+      >
+        <Shuffle size={16} color={allowTransfers ? theme.primary : theme.muted} />
+        <View style={{ flex: 1 }}>
+          <Text style={[typography.label, { color: theme.text }]}>
+            {t('transitAllowTransfers')}
+          </Text>
+          <Text style={[typography.caption, { color: theme.muted }]}>
+            {allowTransfers
+              ? t('transitAllowTransfersOn')
+              : t('transitAllowTransfersOff')}
+          </Text>
+        </View>
+        <Switch
+          value={allowTransfers}
+          onValueChange={onAllowTransfersChange}
+          trackColor={{ true: theme.primary, false: theme.border }}
+        />
+      </Pressable>
+
       <View style={styles.actions}>
         <Pressable
           onPress={onSearch}
@@ -259,6 +289,12 @@ export function TransitPlannerCard({
 }
 
 const styles = StyleSheet.create({
+  transferToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.sm,
+  },
   shell: {
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
