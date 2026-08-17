@@ -49,7 +49,7 @@ export default function AdminCategoryEditScreen() {
     return (
       <ErrorState
         title={t('marketplaceAdminCategoryNotFound')}
-        actionLabel={t('retry')}
+        actionLabel={t('commonRetry')}
         onAction={() => void categories.refetch()}
       />
     );

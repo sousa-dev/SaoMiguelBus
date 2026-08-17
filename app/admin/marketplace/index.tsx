@@ -181,7 +181,7 @@ export default function MarketplaceAdminScreen() {
     return (
       <ErrorState
         title={t('marketplaceAdminLoadError')}
-        actionLabel={t('retry')}
+        actionLabel={t('commonRetry')}
         onAction={() => void queue.refetch()}
       />
     );
@@ -224,7 +224,7 @@ export default function MarketplaceAdminScreen() {
       ) : activeQuery.isError ? (
         <ErrorState
           title={t('marketplaceAdminLoadError')}
-          actionLabel={t('retry')}
+          actionLabel={t('commonRetry')}
           onAction={() => void activeQuery.refetch()}
         />
       ) : tab === 'providers' ? (

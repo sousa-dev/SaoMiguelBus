@@ -31,7 +31,7 @@ export default function AdminProviderEditScreen() {
     return (
       <ErrorState
         title={t('marketplaceAdminProviderNotFound')}
-        actionLabel={t('retry')}
+        actionLabel={t('commonRetry')}
         onAction={() => void providerQuery.refetch()}
       />
     );

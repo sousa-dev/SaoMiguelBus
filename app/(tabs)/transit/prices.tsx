@@ -53,7 +53,7 @@ export default function TransitPricesScreen() {
         {!isLoading && state === 'unavailable' ? (
           <ErrorState
             title={t('transitPricesUnavailable')}
-            actionLabel={t('retry')}
+            actionLabel={t('commonRetry')}
             onAction={() => void refetch()}
           />
         ) : null}

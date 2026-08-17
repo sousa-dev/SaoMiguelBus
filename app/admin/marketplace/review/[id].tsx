@@ -48,7 +48,7 @@ export default function AdminReviewEditScreen() {
     return (
       <ErrorState
         title={t('marketplaceAdminReviewNotFound')}
-        actionLabel={t('retry')}
+        actionLabel={t('commonRetry')}
         onAction={() => void reviews.refetch()}
       />
     );
