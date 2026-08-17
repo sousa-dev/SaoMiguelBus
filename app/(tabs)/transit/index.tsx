@@ -77,7 +77,13 @@ export default function TransitScreen() {
   // meant. One that resolves to nothing still falls back to filling `destination`,
   // the "acceptable" degraded target that doc names explicitly, because a
   // dead-end deep link is worse than a useful approximation.
-  const params = useLocalSearchParams<{ origin?: string; destination?: string; stop?: string }>();
+  const params = useLocalSearchParams<{
+    origin?: string;
+    destination?: string;
+    stop?: string;
+    /** Timestamp set by a saved search — see the auto-search effect below. */
+    searchAt?: string;
+  }>();
   const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
   const bootstrap = useBootstrap();
@@ -250,6 +256,27 @@ export default function TransitScreen() {
   // `refetch()` is async: at the moment Search is tapped the query has not
   // started yet, and reacting to data alone would scroll against the PREVIOUS
   // results before the new ones land.
+  /**
+   * A search arriving from elsewhere in the app — today, a saved search picked
+   * in the profile modal.
+   *
+   * Prefilling the form is not what the rider asked for; they picked a route
+   * they already know and want the times. So this enables the query and arms
+   * the same scroll-to-results the Search button uses, making the trip through
+   * the modal indistinguishable from typing it here and pressing Search.
+   *
+   * Gated on `searchAt` rather than on origin+destination being present, so a
+   * plain `?origin=&destination=` deep link keeps its current behaviour of
+   * filling the form and waiting for the rider.
+   */
+  useEffect(() => {
+    if (!searchParam(params.searchAt) || !origin || !destination) {
+      return;
+    }
+    setSearchEnabled(true);
+    scrollWhenReady.current = true;
+  }, [params.searchAt, origin, destination]);
+
   const wasFetching = useRef(false);
   useEffect(() => {
     const settled = wasFetching.current && !search.isFetching;

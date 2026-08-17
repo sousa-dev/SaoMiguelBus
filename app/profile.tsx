@@ -32,13 +32,14 @@ import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
-import { BUS_COMPANIES, type BusCompany } from '@/lib/bus-companies';
+import { busCompaniesFor, whatsAppUrl, type BusCompany } from '@/lib/bus-companies';
+import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { formatLocalTime } from '@/lib/format-time';
 import { useProfileStore, type TripVoteEntry } from '@/lib/profile-store';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
-type InfoSheetKey = 'disclaimer' | 'companies' | 'charter' | 'tickets' | 'monetization' | null;
+type InfoSheetKey = 'disclaimer' | 'companies' | 'charter' | 'monetization' | null;
 
 export default function ProfileScreen() {
   const theme = useAppTheme();
@@ -61,6 +62,10 @@ export default function ProfileScreen() {
   const unpinRoute = useProfileStore((s) => s.unpinRoute);
   const [infoSheet, setInfoSheet] = useState<InfoSheetKey>(null);
   const [selectedCompany, setSelectedCompany] = useState<BusCompany | null>(null);
+  // Whichever network the app is actually showing — the preview and the admin
+  // cutover simulation both resolve through here, so the contacts follow the
+  // routes on screen rather than the calendar.
+  const busCompanies = busCompaniesFor(useResolvedTransitDataset());
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -68,6 +73,37 @@ export default function ProfileScreen() {
       headerShown: true,
     });
   }, [navigation, screenOptions, t]);
+
+  /**
+   * Leave this modal and land on the target screen, rather than stacking on
+   * top of it.
+   *
+   * `profile` is presented as a formSheet/modal on the ROOT stack, so a plain
+   * `router.push` from here opens the destination OVER the sheet — the profile
+   * is still there underneath, and the back gesture returns to it. Every
+   * navigation out of this screen has to dismiss first.
+   */
+  const leaveProfileTo = (href: Parameters<typeof router.navigate>[0]) => {
+    if (router.canDismiss()) {
+      router.dismissAll();
+    }
+    router.navigate(href);
+  };
+
+  /**
+   * A saved search: close the profile, land on the bus search, and RUN it.
+   *
+   * The `searchAt` stamp is what makes the search happen (see the transit
+   * screen). It carries a timestamp rather than a bare flag so that picking
+   * the same favourite twice still re-triggers — identical params would not
+   * change, and the effect watching them would not re-run.
+   */
+  const openSavedSearch = (origin: string, destination: string) => {
+    leaveProfileTo({
+      pathname: '/(tabs)/transit',
+      params: { origin, destination, searchAt: String(Date.now()) },
+    });
+  };
 
   const voteEntries = useMemo(
     () =>
@@ -96,6 +132,7 @@ export default function ProfileScreen() {
                 <ListRow
                   key={`${r.origin}-${r.destination}-${r.createdAt}`}
                   title={`${r.origin} → ${r.destination}`}
+                  onPress={() => openSavedSearch(r.origin, r.destination)}
                   divider={i < favoriteRoutes.length - 1}
                   trailing={
                     <RemoveButton
@@ -232,7 +269,7 @@ export default function ProfileScreen() {
               <ListRow
                 icon={BusFront}
                 title={t('minibusProfileRow')}
-                onPress={() => router.push('/minibus')}
+                onPress={() => leaveProfileTo('/minibus')}
               />
             ) : null}
             <ListRow
@@ -250,10 +287,13 @@ export default function ProfileScreen() {
               title={t('aluguerTitle')}
               onPress={() => setInfoSheet('charter')}
             />
+            {/* Was a static sheet explaining that we had no prices. We do now
+                — `/transit/prices` serves the real tariff tables — so the row
+                goes there instead of apologising for data that exists. */}
             <ListRow
               icon={Ticket}
               title={t('priceApp')}
-              onPress={() => setInfoSheet('tickets')}
+              onPress={() => leaveProfileTo('/(tabs)/transit/prices')}
             />
             <ListRow
               icon={HelpCircle}
@@ -292,18 +332,37 @@ export default function ProfileScreen() {
                 fullWidth
                 onPress={() => void Linking.openURL(`tel:${selectedCompany.phone}`)}
               />
+              {/* The call-tariff disclosure has to sit with the number it
+                  describes, not in the list behind it. */}
+              {selectedCompany.phoneNoteKey ? (
+                <Text style={[typography.caption, { color: theme.muted, textAlign: 'center' }]}>
+                  {selectedCompany.phone.replace('+351', '')} — {t(selectedCompany.phoneNoteKey)}
+                </Text>
+              ) : null}
               <Button
                 label={t('marketplaceContactEmail')}
                 variant="outline"
                 fullWidth
                 onPress={() => void Linking.openURL(`mailto:${selectedCompany.email}`)}
               />
-              <Button
-                label={t('marketplaceFormWebsite')}
-                variant="outline"
-                fullWidth
-                onPress={() => void Linking.openURL(selectedCompany.url)}
-              />
+              {whatsAppUrl(selectedCompany) ? (
+                <Button
+                  label={t('contactBusWhatsApp')}
+                  variant="outline"
+                  fullWidth
+                  onPress={() => void Linking.openURL(whatsAppUrl(selectedCompany)!)}
+                />
+              ) : null}
+              {/* Optional: an operator that publishes no site gets no button,
+                  rather than a link we made up from its email domain. */}
+              {selectedCompany.url ? (
+                <Button
+                  label={t('marketplaceFormWebsite')}
+                  variant="outline"
+                  fullWidth
+                  onPress={() => void Linking.openURL(selectedCompany.url!)}
+                />
+              ) : null}
               <Pressable
                 onPress={() => setSelectedCompany(null)}
                 style={{ alignSelf: 'center', paddingVertical: space.sm }}
@@ -321,11 +380,12 @@ export default function ProfileScreen() {
                 {t('contactBusCompaniesDescription')}
               </Text>
               <Card style={styles.group}>
-                {BUS_COMPANIES.map((company, index) => (
+                {busCompanies.map((company, index) => (
                   <ListRow
                     key={company.name}
                     title={company.name}
-                    divider={index < BUS_COMPANIES.length - 1}
+                    subtitle={company.phoneNoteKey ? t('contactBusSupportLabel') : undefined}
+                    divider={index < busCompanies.length - 1}
                     onPress={() => setSelectedCompany(company)}
                   />
                 ))}
@@ -338,15 +398,6 @@ export default function ProfileScreen() {
       <Sheet visible={infoSheet === 'charter'} onClose={() => setInfoSheet(null)} title={t('aluguerTitle')}>
         <SheetBody>
           <Text style={[typography.body, { color: theme.text }]}>{t('aluguerDescription')}</Text>
-        </SheetBody>
-      </Sheet>
-
-      <Sheet visible={infoSheet === 'tickets'} onClose={() => setInfoSheet(null)} title={t('priceApp')}>
-        <SheetBody>
-          <Text style={[typography.body, { color: theme.text }]}>{t('priceAppDescription')}</Text>
-          <Text style={[typography.body, { color: theme.muted, marginTop: space.md, fontStyle: 'italic' }]}>
-            {t('priceAppEnd')}
-          </Text>
         </SheetBody>
       </Sheet>
 
