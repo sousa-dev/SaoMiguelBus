@@ -94,3 +94,17 @@ export function useScheduleConfig(locale = 'pt'): ScheduleConfigView {
 export function useTransitDataset(): TransitDataset | null {
   return useScheduleConfig().dataset;
 }
+
+/**
+ * Which network is ACTUALLY being searched — the preview override if one is on,
+ * otherwise whatever the server says is active.
+ *
+ * Distinct from `useTransitDataset`, which answers "what should I put on the
+ * wire" and is deliberately null when not previewing. Map entry points need the
+ * resolved answer, because only AzoresBus carries route geometry: legacy has no
+ * shapes and no poles, so offering a network or line map there leads nowhere.
+ */
+export function useResolvedTransitDataset(): TransitDataset | null {
+  const { config, dataset } = useScheduleConfig();
+  return dataset ?? config?.activeDataset ?? null;
+}

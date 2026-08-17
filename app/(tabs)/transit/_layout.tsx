@@ -24,6 +24,18 @@ export default function TransitLayout() {
         options={stackBackScreenOptions('/(tabs)/transit')}
       />
       <Stack.Screen
+        name="network"
+        options={stackBackScreenOptions('/(tabs)/transit')}
+      />
+      <Stack.Screen
+        name="line/[code]"
+        options={stackBackScreenOptions('/(tabs)/transit')}
+      />
+      <Stack.Screen
+        name="stop/[stopId]"
+        options={stackBackScreenOptions('/(tabs)/transit')}
+      />
+      <Stack.Screen
         name="[tripId]"
         options={stackBackScreenOptions('/(tabs)/transit')}
       />

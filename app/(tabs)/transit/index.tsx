@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +31,8 @@ import {
   useTransitSearchWithOffline,
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
+import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
+import { TransitMapLinks } from '@/features/transit/components/TransitMapLinks';
 import { useUserDataMigration } from '@/features/transit/hooks/useUserDataMigration';
 import { useNetwork } from '@/lib/network-provider';
 import { WifiOff } from 'lucide-react-native';
@@ -41,6 +43,21 @@ import { resolveEnabledModules } from '@/config/island';
 
 /** Legacy webapp treats an unset time as midnight and returns the full day schedule. */
 const DEFAULT_SEARCH_TIME = '00:00';
+
+/**
+ * Breathing room above the results when the screen jumps to them, so the last
+ * line of the search form stays visible. Landing with the answer flush against
+ * the top edge reads as though the form has gone.
+ */
+const RESULTS_SCROLL_PADDING = 12;
+
+/**
+ * The ScrollView's own content padding. `onLayout` reports a child's offset
+ * within its PARENT, and the results wrapper sits inside `TransitWebShell`, so
+ * the shell's own top offset has to be added back to get a scroll coordinate.
+ * Derived from the same token `styles.content` uses, so the two cannot drift.
+ */
+const SHELL_TOP_OFFSET = space.md;
 
 function searchParam(value: string | string[] | undefined): string {
   if (value == null) {
@@ -55,9 +72,11 @@ export default function TransitScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   // `stop` is the Azores Offline Map app's bus-stop deep link (saomiguelhub://transit?stop=…,
-  // SDD 03 §6.3 in that repo) — treated as an alias for `destination` since there's no
-  // dedicated stop-timetable view to jump to yet; this is the "acceptable" degraded target
-  // that doc names explicitly.
+  // SDD 03 §6.3 in that repo). It carries a NAME, not an id. Now that a stop page
+  // exists, a name we can resolve goes straight there — what that link always
+  // meant. One that resolves to nothing still falls back to filling `destination`,
+  // the "acceptable" degraded target that doc names explicitly, because a
+  // dead-end deep link is worse than a useful approximation.
   const params = useLocalSearchParams<{ origin?: string; destination?: string; stop?: string }>();
   const { isOnline, isPremium } = useNetwork();
   const canSearchOffline = useCanSearchOffline();
@@ -65,6 +84,8 @@ export default function TransitScreen() {
   const showMinibus = resolveEnabledModules(bootstrap.data?.island?.enabledModules).includes('minibus');
   const { visible: showHopOnOff } = useHopOnHopOffPromo();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
+  // Maps exist only where geometry does, which today means AzoresBus.
+  const hasMaps = useResolvedTransitDataset() === 'azoresbus';
   // Re-point saved favourites and recents whenever the active network changes
   // (03 §5d). Driven by the stop list, never by a date.
   useUserDataMigration();
@@ -80,6 +101,23 @@ export default function TransitScreen() {
   // days later without remembering why.
   const [allowTransfers, setAllowTransfers] = useState(true);
   const [interstitialTrigger, setInterstitialTrigger] = useState(0);
+
+  // Resolved once the stops list is in hand, so a cold start still lands on the
+  // stop page rather than racing the query.
+  useEffect(() => {
+    const wanted = searchParam(params.stop);
+    if (!wanted || stops.length === 0) {
+      return;
+    }
+    const folded = wanted.trim().toLowerCase();
+    const match = stops.find((stop) => stop.name.trim().toLowerCase() === folded);
+    if (match) {
+      router.replace({
+        pathname: '/(tabs)/transit/stop/[stopId]',
+        params: { stopId: String(match.id) },
+      });
+    }
+  }, [params.stop, stops, router]);
 
   useEffect(() => {
     const nextOrigin = searchParam(params.origin);
@@ -141,11 +179,21 @@ export default function TransitScreen() {
     setInterstitialTrigger((value) => value + 1);
   }, [searchEnabled, search.isFetching, search.status]);
 
+  const scrollRef = useRef<ScrollView>(null);
+  // Where the answer starts, measured rather than estimated — the block above it
+  // changes height with the schedule banner, the ad and the map link.
+  const resultsY = useRef<number | null>(null);
+  // Only a search the USER ran scrolls. Results also arrive from the cache on
+  // mount and on a dataset switch, and yanking the screen then would be the app
+  // moving on its own.
+  const scrollWhenReady = useRef(false);
+
   const runSearch = () => {
     if (!origin || !destination || !canSearchOffline) {
       return;
     }
     setSearchEnabled(true);
+    scrollWhenReady.current = true;
     search.refetch();
     // Rotate the top banner on each new search (webapp re-calls loadAdBanner).
     void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
@@ -172,6 +220,30 @@ export default function TransitScreen() {
     setSearchEnabled(true);
   };
 
+  // Scroll once the search has SETTLED, not when it starts: jumping to a
+  // spinner and then having the list grow underneath is worse than waiting.
+  // An empty result scrolls too — "no connection, but 4 with a change" is the
+  // answer, and it is the one a rider most needs to actually read.
+  //
+  // Keyed on the fetch going busy -> idle rather than on `data`, because
+  // `refetch()` is async: at the moment Search is tapped the query has not
+  // started yet, and reacting to data alone would scroll against the PREVIOUS
+  // results before the new ones land.
+  const wasFetching = useRef(false);
+  useEffect(() => {
+    const settled = wasFetching.current && !search.isFetching;
+    wasFetching.current = search.isFetching;
+
+    if (!settled || !scrollWhenReady.current || resultsY.current === null) {
+      return;
+    }
+    scrollWhenReady.current = false;
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, SHELL_TOP_OFFSET + resultsY.current - RESULTS_SCROLL_PADDING),
+      animated: true,
+    });
+  }, [search.isFetching]);
+
   const showEmptyResults =
     searchEnabled && !search.isFetching && search.data && search.data.length === 0;
   // Offer the retry only when a change of bus would actually find something.
@@ -186,6 +258,7 @@ export default function TransitScreen() {
   return (
     <Screen withStackHeader>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -206,6 +279,11 @@ export default function TransitScreen() {
 
           {/* Renders nothing until the server arms a cutover instant (03 §2). */}
           <ScheduleChangeBanner />
+
+          {/* Below the schedule banner on purpose: the network map shows the NEW
+              timetables, so the "these are not in force yet" warning has to be
+              read first or the map quietly contradicts it. */}
+          {hasMaps ? <TransitMapLinks /> : null}
 
           {!stopsLoading || !isOnline ? (
             <TransitPlannerCard
@@ -230,6 +308,7 @@ export default function TransitScreen() {
             <ActivityIndicator color={theme.primary} style={{ marginVertical: space.xl }} />
           )}
 
+          <View onLayout={(event) => { resultsY.current = event.nativeEvent.layout.y; }}>
           {search.isFetching && !hasResults ? (
             <ActivityIndicator color={theme.primary} style={{ marginTop: space.lg }} />
           ) : null}
@@ -275,6 +354,7 @@ export default function TransitScreen() {
               onFavoriteSelect={(o, d) => applySearch(o, d)}
             />
           ) : null}
+          </View>
 
           {showInstructions ? <TransitPricesLink /> : null}
           {showInstructions && showMinibus ? <MinibusTransitLink /> : null}
