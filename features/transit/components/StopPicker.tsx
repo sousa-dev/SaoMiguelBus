@@ -1,11 +1,18 @@
 import { ChevronDown, ChevronRight, MapPin, Star } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { radius, space, typography } from '@/lib/tokens';
 import { useProfileStore } from '@/lib/profile-store';
-import { SEARCH_DEBOUNCE_MS, buildStopEntries } from '@/lib/stop-search';
+import {
+  MIN_QUERY_LENGTH,
+  SEARCH_DEBOUNCE_MS,
+  buildFavoriteEntries,
+  buildStopEntries,
+  foldForSearch,
+} from '@/lib/stop-search';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
 
@@ -28,6 +35,7 @@ type Props = {
 
 export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Props) {
   const theme = useAppTheme();
+  const { t } = useTranslation();
   const [query, setQuery] = useState(value);
   // Filtering runs against this, not `query` directly: on a 816-stop network a
   // one- or two-letter prefix can match hundreds of rows, so the list only
@@ -63,13 +71,29 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Every stop the query matches, alphabetically — no rank, no cap. On
-  // AzoresBus, same-village stops collapse into one section; on legacy (no
-  // groupable names) this is identical to a flat list.
+  // Every stop the query matches, favourites first and alphabetical below them
+  // — no rank, no cap. On AzoresBus, same-village stops collapse into one
+  // section; on legacy (no groupable names) this is identical to a flat list.
   const entries = useMemo(
-    () => buildStopEntries(stops, debouncedQuery),
-    [stops, debouncedQuery],
+    () => buildStopEntries(stops, debouncedQuery, favoriteStopIds),
+    [stops, debouncedQuery, favoriteStopIds],
   );
+
+  // Focus with nothing typed (or a query still too short to search) opens on
+  // the user's favourites: the whole point of starring a stop is not having to
+  // type its name again. Once the query is long enough this gives way to the
+  // real results, where the same favourites are floated to the top instead.
+  const favoriteEntries = useMemo(
+    () => buildFavoriteEntries(stops, favoriteStops),
+    [stops, favoriteStops],
+  );
+  // Keyed on the DEBOUNCED query, not the live one: gating on `query` would
+  // drop the favourites the instant the third character lands and leave the
+  // panel empty until the debounce fires 300ms later. Following the same clock
+  // as `entries` makes it a single swap — favourites, then results.
+  const queryTooShort = foldForSearch(debouncedQuery).length < MIN_QUERY_LENGTH;
+  const showingFavorites = queryTooShort && favoriteEntries.length > 0;
+  const visibleEntries = showingFavorites ? favoriteEntries : entries;
 
   const toggleAreaCollapsed = (key: string) => {
     setCollapsedAreas((current) => {
@@ -88,6 +112,45 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
     setDebouncedQuery(name);
     onSelect(name);
     setSuggestionsOpen(false);
+  };
+
+  // One renderer for both places a stop row appears — a plain match and a
+  // member inside a village section — so a favourite looks identical wherever
+  // it turns up. A favourite is marked twice over: a tinted row and a SOLID
+  // star. Colour alone carries the state too weakly here, both for a glance
+  // down a 60-row list and for anyone who cannot separate the two star colours.
+  const renderStopRow = (stop: Pick<Stop, 'id' | 'name'>, indented: boolean) => {
+    const favorite = favoriteStopIds.has(stop.id);
+    return (
+      <View
+        key={`stop:${stop.name}`}
+        style={[
+          styles.suggestionRow,
+          indented ? styles.areaMemberRow : null,
+          favorite ? { backgroundColor: theme.warningSurface } : null,
+        ]}
+      >
+        <Pressable style={styles.suggestionPress} onPress={() => selectStop(stop.name)}>
+          <Text
+            style={[
+              favorite ? typography.bodyStrong : typography.body,
+              { color: theme.text },
+            ]}
+          >
+            {stop.name}
+          </Text>
+        </Pressable>
+        <IconButton
+          icon={Star}
+          size="sm"
+          variant="ghost"
+          color={favorite ? theme.warning : theme.muted}
+          fill={favorite ? 'currentColor' : undefined}
+          accessibilityLabel={favorite ? t('removeFavorites') : t('addToFavorites')}
+          onPress={() => toggleFavoriteStop({ id: stop.id, name: stop.name })}
+        />
+      </View>
+    );
   };
 
   return (
@@ -119,13 +182,24 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
           }}
         />
       </View>
-      {suggestionsOpen && query.length > 0 && entries.length > 0 ? (
+      {suggestionsOpen && visibleEntries.length > 0 ? (
         <View
           style={[
             styles.suggestions,
             { borderColor: theme.border, backgroundColor: theme.card },
           ]}
         >
+          {showingFavorites ? (
+            <Text
+              style={[
+                typography.caption,
+                styles.favoritesHeader,
+                { color: theme.muted, borderBottomColor: theme.border },
+              ]}
+            >
+              {t('transitFavoriteStops')}
+            </Text>
+          ) : null}
           {/*
             A plain View with maxHeight + overflow:hidden CLIPS rather than
             scrolls — with no cap upstream, a query matching e.g. 66 stops would
@@ -150,27 +224,9 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
               that collide on it. The name is unique by construction, since that
               is exactly what the dedupe guarantees.
             */}
-            {entries.map((entry) => {
+            {visibleEntries.map((entry) => {
               if (entry.type === 'stop') {
-                const item = entry.stop;
-                return (
-                  <View key={`stop:${item.name}`} style={styles.suggestionRow}>
-                    <Pressable
-                      style={styles.suggestionPress}
-                      onPress={() => selectStop(item.name)}
-                    >
-                      <Text style={[typography.body, { color: theme.text }]}>{item.name}</Text>
-                    </Pressable>
-                    <IconButton
-                      icon={Star}
-                      size="sm"
-                      variant="ghost"
-                      color={favoriteStopIds.has(item.id) ? theme.warning : theme.muted}
-                      accessibilityLabel="favorite stop"
-                      onPress={() => toggleFavoriteStop({ id: item.id, name: item.name })}
-                    />
-                  </View>
-                );
+                return renderStopRow(entry.stop, false);
               }
 
               // A village section: tapping the LABEL selects the whole area
@@ -201,31 +257,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
                       </Text>
                     </Pressable>
                   </View>
-                  {!collapsed
-                    ? entry.members.map((member) => (
-                        <View
-                          key={`member:${member.name}`}
-                          style={[styles.suggestionRow, styles.areaMemberRow]}
-                        >
-                          <Pressable
-                            style={styles.suggestionPress}
-                            onPress={() => selectStop(member.name)}
-                          >
-                            <Text style={[typography.body, { color: theme.text }]}>
-                              {member.name}
-                            </Text>
-                          </Pressable>
-                          <IconButton
-                            icon={Star}
-                            size="sm"
-                            variant="ghost"
-                            color={favoriteStopIds.has(member.id) ? theme.warning : theme.muted}
-                            accessibilityLabel="favorite stop"
-                            onPress={() => toggleFavoriteStop({ id: member.id, name: member.name })}
-                          />
-                        </View>
-                      ))
-                    : null}
+                  {!collapsed ? entry.members.map((member) => renderStopRow(member, true)) : null}
                 </View>
               );
             })}
@@ -263,6 +295,13 @@ const styles = StyleSheet.create({
     // A real scroll bound, not a clip: every match is reachable, however many
     // there are.
     maxHeight: 280,
+  },
+  favoritesHeader: {
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
+    paddingBottom: space.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    textTransform: 'uppercase',
   },
   suggestionRow: { flexDirection: 'row', alignItems: 'center' },
   suggestionPress: { flex: 1, paddingHorizontal: space.md, paddingVertical: space.sm },

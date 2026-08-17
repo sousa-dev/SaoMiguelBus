@@ -11,7 +11,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildStopEntries } from '@/lib/stop-search';
+import { buildFavoriteEntries, buildStopEntries } from '@/lib/stop-search';
 import { dedupeStopsByName } from '@/lib/stop-list';
 import type { Stop } from '@/lib/types';
 
@@ -177,5 +177,118 @@ describe('stop entries — row identity', () => {
       entry.type === 'stop' ? `stop:${entry.stop.name}` : `area:${entry.key}`,
     );
     assert.equal(new Set(keys).size, keys.length, `duplicate key in ${keys}`);
+  });
+});
+
+/**
+ * Favourites reorder the list; they never change what is in it.
+ *
+ * The picker's whole promise is that no match is hidden, so floating a
+ * favourite has to be provably a permutation of the same rows — every test
+ * below checks the CONTENTS are unchanged alongside the new order.
+ */
+describe('buildStopEntries — favourites float to the top', () => {
+  it('is byte-identical to the unfavourited output when no ids are passed', () => {
+    assert.deepEqual(
+      buildStopEntries(NETWORK, 'escola', new Set()),
+      buildStopEntries(NETWORK, 'escola'),
+    );
+  });
+
+  it('puts a favourite plain row above alphabetically-earlier rows', () => {
+    const flat = [stop(1, 'AGUA A'), stop(2, 'AGUA B'), stop(3, 'AGUA C')];
+    const entries = buildStopEntries(flat, 'agua', new Set([3]));
+
+    assert.deepEqual(
+      entries.map((e) => (e as { stop: { name: string } }).stop.name),
+      ['AGUA C', 'AGUA A', 'AGUA B'],
+      'the favourite leads; the rest stay alphabetical',
+    );
+  });
+
+  it('floats an AREA whose matching member is a favourite', () => {
+    // 'escola' matches ARRIFES (ESCOLA) and CAPELAS (ESCOLA); alphabetically
+    // ARRIFES leads, so favouriting inside CAPELAS must invert that.
+    const entries = buildStopEntries(NETWORK, 'escola', new Set([CAPELAS_ESCOLA.id]));
+
+    assert.deepEqual(
+      entries.map((e) => (e as { type: 'area'; key: string }).key),
+      ['CAPELAS', 'ARRIFES'],
+    );
+  });
+
+  it('floats favourite members inside their own area, order otherwise intact', () => {
+    const entries = buildStopEntries(NETWORK, 'capelas', new Set([CAPELAS_MOAGEM.id]));
+    const members = (entries[0] as { type: 'area'; members: { name: string }[] }).members;
+
+    // Members are in network order (IGREJA, MOAGEM, ESCOLA), not alphabetical
+    // — that is what `groupStopsIntoAreas` produces and floating must not
+    // quietly re-sort the ones it does not move.
+    assert.deepEqual(
+      members.map((m) => m.name),
+      ['CAPELAS (MOAGEM)', 'CAPELAS (IGREJA)', 'CAPELAS (ESCOLA)'],
+    );
+  });
+
+  it('drops nothing — a favourite id that matches no row changes no order', () => {
+    const withGhost = buildStopEntries(NETWORK, 'escola', new Set([9999]));
+    assert.deepEqual(withGhost, buildStopEntries(NETWORK, 'escola'));
+  });
+
+  it('reorders without filtering, even when every match is a favourite', () => {
+    const all = new Set(NETWORK.map((s) => s.id));
+    const favoured = buildStopEntries(NETWORK, 'capelas', all);
+    const plain = buildStopEntries(NETWORK, 'capelas');
+
+    assert.equal(
+      (favoured[0] as { members: unknown[] }).members.length,
+      (plain[0] as { members: unknown[] }).members.length,
+    );
+  });
+});
+
+/**
+ * What the picker opens on when the input is focused and nothing is typed.
+ */
+describe('buildFavoriteEntries — the focused, empty-query list', () => {
+  it('keeps the store order (most-recently-favourited first), not alphabetical', () => {
+    const entries = buildFavoriteEntries(NETWORK, [CAPELAS_MOAGEM, ACHADINHA]);
+
+    assert.deepEqual(
+      entries.map((e) => (e as { stop: { name: string } }).stop.name),
+      ['CAPELAS (MOAGEM)', 'ACHADINHA'],
+    );
+  });
+
+  it('is empty when nothing is favourited, so the panel simply stays shut', () => {
+    assert.deepEqual(buildFavoriteEntries(NETWORK, []), []);
+  });
+
+  it('resolves BY NAME first — an id shared by two names must not swap the stop', () => {
+    // The legacy aliasing case: 'Ajuda' and 'Ajuda - Igreja' are both id 2.
+    const aliased: Stop[] = [
+      { id: 2, name: 'Ajuda - Igreja', latitude: 37.8, longitude: -25.6 },
+      { id: 2, name: 'Ajuda', latitude: 37.8, longitude: -25.6 },
+    ];
+    const entries = buildFavoriteEntries(aliased, [{ id: 2, name: 'Ajuda' }]);
+
+    assert.equal(entries.length, 1);
+    assert.equal((entries[0] as { stop: { name: string } }).stop.name, 'Ajuda');
+  });
+
+  it('falls back to the id when the stored name no longer exists', () => {
+    const entries = buildFavoriteEntries(NETWORK, [{ id: ACHADINHA.id, name: 'OLD NAME' }]);
+
+    assert.equal((entries[0] as { stop: { name: string } }).stop.name, 'ACHADINHA');
+  });
+
+  it('drops a favourite the current network has no row for at all', () => {
+    assert.deepEqual(buildFavoriteEntries(NETWORK, [{ id: 9999, name: 'GONE' }]), []);
+  });
+
+  it('never emits the same row twice, however the favourites resolve', () => {
+    const entries = buildFavoriteEntries(NETWORK, [ACHADINHA, { id: ACHADINHA.id, name: 'ACHADINHA' }]);
+
+    assert.equal(entries.length, 1);
   });
 });

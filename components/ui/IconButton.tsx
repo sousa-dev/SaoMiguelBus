@@ -11,6 +11,13 @@ type IconButtonProps = Omit<PressableProps, 'children'> & {
   size?: keyof typeof iconSize;
   variant?: 'filled' | 'tonal' | 'ghost';
   color?: string;
+  /**
+   * Paints the glyph's interior — for icons that carry an on/off meaning in
+   * their fill (a starred stop, a saved item), where a stroke-colour change
+   * alone reads as a theme accent rather than as state. Pass `'currentColor'`
+   * to fill with the icon's own colour.
+   */
+  fill?: string;
   accessibilityLabel: string;
 };
 
@@ -19,6 +26,7 @@ export function IconButton({
   size = 'md',
   variant = 'ghost',
   color,
+  fill,
   accessibilityLabel,
   disabled,
   onPress,
@@ -68,7 +76,12 @@ export function IconButton({
         pointerEvents="none"
         style={{ width: dim, height: dim, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Icon size={dim} color={iconColor} strokeWidth={2} />
+        <Icon
+          size={dim}
+          color={iconColor}
+          strokeWidth={2}
+          fill={fill === 'currentColor' ? iconColor : (fill ?? 'none')}
+        />
       </View>
     </Pressable>
   );

@@ -147,6 +147,7 @@ export default function TransitStopScreen() {
             icon={Star}
             variant="ghost"
             color={favorite ? theme.warning : theme.muted}
+            fill={favorite ? 'currentColor' : undefined}
             accessibilityLabel={favorite ? t('removeFavorites') : t('addToFavorites')}
             onPress={() => toggleFavoriteStop({ id: stop.id, name: stop.name })}
           />

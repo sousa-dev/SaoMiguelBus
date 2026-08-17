@@ -2,8 +2,10 @@
  * Filtering for the stop pickers.
  *
  * No match is ever hidden. Every stop whose name contains the query is
- * returned, alphabetically — no relevance ranking, no cap, no favourites
- * floating to the top. A village with 66 stops shows all 66.
+ * returned — no relevance ranking, no cap. A village with 66 stops shows all
+ * 66. The ONLY reordering is favourites, which `buildStopEntries` floats to the
+ * top of whatever level they appear at; everything below them stays strictly
+ * alphabetical. Floating changes the order of the list, never its contents.
  *
  * That makes two things load-bearing, both here rather than left to the
  * component to get right independently:
@@ -79,10 +81,18 @@ export type StopListEntry<T> =
  *
  * Sorted by each entry's own display name — an area sorts by its key, not
  * pulled into a separate "areas first" block.
+ *
+ * `favoriteIds` floats favourites to the top, at every level they appear at: a
+ * favourite plain row sorts above non-favourite rows, an area containing a
+ * favourite member sorts above areas that contain none, and inside an area the
+ * favourite members lead. Ties break alphabetically exactly as before, so this
+ * is a reordering and never a filter — pass nothing and the output is
+ * byte-identical to the pre-favourites behaviour.
  */
 export function buildStopEntries<T extends Pick<Stop, 'id' | 'name'>>(
   allStops: T[],
   query: string,
+  favoriteIds?: ReadonlySet<number>,
 ): StopListEntry<T>[] {
   const q = foldForSearch(query);
   if (q.length < MIN_QUERY_LENGTH) {
@@ -107,9 +117,10 @@ export function buildStopEntries<T extends Pick<Stop, 'id' | 'name'>>(
         continue;
       }
       emittedAreaKeys.add(areaKey);
-      const matchingMembers = areas
-        .get(areaKey)!
-        .filter((member) => foldForSearch(member.name).includes(q));
+      const matchingMembers = sortFavoritesFirst(
+        areas.get(areaKey)!.filter((member) => foldForSearch(member.name).includes(q)),
+        favoriteIds,
+      );
       if (matchingMembers.length > 0) {
         entries.push({ type: 'area', key: areaKey, members: matchingMembers });
       }
@@ -119,7 +130,88 @@ export function buildStopEntries<T extends Pick<Stop, 'id' | 'name'>>(
   }
 
   return entries.sort((a, b) => {
+    const rankOf = (entry: StopListEntry<T>) =>
+      isFavoriteEntry(entry, favoriteIds) ? 0 : 1;
+    const rankDelta = rankOf(a) - rankOf(b);
+    if (rankDelta !== 0) {
+      return rankDelta;
+    }
     const nameOf = (entry: StopListEntry<T>) => (entry.type === 'area' ? entry.key : entry.stop.name);
     return nameOf(a).localeCompare(nameOf(b));
   });
+}
+
+/** An area counts as favourite when any of its MATCHING members is one. */
+function isFavoriteEntry<T extends Pick<Stop, 'id' | 'name'>>(
+  entry: StopListEntry<T>,
+  favoriteIds?: ReadonlySet<number>,
+): boolean {
+  if (!favoriteIds || favoriteIds.size === 0) {
+    return false;
+  }
+  return entry.type === 'area'
+    ? entry.members.some((member) => favoriteIds.has(member.id))
+    : favoriteIds.has(entry.stop.id);
+}
+
+/** Favourites first, then the original (already alphabetical) order. */
+function sortFavoritesFirst<T extends Pick<Stop, 'id'>>(
+  stops: T[],
+  favoriteIds?: ReadonlySet<number>,
+): T[] {
+  if (!favoriteIds || favoriteIds.size === 0) {
+    return stops;
+  }
+  return stops
+    .map((stop, index) => ({ stop, index }))
+    .sort((a, b) => {
+      const rankDelta =
+        (favoriteIds.has(a.stop.id) ? 0 : 1) - (favoriteIds.has(b.stop.id) ? 0 : 1);
+      return rankDelta !== 0 ? rankDelta : a.index - b.index;
+    })
+    .map((wrapped) => wrapped.stop);
+}
+
+/**
+ * The rows the picker shows on focus, BEFORE anything is typed: the user's
+ * favourite stops, most-recently-favourited first (the order the profile store
+ * keeps them in).
+ *
+ * Each favourite is re-resolved against the live stop list rather than
+ * rendered from its stored `{id, name}`, so a row always carries a name the
+ * search endpoint still accepts. Resolution is BY NAME first because ids are
+ * not unique per name on the legacy network — `serialize_legacy_stops_v2`
+ * emits "Ajuda" and "Ajuda - Igreja" under the same id — so an id-first lookup
+ * would show the user a different stop than the one they starred. A favourite
+ * with no match in the current network is dropped here (the changeover
+ * migration flags it, and the profile screen still lists it); it is not
+ * silently deleted, it just is not offered as something to search for.
+ */
+export function buildFavoriteEntries<T extends Pick<Stop, 'id' | 'name'>>(
+  allStops: T[],
+  favorites: readonly Pick<Stop, 'id' | 'name'>[],
+): StopListEntry<T>[] {
+  const byName = new Map<string, T>();
+  const byId = new Map<number, T>();
+  for (const stop of allStops) {
+    const key = foldForSearch(stop.name);
+    if (!byName.has(key)) {
+      byName.set(key, stop);
+    }
+    if (!byId.has(stop.id)) {
+      byId.set(stop.id, stop);
+    }
+  }
+
+  const entries: StopListEntry<T>[] = [];
+  const seen = new Set<T>();
+  for (const favorite of favorites) {
+    const resolved = byName.get(foldForSearch(favorite.name)) ?? byId.get(favorite.id);
+    if (!resolved || seen.has(resolved)) {
+      continue;
+    }
+    seen.add(resolved);
+    entries.push({ type: 'stop', stop: resolved });
+  }
+  return entries;
 }
