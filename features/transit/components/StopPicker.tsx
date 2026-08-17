@@ -40,8 +40,15 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
   // is something the user does to scan past it faster, not a default state
   // that would hide something nobody asked to hide.
   const [collapsedAreas, setCollapsedAreas] = useState<Set<string>>(() => new Set());
-  const isFavoriteStop = useProfileStore((s) => s.isFavoriteStop);
+  // Subscribe to the LIST, not to `isFavoriteStop`: the selector for an action
+  // returns the same function reference forever, so tapping a star saved the
+  // favourite but never re-rendered the row that was supposed to show it.
+  const favoriteStops = useProfileStore((s) => s.favoriteStops);
   const toggleFavoriteStop = useProfileStore((s) => s.toggleFavoriteStop);
+  const favoriteStopIds = useMemo(
+    () => new Set(favoriteStops.map((s) => s.id)),
+    [favoriteStops],
+  );
   const iconColor = pinColor ?? theme.muted;
 
   useEffect(() => {
@@ -158,7 +165,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
                       icon={Star}
                       size="sm"
                       variant="ghost"
-                      color={isFavoriteStop(item.id) ? theme.warning : theme.muted}
+                      color={favoriteStopIds.has(item.id) ? theme.warning : theme.muted}
                       accessibilityLabel="favorite stop"
                       onPress={() => toggleFavoriteStop({ id: item.id, name: item.name })}
                     />
@@ -212,7 +219,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
                             icon={Star}
                             size="sm"
                             variant="ghost"
-                            color={isFavoriteStop(member.id) ? theme.warning : theme.muted}
+                            color={favoriteStopIds.has(member.id) ? theme.warning : theme.muted}
                             accessibilityLabel="favorite stop"
                             onPress={() => toggleFavoriteStop({ id: member.id, name: member.name })}
                           />
