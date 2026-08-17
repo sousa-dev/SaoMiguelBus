@@ -414,7 +414,9 @@ function toJourney(
   const lastRow = rowsById.get(last.tripId)!;
 
   return {
-    id: raw.legs.map((leg) => leg.tripId).join(':'),
+    // Trip ids alone do not identify a ride — the same two buses boarded at a
+    // different stop is a different journey. Mirrors the server exactly.
+    id: raw.legs.map((leg) => `${leg.tripId}-${leg.boardSequence}`).join(':'),
     transfers: raw.legs.length - 1,
     start: formatSeconds(rowsById.get(first.tripId)!.times[first.boardSequence - 1] ?? 0),
     end: formatSeconds(lastRow.times[last.alightSequence - 1] ?? 0),
@@ -479,15 +481,39 @@ export function offlineJourneySearchV2(
   const secondLegs: JourneyLegCandidate[] = [];
 
   for (const row of rows) {
-    // Direct rides go through `selectPair`, exactly as the server routes them
-    // through its own — one row per trip, and the loop tie-break stays in the
-    // one place that owns it.
-    const pair = selectPair(sequencedRow(row, bundle.stops), originKeySet, destinationKeySet);
-    if (pair) {
-      const candidate = legCandidate(row, bundle.stops, pair[0].sequence - 1, pair[1].sequence - 1);
-      if (candidate && advancesInTime(candidate)) {
-        direct.push({ legs: [candidate], waits: [] });
+    // Direct rides span as much of the query as the trip allows — the same
+    // widest-ride rule `_direct_journeys` uses on the server, so an area search
+    // boards at the FIRST matching stop and alights at the LAST. `selectPair`
+    // deliberately answers a different question (it serves `/transit/search`,
+    // which is frozen), so it is not used here.
+    const directCandidates: JourneyLegCandidate[] = [];
+    for (let b = 0; b < row.stops.length; b += 1) {
+      const bId = row.stops[b] == null ? -1 : bundle.stops[row.stops[b]!]?.id ?? -1;
+      if (!originIds.has(bId)) {
+        continue;
       }
+      for (let a = b + 1; a < row.stops.length; a += 1) {
+        const aId = row.stops[a] == null ? -1 : bundle.stops[row.stops[a]!]?.id ?? -1;
+        if (!destinationIds.has(aId)) {
+          continue;
+        }
+        const candidate = legCandidate(row, bundle.stops, b, a);
+        if (candidate && advancesInTime(candidate)) {
+          directCandidates.push(candidate);
+        }
+      }
+    }
+    if (directCandidates.length > 0) {
+      const widest = directCandidates.reduce((best, candidate) =>
+        candidate.boardSequence !== best.boardSequence
+          ? candidate.boardSequence < best.boardSequence
+            ? candidate
+            : best
+          : candidate.alightSequence > best.alightSequence
+            ? candidate
+            : best,
+      );
+      direct.push({ legs: [widest], waits: [] });
     }
 
     for (let position = 0; position < row.stops.length; position += 1) {

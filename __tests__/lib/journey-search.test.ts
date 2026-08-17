@@ -34,6 +34,12 @@ const STOPS = [
   { id: 4, name: 'PONTA DELGADA (TERMINAL)', latitude: HUB.latitude + 0.0011, longitude: HUB.longitude },
   // Across town: inside the same village, far outside walking range.
   { id: 5, name: 'OUTRO SITIO', latitude: HUB.latitude + 0.02, longitude: HUB.longitude },
+  { id: 6, name: 'CAPELAS (ESCOLA)', latitude: CAPELAS.latitude + 0.002, longitude: CAPELAS.longitude },
+  // A destination village with NO bare "Nordeste" stop, so the query resolves as
+  // an AREA. `resolveKeys` gives an exact name match precedence, and real
+  // AzoresBus data has no bare village names — only "VILLAGE (LANDMARK)".
+  { id: 8, name: 'NORDESTE (IGREJA)', latitude: 37.82, longitude: -25.14 },
+  { id: 9, name: 'NORDESTE (CENTRO)', latitude: 37.822, longitude: -25.142 },
 ];
 
 const hhmm = (hours: number, minutes: number) => hours * 3600 + minutes * 60;
@@ -446,5 +452,64 @@ describe('offlineJourneySearchV2 — tight transfer warning', () => {
 
     assert.equal(leg.slackMinutes, TIGHT_TRANSFER_MINUTES);
     assert.equal(leg.tight, false);
+  });
+});
+
+
+describe('offlineJourneySearchV2 — an area query spans the whole area', () => {
+  // Searching a village should show EVERY stop of it the bus serves, so the
+  // rider can pick the one near them. That means boarding at the first and
+  // alighting at the last, not the shortest hop between the two.
+  const wide = row(1, '219', [
+    [6, 8, 0],   // CAPELAS (ESCOLA)   — first Capelas stop
+    [1, 8, 10],  // CAPELAS (IGREJA)   — second
+    [8, 10, 0],  // NORDESTE (IGREJA)  — first Nordeste stop
+    [9, 10, 20], // NORDESTE (CENTRO)  — last
+  ]);
+
+  it('boards at the FIRST stop of the origin area', () => {
+    const journeys = searchFull([wide], 'Capelas', 'Nordeste').journeys;
+    const ride = journeys[0].legs.find((l) => l.kind === 'ride');
+
+    assert.ok(ride && ride.kind === 'ride');
+    assert.equal(ride.board.name, 'CAPELAS (ESCOLA)');
+  });
+
+  it('alights at the LAST stop of the destination area', () => {
+    const journeys = searchFull([wide], 'Capelas', 'Nordeste').journeys;
+    const ride = journeys[0].legs.find((l) => l.kind === 'ride');
+
+    assert.ok(ride && ride.kind === 'ride');
+    assert.equal(ride.alight.name, 'NORDESTE (CENTRO)');
+  });
+
+  it('lists every area stop in between, which is the point of it', () => {
+    const journeys = searchFull([wide], 'Capelas', 'Nordeste').journeys;
+    const ride = journeys[0].legs.find((l) => l.kind === 'ride');
+
+    assert.ok(ride && ride.kind === 'ride');
+    assert.deepEqual(ride.stops.map((s) => s.name), [
+      'CAPELAS (ESCOLA)',
+      'CAPELAS (IGREJA)',
+      'NORDESTE (IGREJA)',
+      'NORDESTE (CENTRO)',
+    ]);
+  });
+
+  it('naming ONE stop exactly still boards exactly there', () => {
+    const journeys = searchFull([wide], 'Capelas (Igreja)', 'Nordeste').journeys;
+    const ride = journeys[0].legs.find((l) => l.kind === 'ride');
+
+    assert.ok(ride && ride.kind === 'ride');
+    assert.equal(ride.board.name, 'CAPELAS (IGREJA)');
+  });
+
+  it('gives the two searches different journey ids', () => {
+    // Same bus, different ride — an id of just the trips collided and a client
+    // resolving by id showed the wrong one.
+    const area = searchFull([wide], 'Capelas', 'Nordeste').journeys[0].id;
+    const exact = searchFull([wide], 'Capelas (Igreja)', 'Nordeste').journeys[0].id;
+
+    assert.notEqual(area, exact);
   });
 });

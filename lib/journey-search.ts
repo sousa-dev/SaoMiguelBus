@@ -203,11 +203,19 @@ export function buildTransferJourneys(
 }
 
 /**
- * One journey per set of trips — the tightest connection between them.
+ * One journey per set of trips — boarding as early as the area allows.
  *
  * Many first-leg alight points feed the same pair of trips (every stop the first
- * bus passes where the second is still catchable). To a rider they are one
- * itinerary, so keep the one that leaves latest and arrives earliest.
+ * bus passes where the second is still catchable). They are one itinerary, so
+ * exactly one survives, and WHICH one matters when the query named a village
+ * rather than a stop.
+ *
+ * Searching "Capelas" resolves to 35 stops. Whichever we board at, the bus
+ * reaches the interchange at the same moment — so boarding earlier costs nothing
+ * in arrival time, and boarding at the FIRST one makes the journey span every
+ * Capelas stop the bus serves, which is what puts them all in the stop list.
+ *
+ * Mirrors `_collapse_by_trip_pair` in `transit/services/journeys.py`.
  */
 export function collapseByTripPair(journeys: RawJourney[]): RawJourney[] {
   const best = new Map<string, RawJourney>();
@@ -215,7 +223,7 @@ export function collapseByTripPair(journeys: RawJourney[]): RawJourney[] {
   for (const journey of journeys) {
     const key = journeyKey(journey);
     const current = best.get(key);
-    if (current === undefined || rankTighter(journey, current) < 0) {
+    if (current === undefined || spanRank(journey, current) < 0) {
       best.set(key, journey);
     }
   }
@@ -225,11 +233,13 @@ export function collapseByTripPair(journeys: RawJourney[]): RawJourney[] {
   return [...best.values()].sort(compareJourneys);
 }
 
-function rankTighter(a: RawJourney, b: RawJourney): number {
+/** Earliest boarding, then latest alighting — the widest ride on these trips. */
+function spanRank(a: RawJourney, b: RawJourney): number {
   return (
-    journeyArrival(a) - journeyArrival(b) ||
-    journeyDeparture(b) - journeyDeparture(a) ||
-    a.legs[0].boardSequence - b.legs[0].boardSequence
+    a.legs[0].boardSequence - b.legs[0].boardSequence ||
+    b.legs[b.legs.length - 1].alightSequence -
+      a.legs[a.legs.length - 1].alightSequence ||
+    journeyArrival(a) - journeyArrival(b)
   );
 }
 

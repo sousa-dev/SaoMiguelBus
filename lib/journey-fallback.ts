@@ -38,7 +38,7 @@ export function journeyFromSearchResult(result: TransitSearchResult): TransitJou
   const last = result.stops[result.stops.length - 1];
 
   return {
-    id: String(result.id),
+    id: `${result.id}-${result.boarding?.sequence ?? result.stops[0]?.sequence ?? 1}`,
     transfers: 0,
     start: result.start,
     end: result.end,
