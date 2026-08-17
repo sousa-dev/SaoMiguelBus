@@ -14,10 +14,34 @@
  * eligibility for an ISO date using the server's own rule.
  */
 
+import {
+  advancesInTime,
+  buildTransferJourneys,
+  collapseByTripPair,
+  indexByBoardStop,
+  rankJourneys,
+  type JourneyLegCandidate,
+  type RawJourney,
+} from '@/lib/journey-search';
 import { normalizeStopKey } from '@/lib/offline-search';
 import { findAreaByQuery, groupStopsIntoAreas } from '@/lib/stop-areas';
+import {
+  TIGHT_TRANSFER_MINUTES,
+  buildTransferNeighbours,
+  haversineM,
+  walkMinutes,
+} from '@/lib/transfer-points';
+import { timeStringToMinutes } from '@/lib/transit-format';
 import { selectPair, stopTimeMinutes, type SequencedStop } from '@/lib/trip-segment';
-import type { TransitDataset, TransitSearchResult, TripStop } from '@/lib/types';
+import type {
+  TransitDataset,
+  TransitJourney,
+  TransitJourneyLeg,
+  TransitJourneySearch,
+  TransitRideLeg,
+  TransitSearchResult,
+  TripStop,
+} from '@/lib/types';
 
 export interface OfflineServiceRule {
   /** Mon…Sun bitstring, e.g. "1111100". */
@@ -232,6 +256,293 @@ export function offlineSearchV2(
     });
   }
   return results;
+}
+
+/**
+ * Bundle stop ids the query resolves to.
+ *
+ * `resolveKeys` works in normalized-NAME space, which is right for `selectPair`,
+ * but the transfer scan works in STOP ID space like the server does. The
+ * pole-collapse guarantees one `Stop` row per distinct name within a dataset, so
+ * the two spaces map 1:1 here.
+ */
+function resolveStopIds(query: string, stops: OfflineStopV2[]): Set<number> {
+  const keys = resolveKeys(query, stops);
+  const ids = new Set<number>();
+  for (const stop of stops) {
+    if (keys.has(normalizeStopKey(stop.name))) {
+      ids.add(stop.id);
+    }
+  }
+  return ids;
+}
+
+/** Absolute minutes for one position in a route row, midnight wrap included. */
+function positionMinutes(row: OfflineRouteRowV2, position: number): number {
+  const seconds = row.times[position] ?? 0;
+  return stopTimeMinutes(
+    row.offsets[position] ?? 0,
+    Math.floor(seconds / 3600),
+    Math.floor((seconds % 3600) / 60),
+  );
+}
+
+function legCandidate(
+  row: OfflineRouteRowV2,
+  stops: OfflineStopV2[],
+  boardPosition: number,
+  alightPosition: number,
+): JourneyLegCandidate | null {
+  const boardStop = row.stops[boardPosition];
+  const alightStop = row.stops[alightPosition];
+  if (boardStop == null || alightStop == null) {
+    return null;
+  }
+  return {
+    tripId: row.id,
+    lineCode: row.line,
+    // Line CODE stands in for the server's line id: within one dataset the two
+    // are 1:1 (`unique_together` on island+dataset+code).
+    lineId: row.line,
+    boardStopId: stops[boardStop]?.id ?? -1,
+    alightStopId: stops[alightStop]?.id ?? -1,
+    boardSequence: boardPosition + 1,
+    alightSequence: alightPosition + 1,
+    departure: positionMinutes(row, boardPosition),
+    arrival: positionMinutes(row, alightPosition),
+  };
+}
+
+function segmentStops(
+  row: OfflineRouteRowV2,
+  stops: OfflineStopV2[],
+  fromSequence: number,
+  toSequence: number,
+): TripStop[] {
+  const segment: TripStop[] = [];
+  for (let position = fromSequence - 1; position < toSequence; position += 1) {
+    const stopIndex = row.stops[position];
+    segment.push({
+      name: stopIndex == null ? '' : stops[stopIndex]?.name ?? '',
+      time: formatSeconds(row.times[position] ?? 0),
+      sequence: position + 1,
+    });
+  }
+  return segment;
+}
+
+function rideLeg(
+  leg: JourneyLegCandidate,
+  rowsById: Map<number, OfflineRouteRowV2>,
+  stops: OfflineStopV2[],
+): TransitRideLeg {
+  const row = rowsById.get(leg.tripId)!;
+  const boardStop = row.stops[leg.boardSequence - 1];
+  const alightStop = row.stops[leg.alightSequence - 1];
+  return {
+    kind: 'ride',
+    tripId: leg.tripId,
+    route: leg.lineCode,
+    // The bundle carries no vote counts, so nothing here can claim confidence.
+    likesPercent: 0,
+    dislikesPercent: 0,
+    information: {},
+    board: {
+      name: boardStop == null ? '' : stops[boardStop]?.name ?? '',
+      time: formatSeconds(row.times[leg.boardSequence - 1] ?? 0),
+      sequence: leg.boardSequence,
+      dayOffset: row.offsets[leg.boardSequence - 1] ?? 0,
+    },
+    alight: {
+      name: alightStop == null ? '' : stops[alightStop]?.name ?? '',
+      time: formatSeconds(row.times[leg.alightSequence - 1] ?? 0),
+      sequence: leg.alightSequence,
+      dayOffset: row.offsets[leg.alightSequence - 1] ?? 0,
+    },
+    stops: segmentStops(row, stops, leg.boardSequence, leg.alightSequence),
+    // Omitted, never null, when the row carries no pole — legacy rows have no
+    // ExternalStop, and the server's serializer drops the keys the same way.
+    ...(row.codes[leg.boardSequence - 1] ? { boarding: poleRef(row, leg.boardSequence) } : {}),
+    ...(row.codes[leg.alightSequence - 1] ? { alighting: poleRef(row, leg.alightSequence) } : {}),
+  };
+}
+
+function toJourney(
+  raw: RawJourney,
+  rowsById: Map<number, OfflineRouteRowV2>,
+  stops: OfflineStopV2[],
+  isoDate: string,
+): TransitJourney {
+  const legs: TransitJourneyLeg[] = [];
+
+  const rides = raw.legs.map((leg) => rideLeg(leg, rowsById, stops));
+  const byId = new Map(stops.map((stop) => [stop.id, stop]));
+
+  rides.forEach((ride, index) => {
+    if (index > 0) {
+      const previous = raw.legs[index - 1];
+      const current = raw.legs[index];
+      const from = byId.get(previous.alightStopId);
+      const to = byId.get(current.boardStopId);
+      const wait = raw.waits[index - 1];
+      const walk =
+        from && to && from.id !== to.id
+          ? walkMinutes(
+              haversineM(from.latitude, from.longitude, to.latitude, to.longitude),
+            )
+          : 0;
+      // Never negative: the scan already refused any connection that did not
+      // clear the walk plus the buffer.
+      const slack = Math.max(0, wait - walk);
+      legs.push({
+        kind: 'transfer',
+        at: ride.board.name,
+        from: rides[index - 1].alight.name,
+        waitMinutes: wait,
+        walkMinutes: walk,
+        slackMinutes: slack,
+        tight: slack < TIGHT_TRANSFER_MINUTES,
+        fromRoute: previous.lineCode,
+        toRoute: current.lineCode,
+      });
+    }
+    legs.push(ride);
+  });
+
+  const first = raw.legs[0];
+  const last = raw.legs[raw.legs.length - 1];
+  const lastRow = rowsById.get(last.tripId)!;
+
+  return {
+    id: raw.legs.map((leg) => leg.tripId).join(':'),
+    transfers: raw.legs.length - 1,
+    start: formatSeconds(rowsById.get(first.tripId)!.times[first.boardSequence - 1] ?? 0),
+    end: formatSeconds(lastRow.times[last.alightSequence - 1] ?? 0),
+    durationMinutes: last.arrival - first.departure,
+    waitMinutes: raw.waits.reduce((total, wait) => total + wait, 0),
+    dayOffset: lastRow.offsets[last.alightSequence - 1] ?? 0,
+    typeOfDay: isoDate,
+    legs,
+  };
+}
+
+/**
+ * Offline journey search: direct rides AND one-transfer itineraries.
+ *
+ * Mirrors `transit/services/journeys.py`. `offlineSearchV2` stays as it is —
+ * `/transit/search`, the v1 bundle and trip detail all still speak the flat
+ * single-trip shape.
+ */
+export function offlineJourneySearchV2(
+  bundle: OfflineBundleV2,
+  params: {
+    origin: string;
+    destination: string;
+    isoDate: string;
+    start?: string;
+    /** 0 = one bus only. Defaults to allowing one change, as the server does. */
+    maxTransfers?: number;
+  },
+): TransitJourneySearch {
+  const maxTransfers = Math.max(0, Math.min(params.maxTransfers ?? 1, 1));
+  const empty: TransitJourneySearch = { journeys: [], maxTransfers };
+
+  const originIds = resolveStopIds(params.origin, bundle.stops);
+  const destinationIds = resolveStopIds(params.destination, bundle.stops);
+  if (originIds.size === 0 || destinationIds.size === 0) {
+    // Nothing resolves, so a change of bus cannot help either — an honest zero
+    // rather than a prompt that would find nothing.
+    return maxTransfers === 0 ? { ...empty, transfersAvailable: 0 } : empty;
+  }
+
+  // Somewhere to itself is not a journey. Compared as SETS, so a query naming
+  // two different stops in one village is still a real, if short, ride.
+  if (
+    originIds.size === destinationIds.size &&
+    [...originIds].every((id) => destinationIds.has(id))
+  ) {
+    return maxTransfers === 0 ? { ...empty, transfersAvailable: 0 } : empty;
+  }
+
+  const rows = bundle.routes
+    .filter((row) => runsOn(bundle, row, params.isoDate))
+    // Trip id order, matching the server's `.order_by('id')`, so equal-ranked
+    // journeys break their tie the same way on both sides.
+    .sort((a, b) => a.id - b.id);
+  const rowsById = new Map(rows.map((row) => [row.id, row]));
+
+  const originKeySet = resolveKeys(params.origin, bundle.stops);
+  const destinationKeySet = resolveKeys(params.destination, bundle.stops);
+
+  const direct: RawJourney[] = [];
+  const firstLegs: JourneyLegCandidate[] = [];
+  const secondLegs: JourneyLegCandidate[] = [];
+
+  for (const row of rows) {
+    // Direct rides go through `selectPair`, exactly as the server routes them
+    // through its own — one row per trip, and the loop tie-break stays in the
+    // one place that owns it.
+    const pair = selectPair(sequencedRow(row, bundle.stops), originKeySet, destinationKeySet);
+    if (pair) {
+      const candidate = legCandidate(row, bundle.stops, pair[0].sequence - 1, pair[1].sequence - 1);
+      if (candidate && advancesInTime(candidate)) {
+        direct.push({ legs: [candidate], waits: [] });
+      }
+    }
+
+    for (let position = 0; position < row.stops.length; position += 1) {
+      const stopIndex = row.stops[position];
+      const stopId = stopIndex == null ? -1 : bundle.stops[stopIndex]?.id ?? -1;
+
+      if (originIds.has(stopId)) {
+        for (let later = position + 1; later < row.stops.length; later += 1) {
+          const candidate = legCandidate(row, bundle.stops, position, later);
+          if (candidate && advancesInTime(candidate)) {
+            firstLegs.push(candidate);
+          }
+        }
+      }
+
+      if (destinationIds.has(stopId)) {
+        for (let earlier = 0; earlier < position; earlier += 1) {
+          const candidate = legCandidate(row, bundle.stops, earlier, position);
+          if (candidate && advancesInTime(candidate)) {
+            secondLegs.push(candidate);
+          }
+        }
+      }
+    }
+  }
+
+  const earliest = params.start ? timeStringToMinutes(params.start) : 0;
+
+  const findTransfers = () =>
+    collapseByTripPair(
+      buildTransferJourneys(
+        firstLegs,
+        indexByBoardStop(secondLegs),
+        buildTransferNeighbours(bundle.stops),
+        destinationIds,
+      ),
+    );
+
+  const transfers = maxTransfers >= 1 ? findTransfers() : [];
+  const ranked = rankJourneys(direct, transfers, earliest);
+  const journeys = ranked.map((raw) =>
+    toJourney(raw, rowsById, bundle.stops, params.isoDate),
+  );
+
+  // Only when direct-only came up empty: run the scan we skipped, purely to say
+  // how many itineraries a change WOULD find. That is what lets the app offer a
+  // retry it knows will succeed instead of guessing.
+  if (maxTransfers === 0 && journeys.length === 0) {
+    const available = rankJourneys(direct, findTransfers(), earliest).filter(
+      (raw) => raw.legs.length > 1,
+    );
+    return { journeys, maxTransfers, transfersAvailable: available.length };
+  }
+
+  return { journeys, maxTransfers };
 }
 
 function poleRef(row: OfflineRouteRowV2, sequence: number) {

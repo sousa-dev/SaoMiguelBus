@@ -136,6 +136,110 @@ export interface TransitSearchResult {
   segmentExact?: boolean;
 }
 
+/**
+ * One end of a ride, as the RIDER experiences it — where they get on or off, not
+ * where the bus starts or finishes. `sequence` indexes into the trip's own stop
+ * list and is load-bearing for the same reason `StopRef.sequence` is.
+ */
+export interface JourneyStopRef {
+  name: string;
+  time: string;
+  sequence: number;
+  dayOffset: number;
+}
+
+/** A ride on one bus. `route` keeps the `C` unconfirmed prefix the server sets. */
+export interface TransitRideLeg {
+  kind: 'ride';
+  tripId: number;
+  route: string;
+  likesPercent: number;
+  dislikesPercent: number;
+  information: Record<string, unknown>;
+  board: JourneyStopRef;
+  alight: JourneyStopRef;
+  /** Trimmed to board..alight — not the whole trip. */
+  stops: TripStop[];
+  boarding?: StopRef;
+  alighting?: StopRef;
+}
+
+/**
+ * The change itself, modelled as its own leg rather than a property of the ride
+ * that follows. Getting off, waiting and walking is what the rider actually
+ * does, and a flat alternating list is what the step UI renders.
+ */
+export interface TransitTransferLeg {
+  kind: 'transfer';
+  /** Where they board the next bus. */
+  at: string;
+  /** Where they got off — differs from `at` when the change involves a walk. */
+  from: string;
+  /** Full gap between getting off and the next departure, walk included. */
+  waitMinutes: number;
+  walkMinutes: number;
+  /**
+   * What is actually left once the walk is done — the number that says how
+   * rushed the change is. A 12-minute wait with a 9-minute walk leaves 3.
+   */
+  slackMinutes: number;
+  /** Slack below the comfortable threshold: worth warning the rider about. */
+  tight: boolean;
+  fromRoute: string;
+  toRoute: string;
+}
+
+export type TransitJourneyLeg = TransitRideLeg | TransitTransferLeg;
+
+/**
+ * A whole itinerary: one bus, or two with a change between them.
+ *
+ * Not expressible as a `TransitSearchResult` — that type is inherently one line,
+ * one boarding, one alighting, with a flat stop list that would walk straight
+ * through the interchange as if the rider never got off.
+ */
+export interface TransitJourney {
+  /** Synthetic — the joined trip ids. A multi-leg journey has no Trip row. */
+  id: string;
+  transfers: number;
+  start: string;
+  end: string;
+  durationMinutes: number;
+  /** Total time spent waiting at interchanges. 0 when direct. */
+  waitMinutes: number;
+  /** Day offset of the final arrival — drives the `+1` badge. */
+  dayOffset: number;
+  typeOfDay?: string;
+  legs: TransitJourneyLeg[];
+}
+
+/**
+ * A journey search's whole answer, not just its results.
+ *
+ * `transfersAvailable` is what makes the "no direct bus — try with a change?"
+ * prompt honest: it is the number of itineraries a change WOULD find, computed
+ * by the server, so the app never offers a retry that turns up nothing. Present
+ * only when the search asked for direct-only AND found none.
+ */
+export interface TransitJourneySearch {
+  journeys: TransitJourney[];
+  /** Changes of bus this search allowed. 0 = one bus only. */
+  maxTransfers: number;
+  transfersAvailable?: number;
+}
+
+export function isRideLeg(leg: TransitJourneyLeg): leg is TransitRideLeg {
+  return leg.kind === 'ride';
+}
+
+export function isTransferLeg(leg: TransitJourneyLeg): leg is TransitTransferLeg {
+  return leg.kind === 'transfer';
+}
+
+export function journeyRideLegs(journey: TransitJourney): TransitRideLeg[] {
+  return journey.legs.filter(isRideLeg);
+}
+
 export interface ConsentPurposes {
   strictly_necessary: boolean;
   analytics: boolean;

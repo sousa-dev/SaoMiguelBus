@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { searchTransit } from '@/lib/api';
+import { searchTransitJourneys } from '@/lib/api';
+import { journeyFromSearchResult } from '@/lib/journey-fallback';
 import { hasOfflineCache, loadCachedBundle, offlineSearch } from '@/lib/offline-bundle';
-import { offlineSearchV2 } from '@/lib/offline-bundle-v2';
+import { offlineJourneySearchV2 } from '@/lib/offline-bundle-v2';
 import { loadCachedBundleV2 } from '@/lib/offline-bundle-v2-storage';
 import { useNetwork } from '@/lib/network-provider';
 import { track } from '@/lib/analytics';
-import { processTransitResults } from '@/lib/transit-results';
+import { processTransitJourneys } from '@/lib/transit-results';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
-import type { TransitSearchResult } from '@/lib/types';
+import type { TransitJourneySearch } from '@/lib/types';
 
 const FULL_DAY_START = '00h00';
 
@@ -36,10 +37,16 @@ export function useTransitSearchWithOffline(params: {
   enabled: boolean;
   /** ISO date the user picked; offline eligibility is per-date, not per-day-type. */
   isoDate?: string;
+  /**
+   * Allow itineraries with a change of bus. ON by default — a rider who has not
+   * expressed a preference is better served by more ways to get there.
+   */
+  allowTransfers?: boolean;
 }) {
   const { isOnline, hasOfflineBundle } = useNetwork();
   const dataset = useTransitDataset();
   const canSearch = Boolean(params.origin && params.destination);
+  const maxTransfers = params.allowTransfers === false ? 0 : 1;
 
   const rawQuery = useQuery({
     // The dataset belongs in the key even outside preview: without it a screen
@@ -55,49 +62,61 @@ export function useTransitSearchWithOffline(params: {
       },
       isOnline ? 'online' : 'offline',
       dataset ?? 'server',
+      maxTransfers,
     ],
-    queryFn: async (): Promise<TransitSearchResult[]> => {
+    queryFn: async (): Promise<TransitJourneySearch> => {
       if (isOnline) {
-        const results = await searchTransit({
+        const result = await searchTransitJourneys({
           origin: params.origin,
           destination: params.destination,
           day: params.day,
           start: FULL_DAY_START,
           dataset,
+          maxTransfers,
         });
         track('transit', 'search', {
           origin: params.origin,
           destination: params.destination,
           day_type: params.day,
           start_time: FULL_DAY_START,
-          results_count: results.length,
+          results_count: result.journeys.length,
+          transfer_results_count: result.journeys.filter((j) => j.transfers > 0).length,
+          max_transfers: maxTransfers,
+          transfers_available: result.transfersAvailable ?? null,
           dataset: dataset ?? 'server',
         });
-        return results;
+        return result;
       }
       // The schema-versioned bundle answers "does this trip run on THIS ISO
       // date?", which the v1 weekday enum cannot (98 B0). Fall back to v1 only
       // when there is no v2 copy on disk.
       const v2 = await loadCachedBundleV2();
       if (v2) {
-        const results = offlineSearchV2(v2, {
+        const result = offlineJourneySearchV2(v2, {
           origin: params.origin,
           destination: params.destination,
           isoDate: params.isoDate ?? localIsoDate(new Date()),
+          maxTransfers,
         });
         track('transit', 'offline_search', {
           origin: params.origin,
           destination: params.destination,
-          results_count: results.length,
+          results_count: result.journeys.length,
+          transfer_results_count: result.journeys.filter((j) => j.transfers > 0).length,
+          max_transfers: maxTransfers,
+          transfers_available: result.transfersAvailable ?? null,
           schema: 2,
         });
-        return results;
+        return result;
       }
 
       const bundle = await loadCachedBundle();
       if (!bundle) {
-        return [];
+        return { journeys: [], maxTransfers };
       }
+      // v1 is FROZEN for already-installed builds (`lib/offline-search.ts`), so
+      // it stays direct-only. Its rows still render, as one-leg journeys — a
+      // rider on an old bundle sees fewer options, never wrong ones.
       const results = offlineSearch(bundle, {
         origin: params.origin,
         destination: params.destination,
@@ -107,9 +126,13 @@ export function useTransitSearchWithOffline(params: {
         origin: params.origin,
         destination: params.destination,
         results_count: results.length,
+        transfer_results_count: 0,
+        max_transfers: 0,
         schema: 1,
       });
-      return results;
+      // v1 knows nothing about transfers, so there is no honest count to offer
+      // and the retry prompt stays hidden rather than guessing.
+      return { journeys: results.map(journeyFromSearchResult), maxTransfers: 0 };
     },
     enabled: params.enabled && canSearch && (isOnline || hasOfflineBundle),
     networkMode: 'always',
@@ -117,17 +140,21 @@ export function useTransitSearchWithOffline(params: {
 
   const data = useMemo(
     () =>
-      processTransitResults(rawQuery.data ?? [], {
-        origin: params.origin,
-        destination: params.destination,
+      processTransitJourneys(rawQuery.data?.journeys ?? [], {
         userTime: params.userTime,
       }),
-    [rawQuery.data, params.origin, params.destination, params.userTime],
+    [rawQuery.data, params.userTime],
   );
 
   return {
     ...rawQuery,
     data,
+    /**
+     * How many itineraries a change of bus WOULD find, when this search asked
+     * for one bus only and found none. `undefined` whenever there is no honest
+     * number — the prompt must never offer a retry that turns up nothing.
+     */
+    transfersAvailable: rawQuery.data?.transfersAvailable,
   };
 }
 

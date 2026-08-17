@@ -6,6 +6,10 @@ import { isWithinIslandBounds, saoMiguelMapBounds } from '@/lib/island-map';
 import { getAuthToken, useAuthStore } from '@/lib/auth-store';
 import { logger } from '@/lib/logger';
 import { dedupeStopsByName } from '@/lib/stop-list';
+import {
+  journeyFromSearchResult,
+  shouldFallBackToDirectSearch,
+} from '@/lib/journey-fallback';
 import type { TariffsResponse } from '@/features/transit/lib/tariffs';
 import type { OfflineBundleV2 } from '@/lib/offline-bundle-v2';
 import { getAnalyticsPlatform, getAppVersion } from '@/lib/platform';
@@ -23,6 +27,8 @@ import type {
   PersonaProfileResponse,
   DirectionsResponse,
   Stop,
+  TransitJourney,
+  TransitJourneySearch,
   TransitSearchResult,
   TripDetail,
   NewsArticle,
@@ -359,6 +365,72 @@ export async function searchTransit(params: {
     `/api/v3/transit/search?${query.toString()}`,
   );
   return data.results ?? [];
+}
+
+/**
+ * Direct rides AND one-transfer itineraries.
+ *
+ * Degrades to `/transit/search` rather than failing, in two cases:
+ *
+ *   404  the API has not been redeployed yet — the app ships ahead of it often
+ *        enough that this is a normal state, not an error.
+ *   5xx  journey search is broken in production.
+ *
+ * The second is the one that matters. Transfer search is NEW; direct search has
+ * worked for years. If the new code fails, a rider must not lose the direct bus
+ * they could always find before — showing an error screen for a Capelas -> Ponta
+ * Delgada search because the TRANSFER scan broke would be a straight regression.
+ * So the fallback keeps the old answer available and the failure stays logged.
+ *
+ * Not caught: network failures, which the offline path already handles, and 4xx
+ * other than 404, which mean the request itself was wrong and would fail the
+ * same way against `/search`.
+ */
+export async function searchTransitJourneys(params: {
+  origin: string;
+  destination: string;
+  day: string;
+  start: string;
+  dataset?: TransitDataset | null;
+  /** 0 = one bus only. Omitted means the server's default (1). */
+  maxTransfers?: number;
+}): Promise<TransitJourneySearch> {
+  const { dataset, maxTransfers, ...rest } = params;
+  const query = new URLSearchParams(rest);
+  if (dataset) {
+    query.set('dataset', dataset);
+  }
+  if (maxTransfers !== undefined) {
+    query.set('maxTransfers', String(maxTransfers));
+  }
+
+  try {
+    const data = await apiFetch<TransitJourneySearch>(
+      `/api/v3/transit/journeys?${query.toString()}`,
+    );
+    return {
+      journeys: data.journeys ?? [],
+      maxTransfers: data.maxTransfers ?? maxTransfers ?? 1,
+      ...(data.transfersAvailable !== undefined
+        ? { transfersAvailable: data.transfersAvailable }
+        : {}),
+    };
+  } catch (error) {
+    if (shouldFallBackToDirectSearch(error)) {
+      const status = error instanceof ApiRequestError ? error.status : null;
+      logger.warn(
+        `journeys endpoint unavailable (${status}) — falling back to direct search`,
+      );
+      const results = await searchTransit(params);
+      // An API this old knows nothing about transfers, so there is no honest
+      // number to offer — the retry prompt stays hidden rather than guessing.
+      return {
+        journeys: results.map(journeyFromSearchResult),
+        maxTransfers: 0,
+      };
+    }
+    throw error;
+  }
 }
 
 export async function voteTrip(

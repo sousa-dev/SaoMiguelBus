@@ -1,0 +1,81 @@
+/**
+ * Degrading journey search back to direct search.
+ *
+ * Split out of `lib/api.ts` so it carries no react-native or network imports and
+ * can be tested directly — the same discipline `lib/offline-search.ts` follows.
+ *
+ * Transfer search is NEW; direct search has worked for years. If the new
+ * endpoint is missing or broken, a rider must still get the direct bus they
+ * could always find before: showing an error for a Capelas -> Ponta Delgada
+ * search because the TRANSFER scan fell over would be a straight regression.
+ */
+
+import { ApiRequestError } from '@/lib/api-errors';
+import { timeStringToMinutes } from '@/lib/transit-format';
+import type { TransitJourney, TransitSearchResult } from '@/lib/types';
+
+/**
+ * Should this failure degrade to `/transit/search` instead of surfacing?
+ *
+ *   404  the API has not been redeployed yet — the app ships ahead of it often
+ *        enough that this is a normal state, not an error.
+ *   5xx  journey search is broken in production.
+ *
+ * Deliberately NOT caught: network failures, which the offline path already
+ * handles, and 4xx other than 404 — those mean the request itself was wrong and
+ * would fail identically against `/search`.
+ */
+export function shouldFallBackToDirectSearch(error: unknown): boolean {
+  if (!(error instanceof ApiRequestError)) {
+    return false;
+  }
+  return error.status === 404 || error.status >= 500;
+}
+
+/** Present a direct `/search` row as a one-leg journey. */
+export function journeyFromSearchResult(result: TransitSearchResult): TransitJourney {
+  const first = result.stops[0];
+  const last = result.stops[result.stops.length - 1];
+
+  return {
+    id: String(result.id),
+    transfers: 0,
+    start: result.start,
+    end: result.end,
+    durationMinutes: Math.max(
+      0,
+      timeStringToMinutes(result.end) - timeStringToMinutes(result.start),
+    ),
+    waitMinutes: 0,
+    dayOffset: result.alighting?.dayOffset ?? 0,
+    typeOfDay: result.typeOfDay,
+    legs: [
+      {
+        kind: 'ride',
+        tripId: result.id,
+        route: result.route,
+        likesPercent: result.likesPercent,
+        dislikesPercent: result.dislikesPercent,
+        information: result.information,
+        board: {
+          name: first?.name ?? result.origin,
+          time: result.start,
+          // The server's own indices, never re-matched by name (98 B7).
+          sequence: result.boarding?.sequence ?? first?.sequence ?? 1,
+          dayOffset: result.boarding?.dayOffset ?? 0,
+        },
+        alight: {
+          name: last?.name ?? result.destination,
+          time: result.end,
+          sequence: result.alighting?.sequence ?? last?.sequence ?? result.stops.length,
+          dayOffset: result.alighting?.dayOffset ?? 0,
+        },
+        stops: result.stops,
+        // Omitted, never null, when the row carries no pole — matching the
+        // server's serializer and the legacy dataset's shape.
+        ...(result.boarding ? { boarding: result.boarding } : {}),
+        ...(result.alighting ? { alighting: result.alighting } : {}),
+      },
+    ],
+  };
+}
