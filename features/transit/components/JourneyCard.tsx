@@ -7,6 +7,7 @@ import {
   Clock,
   Footprints,
   Phone,
+  Map as MapIcon,
   Shuffle,
   ThumbsDown,
   ThumbsUp,
@@ -16,6 +17,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { JourneyMap } from '@/features/transit/components/JourneyMap';
 import { RouteTimeline } from '@/features/transit/components/RouteTimeline';
 import { ShareTripButton } from '@/features/transit/components/ShareTripButton';
 import { TrackButton } from '@/features/transit/components/TrackButton';
@@ -50,6 +52,7 @@ export function JourneyCard({ journey, searchDay, expandedByDefault = false }: P
   const theme = useAppTheme();
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(expandedByDefault);
+  const router = useRouter();
 
   const rides = journeyRideLegs(journey);
   // The itinerary is only as trustworthy as its least-trusted bus.
@@ -149,6 +152,23 @@ export function JourneyCard({ journey, searchDay, expandedByDefault = false }: P
 
       {expanded ? (
         <View style={styles.legs}>
+          {/* Behind the toggle on purpose, and not only for tidiness: mounting
+              this is what FETCHES the geometry, so a screen of 20 results no
+              longer fires ~30 requests for maps nobody opened. Renders null
+              when the journey has no geometry — every legacy journey. */}
+          <View style={styles.mapPreview}>
+            <JourneyMap
+              journey={journey}
+              variant="preview"
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/transit/map',
+                  params: { journeyId: journey.id },
+                })
+              }
+            />
+          </View>
+
           {journey.legs.map((leg, index) =>
             leg.kind === 'transfer' ? (
               <TransferRow key={`transfer-${index}`} leg={leg} />
@@ -372,6 +392,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
     marginTop: space.sm,
   },
+  mapPreview: { marginBottom: space.xs },
   legs: { gap: space.sm },
   legPanel: { borderRadius: radius.md, padding: space.md, gap: space.sm },
   legHeader: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
