@@ -39,7 +39,7 @@ Conventions for all CRUD resources:
 | Module | CRUD resources (full REST) | Read / action endpoints |
 |--------|----------------------------|-------------------------|
 | Bootstrap | — | `GET /bootstrap` (island config, modules, holidays, infos) |
-| Transit | — (admin-managed via admin/import) | `GET /transit/stops`, `GET /transit/search`, `GET /transit/lines/{id}`, `GET /transit/directions`, `POST /transit/trips/{id}/vote` |
+| Transit | — (admin-managed via admin/import) | `GET /transit/stops`, `GET /transit/search`, `GET /transit/journeys` (`maxTransfers`), `GET /transit/lines/{id}`, `GET /transit/directions`, `POST /transit/trips/{id}/vote` |
 | News | — (feed-sourced) | `GET /news/articles`, `GET /news/sources` |
 | Seismic | — (feed-sourced) | `GET /seismic/events`, `POST /seismic/events/{id}/felt` |
 | **Marketplace** | `/marketplace/providers` (CRUD), `/marketplace/providers/{id}/reviews` (CRUD) | `GET /marketplace/categories`, `POST /marketplace/providers/{id}/moderate` |
