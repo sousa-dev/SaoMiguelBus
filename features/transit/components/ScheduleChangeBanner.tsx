@@ -1,8 +1,10 @@
 import { Info, X } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@/components/ui/Button';
+import { Sheet } from '@/components/ui/Sheet';
 import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
 import { track } from '@/lib/analytics';
 import { radius, space, typography } from '@/lib/tokens';
@@ -36,6 +38,54 @@ export function ScheduleChangeBanner() {
   const warning = banner?.tone === 'warning';
   const accent = warning ? theme.warning : theme.primary;
 
+  // Which explanation to show after the switch moves — null while closed.
+  const [dialog, setDialog] = useState<'on' | 'off' | null>(null);
+
+  /**
+   * The single path for every way this banner can flip the preview: both
+   * switches and the collapsed chip.
+   *
+   * The switch changes what the SEARCH returns — different routes, different
+   * stops, different times — but the rider is looking at a banner, not at
+   * results, so nothing on screen moves and the consequence only shows up
+   * later, in a search they will have stopped connecting to this toggle. The
+   * sheet says it at the moment of the decision. It explains rather than asks:
+   * the toggle has already applied, and both directions are one tap to undo.
+   */
+  const applyPreviewing = (next: boolean) => {
+    setPreviewing(next);
+    setDialog(next ? 'on' : 'off');
+    track('transit', 'schedule_preview_toggled', {
+      enabled: next,
+      phase: phase ?? '',
+    });
+  };
+
+  const explainer = (
+    <Sheet
+      visible={dialog !== null}
+      onClose={() => setDialog(null)}
+      title={
+        dialog === 'off'
+          ? t('transitSchedulePreviewDialogOffTitle')
+          : t('transitSchedulePreviewDialogOnTitle')
+      }
+      scrollable={false}
+    >
+      <View style={styles.dialogBody}>
+        <Text style={[typography.body, { color: theme.text }]}>
+          {dialog === 'off'
+            ? t('transitSchedulePreviewDialogOffBody')
+            : t('transitSchedulePreviewDialogOnBody')}
+        </Text>
+        <Button
+          label={t('transitSchedulePreviewDialogAction')}
+          onPress={() => setDialog(null)}
+        />
+      </View>
+    </Sheet>
+  );
+
   if (!showBanner || !bannerText) {
     // The server can offer a preview before a cutover instant is armed, and the
     // banner is gated on that instant because its copy announces a dated
@@ -50,17 +100,9 @@ export function ScheduleChangeBanner() {
           <Text style={[typography.label, { color: theme.text, flex: 1 }]}>
             {t('transitSchedulePreviewToggle')}
           </Text>
-          <Switch
-            value={isPreviewing}
-            onValueChange={(next) => {
-              setPreviewing(next);
-              track('transit', 'schedule_preview_toggled', {
-                enabled: next,
-                phase: phase ?? '',
-              });
-            }}
-          />
+          <Switch value={isPreviewing} onValueChange={applyPreviewing} />
         </View>
+        {explainer}
       </View>
     );
   }
@@ -69,15 +111,18 @@ export function ScheduleChangeBanner() {
   // is on offer the user needs the way back to it.
   if (dismissible && isBannerDismissed) {
     return (
-      <Pressable
-        onPress={() => setPreviewing(!isPreviewing)}
-        style={[styles.chip, { borderColor: accent, backgroundColor: theme.card }]}
-      >
-        <Info size={14} color={accent} />
-        <Text style={[typography.caption, { color: accent }]}>
-          {showToggle ? t('transitSchedulePreviewChip') : bannerText}
-        </Text>
-      </Pressable>
+      <>
+        <Pressable
+          onPress={() => applyPreviewing(!isPreviewing)}
+          style={[styles.chip, { borderColor: accent, backgroundColor: theme.card }]}
+        >
+          <Info size={14} color={accent} />
+          <Text style={[typography.caption, { color: accent }]}>
+            {showToggle ? t('transitSchedulePreviewChip') : bannerText}
+          </Text>
+        </Pressable>
+        {explainer}
+      </>
     );
   }
 
@@ -109,18 +154,10 @@ export function ScheduleChangeBanner() {
           <Text style={[typography.label, { color: theme.text, flex: 1 }]}>
             {t('transitSchedulePreviewToggle')}
           </Text>
-          <Switch
-            value={isPreviewing}
-            onValueChange={(next) => {
-              setPreviewing(next);
-              track('transit', 'schedule_preview_toggled', {
-                enabled: next,
-                phase: phase ?? '',
-              });
-            }}
-          />
+          <Switch value={isPreviewing} onValueChange={applyPreviewing} />
         </View>
       ) : null}
+      {explainer}
     </View>
   );
 }
@@ -137,6 +174,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
+  },
+  dialogBody: {
+    paddingHorizontal: space.lg,
+    gap: space.lg,
   },
   chip: {
     flexDirection: 'row',
