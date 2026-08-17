@@ -24,7 +24,11 @@ import { TrackButton } from '@/features/transit/components/TrackButton';
 import { SchedulePreviewChip } from '@/features/transit/components/SchedulePreviewNotice';
 import { rideLegAsTrip } from '@/features/transit/lib/journey-legs';
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
-import { displayRouteNumber, needsRouteConfirmation } from '@/lib/transit-format';
+import {
+  displayRouteNumber,
+  formatDurationWords,
+  needsRouteConfirmation,
+} from '@/lib/transit-format';
 import { useProfileStore } from '@/lib/profile-store';
 import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -204,7 +208,9 @@ function TransferRow({ leg }: { leg: TransitTransferLeg }) {
           <View style={styles.transferMeta}>
             <Clock size={12} color={theme.muted} />
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {t('transitWaitMinutes', { count: leg.waitMinutes })}
+              {t('transitWaitDuration', {
+                duration: formatDurationWords(t, leg.waitMinutes),
+              })}
             </Text>
             {walks ? (
               <>

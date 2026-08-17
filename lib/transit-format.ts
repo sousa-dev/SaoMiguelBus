@@ -37,6 +37,40 @@ export function formatTravelDuration(firstStopTime: string, lastStopTime: string
   return `${hh}${mm} min`;
 }
 
+/** Minimal shape of i18next's `t`, so this module stays free of react-i18next. */
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * A span of minutes as words: "17 minutes", "2 hours", "1 hour and 17 minutes".
+ *
+ * Built from two separately-pluralised parts joined by a locale-specific
+ * conjunction, rather than one `{{hours}}h {{minutes}}` template, because the
+ * singular/plural of each unit varies independently — "1 hour and 2 minutes",
+ * "2 hours and 1 minute" — and no single interpolated string can express that
+ * across eight languages.
+ *
+ * Minutes are NOT carried into the hours part as a fraction: a rider reads a
+ * connection time to decide whether to leave the stop, and "1.3 hours" is not
+ * a thing anyone converts back to a departure.
+ */
+export function formatDurationWords(t: Translate, totalMinutes: number): string {
+  const safe = Math.max(0, Math.round(totalMinutes));
+  const hours = Math.floor(safe / 60);
+  const minutes = safe % 60;
+
+  if (hours === 0) {
+    return t('durationMinutes', { count: minutes });
+  }
+  const hoursPart = t('durationHours', { count: hours });
+  if (minutes === 0) {
+    return hoursPart;
+  }
+  return t('durationHoursAndMinutes', {
+    hours: hoursPart,
+    minutes: t('durationMinutes', { count: minutes }),
+  });
+}
+
 export function splitStopLabel(name: string): { title: string; subtitle: string | null } {
   const parts = name.split(' - ');
   if (parts.length <= 1) {
