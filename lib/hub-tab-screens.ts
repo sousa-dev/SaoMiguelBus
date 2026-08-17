@@ -17,11 +17,14 @@ export const TAB_SCREEN_TO_MODULE_KEY: Record<string, ModuleKey> = Object.fromEn
   Object.entries(MODULE_KEY_TO_TAB_SCREEN).map(([k, v]) => [v, k as ModuleKey]),
 ) as Record<string, ModuleKey>;
 
-/** Hub first, then pinned modules in user order. */
-export function orderedTabScreenNames(pinnedKeys: ModuleKey[], enabledKeys: ModuleKey[]): string[] {
+/** Fixed bottom nav bar: Inicio, Bus, Experiências, Mini Bus PDL, Meteorologia. */
+export const FIXED_TAB_MODULE_KEYS: ModuleKey[] = ['transit', 'events', 'minibus', 'weather'];
+
+/** Hub first, then the fixed set of bottom-tab modules. */
+export function orderedTabScreenNames(enabledKeys: ModuleKey[]): string[] {
   const enabled = new Set(enabledKeys);
   const names = ['hub'];
-  for (const key of pinnedKeys) {
+  for (const key of FIXED_TAB_MODULE_KEYS) {
     if (!enabled.has(key)) {
       continue;
     }

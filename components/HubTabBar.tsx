@@ -31,7 +31,6 @@ export type HubTabBarProps = {
     emit: (event: { type: string; target: string; canPreventDefault?: boolean }) => { defaultPrevented: boolean };
     navigate: (name: string, params?: object) => void;
   };
-  pinnedKeys: ModuleKey[];
   enabledKeys: ModuleKey[];
   /** Tab screen name → live alert count (traffic active reports, seismic 24h events). */
   badgeCounts?: Partial<Record<string, number>>;
@@ -41,13 +40,12 @@ export function HubTabBar({
   state,
   descriptors,
   navigation,
-  pinnedKeys,
   enabledKeys,
   badgeCounts = {},
 }: HubTabBarProps) {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const order = orderedTabScreenNames(pinnedKeys, enabledKeys);
+  const order = orderedTabScreenNames(enabledKeys);
 
   const activeRoute = state.routes[state.index];
   const activeName = activeRoute?.name;

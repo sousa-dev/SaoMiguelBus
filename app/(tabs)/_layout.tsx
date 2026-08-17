@@ -7,7 +7,7 @@ import { HubTabBar } from '@/components/HubTabBar';
 import { resolveEnabledModules, type ModuleKey } from '@/config/island';
 import { useLiveTabBadges } from '@/features/hub/hooks/useLiveTabBadges';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
-import { useHubStore } from '@/lib/hub-store';
+import { FIXED_TAB_MODULE_KEYS } from '@/lib/hub-tab-screens';
 import { logger } from '@/lib/logger';
 import { HUB_MODULES, HUB_TAB } from '@/lib/modules';
 import { useAppTheme } from '@/lib/theme';
@@ -41,8 +41,7 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { data: bootstrap, refetch } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
-  const pinnedKeys = useHubStore((s) => s.pinnedKeys);
-  const badgeCounts = useLiveTabBadges(modules, pinnedKeys);
+  const badgeCounts = useLiveTabBadges(modules, FIXED_TAB_MODULE_KEYS);
 
   const isEnabled = useCallback((key: ModuleKey) => modules.includes(key), [modules]);
 
@@ -53,12 +52,12 @@ export default function TabLayout() {
         return null;
       }
       const mod = HUB_MODULES.find((m) => m.key === moduleKey);
-      if (!mod || !isEnabled(moduleKey) || !pinnedKeys.includes(moduleKey)) {
+      if (!mod || !isEnabled(moduleKey)) {
         return null;
       }
       return mod.route;
     },
-    [isEnabled, pinnedKeys],
+    [isEnabled],
   );
 
   useFocusEffect(
@@ -83,7 +82,6 @@ export default function TabLayout() {
           state={props.state}
           descriptors={props.descriptors as import('@/components/HubTabBar').HubTabBarProps['descriptors']}
           navigation={props.navigation as import('@/components/HubTabBar').HubTabBarProps['navigation']}
-          pinnedKeys={pinnedKeys}
           enabledKeys={modules}
           badgeCounts={badgeCounts}
         />

@@ -7,7 +7,6 @@ import {
   Star,
   TimerReset,
   Trash2,
-  UserRound,
 } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
@@ -29,14 +28,12 @@ import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
 import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
 import { maybeRequestAppReview } from '@/features/app-review/lib/maybe-request-app-review';
-import { LandingPagePicker } from '@/features/hub/components/LandingPagePicker';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
 import { ListRow } from '@/components/ui/ListRow';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
-import { resolveEnabledModules } from '@/config/island';
 import { useAuthStore } from '@/lib/auth-store';
 import { deleteMyData, exportMyData } from '@/lib/api';
 import { confirmAction, notify } from '@/lib/confirm';
@@ -44,7 +41,6 @@ import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
 import { shareJsonExport } from '@/lib/data-export';
 import { resolvePickerLocales } from '@/lib/i18n';
 import { LEGAL_URLS } from '@/lib/legal-urls';
-import { useHubStore } from '@/lib/hub-store';
 import { saveLocale } from '@/lib/locale-prefs';
 import { useNetworkStatus } from '@/lib/network-status';
 import { useSplashDevStore } from '@/features/splash/splash-dev-store';
@@ -70,10 +66,6 @@ export default function SettingsScreen() {
   const islandName = bootstrap?.island?.name ?? staticIslandConfig.islandName;
   const preference = useThemePrefsStore((s) => s.preference);
   const setPreference = useThemePrefsStore((s) => s.setPreference);
-  const enabledKeys = resolveEnabledModules(bootstrap?.island?.enabledModules);
-  const landingPageKey = useHubStore((s) => s.landingPageKey);
-  const moduleOrderKeys = useHubStore((s) => s.moduleOrderKeys);
-  const setLandingPageKey = useHubStore((s) => s.setLandingPageKey);
   const premiumDevOverride = usePremiumStore((s) => s.devOverride);
   const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
   const forceInternalAds = useAdsDevStore((s) => s.forceInternalAdsFallback);
@@ -274,24 +266,6 @@ export default function SettingsScreen() {
           {t('settingsLanguage')}
         </Text>
         <LanguagePicker locales={locales} activeLocale={i18n.language} onSelect={changeLanguage} />
-
-        <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
-          {t('settingsHub')}
-        </Text>
-        <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <ListRow
-            icon={UserRound}
-            title={t('settingsPersonalizeProfile')}
-            onPress={() => router.push('/onboarding/personalize?edit=1')}
-          />
-        </View>
-        <LandingPagePicker
-          enabledKeys={enabledKeys}
-          moduleOrderKeys={moduleOrderKeys}
-          value={landingPageKey}
-          onChange={setLandingPageKey}
-          hint={t('hubLandingPageHint')}
-        />
 
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsPrivacy')}
