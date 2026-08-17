@@ -201,3 +201,35 @@ export function markerSizeForMagnitude(magnitude: number): number {
   }
   return 30;
 }
+
+
+/**
+ * A region that frames every one of these coordinates.
+ *
+ * Lives here rather than in a feature because it knows nothing about buses —
+ * it is the counterpart to `coordinateToRegion` above, for many points instead
+ * of one, and both bus networks now need it. Falls back to the whole island
+ * when handed nothing, so a caller never has to special-case an empty list.
+ */
+export function fitRegionForCoordinates(
+  coordinates: { latitude: number; longitude: number }[],
+  padding = 0.012,
+): Region {
+  if (!coordinates.length) {
+    return getIslandMapRegion();
+  }
+
+  const lats = coordinates.map((c) => c.latitude);
+  const lngs = coordinates.map((c) => c.longitude);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+
+  return {
+    latitude: (minLat + maxLat) / 2,
+    longitude: (minLng + maxLng) / 2,
+    latitudeDelta: Math.max(maxLat - minLat + padding, 0.015),
+    longitudeDelta: Math.max(maxLng - minLng + padding, 0.015),
+  };
+}

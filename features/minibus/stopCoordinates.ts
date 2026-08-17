@@ -1,7 +1,9 @@
 import type { Region } from 'react-native-maps';
 
 import { decodePolyline } from '@/lib/polyline';
-import { getIslandMapRegion } from '@/lib/island-map';
+import { fitRegionForCoordinates, getIslandMapRegion } from '@/lib/island-map';
+
+export { fitRegionForCoordinates };
 import type {
   MinibusJourney,
   MinibusLeg,
@@ -240,25 +242,3 @@ function dedupeCoordinates(coords: MapCoordinate[]): MapCoordinate[] {
   return out;
 }
 
-export function fitRegionForCoordinates(
-  coordinates: MapCoordinate[],
-  padding = 0.012,
-): Region {
-  if (!coordinates.length) {
-    return getIslandMapRegion();
-  }
-
-  const lats = coordinates.map((c) => c.latitude);
-  const lngs = coordinates.map((c) => c.longitude);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
-
-  return {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max(maxLat - minLat + padding, 0.015),
-    longitudeDelta: Math.max(maxLng - minLng + padding, 0.015),
-  };
-}
