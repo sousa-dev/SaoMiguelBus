@@ -4,8 +4,9 @@ import { useMemo } from 'react';
 import { staticIslandConfig } from '@/config/island';
 import {
   minibusTrackingPollIntervalMs,
-  type TrackingQueryOptions,
-} from '@/features/minibus/hooks/useMinibusTrackingQueries';
+  minibusTrackingStaleTimeMs,
+} from '@/features/minibus/lib/trackingPollInterval';
+import type { TrackingQueryOptions } from '@/features/minibus/hooks/useMinibusTrackingQueries';
 import { fetchMinibusVehicle } from '@/lib/api';
 import type { MinibusVehicleDetail, MinibusVehicleDetailResponse } from '@/lib/types';
 
@@ -25,8 +26,10 @@ export function useMinibusFleetVehicleDetails(
       queryKey: ['minibus', 'v1', 'vehicle', staticIslandConfig.islandKey, id],
       queryFn: () => fetchMinibusVehicle(id),
       enabled: enabled && id.length > 0,
-      staleTime: 0,
-      refetchOnMount: 'always' as const,
+      staleTime: (query: { state: { data: unknown } }) =>
+        minibusTrackingStaleTimeMs(query.state.data as MinibusVehicleDetailResponse | undefined),
+      refetchOnMount: true as const,
+      refetchOnWindowFocus: false as const,
       refetchInterval: screenActive
         ? (query: { state: { data: unknown } }) =>
             minibusTrackingPollIntervalMs(query.state.data as MinibusVehicleDetailResponse | undefined)

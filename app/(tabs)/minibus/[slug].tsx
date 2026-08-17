@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -25,6 +25,7 @@ import {
   isMinibusLiveEntryEnabled,
   shouldShowMinibusLiveEntry,
 } from '@/features/minibus/lib/liveEntryVisibility';
+import { useOpenMinibusLiveTracking } from '@/features/minibus/hooks/useOpenMinibusLiveTracking';
 import { useMinibusTrackingHealth } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { localLineImageUri } from '@/features/minibus/offline';
 import { formatServiceSummary } from '@/features/minibus/serviceSummary';
@@ -37,7 +38,7 @@ import { useAppTheme } from '@/lib/theme';
 export default function MinibusLineDetailScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const router = useRouter();
+  const { openLiveTracking } = useOpenMinibusLiveTracking();
   const slug = minibusRouteParam(useLocalSearchParams<{ slug?: string | string[] }>().slug);
   const lineQuery = useMinibusLine(slug, Boolean(slug));
   const linesQuery = useMinibusLines(Boolean(slug));
@@ -143,8 +144,11 @@ export default function MinibusLineDetailScreen() {
                 if (!liveEntryEnabled) {
                   return;
                 }
-                track('minibus', 'live_entry_open', { source: 'line_detail', line: line.code });
-                router.push(`/minibus/live?line=${encodeURIComponent(line.slug)}`);
+                void openLiveTracking({
+                  source: 'line_detail',
+                  lineSlug: line.slug,
+                  lineCode: line.code,
+                });
               }}
               style={{ marginTop: space.md }}
             />

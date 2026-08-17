@@ -10,10 +10,10 @@ import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   meta?: MinibusTrackingMeta | null;
-  isFetching?: boolean;
+  isRefetching?: boolean;
 };
 
-export function MinibusTrackingFreshness({ meta, isFetching = false }: Props) {
+export function MinibusTrackingFreshness({ meta, isRefetching = false }: Props) {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
 
@@ -34,7 +34,7 @@ export function MinibusTrackingFreshness({ meta, isFetching = false }: Props) {
     return null;
   }
 
-  const showUpdating = isFetching && meta != null;
+  const showUpdating = isRefetching && meta != null;
 
   const captionStyle = [typography.caption, { color: theme.muted }];
 

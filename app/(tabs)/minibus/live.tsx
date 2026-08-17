@@ -25,7 +25,7 @@ import {
 } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import { useMinibusLines, useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { useMinibusFleetVehicleDetails } from '@/features/minibus/hooks/useMinibusFleetVehicleDetails';
-import { useMinibusScreenActive } from '@/features/minibus/hooks/useMinibusScreenActive';
+import { useMinibusLiveScreenActivity } from '@/features/minibus/hooks/useMinibusScreenActive';
 import {
   useMinibusVehicleDetail,
   useMinibusVehicles,
@@ -72,7 +72,7 @@ export default function MinibusLiveScreen() {
   const params = useLocalSearchParams<{ line?: string }>();
   const initialLineSlug = typeof params.line === 'string' ? params.line : null;
 
-  const screenActive = useMinibusScreenActive();
+  const { navFocused, pollingActive } = useMinibusLiveScreenActivity();
   const { isOnline } = useNetwork();
   const [selectedLineSlug, setSelectedLineSlug] = useState<string | null>(initialLineSlug);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
@@ -89,8 +89,10 @@ export default function MinibusLiveScreen() {
   const liveReviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reviewConfig = useInAppReviewConfig();
 
-  const healthQuery = useMinibusTrackingHealth({ enabled: screenActive && isOnline });
+  const healthQuery = useMinibusTrackingHealth({ enabled: navFocused && isOnline });
   const trackingAvailable = isOnline && isMinibusTrackingAvailable(healthQuery.data);
+  const trackingQueriesEnabled = navFocused && trackingAvailable;
+  const trackingPollingActive = pollingActive && trackingAvailable;
 
   const linesQuery = useMinibusLines(trackingAvailable);
   const lines = linesQuery.data?.lines ?? [];
@@ -103,23 +105,22 @@ export default function MinibusLiveScreen() {
   const network = offlineNetwork ?? networkQuery.data ?? null;
 
   const fleetQuery = useMinibusVehicles({
-    enabled: screenActive && trackingAvailable,
-    screenActive: screenActive && trackingAvailable,
+    enabled: trackingQueriesEnabled,
+    screenActive: trackingPollingActive,
   });
 
-  const { coords: userCoords, permission } = useNearbyLocation(screenActive && trackingAvailable);
+  const { coords: userCoords, permission } = useNearbyLocation(trackingPollingActive);
   const userNavigateCoords =
     permission === 'granted' && userCoords ? userCoords : null;
 
   const detailQuery = useMinibusVehicleDetail(selectedVehicleId, {
-    enabled: screenActive && trackingAvailable && selectedVehicleId != null,
-    screenActive: screenActive && trackingAvailable && selectedVehicleId != null,
+    enabled: trackingQueriesEnabled && selectedVehicleId != null,
+    screenActive: trackingPollingActive && selectedVehicleId != null,
   });
 
   useFocusEffect(
     useCallback(() => {
       trackMinibusView('live');
-      void healthQuery.refetch();
       return () => {
         if (liveReviewTimerRef.current) {
           clearTimeout(liveReviewTimerRef.current);
@@ -128,7 +129,7 @@ export default function MinibusLiveScreen() {
         setSelectedVehicleId(null);
         setSelectedStopKey(null);
       };
-    }, [healthQuery.refetch]),
+    }, []),
   );
 
   useEffect(() => {
@@ -181,7 +182,7 @@ export default function MinibusLiveScreen() {
       liveReviewTimerRef.current = null;
     }
 
-    if (!screenActive || !trackingAvailable || vehicles.length === 0 || !reviewConfig.enabled) {
+    if (!navFocused || !trackingAvailable || vehicles.length === 0 || !reviewConfig.enabled) {
       return;
     }
 
@@ -202,7 +203,7 @@ export default function MinibusLiveScreen() {
   }, [
     reviewConfig.enabled,
     reviewConfig.storeUrls,
-    screenActive,
+    navFocused,
     trackingAvailable,
     vehicles.length,
   ]);
@@ -211,8 +212,8 @@ export default function MinibusLiveScreen() {
   const { detailsById: fleetVehicleDetailsById } = useMinibusFleetVehicleDetails(
     fleetVehicleIds,
     {
-      enabled: screenActive && trackingAvailable,
-      screenActive: screenActive && trackingAvailable,
+      enabled: trackingQueriesEnabled,
+      screenActive: trackingPollingActive,
     },
   );
 
@@ -509,7 +510,7 @@ export default function MinibusLiveScreen() {
 
             <MinibusTrackingFreshness
               meta={fleetQuery.data}
-              isFetching={fleetQuery.isFetching}
+              isRefetching={fleetQuery.isRefetching}
             />
           </>
         ) : null}

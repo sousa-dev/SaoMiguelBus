@@ -24,14 +24,13 @@ import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
 import { MinibusTariffTable } from '@/features/minibus/components/MinibusTariffTable';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
-import { usePresentInterstitial } from '@/features/ads/hooks/usePresentInterstitial';
 import { useMinibusLines, useMinibusTariffs } from '@/features/minibus/hooks/useMinibusQueries';
+import { useOpenMinibusLiveTracking } from '@/features/minibus/hooks/useOpenMinibusLiveTracking';
 import { useMinibusTrackingHealth } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import {
   isMinibusLiveEntryEnabled,
   shouldShowMinibusLiveEntry,
 } from '@/features/minibus/lib/liveEntryVisibility';
-import { openMinibusLiveMap } from '@/features/minibus/lib/openLiveTracking';
 import { localDocumentImageUri } from '@/features/minibus/offline';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
 import { resolveEnabledModules } from '@/config/island';
@@ -69,7 +68,7 @@ export default function MinibusScreen() {
   const healthQuery = useMinibusTrackingHealth({ enabled: enabled && hubFocused });
   const showLiveEntry = shouldShowMinibusLiveEntry(isOnline, healthQuery.data);
   const liveEntryEnabled = isMinibusLiveEntryEnabled(isOnline, healthQuery.data);
-  const { presentInterstitial } = usePresentInterstitial();
+  const { openLiveTracking } = useOpenMinibusLiveTracking();
   const { snapshot } = useMinibusOffline();
 
   useFocusEffect(
@@ -182,14 +181,7 @@ export default function MinibusScreen() {
             <MinibusLiveHubCard
               enabled={liveEntryEnabled}
               onPress={() => {
-                void (async () => {
-                  track('minibus', 'live_entry_open', { source: 'hub' });
-                  try {
-                    await presentInterstitial('live_entry');
-                  } finally {
-                    openMinibusLiveMap(router);
-                  }
-                })();
+                void openLiveTracking({ source: 'hub' });
               }}
             />
           ) : null}
