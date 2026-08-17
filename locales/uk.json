@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "Карта мережі",
     "transitNetworkZoomIn": "Наблизьте, щоб побачити всі {{count}} зупинок",
     "transitNetworkTapStop": "Торкніться зупинки для деталей",
+    "transitNetworkSearchPlaceholder": "Пошук зупинки",
+    "transitNetworkNoMatches": "Зупинок не знайдено",
+    "transitNetworkOpenStop": "Відкрити",
+    "transitNetworkShowList": "Показати всі зупинки",
+    "transitNetworkPreviousStop": "Попередня зупинка",
+    "transitNetworkNextStop": "Наступна зупинка",
     "transitNetworkMap": "Карта мережі",
     "addToFavorites": "Додати до обраного",
     "transitTapAgainOpensStop": "Торкніться ще раз, щоб відкрити зупинку"

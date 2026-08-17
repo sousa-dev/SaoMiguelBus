@@ -1338,6 +1338,12 @@
     "transitNetworkMapA11y": "Network map",
     "transitNetworkZoomIn": "Zoom in to see all {{count}} stops",
     "transitNetworkTapStop": "Tap a stop for details",
+    "transitNetworkSearchPlaceholder": "Search for a stop",
+    "transitNetworkNoMatches": "No stops found",
+    "transitNetworkOpenStop": "Open",
+    "transitNetworkShowList": "Show all stops",
+    "transitNetworkPreviousStop": "Previous stop",
+    "transitNetworkNextStop": "Next stop",
     "transitNetworkMap": "Network map",
     "addToFavorites": "Add to Favourites",
     "transitTapAgainOpensStop": "Tap again to open the stop"

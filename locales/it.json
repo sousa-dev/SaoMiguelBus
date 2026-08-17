@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "Mappa della rete",
     "transitNetworkZoomIn": "Ingrandisci per vedere le {{count}} fermate",
     "transitNetworkTapStop": "Tocca una fermata per i dettagli",
+    "transitNetworkSearchPlaceholder": "Cerca una fermata",
+    "transitNetworkNoMatches": "Nessuna fermata trovata",
+    "transitNetworkOpenStop": "Apri",
+    "transitNetworkShowList": "Mostra tutte le fermate",
+    "transitNetworkPreviousStop": "Fermata precedente",
+    "transitNetworkNextStop": "Fermata successiva",
     "transitNetworkMap": "Mappa della rete",
     "addToFavorites": "Aggiungi ai preferiti",
     "transitTapAgainOpensStop": "Tocca di nuovo per aprire la fermata"

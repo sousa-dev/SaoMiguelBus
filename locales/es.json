@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "Mapa de la red",
     "transitNetworkZoomIn": "Acerque para ver las {{count}} paradas",
     "transitNetworkTapStop": "Toque una parada para ver los detalles",
+    "transitNetworkSearchPlaceholder": "Buscar una parada",
+    "transitNetworkNoMatches": "No se encontraron paradas",
+    "transitNetworkOpenStop": "Abrir",
+    "transitNetworkShowList": "Ver todas las paradas",
+    "transitNetworkPreviousStop": "Parada anterior",
+    "transitNetworkNextStop": "Parada siguiente",
     "transitNetworkMap": "Mapa de la red",
     "addToFavorites": "Añadir a Favoritos",
     "transitTapAgainOpensStop": "Toque de nuevo para ver la parada"

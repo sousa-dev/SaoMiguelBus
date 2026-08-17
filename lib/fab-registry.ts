@@ -69,6 +69,11 @@ const HIDDEN_PATHS = new Set([
   '/marketplace/new',
   '/(tabs)/traffic/new',
   '/traffic/new',
+  // The network map is a full-bleed map with its own controls at every corner
+  // — search top-left, zoom top-right, the focused-stop stepper along the
+  // bottom. The FAB lands on top of the stepper.
+  '/(tabs)/transit/network',
+  '/transit/network',
 ]);
 
 export function isFabHidden(pathname: string): boolean {

@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "线网地图",
     "transitNetworkZoomIn": "放大以查看全部 {{count}} 个站点",
     "transitNetworkTapStop": "点按站点查看详情",
+    "transitNetworkSearchPlaceholder": "搜索站点",
+    "transitNetworkNoMatches": "未找到站点",
+    "transitNetworkOpenStop": "打开",
+    "transitNetworkShowList": "显示所有站点",
+    "transitNetworkPreviousStop": "上一站",
+    "transitNetworkNextStop": "下一站",
     "transitNetworkMap": "线网地图",
     "addToFavorites": "添加到收藏",
     "transitTapAgainOpensStop": "再次点按以查看该站点"

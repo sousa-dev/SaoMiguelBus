@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "Netzkarte",
     "transitNetworkZoomIn": "Hineinzoomen, um alle {{count}} Haltestellen zu sehen",
     "transitNetworkTapStop": "Auf eine Haltestelle tippen für Details",
+    "transitNetworkSearchPlaceholder": "Haltestelle suchen",
+    "transitNetworkNoMatches": "Keine Haltestellen gefunden",
+    "transitNetworkOpenStop": "Öffnen",
+    "transitNetworkShowList": "Alle Haltestellen anzeigen",
+    "transitNetworkPreviousStop": "Vorherige Haltestelle",
+    "transitNetworkNextStop": "Nächste Haltestelle",
     "transitNetworkMap": "Netzkarte",
     "addToFavorites": "Zu Favoriten hinzufügen",
     "transitTapAgainOpensStop": "Erneut tippen, um die Haltestelle zu öffnen"

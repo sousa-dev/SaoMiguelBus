@@ -1285,6 +1285,12 @@
     "transitNetworkMapA11y": "Carte du réseau",
     "transitNetworkZoomIn": "Zoomez pour voir les {{count}} arrêts",
     "transitNetworkTapStop": "Touchez un arrêt pour les détails",
+    "transitNetworkSearchPlaceholder": "Rechercher un arrêt",
+    "transitNetworkNoMatches": "Aucun arrêt trouvé",
+    "transitNetworkOpenStop": "Ouvrir",
+    "transitNetworkShowList": "Voir tous les arrêts",
+    "transitNetworkPreviousStop": "Arrêt précédent",
+    "transitNetworkNextStop": "Arrêt suivant",
     "transitNetworkMap": "Carte du réseau",
     "addToFavorites": "Ajouter aux favoris",
     "transitTapAgainOpensStop": "Touchez à nouveau pour ouvrir l’arrêt"
