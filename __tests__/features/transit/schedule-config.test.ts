@@ -25,6 +25,8 @@ import {
   resolveScheduleUi,
   searchDataset,
   shouldInvalidateAt,
+  simulatePhase,
+  simulatedDataset,
 } from '@/features/transit/lib/schedule-config';
 import type { TransitScheduleConfig } from '@/lib/types';
 
@@ -374,5 +376,85 @@ describe('bannerCopy — locale fallback', () => {
   it('returns null when there is no copy at all', () => {
     assert.equal(bannerCopy(null, 'pt'), null);
     assert.equal(bannerCopy({ ...BANNER, text: {} }, 'pt'), null);
+  });
+});
+
+/**
+ * The changeover simulation (dev + admin only).
+ *
+ * The phase is server state, so no amount of moving the device clock reaches
+ * it — a tester on 15 August still receives `phase: 'preview'`. Simulating
+ * therefore means substituting the config, and these tests pin the two things
+ * that substitution has to get right: the derived gates must agree with the
+ * forced phase, and `'off'` must be exactly identity.
+ */
+describe('simulatePhase — rehearsing 1 September', () => {
+  const NOW = Date.parse('2026-08-15T10:00:00+00:00');
+
+  it('is identity when off, including for a null config', () => {
+    const real = config();
+    assert.equal(simulatePhase(real, 'off', NOW), real, 'same object, not a copy');
+    assert.equal(simulatePhase(null, 'live', NOW), null);
+  });
+
+  it('backdates the cutover so the gates agree with the forced phase', () => {
+    // A forced 'live' phase with the REAL future cutoverAt would render a
+    // banner that says "in force" behind `hasCrossedCutover: false`.
+    const ui = resolveScheduleUi(simulatePhase(config(), 'live', NOW), {
+      isPreviewing: false,
+      now: NOW,
+    });
+
+    assert.equal(ui.isConfigured, true);
+    assert.equal(ui.hasCrossedCutover, true);
+    assert.equal(ui.phase, 'live');
+  });
+
+  it('shows the live banner and badge, and retires the preview toggle', () => {
+    const ui = resolveScheduleUi(
+      simulatePhase(config({ previewDataset: 'azoresbus' }), 'live', NOW),
+      { isPreviewing: false, now: NOW },
+    );
+
+    assert.equal(ui.showBanner, true);
+    assert.equal(ui.showBadge, true);
+    assert.equal(ui.showToggle, false, 'nothing left to preview after the cutover');
+  });
+
+  it('retires the banner AND the badge in the settled phase', () => {
+    const ui = resolveScheduleUi(simulatePhase(config(), 'settled', NOW), {
+      isPreviewing: false,
+      now: NOW,
+    });
+
+    assert.equal(ui.showBanner, false);
+    assert.equal(ui.showBadge, false);
+  });
+
+  it('reports the new network as active', () => {
+    const simulated = simulatePhase(config({ activeDataset: 'legacy' }), 'live', NOW);
+    assert.equal(simulated?.activeDataset, 'azoresbus');
+  });
+
+  it('clears nextTransitionAt, so nothing refetches the simulation away', () => {
+    const simulated = simulatePhase(config(), 'live', NOW);
+    assert.equal(simulated?.nextTransitionAt, null);
+    assert.equal(shouldInvalidateAt(simulated, NOW), false);
+  });
+
+  it('lets tracking run — the simulated timetables ARE in force', () => {
+    const simulated = simulatePhase(config({ trackingEnabled: true }), 'live', NOW);
+    assert.equal(canTrack(simulated, false), true);
+  });
+
+  it('sends the new dataset explicitly, because the real server has not cut over', () => {
+    // Without this the tester gets the September UI over August data.
+    assert.equal(simulatedDataset('off'), null);
+    assert.equal(simulatedDataset('live'), 'azoresbus');
+    assert.equal(simulatedDataset('settled'), 'azoresbus');
+  });
+
+  it('leaves production-today untouched when off', () => {
+    assert.equal(simulatePhase(PRODUCTION_TODAY, 'off', NOW), PRODUCTION_TODAY);
   });
 });

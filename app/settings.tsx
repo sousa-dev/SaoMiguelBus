@@ -1,5 +1,6 @@
 import {
   AppWindow,
+  CalendarClock,
   Download,
   Megaphone,
   ShieldCheck,
@@ -34,6 +35,11 @@ import { Banner } from '@/components/ui/Banner';
 import { ListRow } from '@/components/ui/ListRow';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
+import type { SimulatedPhase } from '@/features/transit/lib/schedule-config';
+import {
+  useCanSimulateSchedule,
+  useScheduleDevStore,
+} from '@/features/transit/lib/schedule-dev-store';
 import { useAuthStore } from '@/lib/auth-store';
 import { deleteMyData, exportMyData } from '@/lib/api';
 import { confirmAction, notify } from '@/lib/confirm';
@@ -72,6 +78,9 @@ export default function SettingsScreen() {
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
   const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
   const requestSplashPreview = useSplashDevStore((s) => s.requestPreview);
+  const canSimulateSchedule = useCanSimulateSchedule();
+  const simulatedPhase = useScheduleDevStore((s) => s.simulatedPhase);
+  const setSimulatedPhase = useScheduleDevStore((s) => s.setSimulatedPhase);
   const reviewConfig = useInAppReviewConfig();
   const [dsarBanner, setDsarBanner] = useState(false);
   const [dsarBusy, setDsarBusy] = useState<null | 'export' | 'delete'>(null);
@@ -130,6 +139,12 @@ export default function SettingsScreen() {
     { value: 'system' as ThemePreference, label: t('themeSystem') },
     { value: 'light' as ThemePreference, label: t('themeLight') },
     { value: 'dark' as ThemePreference, label: t('themeDark') },
+  ];
+
+  const schedulePhaseOptions = [
+    { value: 'off' as SimulatedPhase, label: t('settingsSimulateCutoverOff') },
+    { value: 'live' as SimulatedPhase, label: t('settingsSimulateCutoverLive') },
+    { value: 'settled' as SimulatedPhase, label: t('settingsSimulateCutoverSettled') },
   ];
 
   const exportData = async () => {
@@ -299,6 +314,41 @@ export default function SettingsScreen() {
           />
         </View>
 
+        {/* Gated on superuser OR __DEV__ — same audience as marketplace
+            moderation — rather than on __DEV__ alone, because the point is to
+            rehearse the changeover against the REAL server from a release
+            build. `useSimulatedPhase` re-applies this gate at the read side,
+            so a stored override cannot outlive the account that set it. */}
+        {canSimulateSchedule ? (
+          <>
+            <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
+              {t('settingsSimulateCutoverTitle')}
+            </Text>
+            <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <ListRow
+                icon={CalendarClock}
+                title={t('settingsSimulateCutover')}
+                subtitle={t('settingsSimulateCutoverHint')}
+                showChevron={false}
+              />
+            </View>
+            <View style={styles.simulateControl}>
+              <SegmentedControl
+                options={schedulePhaseOptions}
+                value={simulatedPhase}
+                onChange={(value) => {
+                  setSimulatedPhase(value);
+                  void Haptics.selectionAsync();
+                }}
+                accessibilityLabel={t('settingsSimulateCutover')}
+              />
+            </View>
+            {simulatedPhase !== 'off' ? (
+              <Banner variant="warning" message={t('settingsSimulateCutoverActive')} />
+            ) : null}
+          </>
+        ) : null}
+
         {__DEV__ ? (
           <>
             <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
@@ -399,5 +449,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: space.lg, paddingBottom: space['4xl'] },
   sectionLabel: { marginTop: space['2xl'], marginBottom: space.sm },
+  simulateControl: { marginTop: space.sm, marginBottom: space.sm },
   group: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
 });

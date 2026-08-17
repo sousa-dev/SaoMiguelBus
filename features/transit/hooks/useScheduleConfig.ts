@@ -14,9 +14,12 @@ import {
   resolveBanner,
   resolveScheduleUi,
   searchDataset,
+  simulatedDataset,
+  simulatePhase,
   type ScheduleUi,
 } from '@/features/transit/lib/schedule-config';
 import { useBootstrapCached } from '@/features/transit/hooks/useBootstrapQueries';
+import { useSimulatedPhase } from '@/features/transit/lib/schedule-dev-store';
 import { useProfileStore } from '@/lib/profile-store';
 import type {
   TransitDataset,
@@ -26,6 +29,8 @@ import type {
 
 export interface ScheduleConfigView extends ScheduleUi {
   config: TransitScheduleConfig | null;
+  /** True while a dev/admin is previewing a post-cutover phase (never in prod UI). */
+  isSimulated: boolean;
   /** The banner for the current phase, with any per-phase overrides applied. */
   banner: TransitScheduleBanner | null;
   isPreviewing: boolean;
@@ -39,7 +44,17 @@ export interface ScheduleConfigView extends ScheduleUi {
 
 export function useScheduleConfig(locale = 'pt'): ScheduleConfigView {
   const { data: bootstrap } = useBootstrapCached();
-  const config = bootstrap?.transitSchedule ?? null;
+  const served = bootstrap?.transitSchedule ?? null;
+
+  // Substituted at the source, so every consumer of this hook — banner, badge,
+  // preview toggle, tracking gate, maps gate, request dataset — sees a
+  // consistent post-cutover world rather than each growing its own flag.
+  // `'off'` for anyone who may not simulate, so this is identity in production.
+  const simulated = useSimulatedPhase();
+  const config = useMemo(
+    () => simulatePhase(served, simulated, Date.now()) ?? null,
+    [served, simulated],
+  );
 
   const stored = useProfileStore((s) => s.transitPreviewDataset);
   const setStored = useProfileStore((s) => s.setTransitPreviewDataset);
@@ -77,7 +92,12 @@ export function useScheduleConfig(locale = 'pt'): ScheduleConfigView {
 
   return {
     ...ui,
+    // The substituted config alone would give the September UI over August
+    // data: the live server keeps serving the legacy network until the real
+    // cutover, so the dataset has to go on the wire explicitly.
+    dataset: simulated === 'off' ? ui.dataset : simulatedDataset(simulated),
     config,
+    isSimulated: simulated !== 'off',
     isPreviewing,
     setPreviewing,
     banner,

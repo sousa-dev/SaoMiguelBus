@@ -174,6 +174,62 @@ export function msUntilTransition(
   return transition - now;
 }
 
+/** The phases a tester can force. `'off'` means "use what the server sent". */
+export type SimulatedPhase = 'off' | 'live' | 'settled';
+
+/**
+ * The config as the server WOULD send it once the cutover has passed — for
+ * testing 1 September before 1 September.
+ *
+ * The phase is server state, not a date the client derives (see this module's
+ * header), so there is nothing here a tester can reach by moving the device
+ * clock forward: the app would keep receiving `phase: 'preview'` and behave
+ * exactly as it does today. Simulating means substituting the config, which is
+ * why this is a pure function over the real one rather than a flag threaded
+ * through the UI — every consumer already reads `useScheduleConfig`, so
+ * overriding at that single source covers the banner, the badge, the toggle,
+ * tracking, the maps gate and the dataset on the wire at once.
+ *
+ * `cutoverAt` is backdated because `isConfigured` and `hasCrossedCutover` are
+ * both derived from it; leaving the real (future, or null) instant in place
+ * would produce a phase that says "live" and gates that say "not yet".
+ * `previewDataset` is cleared because previewing is a pre-cutover affordance —
+ * after the change there is nothing left to preview.
+ */
+export function simulatePhase(
+  config: TransitScheduleConfig | null | undefined,
+  phase: SimulatedPhase,
+  now: number,
+): TransitScheduleConfig | null | undefined {
+  if (phase === 'off' || !config) {
+    return config;
+  }
+  return {
+    ...config,
+    phase,
+    cutoverAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
+    activeDataset: 'azoresbus',
+    previewDataset: null,
+    // Nothing further is scheduled, so `shouldInvalidateAt` must not fire a
+    // refetch that would immediately replace the simulated config with the
+    // real one.
+    nextTransitionAt: null,
+  };
+}
+
+/**
+ * What to put on the wire while simulating.
+ *
+ * A substituted config alone would give the September UI over August DATA: the
+ * live server still serves the legacy network by default and only stops on the
+ * real cutover. Sending the dataset explicitly is the only way to see the new
+ * routes and stops today, and `azoresbus` is the sole value the app is ever
+ * allowed to send (see `searchDataset`).
+ */
+export function simulatedDataset(phase: SimulatedPhase): TransitDataset | null {
+  return phase === 'off' ? null : 'azoresbus';
+}
+
 /** Banner/badge copy with a `locale → 'pt' → first value` fallback chain. */
 export function bannerCopy(
   banner: TransitScheduleBanner | { text: Record<string, string> } | null | undefined,
