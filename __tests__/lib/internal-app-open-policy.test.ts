@@ -21,6 +21,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
         isInterstitialShowing: false,
         isFirstPartyInterstitialVisible: false,
         lastFullScreenAdAt: null,
+        trigger: 'foreground',
       },
       now,
     );
@@ -38,6 +39,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
         isInterstitialShowing: false,
         isFirstPartyInterstitialVisible: false,
         lastFullScreenAdAt: now - APP_OPEN_INTERSTITIAL_COOLDOWN_MS + 1,
+        trigger: 'foreground',
       },
       now,
     );
@@ -56,6 +58,7 @@ describe('evaluateInternalAppOpenPolicy', () => {
         isInterstitialShowing: false,
         isFirstPartyInterstitialVisible: false,
         lastFullScreenAdAt: null,
+        trigger: 'foreground',
       },
       now,
     );
@@ -73,11 +76,31 @@ describe('evaluateInternalAppOpenPolicy', () => {
         isInterstitialShowing: false,
         isFirstPartyInterstitialVisible: false,
         lastFullScreenAdAt: null,
+        trigger: 'foreground',
       },
       now,
     );
     assert.equal(decision.show, false);
     assert.equal(decision.reason, 'ad_free_reward');
+  });
+
+  it('blocks cold start even when otherwise eligible', () => {
+    const decision = evaluateInternalAppOpenPolicy(
+      {
+        isPremium: false,
+        isAdFreeActive: false,
+        consentDecided: true,
+        onConsentScreen: false,
+        isInternalFullscreenVisible: false,
+        isInterstitialShowing: false,
+        isFirstPartyInterstitialVisible: false,
+        lastFullScreenAdAt: null,
+        trigger: 'cold_start',
+      },
+      now,
+    );
+    assert.equal(decision.show, false);
+    assert.equal(decision.reason, 'cold_start');
   });
 });
 
@@ -96,7 +119,7 @@ describe('evaluateAppOpenPolicy regression', () => {
         isInterstitialShowing: false,
         isFirstPartyInterstitialVisible: false,
         lastFullScreenAdAt: null,
-        trigger: 'cold_start',
+        trigger: 'foreground',
       },
       now,
     );

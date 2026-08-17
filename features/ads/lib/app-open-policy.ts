@@ -32,12 +32,16 @@ export type InternalAppOpenPolicyContext = {
   isInterstitialShowing: boolean;
   isFirstPartyInterstitialVisible: boolean;
   lastFullScreenAdAt: number | null;
+  trigger: AppOpenTrigger;
 };
 
 export function evaluateInternalAppOpenPolicy(
   context: InternalAppOpenPolicyContext,
   nowMs: number,
 ): AppOpenPolicyDecision {
+  if (context.trigger === 'cold_start') {
+    return { show: false, reason: 'cold_start' };
+  }
   if (context.isPremium) {
     return { show: false, reason: 'premium' };
   }
@@ -71,6 +75,9 @@ export function evaluateAppOpenPolicy(
   context: AppOpenPolicyContext,
   nowMs: number,
 ): AppOpenPolicyDecision {
+  if (context.trigger === 'cold_start') {
+    return { show: false, reason: 'cold_start' };
+  }
   if (context.isPremium) {
     return { show: false, reason: 'premium' };
   }

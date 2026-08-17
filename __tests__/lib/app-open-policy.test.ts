@@ -22,7 +22,7 @@ function baseContext(overrides: Partial<AppOpenPolicyContext> = {}): AppOpenPoli
     isInterstitialShowing: false,
     isFirstPartyInterstitialVisible: false,
     lastFullScreenAdAt: null,
-    trigger: 'cold_start',
+    trigger: 'foreground',
     ...overrides,
   };
 }
@@ -72,12 +72,13 @@ describe('evaluateAppOpenPolicy', () => {
     assert.equal(decision.reason, 'consent_screen');
   });
 
-  it('allows cold start when eligible and loaded', () => {
+  it('blocks cold start even when otherwise eligible and loaded', () => {
     const decision = evaluateAppOpenPolicy(
       baseContext({ trigger: 'cold_start' }),
       now,
     );
-    assert.equal(decision.show, true);
+    assert.equal(decision.show, false);
+    assert.equal(decision.reason, 'cold_start');
   });
 
   it('allows foreground return when eligible and loaded', () => {

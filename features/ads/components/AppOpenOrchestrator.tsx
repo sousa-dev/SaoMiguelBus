@@ -87,11 +87,8 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
   }, []);
 
   const attemptInternalAppOpen = useCallback(
-    async (trigger: AppOpenTrigger, dismissSplashOnComplete: boolean) => {
+    async (trigger: AppOpenTrigger) => {
       if (!canShowAds || Platform.OS === 'web') {
-        if (dismissSplashOnComplete) {
-          onSplashDismiss();
-        }
         return false;
       }
 
@@ -106,14 +103,12 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
           isInterstitialShowing: isInterstitialShowing(),
           isFirstPartyInterstitialVisible: isFirstPartyInterstitialVisible(),
           lastFullScreenAdAt,
+          trigger,
         },
         Date.now(),
       );
 
       if (!decision.show) {
-        if (dismissSplashOnComplete) {
-          onSplashDismiss();
-        }
         return false;
       }
 
@@ -122,9 +117,6 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         enabledModuleKeys,
       });
       if (!creative) {
-        if (dismissSplashOnComplete) {
-          onSplashDismiss();
-        }
         return false;
       }
 
@@ -140,9 +132,6 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         trigger,
       });
 
-      if (dismissSplashOnComplete) {
-        onSplashDismiss();
-      }
       return true;
     },
     [
@@ -152,13 +141,12 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       isAdFreeActive,
       isPremium,
       onConsentScreen,
-      onSplashDismiss,
       showInternal,
     ],
   );
 
   const attemptShow = useCallback(
-    async (trigger: AppOpenTrigger, dismissSplashOnComplete: boolean) => {
+    async (trigger: AppOpenTrigger) => {
       if (runningRef.current) {
         return;
       }
@@ -166,14 +154,11 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
       try {
         if (!canShowAds || !consentDecided || onConsentScreen) {
-          if (dismissSplashOnComplete) {
-            onSplashDismiss();
-          }
           return;
         }
 
         if (shouldForceInternalAds()) {
-          await attemptInternalAppOpen(trigger, dismissSplashOnComplete);
+          await attemptInternalAppOpen(trigger);
           return;
         }
 
@@ -209,16 +194,13 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
               if (shown) {
                 await markFullScreenAdShown(Date.now());
                 track('transit', 'ad_mob_app_open_shown', { trigger });
-                if (dismissSplashOnComplete) {
-                  onSplashDismiss();
-                }
                 return;
               }
             }
           }
         }
 
-        await attemptInternalAppOpen(trigger, dismissSplashOnComplete);
+        await attemptInternalAppOpen(trigger);
       } finally {
         runningRef.current = false;
       }
@@ -231,10 +213,11 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       isAdFreeActive,
       isPremium,
       onConsentScreen,
-      onSplashDismiss,
     ],
   );
 
+  // Cold start never shows a full-screen app-open ad; only returning from
+  // background does. Release the splash as soon as the app is ready.
   useEffect(() => {
     if (!appReady || coldStartDoneRef.current) {
       return;
@@ -244,25 +227,9 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
       return;
     }
 
-    if (!consentDecided) {
-      onSplashDismiss();
-      return;
-    }
-
-    if (onConsentScreen) {
-      onSplashDismiss();
-      return;
-    }
-
-    if (!canShowAds) {
-      coldStartDoneRef.current = true;
-      onSplashDismiss();
-      return;
-    }
-
     coldStartDoneRef.current = true;
-    void attemptShow('cold_start', true);
-  }, [appReady, attemptShow, canShowAds, consentDecided, hydrated, onConsentScreen, onSplashDismiss]);
+    onSplashDismiss();
+  }, [appReady, hydrated, onSplashDismiss]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -277,7 +244,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
         consentDecided &&
         !onConsentScreen
       ) {
-        void attemptShow('foreground', false);
+        void attemptShow('foreground');
       }
     });
 
