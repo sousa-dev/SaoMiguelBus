@@ -38,6 +38,19 @@ export function ScheduleChangeBanner() {
   const warning = banner?.tone === 'warning';
   const accent = warning ? theme.warning : theme.primary;
 
+  /**
+   * The announcement for the `live` phase is OURS, not the server's.
+   *
+   * `transitSchedule.banner` is seeded per-island and translated by whoever
+   * edits it in the admin; the one sentence riders see on the day the network
+   * changes is worth pinning to the app's own locale files, where all eight
+   * languages are edited together. The gate is untouched — `showBanner` still
+   * decides whether a banner exists at all — this only replaces the copy once
+   * one is showing.
+   */
+  const liveText = phase === 'live' ? t('transitScheduleLiveBanner') : null;
+  const announcement = liveText ?? bannerText;
+
   // Which explanation to show after the switch moves — null while closed.
   const [dialog, setDialog] = useState<'on' | 'off' | null>(null);
 
@@ -61,6 +74,46 @@ export function ScheduleChangeBanner() {
     });
   };
 
+  /**
+   * The preview switch as ONE control, label included.
+   *
+   * The label is the only thing that says what the switch does, so it has to
+   * be part of the target — a switch that only responds to its 40pt thumb is a
+   * miss on a row that looks tappable across its full width. The whole row
+   * carries `role="switch"` and the `Switch` itself is hidden from
+   * accessibility, so a screen reader announces one control rather than a
+   * label and a switch that appear unrelated.
+   *
+   * The text follows the state: off it offers ("Show the new timetables"), on
+   * it reports ("Showing the new timetables"). A static label next to a switch
+   * makes the rider derive the current state from the thumb position alone.
+   */
+  const toggleLabel = isPreviewing
+    ? t('transitSchedulePreviewToggleOn')
+    : t('transitSchedulePreviewToggle');
+
+  // `withIcon` rather than nesting this inside an icon row: a Pressable that
+  // has to fill a ROW parent needs `flex: 1`, and the same style in the COLUMN
+  // parent of the standalone card would stretch it vertically instead.
+  const renderPreviewToggle = (withIcon: boolean) => (
+    <Pressable
+      onPress={() => applyPreviewing(!isPreviewing)}
+      style={styles.toggleRow}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: isPreviewing }}
+      accessibilityLabel={toggleLabel}
+    >
+      {withIcon ? <Info size={18} color={accent} /> : null}
+      <Text style={[typography.label, { color: theme.text, flex: 1 }]}>{toggleLabel}</Text>
+      <Switch
+        value={isPreviewing}
+        onValueChange={applyPreviewing}
+        accessible={false}
+        importantForAccessibility="no"
+      />
+    </Pressable>
+  );
+
   const explainer = (
     <Sheet
       visible={dialog !== null}
@@ -78,6 +131,13 @@ export function ScheduleChangeBanner() {
             ? t('transitSchedulePreviewDialogOffBody')
             : t('transitSchedulePreviewDialogOnBody')}
         </Text>
+        {/* Switch straight from the explanation, without hunting for the row
+            behind it. `applyPreviewing` re-points `dialog`, so the sheet flips
+            to the other explanation in place rather than closing. Dismissal
+            stays the last, bottom-most action. */}
+        {showToggle ? (
+          <Button label={toggleLabel} variant="outline" onPress={() => applyPreviewing(!isPreviewing)} />
+        ) : null}
         <Button
           label={t('transitSchedulePreviewDialogAction')}
           onPress={() => setDialog(null)}
@@ -95,13 +155,7 @@ export function ScheduleChangeBanner() {
     }
     return (
       <View style={[styles.wrap, { borderColor: accent, backgroundColor: theme.card }]}>
-        <View style={styles.row}>
-          <Info size={18} color={accent} />
-          <Text style={[typography.label, { color: theme.text, flex: 1 }]}>
-            {t('transitSchedulePreviewToggle')}
-          </Text>
-          <Switch value={isPreviewing} onValueChange={applyPreviewing} />
-        </View>
+        {renderPreviewToggle(true)}
         {explainer}
       </View>
     );
@@ -118,7 +172,7 @@ export function ScheduleChangeBanner() {
         >
           <Info size={14} color={accent} />
           <Text style={[typography.caption, { color: accent }]}>
-            {showToggle ? t('transitSchedulePreviewChip') : bannerText}
+            {showToggle ? t('transitSchedulePreviewChip') : announcement}
           </Text>
         </Pressable>
         {explainer}
@@ -130,7 +184,7 @@ export function ScheduleChangeBanner() {
     <View style={[styles.wrap, { borderColor: accent, backgroundColor: theme.card }]}>
       <View style={styles.row}>
         <Info size={18} color={accent} />
-        <Text style={[typography.body, { color: theme.text, flex: 1 }]}>{bannerText}</Text>
+        <Text style={[typography.body, { color: theme.text, flex: 1 }]}>{announcement}</Text>
         {dismissible ? (
           <Pressable
             accessibilityRole="button"
@@ -149,14 +203,7 @@ export function ScheduleChangeBanner() {
         ) : null}
       </View>
 
-      {showToggle ? (
-        <View style={styles.row}>
-          <Text style={[typography.label, { color: theme.text, flex: 1 }]}>
-            {t('transitSchedulePreviewToggle')}
-          </Text>
-          <Switch value={isPreviewing} onValueChange={applyPreviewing} />
-        </View>
-      ) : null}
+      {showToggle ? renderPreviewToggle(false) : null}
       {explainer}
     </View>
   );
@@ -174,6 +221,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
+  },
+  // Vertical padding so the row is a comfortable target across its full width,
+  // not just where the switch happens to be.
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.xs,
   },
   dialogBody: {
     paddingHorizontal: space.lg,

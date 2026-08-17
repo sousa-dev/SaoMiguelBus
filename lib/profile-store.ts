@@ -117,7 +117,12 @@ interface ProfileState {
    * meaningless mode in September.
    */
   transitPreviewDataset: TransitDataset | null;
-  /** Which schedule banner the user dismissed, keyed on `banner.id`. */
+  /**
+   * Which schedule banner the user dismissed, keyed on `banner.id`.
+   *
+   * SESSION-SCOPED — deliberately excluded from `partialize`, so a cold start
+   * offers the banner again. See the note there.
+   */
   dismissedScheduleBannerId: string | null;
   setDisplayName: (name: string | null) => void;
   setTransitPreviewDataset: (dataset: TransitDataset | null) => void;
@@ -388,6 +393,26 @@ export const useProfileStore = create<ProfileState>()(
       name: profileStorageKey(),
       storage: createJSONStorage(() => AsyncStorage),
       version: 2,
+      /**
+       * Everything EXCEPT the banner dismissal, which is per-session.
+       *
+       * The changeover banner announces that the bus network is changing —
+       * something a rider needs to actually take in, and something that stays
+       * relevant for as long as the phase lasts. A permanent dismissal means
+       * one stray tap on the X hides it for good, so it is scoped to the run
+       * of the app: tapping X clears it now, the next cold start offers it
+       * again. Listed explicitly rather than omitted, so a field added later
+       * has to make a deliberate choice about persistence.
+       */
+      partialize: (state) => ({
+        displayName: state.displayName,
+        favoriteRoutes: state.favoriteRoutes,
+        favoriteStops: state.favoriteStops,
+        recentSearches: state.recentSearches,
+        votes: state.votes,
+        tracking: state.tracking,
+        transitPreviewDataset: state.transitPreviewDataset,
+      }),
       migrate: (persisted, version) => {
         type PersistedSlice = Pick<
           ProfileState,
@@ -418,6 +443,12 @@ export const useProfileStore = create<ProfileState>()(
         if (error) {
           return;
         }
+        // `partialize` stops WRITING the dismissal, but blobs saved by earlier
+        // versions still carry one, and rehydration merges it straight back
+        // over the default — which would keep the banner hidden forever for
+        // exactly the users who already tapped X. Clearing here covers those,
+        // and is a no-op for everyone else.
+        useProfileStore.setState({ dismissedScheduleBannerId: null });
         void migrateLegacyFavorites();
       },
     },
