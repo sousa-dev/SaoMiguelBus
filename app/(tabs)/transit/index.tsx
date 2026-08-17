@@ -183,6 +183,10 @@ export default function TransitScreen() {
   // Where the answer starts, measured rather than estimated — the block above it
   // changes height with the schedule banner, the ad and the map link.
   const resultsY = useRef<number | null>(null);
+  // Where the FORM starts, measured for the same reason. Needed because the
+  // saved-search shortcuts (favourites, pinned routes) sit far below it and
+  // silently rewrite it.
+  const plannerY = useRef<number | null>(null);
   // Only a search the USER ran scrolls. Results also arrive from the cache on
   // mount and on a dataset switch, and yanking the screen then would be the app
   // moving on its own.
@@ -214,10 +218,27 @@ export default function TransitScreen() {
     });
   };
 
+  /**
+   * Run a search the rider picked from a saved shortcut rather than typed.
+   *
+   * Always scrolls back to the FORM. The favourites panel opens underneath the
+   * results, so tapping a row there rewrites two fields the rider cannot see
+   * and the list below quietly becomes the answer to a different question —
+   * with no visible cause. Landing on the form shows the new origin and
+   * destination in the boxes that produced them; the results follow underneath
+   * as usual. This does not use `scrollWhenReady`, which exists for the
+   * opposite move (jump DOWN to the answer after the rider presses Search).
+   */
   const applySearch = (nextOrigin: string, nextDestination: string) => {
     setOrigin(nextOrigin);
     setDestination(nextDestination);
     setSearchEnabled(true);
+    if (plannerY.current !== null) {
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, SHELL_TOP_OFFSET + plannerY.current - RESULTS_SCROLL_PADDING),
+        animated: true,
+      });
+    }
   };
 
   // Scroll once the search has SETTLED, not when it starts: jumping to a
@@ -285,6 +306,7 @@ export default function TransitScreen() {
               read first or the map quietly contradicts it. */}
           {hasMaps ? <TransitMapLinks /> : null}
 
+          <View onLayout={(event) => { plannerY.current = event.nativeEvent.layout.y; }}>
           {!stopsLoading || !isOnline ? (
             <TransitPlannerCard
               origin={origin}
@@ -307,6 +329,7 @@ export default function TransitScreen() {
           ) : (
             <ActivityIndicator color={theme.primary} style={{ marginVertical: space.xl }} />
           )}
+          </View>
 
           <View onLayout={(event) => { resultsY.current = event.nativeEvent.layout.y; }}>
           {search.isFetching && !hasResults ? (

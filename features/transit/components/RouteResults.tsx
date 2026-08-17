@@ -28,9 +28,20 @@ export function RouteResults({ results, searchDay, origin, destination, onFavori
       <RouteResultsToolbar
         origin={origin}
         destination={destination}
-        onShowFavorites={() => setShowFavorites(true)}
+        favoritesOpen={showFavorites}
+        onToggleFavorites={() => setShowFavorites((open) => !open)}
       />
-      {showFavorites ? <FavoritesPanel onSelect={onFavoriteSelect} /> : null}
+      {/* Closes on pick: it is a chooser, and leaving it open under results
+          that have just changed leaves the rider looking at the thing they
+          already used rather than at the answer. */}
+      {showFavorites ? (
+        <FavoritesPanel
+          onSelect={(o, d) => {
+            setShowFavorites(false);
+            onFavoriteSelect(o, d);
+          }}
+        />
+      ) : null}
       {results.map((journey, index) => {
         // Mirror the webapp: insert an inline ad after every 2 result cards
         // (never after the last one). Premium/offline users render nothing.
