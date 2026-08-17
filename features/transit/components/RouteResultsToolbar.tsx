@@ -46,16 +46,22 @@ export function RouteResultsToolbar({
         },
       ]}
     >
+      {/* Two controls, so two pressables — each carrying its own label. The
+          chevron used to sit flush against the right-hand label, which read as
+          one long run of text and hid where either target began or ended. */}
       <Pressable
         onPress={onToggleFavorites}
-        style={styles.showBtn}
+        style={styles.half}
         accessibilityRole="button"
         accessibilityState={{ expanded: favoritesOpen }}
         accessibilityLabel={t('showFavorites')}
         hitSlop={8}
       >
         <Eye size={18} color={theme.info} />
-        <Text style={[typography.label, { color: theme.info, marginLeft: space.sm }]}>
+        <Text
+          numberOfLines={1}
+          style={[typography.label, styles.halfLabel, { color: theme.info }]}
+        >
           {t('showFavorites')}
         </Text>
         {favoriteCount > 0 ? (
@@ -65,20 +71,34 @@ export function RouteResultsToolbar({
             </Text>
           </View>
         ) : null}
-        <Chevron size={iconSize.md} color={theme.info} style={styles.chevron} />
+        <Chevron size={iconSize.md} color={theme.info} />
       </Pressable>
-      <View style={styles.favSide}>
-        <Text style={[typography.caption, { color: theme.muted, marginRight: space.sm }]}>
+
+      <View style={[styles.divider, { backgroundColor: theme.warning }]} />
+
+      {/* The label is part of the target: it names the action, so tapping it
+          has to perform it. It was previously a bare Text next to a
+          star-sized hit area. */}
+      <Pressable
+        onPress={() => toggleFavorite(origin, destination)}
+        style={styles.half}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isFavorite }}
+        accessibilityLabel={isFavorite ? t('removeFavorites') : t('addFavorites')}
+        hitSlop={8}
+      >
+        <Text
+          numberOfLines={1}
+          style={[typography.label, styles.halfLabelRight, { color: theme.text }]}
+        >
           {isFavorite ? t('removeFavorites') : t('addFavorites')}
         </Text>
-        <Pressable
-          onPress={() => toggleFavorite(origin, destination)}
-          accessibilityRole="button"
-          accessibilityLabel={isFavorite ? t('removeFavorites') : t('addFavorites')}
-        >
-          <Star size={22} color={isFavorite ? theme.warning : theme.muted} fill={isFavorite ? theme.warning : 'transparent'} />
-        </Pressable>
-      </View>
+        <Star
+          size={20}
+          color={isFavorite ? theme.warning : theme.muted}
+          fill={isFavorite ? theme.warning : 'transparent'}
+        />
+      </Pressable>
     </View>
   );
 }
@@ -86,17 +106,34 @@ export function RouteResultsToolbar({
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'stretch',
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
-    paddingVertical: space.md,
-    paddingHorizontal: space.md,
+    paddingHorizontal: space.sm,
     marginBottom: space.md,
   },
-  showBtn: { flexDirection: 'row', alignItems: 'center' },
+  /**
+   * Equal halves rather than `space-between`: the two labels are translated
+   * independently and in PT both are long ("Mostrar Favoritos" / "Remover dos
+   * Favoritos"), so free-flowing widths let one crowd the other off the bar.
+   */
+  half: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    paddingVertical: space.md,
+    paddingHorizontal: space.xs,
+  },
+  halfLabel: { flexShrink: 1 },
+  // The right half reads toward its star, so its label pushes to the end.
+  halfLabelRight: { flexShrink: 1, marginLeft: 'auto' },
+  divider: {
+    width: StyleSheet.hairlineWidth,
+    marginVertical: space.sm,
+    opacity: 0.4,
+  },
   countBadge: {
-    marginLeft: space.sm,
     minWidth: 20,
     paddingHorizontal: space.xs,
     paddingVertical: 1,
@@ -104,6 +141,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   countText: { fontWeight: '700' },
-  chevron: { marginLeft: space.xs },
-  favSide: { flexDirection: 'row', alignItems: 'center' },
 });
