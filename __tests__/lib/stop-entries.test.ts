@@ -12,6 +12,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { buildStopEntries } from '@/lib/stop-search';
+import { dedupeStopsByName } from '@/lib/stop-list';
+import type { Stop } from '@/lib/types';
 
 function stop(id: number, name: string) {
   return { id, name };
@@ -123,5 +125,57 @@ describe('buildStopEntries — respects MIN_QUERY_LENGTH and never hides a match
     const entries = buildStopEntries(many, 'ribeira');
     assert.equal(entries.length, 1);
     assert.equal((entries[0] as { type: 'area'; members: unknown[] }).members.length, 60);
+  });
+});
+
+/**
+ * The picker keys its rows on the stop NAME, not the id, and this is why.
+ *
+ * `serialize_legacy_stops_v2` emits each stop under its full name and again
+ * under its short name REUSING the same id — measured against the deployed
+ * legacy network, 194 rows carry only 108 distinct ids. `dedupeStopsByName`
+ * keeps both rows on purpose (they are two searchable names), so anything
+ * downstream that assumes a unique id renders duplicate React keys and React
+ * silently drops rows.
+ */
+describe('stop entries — row identity', () => {
+  const ALIASED: Stop[] = [
+    // Exactly the shape the API returns: one id, two searchable names.
+    { id: 2, name: 'Ajuda - Igreja', latitude: 37.8, longitude: -25.6 },
+    { id: 2, name: 'Ajuda', latitude: 37.8, longitude: -25.6 },
+    { id: 3, name: 'Achada', latitude: 37.81, longitude: -25.61 },
+  ];
+
+  it('keeps both aliases of one id — they are two distinct names', () => {
+    const kept = dedupeStopsByName(ALIASED);
+
+    assert.equal(kept.length, 3);
+    assert.deepEqual(
+      kept.map((s) => s.name),
+      ['Ajuda - Igreja', 'Ajuda', 'Achada'],
+    );
+  });
+
+  it('leaves ids NON-unique, which is why they cannot be row keys', () => {
+    const kept = dedupeStopsByName(ALIASED);
+    const ids = new Set(kept.map((s) => s.id));
+
+    assert.ok(ids.size < kept.length, 'ids repeat across rows');
+  });
+
+  it('leaves names unique, which is why they CAN be row keys', () => {
+    const kept = dedupeStopsByName(ALIASED);
+    const names = new Set(kept.map((s) => s.name));
+
+    assert.equal(names.size, kept.length);
+  });
+
+  it('gives every rendered entry a unique key across stops and areas', () => {
+    const entries = buildStopEntries(dedupeStopsByName(ALIASED), 'a');
+
+    const keys = entries.map((entry) =>
+      entry.type === 'stop' ? `stop:${entry.stop.name}` : `area:${entry.key}`,
+    );
+    assert.equal(new Set(keys).size, keys.length, `duplicate key in ${keys}`);
   });
 });

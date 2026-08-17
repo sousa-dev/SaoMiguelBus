@@ -133,11 +133,21 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
+            {/*
+              Keyed on the NAME, never the id. `serialize_legacy_stops_v2` emits
+              each stop under its full name and again under its short name
+              REUSING the same id ("Ajuda - Igreja" and "Ajuda" are both id 2) —
+              on the deployed legacy network 194 rows carry 108 distinct ids.
+              `dedupeStopsByName` keeps both on purpose, because they are two
+              searchable names, so the id is not unique here and React drops rows
+              that collide on it. The name is unique by construction, since that
+              is exactly what the dedupe guarantees.
+            */}
             {entries.map((entry) => {
               if (entry.type === 'stop') {
                 const item = entry.stop;
                 return (
-                  <View key={item.id} style={styles.suggestionRow}>
+                  <View key={`stop:${item.name}`} style={styles.suggestionRow}>
                     <Pressable
                       style={styles.suggestionPress}
                       onPress={() => selectStop(item.name)}
@@ -164,7 +174,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
               const collapsed = collapsedAreas.has(entry.key);
               const Chevron = collapsed ? ChevronRight : ChevronDown;
               return (
-                <View key={entry.key}>
+                <View key={`area:${entry.key}`}>
                   <View style={styles.suggestionRow}>
                     <Pressable
                       style={styles.areaChevron}
@@ -186,7 +196,10 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
                   </View>
                   {!collapsed
                     ? entry.members.map((member) => (
-                        <View key={member.id} style={[styles.suggestionRow, styles.areaMemberRow]}>
+                        <View
+                          key={`member:${member.name}`}
+                          style={[styles.suggestionRow, styles.areaMemberRow]}
+                        >
                           <Pressable
                             style={styles.suggestionPress}
                             onPress={() => selectStop(member.name)}
