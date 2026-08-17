@@ -32,6 +32,7 @@ import {
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
 import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
+import type { TransitDataset } from '@/lib/types';
 import { TransitMapLinks } from '@/features/transit/components/TransitMapLinks';
 import { useUserDataMigration } from '@/features/transit/hooks/useUserDataMigration';
 import { useNetwork } from '@/lib/network-provider';
@@ -91,7 +92,8 @@ export default function TransitScreen() {
   const { visible: showHopOnOff } = useHopOnHopOffPromo();
   const { data: stops = [], isLoading: stopsLoading } = useStops();
   // Maps exist only where geometry does, which today means AzoresBus.
-  const hasMaps = useResolvedTransitDataset() === 'azoresbus';
+  const resolvedDataset = useResolvedTransitDataset();
+  const hasMaps = resolvedDataset === 'azoresbus';
   // Re-point saved favourites and recents whenever the active network changes
   // (03 §5d). Driven by the stop list, never by a date.
   useUserDataMigration();
@@ -144,6 +146,32 @@ export default function TransitScreen() {
   useEffect(() => {
     void migrateLegacyFavorites();
   }, []);
+
+  /**
+   * Switching network empties the form.
+   *
+   * The two networks do not share stop names — that is the whole reason
+   * `useUserDataMigration` exists to re-point saved favourites. Carrying a
+   * legacy stop across to AzoresBus leaves the rider holding a name the new
+   * network cannot resolve, and the results underneath it are answers about a
+   * network they are no longer looking at. Clearing is the honest state.
+   *
+   * Only a real SWITCH counts. The dataset starts null and resolves once
+   * bootstrap lands, and treating that first null → 'legacy' step as a change
+   * would wipe an origin and destination that arrived by deep link or saved
+   * search before the config did.
+   */
+  const previousDataset = useRef<TransitDataset | null>(null);
+  useEffect(() => {
+    const previous = previousDataset.current;
+    previousDataset.current = resolvedDataset;
+    if (previous == null || previous === resolvedDataset) {
+      return;
+    }
+    setOrigin('');
+    setDestination('');
+    setSearchEnabled(false);
+  }, [resolvedDataset]);
 
   const searchParams = useMemo(
     () => ({
