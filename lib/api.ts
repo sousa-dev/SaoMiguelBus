@@ -29,7 +29,10 @@ import type {
   Stop,
   TransitJourney,
   TransitJourneySearch,
+  TransitLegGeometry,
+  TransitLineShape,
   TransitSearchResult,
+  TransitStopDetail,
   TripDetail,
   NewsArticle,
   NewsSource,
@@ -451,6 +454,74 @@ export async function fetchConsent(sessionId: string) {
     policy_version: string;
     granted_at: string | null;
   }>(`/api/v3/consent/?session_id=${encodeURIComponent(sessionId)}`);
+}
+
+/**
+ * The drawable path and stop positions for one ride leg.
+ *
+ * Separate from `/journeys` on purpose: carrying a polyline for every leg of
+ * every result would add tens of kilobytes to a search for maps that mostly
+ * never open. `from`/`to` are the `board.sequence` / `alight.sequence` the
+ * journey already carries; omit them for the whole trip.
+ */
+/** One stop: its poles, the lines that serve it, and what leaves next. */
+/** A whole line: one path and ordered stop list per direction. */
+export async function fetchLineShape(params: {
+  code: string;
+  dataset?: TransitDataset | null;
+}): Promise<TransitLineShape> {
+  const query = new URLSearchParams();
+  if (params.dataset) {
+    query.set('dataset', params.dataset);
+  }
+  const suffix = query.toString();
+  return apiFetch<TransitLineShape>(
+    `/api/v3/transit/lines/${encodeURIComponent(params.code)}/shape${suffix ? `?${suffix}` : ''}`,
+  );
+}
+
+export async function fetchStopDetail(params: {
+  stopId: number;
+  day?: string;
+  start?: string;
+  dataset?: TransitDataset | null;
+}): Promise<TransitStopDetail> {
+  const query = new URLSearchParams();
+  if (params.day) {
+    query.set('day', params.day);
+  }
+  if (params.start) {
+    query.set('start', params.start);
+  }
+  if (params.dataset) {
+    query.set('dataset', params.dataset);
+  }
+  const suffix = query.toString();
+  return apiFetch<TransitStopDetail>(
+    `/api/v3/transit/stops/${params.stopId}${suffix ? `?${suffix}` : ''}`,
+  );
+}
+
+export async function fetchTripGeometry(params: {
+  tripId: number;
+  from?: number;
+  to?: number;
+  dataset?: TransitDataset | null;
+}): Promise<TransitLegGeometry> {
+  const query = new URLSearchParams();
+  if (params.from !== undefined) {
+    query.set('from', String(params.from));
+  }
+  if (params.to !== undefined) {
+    query.set('to', String(params.to));
+  }
+  if (params.dataset) {
+    query.set('dataset', params.dataset);
+  }
+  const suffix = query.toString();
+  return apiFetch<TransitLegGeometry>(
+    `/api/v3/transit/trips/${params.tripId}/geometry${suffix ? `?${suffix}` : ''}`,
+  );
 }
 
 export async function fetchTripDetail(

@@ -228,6 +228,98 @@ export interface TransitJourneySearch {
   transfersAvailable?: number;
 }
 
+/**
+ * One stop as a map needs it: where it physically is.
+ *
+ * `lat`/`lon` are the POLE the trip serves when we know it, not the `Stop`
+ * centroid — a centroid is the average of every pole sharing a name and can sit
+ * in the middle of a road, on neither side. Absent on the legacy network, which
+ * has no poles.
+ */
+export interface TransitGeometryStop {
+  stopId: number;
+  name: string;
+  time: string;
+  sequence: number;
+  dayOffset: number;
+  lat?: number;
+  lon?: number;
+  /** Pole code printed at the stop, e.g. "A 12". AzoresBus only. */
+  code?: string;
+}
+
+/**
+ * The drawable path and stop positions for ONE ride leg.
+ *
+ * `shape` is a Google-encoded polyline already trimmed to the segment the rider
+ * travels, and is `''` whenever the server could not honestly draw the road —
+ * no stored shape (every legacy trip), or a shape that does not match the stops.
+ * An empty shape means "do not draw a line", never "draw a straight one".
+ */
+export interface TransitLegGeometry {
+  tripId: number;
+  route: string;
+  shape: string;
+  stops: TransitGeometryStop[];
+}
+
+/** One physical pole: the sign you actually stand at, and the code printed on it. */
+export interface TransitStopPole {
+  code: string;
+  name: string;
+  lat: number;
+  lon: number;
+}
+
+export interface TransitStopDeparture {
+  tripId: number;
+  route: string;
+  time: string;
+  dayOffset: number;
+  sequence: number;
+  /**
+   * Raw upstream journey name. On the live API this is a TIME RANGE
+   * ("08:00 » 08:50"), not a headsign — do not show it to a rider.
+   */
+  headsign: string;
+  /** The trip's final stop: the honest answer to "where is this bus going?". */
+  destination?: string;
+  /** Which pole this particular departure leaves from. */
+  code?: string;
+}
+
+/**
+ * A stop, answered the way someone standing near it would ask: where exactly is
+ * it, what stops here, and when is the next one.
+ *
+ * `poles` is empty on the legacy network, which has no pole data — `lat`/`lon`
+ * then fall back to the collapsed centroid.
+ */
+export interface TransitStopDetail {
+  id: number;
+  name: string;
+  lat: number;
+  lon: number;
+  dataset: TransitDataset;
+  poles: TransitStopPole[];
+  lines: string[];
+  departures: TransitStopDeparture[];
+}
+
+export interface TransitLineDirection {
+  direction: number;
+  /** Encoded polyline for the fullest trip in this direction. */
+  shape: string;
+  tripId: number;
+  stops: TransitGeometryStop[];
+}
+
+export interface TransitLineShape {
+  code: string;
+  displayName: string;
+  directions: TransitLineDirection[];
+}
+
 export function isRideLeg(leg: TransitJourneyLeg): leg is TransitRideLeg {
   return leg.kind === 'ride';
 }
