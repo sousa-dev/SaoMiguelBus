@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Bus, CloudOff, ExternalLink, MapPin, Star } from 'lucide-react-native';
@@ -16,13 +16,16 @@ import { coordinateToRegion, fitRegionForCoordinates } from '@/lib/island-map';
 import type { MapOverlaySpec } from '@/lib/map-overlays';
 import { useNetwork } from '@/lib/network-provider';
 import { useProfileStore } from '@/lib/profile-store';
-import { displayRouteNumber, resolveDayType } from '@/lib/transit-format';
+import { departuresStartTime, displayRouteNumber, resolveDayType } from '@/lib/transit-format';
 import { useBootstrapCached } from '@/features/transit/hooks/useBootstrapQueries';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 const MAP_HEIGHT = 220;
 const POLE_COLOR = '#1e88e5';
+
+/** How often the clock this screen reads from is nudged forward. */
+const CLOCK_TICK_MS = 60_000;
 
 /**
  * One stop: exactly where it is, what serves it, and what leaves next.
@@ -48,15 +51,38 @@ export default function TransitStopScreen() {
   const favoriteStops = useProfileStore((s) => s.favoriteStops);
   const toggleFavoriteStop = useProfileStore((s) => s.toggleFavoriteStop);
 
-  const day = useMemo(
-    () => resolveDayType(new Date(), bootstrap?.holidays),
-    [bootstrap?.holidays],
-  );
+  /**
+   * The clock this screen reads from.
+   *
+   * Held in state rather than called inline, because "next departures" is a
+   * claim that goes stale on its own: `new Date()` captured at mount would
+   * pin the list to the moment the screen opened, and a screen left open
+   * across midnight would keep yesterday's day type. Ticks every minute, and
+   * resyncs on focus so a screen backgrounded for an hour is not stale the
+   * instant it comes back.
+   */
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), CLOCK_TICK_MS);
+    return () => clearInterval(timer);
+  }, []);
+  useFocusEffect(useCallback(() => setNow(new Date()), []));
+
+  const day = useMemo(() => resolveDayType(now, bootstrap?.holidays), [now, bootstrap?.holidays]);
+  // Bucketed, so this only changes a few times an hour — see
+  // DEPARTURES_START_BUCKET_MINUTES for why rounding down is the right way.
+  const start = departuresStartTime(now);
 
   const query = useQuery({
-    queryKey: ['transit', 'stop', stopId, day, dataset ?? 'server'],
-    queryFn: () => fetchStopDetail({ stopId, day, dataset }),
+    queryKey: ['transit', 'stop', stopId, day, start, dataset ?? 'server'],
+    // `start` is what turns "today's timetable" into "what leaves from here
+    // next" — without it the API returns the whole service day from its
+    // beginning, so at 18:00 the list still opened with the 06:15.
+    queryFn: () => fetchStopDetail({ stopId, day, start, dataset }),
     enabled: Number.isFinite(stopId) && stopId > 0,
+    // The previous window's answer stays on screen while the next one loads,
+    // so the list does not blank out every time the bucket rolls over.
+    placeholderData: (previous) => previous,
   });
 
   const stop = query.data;
@@ -234,9 +260,16 @@ export default function TransitStopScreen() {
         ) : null}
 
         <Section title={t('transitStopNextDepartures')}>
+          {/* Says out loud which window is being shown. Without it an empty
+              list at 23:00 is indistinguishable from a stop with no service,
+              and a rider has no way to tell that earlier buses were filtered
+              out rather than missing. */}
+          <Text style={[typography.caption, styles.departuresFrom, { color: theme.muted }]}>
+            {t('transitStopDeparturesFrom', { time: start.replace('h', ':') })}
+          </Text>
           {stop.departures.length === 0 ? (
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {t('transitStopNoDepartures')}
+              {t('transitStopNoMoreDeparturesToday')}
             </Text>
           ) : (
             stop.departures.map((departure) => (
@@ -317,6 +350,7 @@ const styles = StyleSheet.create({
     minWidth: 40,
     alignItems: 'center',
   },
+  departuresFrom: { marginBottom: space.sm },
   departure: {
     flexDirection: 'row',
     alignItems: 'center',

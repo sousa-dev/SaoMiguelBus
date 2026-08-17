@@ -112,6 +112,32 @@ export function computeVotePercents(
   };
 }
 
+/**
+ * `start` is rounded DOWN to this many minutes, which does two jobs at once.
+ *
+ * It keeps a query key stable — a key carrying the live minute would refetch
+ * sixty times an hour for a timetable that does not change — and it leaves a
+ * few minutes of grace at the front of the list, so a bus that pulled out two
+ * minutes ago is still visible to a rider who is running for it.
+ */
+export const DEPARTURES_START_BUCKET_MINUTES = 5;
+
+/**
+ * A clock time as the transit API's `start` parameter: `HHhMM`, bucketed.
+ *
+ * Local time on purpose — the timetable is written in island local time, and
+ * the rider is standing at the stop.
+ */
+export function departuresStartTime(
+  date: Date,
+  bucketMinutes = DEPARTURES_START_BUCKET_MINUTES,
+): string {
+  const size = Math.max(1, Math.floor(bucketMinutes));
+  const hours = date.getHours();
+  const minutes = Math.floor(date.getMinutes() / size) * size;
+  return `${String(hours).padStart(2, '0')}h${String(minutes).padStart(2, '0')}`;
+}
+
 /** Parse `08h30` / `08:30` into minutes since midnight. */
 export function timeStringToMinutes(timeString: string): number {
   const normalized = normalizeTripTime(timeString);
