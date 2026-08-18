@@ -9,7 +9,6 @@ import {
   TimerReset,
   Trash2,
 } from 'lucide-react-native';
-import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
@@ -54,6 +53,7 @@ import { usePremiumStore } from '@/lib/premium-store';
 import { useProfileStore } from '@/lib/profile-store';
 import { usePersonalizationStore } from '@/lib/personalization-store';
 import { getOrCreateSessionId } from '@/lib/session';
+import { getAppVersion } from '@/lib/platform';
 import { space, typography } from '@/lib/tokens';
 import { type ThemePreference, useThemePrefsStore } from '@/lib/theme-prefs';
 import { useAppStackScreenOptions } from '@/lib/navigation';
@@ -217,7 +217,9 @@ export default function SettingsScreen() {
     }
   };
 
-  const appVersion = Constants.expoConfig?.version ?? '5.1.6';
+  // One source for the version, shared with the User-Agent, analytics, feedback
+  // reports and the update check — a second copy here is how it went stale.
+  const appVersion = getAppVersion();
 
   const openAdPrivacyOptions = () => {
     void (async () => {
