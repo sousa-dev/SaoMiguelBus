@@ -127,6 +127,7 @@ export default function TransitStopScreen() {
         longitude: marker.longitude,
         pinColor: POLE_COLOR,
         title: marker.title,
+        showLabel: true,
         size: 24,
       })),
       polylines: [],

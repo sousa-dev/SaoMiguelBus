@@ -27,6 +27,7 @@ export function journeyPinOverlay(
     size: (isAction ? 26 : 12) + (highlighted ? 6 : 0),
     highlighted,
     title: pin.code ? `${pin.name} · ${pin.code}` : pin.name,
+    showLabel: highlighted,
     ...(onPress ? { onPress } : {}),
   };
 }

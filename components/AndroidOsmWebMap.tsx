@@ -92,6 +92,7 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
         highlighted: marker.highlighted,
         opacity: marker.opacity,
         title: marker.title,
+        showLabel: marker.showLabel,
         draggable: marker.draggable,
       };
     });
@@ -100,6 +101,7 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
   }, [overlays]);
 
   const overlaysKey = useMemo(() => JSON.stringify(serializableOverlays), [serializableOverlays]);
+  const regionKey = useMemo(() => JSON.stringify(initialRegion), [initialRegion]);
   const optionsKey = useMemo(
     () =>
       JSON.stringify({
@@ -162,6 +164,24 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
     inject(`window.__mapBridge&&window.__mapBridge.updateOptions(${escapeForInject(options)})`);
   }, [inject, isDark, maxZoomLevel, minZoomLevel, scrollEnabled, showsUserLocation, userLocation, zoomEnabled]);
 
+  // `initialRegion` is captured once for the frozen HTML build above (so the
+  // WebView never reloads), but the prop keeps flowing live — geometry that
+  // resolves after mount (a late leg, a direction swap) reaches the map
+  // through this channel instead of being stuck on the boot-time region.
+  // Read through a ref so this callback stays STABLE. Depending on the region
+  // object directly made it a new function on every render, which defeated the
+  // `regionKey` memo below: a caller passing an inline `initialRegion` object
+  // then pushed a region sync — and an animated re-fit — on every single render.
+  const regionRef = useRef(initialRegion);
+  regionRef.current = initialRegion;
+
+  const sendRegionUpdate = useCallback(() => {
+    if (!readyRef.current) {
+      return;
+    }
+    inject(`window.__mapBridge&&window.__mapBridge.applyRegion(${escapeForInject(regionRef.current)},true)`);
+  }, [inject]);
+
   const markReady = useCallback(() => {
     if (readyRef.current) {
       return;
@@ -169,11 +189,12 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
     readyRef.current = true;
     sendOverlayUpdate();
     sendOptionsUpdate();
+    sendRegionUpdate();
     onMapReady?.({ nativeEvent: null } as unknown as Parameters<NonNullable<MapViewProps['onMapReady']>>[0]);
     onMapLoaded?.({ nativeEvent: null } as unknown as Parameters<NonNullable<MapViewProps['onMapLoaded']>>[0]);
-  }, [onMapLoaded, onMapReady, sendOptionsUpdate, sendOverlayUpdate]);
+  }, [onMapLoaded, onMapReady, sendOptionsUpdate, sendOverlayUpdate, sendRegionUpdate]);
 
-  // Push incremental overlay/option changes after the map is live.
+  // Push incremental overlay/option/region changes after the map is live.
   useEffect(() => {
     if (!readyRef.current) {
       return;
@@ -181,6 +202,13 @@ export const AndroidOsmWebMap = forwardRef<AndroidOsmWebMapHandle, Props>(functi
     sendOverlayUpdate();
     sendOptionsUpdate();
   }, [overlaysKey, optionsKey, sendOptionsUpdate, sendOverlayUpdate]);
+
+  useEffect(() => {
+    if (!readyRef.current) {
+      return;
+    }
+    sendRegionUpdate();
+  }, [regionKey, sendRegionUpdate]);
 
   // Safety net: never let the spinner hang if the WebView goes silent.
   useEffect(() => {

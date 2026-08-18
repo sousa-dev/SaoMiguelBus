@@ -71,12 +71,21 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
     () => mergeMapOverlays(androidOverlays ?? { markers: [], polylines: [] }, mapOverlaysFromChildren(children)),
     [androidOverlays, children],
   );
+  // Frozen once, for the FIRST HTML build only — `AndroidOsmWebMap` keeps the
+  // WebView alive across re-renders and reads this just to boot it, which is
+  // what stops the WebView reloading (the old "flashing"). It also backstops
+  // the live value below before any real region exists.
   const androidInitialRegionRef = useRef<Region | null>(null);
   if (!androidInitialRegionRef.current) {
     androidInitialRegionRef.current =
       initialRegion ?? controlledRegion ?? currentRegion ?? getIslandMapRegion();
   }
-  const androidInitialRegion = androidInitialRegionRef.current;
+  // Live, unlike the ref above — geometry that resolves after mount (a late
+  // leg, a direction swap) flows through here so `AndroidOsmWebMap` can push
+  // it to the already-booted WebView instead of leaving Android stuck on
+  // whatever region existed at first paint.
+  const androidLiveRegion =
+    initialRegion ?? controlledRegion ?? currentRegion ?? androidInitialRegionRef.current;
 
   if (Platform.OS === 'web') {
     return null;
@@ -169,7 +178,7 @@ export const OsmMapView = forwardRef<MapHandle, OsmMapViewProps>(function OsmMap
       <View style={style}>
         <AndroidOsmWebMap
           ref={setRefs}
-          initialRegion={androidInitialRegion}
+          initialRegion={androidLiveRegion}
           overlays={androidOverlaySpec}
           isDark={isDark}
           scrollEnabled={scrollEnabled}

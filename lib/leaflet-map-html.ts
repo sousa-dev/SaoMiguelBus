@@ -67,15 +67,22 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
       let moveEndTimer = null;
       let suppressRegionEvents = 0;
       let hasInitialView = false;
+      let userPannedGesture = false;
+      let lastAppliedRegion = null;
 
       function post(type, payload) {
         if (!RN) return;
         RN.postMessage(JSON.stringify(Object.assign({ type: type }, payload || {})));
       }
 
-      function deltaToZoom(latitudeDelta) {
-        const zoom = Math.log2(360 / Math.max(latitudeDelta, 0.0005));
-        return Math.max(0, Math.min(19, Math.round(zoom)));
+      // A zoom LEVEL for a point (flyTo), not a container fit — deriving from
+      // the larger of the two deltas keeps an east-west route from being
+      // over-zoomed by its smaller north-south extent, and Math.floor errs
+      // towards showing too much rather than clipping the path.
+      function deltaToZoom(latitudeDelta, longitudeDelta) {
+        const delta = Math.max(latitudeDelta, longitudeDelta || 0, 0.0005);
+        const zoom = Math.log2(360 / delta);
+        return Math.max(0, Math.min(19, Math.floor(zoom)));
       }
 
       function regionFromMap() {
@@ -104,7 +111,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           innerHtml =
             '<div style="color:#fff;font:700 ' + fontSize + 'px/1 system-ui,sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.45)">' + inner + '</div>';
         }
-        const caption = marker.title && marker.iconKind !== 'bus' && !inner
+        const caption = marker.showLabel && marker.title && marker.iconKind !== 'bus'
           ? '<div class="hub-marker-label">' + marker.title + '</div>'
           : '';
         const highlighted = !!marker.highlighted;
@@ -200,14 +207,38 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         tileLayer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
       }
 
+      /**
+       * Run a PROGRAMMATIC move without it being mistaken for a user gesture.
+       *
+       * Released on the map's own moveend, not on a fixed timer. Leaflet
+       * animates fitBounds/flyTo over 250-350ms, so a 200ms window closed while
+       * the move was still running: the resulting moveend arrived unsuppressed,
+       * was read as a pan, and set userPannedGesture — which permanently
+       * disabled every later applyRegion. The map framed itself once and then
+       * ignored the app for the rest of its life.
+       *
+       * The timer is only a fallback for a move that never fires moveend (a
+       * setView to where the map already is), and is long enough to outlast the
+       * animation rather than racing it.
+       */
       function withSuppressedRegionEvents(fn) {
         suppressRegionEvents += 1;
+        let released = false;
+        function release() {
+          if (released) return;
+          released = true;
+          suppressRegionEvents = Math.max(0, suppressRegionEvents - 1);
+        }
         try {
           fn();
         } finally {
-          setTimeout(function () {
-            suppressRegionEvents = Math.max(0, suppressRegionEvents - 1);
-          }, 200);
+          if (map) {
+            // Registered after the main moveend listener, so that one runs
+            // first and still sees the move suppressed; the release is deferred
+            // a tick so any same-turn handler is covered too.
+            map.once('moveend', function () { setTimeout(release, 0); });
+          }
+          setTimeout(release, 1200);
         }
       }
 
@@ -241,10 +272,16 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
 
       function setViewFromRegion(nextRegion, animate) {
         if (!map || !nextRegion) return;
-        const zoom = deltaToZoom(nextRegion.latitudeDelta);
+        // Recorded before the no-op check, not after: this is the region the app
+        // last ASKED for, and the post-layout re-fit below has to replay that
+        // even when this particular call was skipped as already-satisfied.
+        lastAppliedRegion = nextRegion;
         // Only diff against the current view once the map actually has one —
-        // getCenter() throws on a freshly created map with no view set.
+        // getCenter() throws on a freshly created map with no view set. The
+        // comparison zoom is a heuristic (deltaToZoom), not what actually gets
+        // applied below — fitBounds does its own container-aware arithmetic.
         if (hasInitialView) {
+          const zoom = deltaToZoom(nextRegion.latitudeDelta, nextRegion.longitudeDelta);
           const center = map.getCenter();
           const latDiff = Math.abs(center.lat - nextRegion.latitude);
           const lngDiff = Math.abs(center.lng - nextRegion.longitude);
@@ -253,8 +290,12 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
             return;
           }
         }
+        const bounds = L.latLngBounds(
+          [nextRegion.latitude - nextRegion.latitudeDelta / 2, nextRegion.longitude - nextRegion.longitudeDelta / 2],
+          [nextRegion.latitude + nextRegion.latitudeDelta / 2, nextRegion.longitude + nextRegion.longitudeDelta / 2],
+        );
         withSuppressedRegionEvents(function () {
-          map.setView([nextRegion.latitude, nextRegion.longitude], zoom, { animate: !!animate });
+          map.fitBounds(bounds, { animate: !!animate, padding: [8, 8] });
         });
         hasInitialView = true;
       }
@@ -283,6 +324,11 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           });
           map.on('moveend', function () {
             if (suppressRegionEvents > 0) return;
+            // A real user pan/zoom on an interactive map — from here on, stop
+            // fighting them with programmatic region syncs (applyRegion).
+            if (config && config.scrollEnabled) {
+              userPannedGesture = true;
+            }
             clearTimeout(moveEndTimer);
             moveEndTimer = setTimeout(function () {
               post('regionChange', { region: regionFromMap() });
@@ -291,8 +337,21 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           // Set the view BEFORE reading anything off the map.
           setViewFromRegion(next.region, false);
           applyMapOptions(next);
-          // Leaflet sometimes needs a nudge once the WebView has its final size.
-          setTimeout(function () { if (map) map.invalidateSize(); }, 60);
+          // Leaflet sometimes needs a nudge once the WebView has its final size —
+          // and fitBounds must run again after that, since it accounts for the
+          // container size and the first call ran against the pre-layout one.
+          setTimeout(function () {
+            if (!map) return;
+            map.invalidateSize();
+            // Re-fit against the region that is CURRENTLY wanted. RN sends its
+            // first applyRegion the moment it sees ready, which lands inside
+            // this 60ms window — replaying next.region here threw that away and
+            // snapped the map back to the boot framing. A real user gesture in
+            // the same window wins over both.
+            if (userPannedGesture) return;
+            hasInitialView = false;
+            setViewFromRegion(lastAppliedRegion || next.region, false);
+          }, 60);
           post('ready', {});
           return;
         }
@@ -320,13 +379,20 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         },
         flyTo: function (region, durationMs) {
           if (!map) return;
-          const zoom = deltaToZoom(region.latitudeDelta);
+          const zoom = deltaToZoom(region.latitudeDelta, region.longitudeDelta);
           withSuppressedRegionEvents(function () {
             map.flyTo([region.latitude, region.longitude], zoom, {
               animate: true,
               duration: Math.max(0.15, (durationMs || 300) / 1000),
             });
           });
+        },
+        // Post-mount region sync: geometry that arrives after the first paint
+        // (a late leg, a direction swap) re-frames the map instead of leaving
+        // it stuck on the region the WebView happened to boot with.
+        applyRegion: function (region, animate) {
+          if (!map || !region || userPannedGesture) return;
+          setViewFromRegion(region, animate !== false);
         },
         fitBounds: function (coordinates, padding) {
           if (!map || !coordinates || !coordinates.length) return;
@@ -350,6 +416,7 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
           if (payload.type === 'updateOptions') window.__mapBridge.updateOptions(payload.options);
           if (payload.type === 'flyTo') window.__mapBridge.flyTo(payload.region, payload.durationMs);
           if (payload.type === 'fitBounds') window.__mapBridge.fitBounds(payload.coordinates, payload.padding || {});
+          if (payload.type === 'applyRegion') window.__mapBridge.applyRegion(payload.region, payload.animate);
         } catch (_) {}
       }
 

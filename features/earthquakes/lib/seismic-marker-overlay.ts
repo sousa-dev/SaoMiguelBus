@@ -14,6 +14,9 @@ export function seismicMarkerOverlay(
     longitude: event.longitude,
     pinColor: magnitudeColor(theme, event.magnitude),
     title: `M${event.magnitude.toFixed(1)}`,
+    // The magnitude IS the content of a quake pin, not a tap target's name, so
+    // this map opts into the caption that `showLabel` now gates.
+    showLabel: true,
     onPress,
   };
 }

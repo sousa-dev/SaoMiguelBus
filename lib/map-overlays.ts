@@ -20,6 +20,9 @@ export type MapMarkerOverlay = {
   opacity?: number;
   highlighted?: boolean;
   title?: string;
+  /** Paint `title` under the pin. Off by default — a title is a tap target's
+   *  name, not a map label. */
+  showLabel?: boolean;
   draggable?: boolean;
   onPress?: () => void;
   onDragEnd?: (coordinate: { latitude: number; longitude: number }) => void;

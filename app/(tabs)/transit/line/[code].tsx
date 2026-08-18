@@ -83,6 +83,7 @@ export default function TransitLineScreen() {
         size: stop.stopId === focused ? 18 : 10,
         highlighted: stop.stopId === focused,
         title: stop.code ? `${stop.name} · ${stop.code}` : stop.name,
+        showLabel: stop.stopId === focused,
         onPress: () => openStop(stop.stopId),
       })),
       polylines: path.length
