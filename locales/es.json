@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 ruta",
     "trackingCountPlural": "{count} rutas",
     "clearAll": "Limpiar Todo",
+    "clearInput": "Borrar campo",
     "days": "Días",
     "time": "Hora",
     "scheduleUnavailable": "Horario no disponible",

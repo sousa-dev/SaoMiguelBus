@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, MapPin, Star } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, MapPin, Star, X } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -181,6 +181,23 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
             setSuggestionsOpen(true);
           }}
         />
+        {/* Emptying a stop name one backspace at a time is the slowest way to
+            change your mind on a 816-stop network. Leaves the list OPEN, so
+            clearing lands on favourites and recents rather than on nothing. */}
+        {query.length > 0 ? (
+          <IconButton
+            icon={X}
+            variant="ghost"
+            size="sm"
+            color={theme.muted}
+            accessibilityLabel={t('clearInput')}
+            onPress={() => {
+              setQuery('');
+              onSelect('');
+              setSuggestionsOpen(true);
+            }}
+          />
+        ) : null}
       </View>
       {suggestionsOpen && visibleEntries.length > 0 ? (
         <View

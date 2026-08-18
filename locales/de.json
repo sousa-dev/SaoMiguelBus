@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 Route",
     "trackingCountPlural": "{count} Routen",
     "clearAll": "Alles Löschen",
+    "clearInput": "Feld leeren",
     "days": "Tage",
     "time": "Zeit",
     "scheduleUnavailable": "Fahrplan nicht verfügbar",

@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 route",
     "trackingCountPlural": "{count} routes",
     "clearAll": "Clear All",
+    "clearInput": "Clear field",
     "days": "Days",
     "time": "Time",
     "scheduleUnavailable": "Schedule unavailable",

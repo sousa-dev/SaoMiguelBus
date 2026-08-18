@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 条路线",
     "trackingCountPlural": "{count} 条路线",
     "clearAll": "清除全部",
+    "clearInput": "清除输入",
     "days": "天",
     "time": "时间",
     "scheduleUnavailable": "时刻表不可用",

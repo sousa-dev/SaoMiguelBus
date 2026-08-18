@@ -603,6 +603,7 @@
     "trackingCountSingular": "1 rota",
     "trackingCountPlural": "{count} rotas",
     "clearAll": "Limpar Tudo",
+    "clearInput": "Limpar campo",
     "days": "Dias",
     "time": "Hora",
     "scheduleUnavailable": "Horário indisponível",

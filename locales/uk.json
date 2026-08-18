@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 маршрут",
     "trackingCountPlural": "{count} маршрутів",
     "clearAll": "Очистити Все",
+    "clearInput": "Очистити поле",
     "days": "Дні",
     "time": "Час",
     "scheduleUnavailable": "Розклад недоступний",

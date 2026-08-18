@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 percorso",
     "trackingCountPlural": "{count} percorsi",
     "clearAll": "Cancella Tutto",
+    "clearInput": "Cancella campo",
     "days": "Giorni",
     "time": "Ora",
     "scheduleUnavailable": "Orario non disponibile",

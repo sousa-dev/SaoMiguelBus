@@ -606,6 +606,7 @@
     "trackingCountSingular": "1 itinéraire",
     "trackingCountPlural": "{count} itinéraires",
     "clearAll": "Tout Effacer",
+    "clearInput": "Effacer le champ",
     "days": "Jours",
     "time": "Heure",
     "scheduleUnavailable": "Horaire indisponible",

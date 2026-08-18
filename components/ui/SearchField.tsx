@@ -1,6 +1,7 @@
 import { Search, X } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { IconButton } from '@/components/ui/IconButton';
 import { iconSize, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -21,6 +22,7 @@ export function SearchField({
   onClear,
 }: SearchFieldProps) {
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.wrap, { backgroundColor: theme.surfaceVariant, borderColor: theme.border }]}>
@@ -41,7 +43,7 @@ export function SearchField({
           variant="ghost"
           size="sm"
           color={theme.muted}
-          accessibilityLabel={accessibilityLabel ? `${accessibilityLabel} clear` : 'Clear search'}
+          accessibilityLabel={t('clearInput')}
           onPress={() => {
             onChangeText('');
             onClear?.();

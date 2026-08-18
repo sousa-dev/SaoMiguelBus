@@ -1,7 +1,9 @@
-import { MapPin } from 'lucide-react-native';
+import { MapPin, X } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
+import { IconButton } from '@/components/ui/IconButton';
 import { normalizeToken } from '@/features/minibus/routeSearch';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -22,6 +24,7 @@ function sortStops(stops: string[]): string[] {
 
 export function MinibusStopPicker({ label, value, placeholder, stops, onChangeText }: Props) {
   const theme = useAppTheme();
+  const { t } = useTranslation();
 
   const options = useMemo(() => {
     const sorted = sortStops(stops);
@@ -50,6 +53,16 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
           style={[styles.input, typography.body, { color: theme.text }]}
           returnKeyType="search"
         />
+        {value.length > 0 ? (
+          <IconButton
+            icon={X}
+            variant="ghost"
+            size="sm"
+            color={theme.muted}
+            accessibilityLabel={t('clearInput')}
+            onPress={() => onChangeText('')}
+          />
+        ) : null}
       </View>
 
       {options.length > 0 ? (
