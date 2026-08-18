@@ -2,15 +2,16 @@ import { Share2 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
-import { shareTrip } from '@/features/transit/share-trip';
+import { shareJourney } from '@/features/transit/share-trip';
 import { useAppTheme } from '@/lib/theme';
-import type { TransitSearchResult } from '@/lib/types';
+import type { TransitJourney } from '@/lib/types';
 
 type Props = {
-  trip: TransitSearchResult;
+  journey: TransitJourney;
 };
 
-export function ShareTripButton({ trip }: Props) {
+/** Card-level sibling of `ShareTripButton`: shares every bus, not one leg. */
+export function ShareJourneyButton({ journey }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
@@ -20,7 +21,7 @@ export function ShareTripButton({ trip }: Props) {
       variant="ghost"
       color={theme.muted}
       accessibilityLabel={t('transitShareTrip')}
-      onPress={() => void shareTrip(trip, { t, alertTitle: t('transitShareTitle') })}
+      onPress={() => void shareJourney(journey, { t, alertTitle: t('transitShareTitle') })}
     />
   );
 }

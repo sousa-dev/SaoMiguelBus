@@ -160,7 +160,7 @@ export default function TripDetailScreen() {
         key: 'share-trip',
         labelKey: 'fabShareTrip',
         icon: Share2,
-        onPress: () => void shareTrip(rawTrip, { alertTitle: t('transitShareTitle') }),
+        onPress: () => void shareTrip(rawTrip, { t, alertTitle: t('transitShareTitle') }),
       },
     ];
   }, [rawTrip, t]);
