@@ -97,6 +97,60 @@ describe('buildStopEntries — ordering', () => {
   });
 });
 
+/**
+ * Exact-match ranking: below favourites, an entry whose OWN display name
+ * equals the query (folded) sorts above every entry that merely contains it.
+ * "Furnas" alphabetically precedes "Lagoa", so without this tier a search
+ * for "lagoa" buries the village the query names under Furnas (Lagoa).
+ */
+describe('buildStopEntries — exact-match ordering', () => {
+  function labels(entries: ReturnType<typeof buildStopEntries>) {
+    return entries.map((e) => (e.type === 'area' ? e.key : e.stop.name));
+  }
+
+  it('puts a stop exactly matching the query above one that merely contains it', () => {
+    const entries = buildStopEntries(
+      [stop(1, 'Furnas (Lagoa)'), stop(2, 'Lagoa')],
+      'lagoa',
+    );
+    assert.deepEqual(labels(entries), ['Lagoa', 'Furnas (Lagoa)']);
+  });
+
+  it('is case- and accent-insensitive', () => {
+    const entries = buildStopEntries(
+      [stop(1, 'Furnas (Água)'), stop(2, 'Água')],
+      'AGUA',
+    );
+    assert.deepEqual(labels(entries), ['Água', 'Furnas (Água)']);
+  });
+
+  it('still lets favourites outrank an exact match', () => {
+    const entries = buildStopEntries(
+      [stop(1, 'Furnas (Lagoa)'), stop(2, 'Lagoa')],
+      'lagoa',
+      new Set([1]),
+    );
+    assert.deepEqual(labels(entries), ['Furnas (Lagoa)', 'Lagoa']);
+  });
+
+  it('ranks an exact-match area key above a substring match, below favourites', () => {
+    // Two Lagoa members make a real area; Furnas (Lagoa) stays a plain stop.
+    const entries = buildStopEntries(
+      [stop(1, 'Lagoa (Igreja)'), stop(2, 'Lagoa (Centro)'), stop(3, 'Furnas (Lagoa)')],
+      'lagoa',
+    );
+    assert.deepEqual(labels(entries), ['Lagoa', 'Furnas (Lagoa)']);
+  });
+
+  it('leaves non-exact matches in alphabetical order relative to each other', () => {
+    const entries = buildStopEntries(
+      [stop(1, 'Furnas (Lagoa)'), stop(2, 'Achada (Lagoa)')],
+      'lagoa',
+    );
+    assert.deepEqual(labels(entries), ['Achada (Lagoa)', 'Furnas (Lagoa)']);
+  });
+});
+
 describe('buildStopEntries — regression proof: legacy-shaped input is unchanged', () => {
   it('degrades to exactly today’s flat filterStops output when nothing groups', () => {
     const legacyShaped = [

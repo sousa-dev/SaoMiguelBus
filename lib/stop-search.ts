@@ -3,8 +3,7 @@
  *
  * No match is ever hidden. Every stop whose name contains the query is
  * returned — no relevance ranking, no cap. A village with 66 stops shows all
- * 66. The ONLY reordering is favourites, which `buildStopEntries` floats to the
- * top of whatever level they appear at; everything below them stays strictly
+ * 66. Reordering is favourites first, then an exact display-name match, then
  * alphabetical. Floating changes the order of the list, never its contents.
  *
  * That makes two things load-bearing, both here rather than left to the
@@ -88,6 +87,14 @@ export type StopListEntry<T> =
  * favourite members lead. Ties break alphabetically exactly as before, so this
  * is a reordering and never a filter — pass nothing and the output is
  * byte-identical to the pre-favourites behaviour.
+ *
+ * Below favourites, an entry whose OWN display name exactly equals the query
+ * (folded) sorts above every entry that merely contains it — "Lagoa" over
+ * "Furnas (Lagoa)" when searching "lagoa", even though both are non-favourite
+ * and "Furnas" alphabetically precedes "Lagoa". For an area entry that
+ * display name is the key, never a member's — a village exactly named after
+ * the query is the whole point of typing it, and members are unreachable
+ * without expanding the section anyway.
  */
 export function buildStopEntries<T extends Pick<Stop, 'id' | 'name'>>(
   allStops: T[],
@@ -129,14 +136,19 @@ export function buildStopEntries<T extends Pick<Stop, 'id' | 'name'>>(
     }
   }
 
+  const nameOf = (entry: StopListEntry<T>) => (entry.type === 'area' ? entry.key : entry.stop.name);
+
   return entries.sort((a, b) => {
-    const rankOf = (entry: StopListEntry<T>) =>
-      isFavoriteEntry(entry, favoriteIds) ? 0 : 1;
+    const rankOf = (entry: StopListEntry<T>) => {
+      if (isFavoriteEntry(entry, favoriteIds)) {
+        return 0;
+      }
+      return foldForSearch(nameOf(entry)) === q ? 1 : 2;
+    };
     const rankDelta = rankOf(a) - rankOf(b);
     if (rankDelta !== 0) {
       return rankDelta;
     }
-    const nameOf = (entry: StopListEntry<T>) => (entry.type === 'area' ? entry.key : entry.stop.name);
     return nameOf(a).localeCompare(nameOf(b));
   });
 }
