@@ -20,9 +20,16 @@ type Props = {
   trip: TransitSearchResult;
   searchDay: string;
   expandedByDefault?: boolean;
+  /** false on the trip detail screen — there is nowhere further to go. */
+  linkToDetail?: boolean;
 };
 
-export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props) {
+export function RouteCard({
+  trip,
+  searchDay,
+  expandedByDefault = false,
+  linkToDetail = true,
+}: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
@@ -49,6 +56,11 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
     });
   };
 
+  // On the trip detail screen `openDetail` would push the screen already on
+  // top of the stack — a dead-looking link at best, a stack of duplicates at
+  // worst. Tapping the card body there just toggles the stop list instead.
+  const handleHeaderPress = linkToDetail ? openDetail : () => setExpanded((v) => !v);
+
   return (
     <View
       style={[
@@ -57,7 +69,7 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
         elevation(2, theme.text),
       ]}
     >
-      <Pressable onPress={openDetail} accessibilityRole="button">
+      <Pressable onPress={handleHeaderPress} accessibilityRole="button">
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Bus size={22} color={theme.primary} />
@@ -176,11 +188,13 @@ export function RouteCard({ trip, searchDay, expandedByDefault = false }: Props)
           <View style={styles.actions}>
             <TrackButton trip={trip} searchDay={searchDay} />
             <ShareTripButton trip={trip} />
-            <Pressable onPress={openDetail}>
-              <Text style={[typography.caption, { color: theme.primary, fontWeight: '600' }]}>
-                {t('clickToSeeDetails')}
-              </Text>
-            </Pressable>
+            {linkToDetail ? (
+              <Pressable onPress={openDetail}>
+                <Text style={[typography.caption, { color: theme.primary, fontWeight: '600' }]}>
+                  {t('clickToSeeDetails')}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       ) : null}

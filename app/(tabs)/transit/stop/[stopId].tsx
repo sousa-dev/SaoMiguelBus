@@ -10,6 +10,7 @@ import { Screen } from '@/components/Screen';
 import { OsmMapView } from '@/components/OsmMapView';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
 import { IconButton } from '@/components/ui/IconButton';
+import { DepartureRow } from '@/features/transit/components/DepartureRow';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { fetchStopDetail } from '@/lib/api';
 import { coordinateToRegion, fitRegionForCoordinates } from '@/lib/island-map';
@@ -274,36 +275,17 @@ export default function TransitStopScreen() {
             </Text>
           ) : (
             stop.departures.map((departure) => (
-              <Pressable
+              <DepartureRow
                 key={`${departure.tripId}-${departure.sequence}`}
+                departure={departure}
+                fallbackDestination={stop.name}
                 onPress={() =>
                   router.push({
                     pathname: '/(tabs)/transit/[tripId]',
                     params: { tripId: String(departure.tripId) },
                   })
                 }
-                style={[styles.departure, { borderBottomColor: theme.border }]}
-              >
-                <View style={[styles.routeBadge, { backgroundColor: theme.primary }]}>
-                  <Text style={[typography.caption, { color: theme.onPrimary, fontWeight: '700' }]}>
-                    {displayRouteNumber(departure.route)}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[typography.body, { color: theme.text }]} numberOfLines={1}>
-                    {departure.destination || stop.name}
-                  </Text>
-                  {departure.code ? (
-                    <Text style={[typography.caption, { color: theme.muted }]}>
-                      {departure.code}
-                    </Text>
-                  ) : null}
-                </View>
-                <Text style={[typography.label, { color: theme.text }]}>
-                  {departure.time}
-                  {departure.dayOffset > 0 ? ' +1' : ''}
-                </Text>
-              </Pressable>
+              />
             ))
           )}
         </Section>

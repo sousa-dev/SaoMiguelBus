@@ -13,9 +13,10 @@ import { describe, it } from 'node:test';
 import { ApiRequestError } from '@/lib/api-errors';
 import {
   journeyFromSearchResult,
+  journeyFromTripDetail,
   shouldFallBackToDirectSearch,
 } from '@/lib/journey-fallback';
-import type { TransitSearchResult } from '@/lib/types';
+import type { TransitSearchResult, TripDetail } from '@/lib/types';
 
 const DIRECT: TransitSearchResult = {
   id: 91,
@@ -82,6 +83,61 @@ describe('journeyFromSearchResult — direct results as one-leg journeys', () =>
     if (leg.kind !== 'ride') return;
     assert.ok(!('boarding' in leg));
     assert.ok(!('alighting' in leg));
+  });
+});
+
+const DETAIL: TripDetail = {
+  id: 42,
+  route: '110',
+  typeOfDay: 'WEEKDAY',
+  likes: 8,
+  dislikes: 2,
+  information: {},
+  stops: [
+    { name: 'PONTA DELGADA', time: '07h00', sequence: 1 },
+    { name: 'RIBEIRA GRANDE', time: '07h20', sequence: 5 },
+    { name: 'LAGOA', time: '07h45', sequence: 9 },
+  ],
+};
+
+describe('journeyFromTripDetail — trip detail as a one-leg journey', () => {
+  it('spans the whole trip, board to alight', () => {
+    const leg = journeyFromTripDetail(DETAIL).legs[0];
+
+    assert.equal(leg.kind, 'ride');
+    if (leg.kind !== 'ride') return;
+    assert.equal(leg.board.sequence, 1);
+    assert.equal(leg.alight.sequence, 9);
+    assert.equal(leg.tripId, 42);
+    assert.equal(leg.route, '110');
+  });
+
+  it('preserves the times a rider acts on', () => {
+    const journey = journeyFromTripDetail(DETAIL);
+
+    assert.equal(journey.start, '07h00');
+    assert.equal(journey.end, '07h45');
+    assert.equal(journey.durationMinutes, 45);
+    assert.equal(journey.transfers, 0);
+  });
+
+  it('computes vote percents when the server sent raw counts only', () => {
+    const leg = journeyFromTripDetail(DETAIL).legs[0];
+
+    assert.equal(leg.kind, 'ride');
+    if (leg.kind !== 'ride') return;
+    assert.equal(leg.likesPercent, 80);
+    assert.equal(leg.dislikesPercent, 20);
+  });
+
+  it('prefers server-sent percents over recomputing them', () => {
+    const withPercents = { ...DETAIL, likesPercent: 55, dislikesPercent: 45 };
+    const leg = journeyFromTripDetail(withPercents).legs[0];
+
+    assert.equal(leg.kind, 'ride');
+    if (leg.kind !== 'ride') return;
+    assert.equal(leg.likesPercent, 55);
+    assert.equal(leg.dislikesPercent, 45);
   });
 });
 

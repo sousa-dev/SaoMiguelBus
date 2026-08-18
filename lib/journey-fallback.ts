@@ -11,8 +11,8 @@
  */
 
 import { ApiRequestError } from '@/lib/api-errors';
-import { timeStringToMinutes } from '@/lib/transit-format';
-import type { TransitJourney, TransitSearchResult } from '@/lib/types';
+import { computeVotePercents, timeStringToMinutes } from '@/lib/transit-format';
+import type { TransitJourney, TransitSearchResult, TripDetail } from '@/lib/types';
 
 /**
  * Should this failure degrade to `/transit/search` instead of surfacing?
@@ -75,6 +75,67 @@ export function journeyFromSearchResult(result: TransitSearchResult): TransitJou
         // server's serializer and the legacy dataset's shape.
         ...(result.boarding ? { boarding: result.boarding } : {}),
         ...(result.alighting ? { alighting: result.alighting } : {}),
+      },
+    ],
+  };
+}
+
+/**
+ * Present a trip-detail response as a one-leg journey, for the trip detail
+ * screen's map.
+ *
+ * `GET /trips/{id}` carries no `StopRef` — no pole, no coordinates, that is
+ * what the geometry endpoint answers — so board/alight here only ever carry a
+ * name, time and sequence. That is enough: `JourneyMap` draws from the
+ * geometry it fetches per leg, not from these stops.
+ */
+export function journeyFromTripDetail(detail: TripDetail): TransitJourney {
+  const first = detail.stops[0];
+  const last = detail.stops[detail.stops.length - 1];
+  const percents =
+    detail.likesPercent != null && detail.dislikesPercent != null
+      ? { likesPercent: detail.likesPercent, dislikesPercent: detail.dislikesPercent }
+      : computeVotePercents(detail.likes, detail.dislikes);
+
+  return {
+    // Namespaced, and deliberately NOT the `${tripId}-${sequence}` shape a
+    // search journey uses. The map screen resolves a journey by scanning every
+    // `['transit','search']` cache for the first id that matches, so a bare
+    // `1234-1` here collides with the search result for the same trip boarded at
+    // sequence 1 — and the rider asking for the WHOLE trip would silently get
+    // the board..alight slice instead.
+    id: `trip-detail:${detail.id}`,
+    transfers: 0,
+    start: first?.time ?? '',
+    end: last?.time ?? '',
+    durationMinutes: Math.max(
+      0,
+      timeStringToMinutes(last?.time ?? '') - timeStringToMinutes(first?.time ?? ''),
+    ),
+    waitMinutes: 0,
+    dayOffset: 0,
+    typeOfDay: detail.typeOfDay,
+    legs: [
+      {
+        kind: 'ride',
+        tripId: detail.id,
+        route: detail.route,
+        likesPercent: percents.likesPercent,
+        dislikesPercent: percents.dislikesPercent,
+        information: detail.information,
+        board: {
+          name: first?.name ?? '',
+          time: first?.time ?? '',
+          sequence: first?.sequence ?? 1,
+          dayOffset: 0,
+        },
+        alight: {
+          name: last?.name ?? '',
+          time: last?.time ?? '',
+          sequence: last?.sequence ?? detail.stops.length,
+          dayOffset: 0,
+        },
+        stops: detail.stops,
       },
     ],
   };

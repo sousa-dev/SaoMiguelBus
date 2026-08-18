@@ -16,7 +16,7 @@ export function TripDetail({ trip, searchDay = 'weekday' }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <RouteCard trip={trip} searchDay={searchDay} expandedByDefault />
+      <RouteCard trip={trip} searchDay={searchDay} expandedByDefault linkToDetail={false} />
     </View>
   );
 }
