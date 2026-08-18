@@ -12,10 +12,14 @@ import { useEffect, useRef } from 'react';
 
 import { migrateUserData } from '@/features/transit/lib/user-data-migration';
 import { useStops } from '@/features/transit/hooks/useTransitQueries';
+import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { useProfileStore } from '@/lib/profile-store';
 
 export function useUserDataMigration(): void {
   const { data: stops } = useStops();
+  // Pins are stamped with the network they resolve against, and active tracks
+  // that belong to the other one are dropped (09 §3.5).
+  const dataset = useResolvedTransitDataset();
   const applyUserDataMigration = useProfileStore((s) => s.applyUserDataMigration);
   const lastSignature = useRef<string | null>(null);
 
@@ -26,8 +30,9 @@ export function useUserDataMigration(): void {
       return;
     }
 
-    // Only re-run when the network itself changed, not on every render.
-    const signature = `${stops.length}:${stops[0]?.id ?? ''}:${stops[stops.length - 1]?.id ?? ''}`;
+    // Only re-run when the network itself changed, not on every render. The
+    // dataset joins the signature so a preview toggle re-resolves pins too.
+    const signature = `${dataset ?? ''}:${stops.length}:${stops[0]?.id ?? ''}:${stops[stops.length - 1]?.id ?? ''}`;
     if (lastSignature.current === signature) {
       return;
     }
@@ -39,11 +44,14 @@ export function useUserDataMigration(): void {
         favoriteStops: state.favoriteStops,
         favoriteRoutes: state.favoriteRoutes,
         recentSearches: state.recentSearches,
+        pinned: state.tracking.pinned,
+        active: state.tracking.active,
       },
       stops,
+      dataset,
     );
     if (result.changed) {
       applyUserDataMigration(result);
     }
-  }, [stops, applyUserDataMigration]);
+  }, [stops, dataset, applyUserDataMigration]);
 }

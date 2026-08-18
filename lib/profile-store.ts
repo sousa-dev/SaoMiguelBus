@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { staticIslandConfig } from '@/config/island';
 import { track } from '@/lib/analytics';
+import { liftTrackedRecord } from '@/lib/bus-tracking';
 import type { TransitDataset, TripStop } from '@/lib/types';
 
 export interface FavoriteRoute {
@@ -41,30 +42,92 @@ export interface TripVoteEntry {
 
 export type TripVoteMeta = Pick<TripVoteEntry, 'routeNumber' | 'origin' | 'destination'>;
 
+/**
+ * A stop within a tracked leg, with the day it actually falls on.
+ *
+ * `TripStop.time` is a wall clock with no date, so a leg that crosses midnight
+ * reads 23h50 → 00h10 as going BACKWARDS — and `segmentStops` used to sort on
+ * that value, silently reordering the leg. `dayOffset` is days after the
+ * itinerary's first departure; absent means the same day, which is every
+ * daytime leg (09 §3.3).
+ */
+export interface TrackedStop extends TripStop {
+  dayOffset?: number;
+}
+
+/** One bus within a pinned/tracked itinerary. Mirrors `TransitRideLeg`, trimmed. */
+export interface TrackedLeg {
+  /**
+   * Optional because the cutover migration DROPS it (09 §3.5): a trip PK from the
+   * other network is worse than none, and a pin's job is to re-run a search.
+   */
+  tripId?: number;
+  routeNumber: string;
+  /** Board and alight for THIS leg — not the journey endpoints. */
+  origin: string;
+  destination: string;
+  start: string; // 'HHhMM'
+  end: string;
+  /** Already board..alight-trimmed by the server. */
+  stops: TrackedStop[];
+  /** Sequences the server chose, so nothing is re-matched by name (98 B7). */
+  boardSequence?: number;
+  alightSequence?: number;
+}
+
+export interface TrackedTransfer {
+  at: string;
+  from: string;
+  waitMinutes: number;
+  walkMinutes: number;
+  tight: boolean;
+}
+
 export interface ActiveTrack {
   id: string;
-  tripId: number;
   routeNumber: string;
+  /** Journey endpoints — the first leg's board and the last leg's alight. */
   origin: string;
   destination: string;
   searchDay: string;
   searchDate: string;
-  stops: TripStop[];
+  /** The journey id when tracked from a journey card; absent for single trips. */
+  journeyId?: string;
+  /** Which network this was built against. Absent = created before this change. */
+  dataset?: TransitDataset;
+  legs: TrackedLeg[];
+  transfers: TrackedTransfer[];
   nextDeparture: string;
   estimatedArrival: string;
   expiresAt: number;
   createdAt: number;
+
+  // --- legacy fields, kept for one release so persisted state still reads ---
+  /** @deprecated use `legs[0].tripId` */ tripId?: number;
+  /** @deprecated use `legs[0].stops` */ stops?: TripStop[];
 }
 
 export interface PinnedRoute {
   id: string;
-  tripId: number;
+  /** The journey id when pinned from a journey card; absent for legacy pins. */
+  journeyId?: string;
+  /** Which network this was created against. Absent = created before this change. */
+  dataset?: TransitDataset;
+  /** `"110"` when direct, `"110 → 205"` across a change. */
   routeNumber: string;
+  /** Journey endpoints — the first leg's board and the last leg's alight. */
   origin: string;
   destination: string;
   searchDay: string;
-  stops: TripStop[];
+  legs: TrackedLeg[];
+  transfers: TrackedTransfer[];
   pinnedAt: number;
+  /** Set by the migration when the pin no longer resolves. Shown greyed, never deleted. */
+  unavailable?: boolean;
+
+  // --- legacy fields, kept for one release so persisted state still reads ---
+  /** @deprecated use `legs[0].tripId` */ tripId?: number;
+  /** @deprecated use `legs[0].stops` */ stops?: TripStop[];
 }
 
 export interface TrackingState {
@@ -76,6 +139,11 @@ export interface TrackingState {
 const MAX_RECENTS = 10;
 const MAX_ACTIVE_TRACKS = 5;
 const ACTIVE_TRACK_TTL_MS = 4 * 60 * 60 * 1000;
+/**
+ * Pins were unbounded. Now that each one carries every stop of every leg, an
+ * unbounded list is a persisted blob that grows forever (09 §3.2).
+ */
+export const MAX_PINNED_ROUTES = 20;
 
 export function profileStorageKey() {
   return `azores_hub_profile_${staticIslandConfig.islandKey}`;
@@ -102,6 +170,31 @@ function recentKey(search: Pick<RecentSearch, 'origin' | 'destination' | 'day'>)
 
 function newTrackId() {
   return `track_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
+ * Identity of a pinned/tracked ITINERARY (09 §3.2).
+ *
+ * The old check was on `tripId` alone, which treats two different itineraries
+ * that happen to share a first bus as duplicates — normal on a transfer network,
+ * where the 110 feeds several onward routes.
+ */
+function itineraryKey(entry: {
+  journeyId?: string;
+  legs?: TrackedLeg[];
+  tripId?: number;
+  routeNumber?: string;
+  origin: string;
+  destination: string;
+}) {
+  const tripIds = (entry.legs ?? []).map((l) => l.tripId).filter((id) => id != null);
+  const shape = tripIds.length
+    ? tripIds.join(':')
+    : // The cutover migration drops trip ids, so identity falls back to the route
+      // sequence — `"110 → 205"` still tells two itineraries apart when the PKs
+      // that used to are gone.
+      (entry.routeNumber ?? String(entry.tripId ?? ''));
+  return `${entry.journeyId ?? shape}|${pairKey(entry.origin, entry.destination)}`;
 }
 
 interface ProfileState {
@@ -138,19 +231,28 @@ interface ProfileState {
   getVote: (tripId: number) => TripVote | undefined;
   setVote: (tripId: number, vote: TripVote | undefined, meta?: TripVoteMeta) => void;
   clearVotes: () => void;
-  startTracking: (input: Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'>) => boolean;
+  startTracking: (
+    input: Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> & { expiresAt?: number },
+  ) => boolean;
   stopTracking: (trackId: string) => void;
   pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => boolean;
   unpinRoute: (pinId: string) => void;
-  pruneTracking: (now?: number) => void;
   /**
-   * Re-point saved data at the active network after the changeover (03 §5d).
-   * Never deletes: unresolvable favourites are kept and flagged.
+   * Drops expired tracks, and — when `dataset` is supplied — tracks built against
+   * a different network (09 §3.5). Runs every 30s from `useBusTracking`.
+   */
+  pruneTracking: (now?: number, dataset?: TransitDataset | null) => void;
+  /**
+   * Re-point saved data at the active network after the changeover (03 §5d, 09 §3.5).
+   * Never deletes: unresolvable favourites and pins are kept and flagged.
    */
   applyUserDataMigration: (next: {
     favoriteStops: FavoriteStop[];
     favoriteRoutes: FavoriteRoute[];
     recentSearches: RecentSearch[];
+    pinned?: PinnedRoute[];
+    /** Tracks that survived the dataset change; the rest are dropped. */
+    active?: ActiveTrack[];
   }) => void;
   /** Wipe all on-device profile data (used by the GDPR "delete my data" flow). */
   resetAll: () => void;
@@ -273,12 +375,9 @@ export const useProfileStore = create<ProfileState>()(
       startTracking: (input) => {
         get().pruneTracking();
         const { tracking } = get();
+        const key = itineraryKey(input);
         const duplicate = tracking.active.find(
-          (t) =>
-            t.tripId === input.tripId &&
-            t.origin === input.origin &&
-            t.destination === input.destination &&
-            t.searchDay === input.searchDay,
+          (t) => itineraryKey(t) === key && t.searchDay === input.searchDay,
         );
         if (duplicate) {
           return false;
@@ -291,7 +390,10 @@ export const useProfileStore = create<ProfileState>()(
           ...input,
           id: newTrackId(),
           createdAt: now,
-          expiresAt: now + ACTIVE_TRACK_TTL_MS,
+          // A journey with a 50-minute change can outlast the flat 4h TTL that
+          // was sized for one bus, so the caller derives it from the itinerary
+          // and this is only the fallback (09 §3.3).
+          expiresAt: input.expiresAt ?? now + ACTIVE_TRACK_TTL_MS,
         };
         set({
           tracking: {
@@ -319,13 +421,12 @@ export const useProfileStore = create<ProfileState>()(
 
       pinRoute: (input) => {
         const { tracking } = get();
-        const duplicate = tracking.pinned.find(
-          (p) =>
-            p.tripId === input.tripId &&
-            p.origin === input.origin &&
-            p.destination === input.destination,
-        );
+        const key = itineraryKey(input);
+        const duplicate = tracking.pinned.find((p) => itineraryKey(p) === key);
         if (duplicate) {
+          return false;
+        }
+        if (tracking.pinned.length >= MAX_PINNED_ROUTES) {
           return false;
         }
         const pin: PinnedRoute = {
@@ -354,9 +455,26 @@ export const useProfileStore = create<ProfileState>()(
         track('transit', 'track_stop', { track_id: pinId, kind: 'pin' });
       },
 
-      pruneTracking: (now = Date.now()) => {
+      pruneTracking: (now = Date.now(), dataset) => {
         const { tracking } = get();
-        const active = tracking.active.filter((t) => t.expiresAt > now);
+        const active = tracking.active.filter((t) => {
+          if (t.expiresAt <= now) {
+            return false;
+          }
+          // A countdown built from the old network's stop times is wrong the
+          // instant the network changes, and unlike a pin it has no useful
+          // degraded form (09 §3.5).
+          //
+          // Only an EXPLICIT, mismatched stamp drops a track. A null argument
+          // means the dataset has not resolved yet, and an unstamped track was
+          // created before it ever did — dropping either would clear a track the
+          // user started seconds ago, the moment bootstrap landed. Unstamped
+          // tracks age out on their own within hours anyway.
+          if (dataset != null && t.dataset != null && t.dataset !== dataset) {
+            return false;
+          }
+          return true;
+        });
         if (active.length === tracking.active.length) {
           return;
         }
@@ -369,12 +487,19 @@ export const useProfileStore = create<ProfileState>()(
         });
       },
 
-      applyUserDataMigration: (next) =>
+      applyUserDataMigration: (next) => {
+        const { tracking } = get();
         set({
           favoriteStops: next.favoriteStops,
           favoriteRoutes: next.favoriteRoutes,
           recentSearches: next.recentSearches,
-        }),
+          tracking: {
+            ...tracking,
+            pinned: next.pinned ?? tracking.pinned,
+            active: next.active ?? tracking.active,
+          },
+        });
+      },
 
       resetAll: () => {
         set({
@@ -392,7 +517,8 @@ export const useProfileStore = create<ProfileState>()(
     {
       name: profileStorageKey(),
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      // 3 — pinned/active records grew a multi-leg shape (09 §3.1).
+      version: 3,
       /**
        * Everything EXCEPT the banner dismissal, which is per-session.
        *
@@ -418,26 +544,39 @@ export const useProfileStore = create<ProfileState>()(
           ProfileState,
           'displayName' | 'favoriteRoutes' | 'favoriteStops' | 'recentSearches' | 'votes' | 'tracking'
         >;
-        const state = persisted as PersistedSlice;
-        if (version >= 2 || !state.votes) {
-          return persisted as PersistedSlice;
-        }
-        const migrated: Record<number, TripVoteEntry> = {};
-        for (const [key, value] of Object.entries(state.votes)) {
-          const tripId = Number(key);
-          if (typeof value === 'string' && (value === 'like' || value === 'dislike')) {
-            migrated[tripId] = {
-              vote: value,
-              routeNumber: '',
-              origin: '',
-              destination: '',
-              votedAt: new Date(0).toISOString(),
-            };
-          } else if (value && typeof value === 'object' && 'vote' in value) {
-            migrated[tripId] = value as TripVoteEntry;
+        let state = persisted as PersistedSlice;
+
+        if (version < 2 && state.votes) {
+          const migrated: Record<number, TripVoteEntry> = {};
+          for (const [key, value] of Object.entries(state.votes)) {
+            const tripId = Number(key);
+            if (typeof value === 'string' && (value === 'like' || value === 'dislike')) {
+              migrated[tripId] = {
+                vote: value,
+                routeNumber: '',
+                origin: '',
+                destination: '',
+                votedAt: new Date(0).toISOString(),
+              };
+            } else if (value && typeof value === 'object' && 'vote' in value) {
+              migrated[tripId] = value as TripVoteEntry;
+            }
           }
+          state = { ...state, votes: migrated };
         }
-        return { ...state, votes: migrated };
+
+        if (version < 3 && state.tracking) {
+          state = {
+            ...state,
+            tracking: {
+              ...state.tracking,
+              active: (state.tracking.active ?? []).map(liftTrackedRecord),
+              pinned: (state.tracking.pinned ?? []).map(liftTrackedRecord),
+            },
+          };
+        }
+
+        return state;
       },
       onRehydrateStorage: () => (_state, error) => {
         if (error) {

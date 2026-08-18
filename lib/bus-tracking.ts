@@ -1,17 +1,82 @@
-import type { ActiveTrack } from '@/lib/profile-store';
+/**
+ * The countdown behind the premium tracking widget.
+ *
+ * Two things changed here for the AzoresBus network (09 §3.3):
+ *
+ *  1. **Journeys, not trips.** A tracked itinerary is a list of legs with the
+ *     changes between them, so the gap between two buses reads as a WAIT rather
+ *     than as a very slow ride. `computeBusStatus` is the one-leg special case of
+ *     `computeJourneyStatus` and stays for single-trip cards.
+ *  2. **Time is absolute, not wall-clock.** Stop times carry no date, so a leg
+ *     that runs 23h50 → 00h10 looks like it goes backwards. Every comparison here
+ *     is in minutes since the itinerary's first departure DAY, with `dayOffset`
+ *     folded in — and stops are never re-sorted, which is what used to scramble a
+ *     past-midnight leg.
+ *
+ * Labels are returned as i18n descriptors, never as English literals: this is a
+ * paid widget and a Portuguese subscriber was reading it in English (09 §2 Gap D).
+ * Rendering is the caller's job — `t(label.key, label.params)`.
+ */
+
+import type {
+  ActiveTrack,
+  TrackedLeg,
+  TrackedStop,
+  TrackedTransfer,
+} from '@/lib/profile-store';
 import type { TripStop, TransitSearchResult } from '@/lib/types';
 
 export type TrackPhase = 'waiting' | 'active' | 'completed' | 'unknown';
 
+/** Where the rider is in a multi-leg itinerary (09 §3.3). */
+export type JourneyTrackPhase = 'waiting' | 'riding' | 'transferring' | 'completed';
+
+/** An i18n key plus its interpolation values. The caller runs it through `t`. */
+export interface TrackLabel {
+  key: string;
+  params?: Record<string, number>;
+}
+
 export interface BusTrackStatus {
   phase: TrackPhase;
-  statusLabel: string;
-  countdown: string;
+  statusLabel: TrackLabel;
+  countdown: TrackLabel;
   progress: number;
   currentStop: TripStop | null;
   nextStop: TripStop | null;
   timeToNextStopMin: number;
 }
+
+/** Per-leg state, for the leg strip the active-tracking row renders (09 §3.4). */
+export interface JourneyLegStatus {
+  routeNumber: string;
+  origin: string;
+  destination: string;
+  /** Scheduled arrival at this leg's alight, as a wall clock. */
+  arrival: string;
+  state: 'done' | 'riding' | 'upcoming';
+  progress: number;
+}
+
+export interface JourneyTrackStatus {
+  phase: JourneyTrackPhase;
+  statusLabel: TrackLabel;
+  countdown: TrackLabel;
+  /** Across the whole itinerary, waits included. */
+  progress: number;
+  /** Index of the leg being ridden, or the one about to be boarded. */
+  legIndex: number;
+  currentStop: TripStop | null;
+  nextStop: TripStop | null;
+  timeToNextStopMin: number;
+  /** The change being made right now, while `phase === 'transferring'`. */
+  transfer: TrackedTransfer | null;
+  /** Every change in the itinerary, `transfers[i]` sitting before `legs[i + 1]`. */
+  transfers: TrackedTransfer[];
+  legs: JourneyLegStatus[];
+}
+
+const MINUTES_PER_DAY = 1440;
 
 export function isTrackExpired(track: ActiveTrack, now = Date.now()): boolean {
   return track.expiresAt <= now;
@@ -26,118 +91,427 @@ export function timeStringToMinutes(time: string): number {
   return h * 60 + (Number.isFinite(m) ? m : 0);
 }
 
-function formatMinutes(minutes: number, mode: 'departure' | 'arrival' = 'arrival'): string {
+/**
+ * Stamp each stop with the day it falls on, by watching the clock wrap.
+ *
+ * The API sends a leg's stops in travel order with bare wall-clock times, so the
+ * only evidence that a leg crossed midnight is a time going backwards. Deriving
+ * the offsets once here means everything downstream compares plain numbers, and
+ * it repairs legacy night buses too — they never carried offsets and have been
+ * mis-sorted all along (09 §3.3).
+ */
+export function withDayOffsets(stops: TripStop[], startOffset = 0): TrackedStop[] {
+  let offset = startOffset;
+  let previous = -Infinity;
+  return stops.map((stop) => {
+    const minutes = timeStringToMinutes(stop.time);
+    if (minutes < previous) {
+      offset += 1;
+    }
+    previous = minutes;
+    return { ...stop, dayOffset: offset };
+  });
+}
+
+/** Minutes since midnight of the itinerary's first day. */
+function stopMinutes(stop: TrackedStop): number {
+  return timeStringToMinutes(stop.time) + (stop.dayOffset ?? 0) * MINUTES_PER_DAY;
+}
+
+/**
+ * A leg's stops in travel order, with day offsets guaranteed.
+ *
+ * Deliberately does NOT sort. The previous implementation sorted on
+ * minutes-since-midnight, which reorders exactly the legs this function now
+ * exists to get right. Travel order is what the server sent.
+ */
+function segmentStops(stops: TrackedStop[], startOffset = 0): TrackedStop[] {
+  if (stops.length === 0) {
+    return [];
+  }
+  const stamped = stops.some((s) => s.dayOffset != null)
+    ? stops
+    : withDayOffsets(stops, startOffset);
+  return stamped;
+}
+
+/**
+ * Which day `now` is on, relative to the day the itinerary departs.
+ *
+ * Without this a journey ending at 00h30 would be compared against a `now` of
+ * 00h10 read as minute 10 of the FIRST day — 23 hours in the past — and the
+ * countdown would jump backwards, which is the bug 09 §3.3 asks to be kept out.
+ */
+function startOfLocalDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+/** Local midnight of the day the itinerary departs — the origin of every offset. */
+function departureDayStart(searchDate: string | undefined, now: Date): number {
+  if (searchDate) {
+    const [y, m, d] = searchDate.split('-').map((part) => parseInt(part, 10));
+    if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
+      return new Date(y, m - 1, d).getTime();
+    }
+  }
+  return startOfLocalDay(now);
+}
+
+function nowMinutes(searchDate: string | undefined, now: Date): number {
+  const wallClock = now.getHours() * 60 + now.getMinutes();
+  const dayIndex = Math.round(
+    (startOfLocalDay(now) - departureDayStart(searchDate, now)) / 86_400_000,
+  );
+  return dayIndex * MINUTES_PER_DAY + wallClock;
+}
+
+function countdownLabel(minutes: number, mode: 'departure' | 'arrival' = 'arrival'): TrackLabel {
   if (minutes <= 0) {
-    return mode === 'departure' ? 'Departing now' : 'Arriving now';
+    return { key: mode === 'departure' ? 'trackStatusDepartingNow' : 'trackStatusArrivingNow' };
   }
   if (minutes < 60) {
-    return `${minutes} min`;
+    return { key: 'trackStatusMinutes', params: { count: minutes } };
   }
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest > 0
+    ? { key: 'trackStatusHoursMinutes', params: { hours, minutes: rest } }
+    : { key: 'trackStatusHours', params: { hours } };
 }
 
-function segmentStops(track: ActiveTrack): { name: string; time: string; timeInMinutes: number }[] {
-  return track.stops
-    .map((stop) => ({
-      name: stop.name,
-      time: stop.time,
-      timeInMinutes: timeStringToMinutes(stop.time),
-    }))
-    .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
+/** The legs of a track, tolerating a record the persist migration could not lift. */
+function trackLegs(track: Pick<ActiveTrack, 'legs'>): TrackedLeg[] {
+  return (track.legs ?? []).filter((leg) => leg.stops?.length);
 }
 
-export function computeBusStatus(track: ActiveTrack, now = new Date()): BusTrackStatus {
-  const currentTime = now.getHours() * 60 + now.getMinutes();
-  const routeStops = segmentStops(track);
-  if (routeStops.length === 0) {
-    return {
-      phase: 'unknown',
-      statusLabel: 'Tracking',
-      countdown: track.nextDeparture,
-      progress: 0,
-      currentStop: null,
-      nextStop: null,
-      timeToNextStopMin: 0,
-    };
+/**
+ * Absolute minutes for every leg, in one pass, so day offsets accumulate ACROSS
+ * legs: a second bus boarded after midnight is on day 1 even though its own stop
+ * list never wraps.
+ */
+function legSpans(legs: TrackedLeg[]): { stops: TrackedStop[]; start: number; end: number }[] {
+  const spans: { stops: TrackedStop[]; start: number; end: number }[] = [];
+  let previousEnd = -Infinity;
+  let carry = 0;
+  for (const leg of legs) {
+    let stops = segmentStops(leg.stops, carry);
+    // A leg cannot board before the previous one lands. When it looks like it
+    // does, the change ran over midnight and this leg is on the next day — the
+    // 23h55 → 00h20 case, where nothing inside either leg's own stop list wraps
+    // and only the boundary between them gives it away.
+    if (stopMinutes(stops[0]) < previousEnd) {
+      carry += 1;
+      stops = segmentStops(leg.stops.map(({ dayOffset: _drop, ...s }) => s), carry);
+    }
+    const start = stopMinutes(stops[0]);
+    const end = stopMinutes(stops[stops.length - 1]);
+    carry = stops[stops.length - 1].dayOffset ?? 0;
+    previousEnd = end;
+    spans.push({ stops, start, end });
   }
+  return spans;
+}
 
-  const first = routeStops[0];
-  const last = routeStops[routeStops.length - 1];
+/**
+ * The whole itinerary as one status: which leg, riding or waiting, how long.
+ *
+ * `waiting → riding → transferring → riding → completed`. The transferring state
+ * counts down to the NEXT boarding rather than to the bus the rider just left,
+ * and surfaces the transfer so a tight change can be called out — that moment is
+ * the one this feature is genuinely worth money for.
+ */
+export function computeJourneyStatus(
+  track: Pick<ActiveTrack, 'legs' | 'transfers' | 'searchDate' | 'nextDeparture'>,
+  now = new Date(),
+): JourneyTrackStatus {
+  const legs = trackLegs(track);
+  const transfers = track.transfers ?? [];
 
-  if (currentTime < first.timeInMinutes) {
-    const minutesUntilStart = first.timeInMinutes - currentTime;
+  if (legs.length === 0) {
     return {
       phase: 'waiting',
-      statusLabel: 'Waiting to start',
-      countdown: formatMinutes(minutesUntilStart, 'departure'),
+      statusLabel: { key: 'trackStatusTracking' },
+      countdown: { key: 'trackStatusWaiting' },
       progress: 0,
+      legIndex: 0,
       currentStop: null,
-      nextStop: { name: first.name, time: first.time },
-      timeToNextStopMin: minutesUntilStart,
-    };
-  }
-
-  if (currentTime > last.timeInMinutes) {
-    return {
-      phase: 'completed',
-      statusLabel: 'Route completed',
-      countdown: 'Finished',
-      progress: 100,
-      currentStop: { name: last.name, time: last.time },
       nextStop: null,
       timeToNextStopMin: 0,
+      transfer: null,
+      transfers: [],
+      legs: [],
     };
   }
 
-  let currentIndex = 0;
-  let nextIndex = 1;
-  for (let i = 0; i < routeStops.length - 1; i++) {
-    const a = routeStops[i].timeInMinutes;
-    const b = routeStops[i + 1].timeInMinutes;
-    if (currentTime >= a && currentTime < b) {
-      currentIndex = i;
-      nextIndex = i + 1;
-      break;
+  const spans = legSpans(legs);
+  const current = nowMinutes(track.searchDate, now);
+  const first = spans[0];
+  const last = spans[spans.length - 1];
+
+  const legViews = (activeIndex: number, activeProgress: number): JourneyLegStatus[] =>
+    legs.map((leg, i) => ({
+      routeNumber: leg.routeNumber,
+      origin: leg.origin,
+      destination: leg.destination,
+      arrival: leg.end,
+      state: i < activeIndex ? 'done' : i === activeIndex ? 'riding' : 'upcoming',
+      progress: i < activeIndex ? 100 : i === activeIndex ? activeProgress : 0,
+    }));
+
+  const totalSpan = last.end - first.start;
+  const overallProgress = (at: number) =>
+    totalSpan > 0 ? Math.min(100, Math.max(0, Math.round(((at - first.start) / totalSpan) * 100))) : 0;
+
+  // Before the first bus leaves.
+  if (current < first.start) {
+    const until = first.start - current;
+    return {
+      phase: 'waiting',
+      statusLabel: { key: 'trackStatusWaiting' },
+      countdown: countdownLabel(until, 'departure'),
+      progress: 0,
+      legIndex: 0,
+      currentStop: null,
+      nextStop: { name: first.stops[0].name, time: first.stops[0].time },
+      timeToNextStopMin: until,
+      transfer: null,
+      transfers,
+      legs: legViews(-1, 0),
+    };
+  }
+
+  // After the last bus lands.
+  if (current > last.end) {
+    const lastStop = last.stops[last.stops.length - 1];
+    return {
+      phase: 'completed',
+      statusLabel: { key: 'trackStatusCompleted' },
+      countdown: { key: 'trackStatusFinished' },
+      progress: 100,
+      legIndex: legs.length - 1,
+      currentStop: { name: lastStop.name, time: lastStop.time },
+      nextStop: null,
+      timeToNextStopMin: 0,
+      transfer: null,
+      transfers,
+      legs: legViews(legs.length, 100),
+    };
+  }
+
+  for (let i = 0; i < spans.length; i++) {
+    const span = spans[i];
+
+    // Riding leg i.
+    if (current >= span.start && current <= span.end) {
+      const stops = span.stops;
+      let currentIndex = 0;
+      let nextIndex = stops.length > 1 ? 1 : 0;
+      for (let s = 0; s < stops.length - 1; s++) {
+        if (current >= stopMinutes(stops[s]) && current < stopMinutes(stops[s + 1])) {
+          currentIndex = s;
+          nextIndex = s + 1;
+          break;
+        }
+      }
+      if (current >= span.end) {
+        currentIndex = stops.length - 1;
+        nextIndex = stops.length - 1;
+      }
+      const at = stops[currentIndex];
+      const next = nextIndex > currentIndex ? stops[nextIndex] : null;
+      const timeToNext = next ? Math.max(0, stopMinutes(next) - current) : 0;
+      const legSpanMinutes = span.end - span.start;
+      const legProgress =
+        legSpanMinutes > 0
+          ? Math.min(100, Math.max(0, Math.round(((current - span.start) / legSpanMinutes) * 100)))
+          : 0;
+
+      let statusKey = 'trackStatusEnRoute';
+      if (timeToNext <= 2) {
+        statusKey = 'trackStatusArrivingSoon';
+      } else if (timeToNext <= 5) {
+        statusKey = 'trackStatusApproaching';
+      }
+
+      return {
+        phase: 'riding',
+        statusLabel: { key: statusKey },
+        countdown: countdownLabel(Math.max(0, span.end - current)),
+        progress: overallProgress(current),
+        legIndex: i,
+        currentStop: { name: at.name, time: at.time },
+        nextStop: next ? { name: next.name, time: next.time } : null,
+        timeToNextStopMin: timeToNext,
+        transfer: null,
+        transfers,
+        legs: legViews(i, legProgress),
+      };
+    }
+
+    // In the gap between leg i and leg i+1 — a change, not a ride.
+    const upcoming = spans[i + 1];
+    if (upcoming && current > span.end && current < upcoming.start) {
+      const until = upcoming.start - current;
+      const transfer = transfers[i] ?? null;
+      const board = upcoming.stops[0];
+      return {
+        phase: 'transferring',
+        // A tight change is the one moment this widget earns its subscription.
+        statusLabel: { key: transfer?.tight ? 'trackStatusTransferTight' : 'trackStatusTransferring' },
+        countdown: countdownLabel(until, 'departure'),
+        progress: overallProgress(current),
+        // The leg the rider is about to board — that is what they need next.
+        legIndex: i + 1,
+        currentStop: {
+          name: span.stops[span.stops.length - 1].name,
+          time: span.stops[span.stops.length - 1].time,
+        },
+        nextStop: { name: board.name, time: board.time },
+        timeToNextStopMin: until,
+        transfer,
+        transfers,
+        legs: legViews(i + 1, 0),
+      };
     }
   }
 
-  if (currentTime >= last.timeInMinutes) {
-    currentIndex = routeStops.length - 1;
-    nextIndex = routeStops.length - 1;
-  }
-
-  const current = routeStops[currentIndex];
-  const next = nextIndex < routeStops.length ? routeStops[nextIndex] : null;
-  const timeToNext = next ? Math.max(0, next.timeInMinutes - currentTime) : 0;
-  const total = last.timeInMinutes - first.timeInMinutes;
-  const elapsed = currentTime - first.timeInMinutes;
-  const progress = total > 0 ? Math.min(100, Math.max(0, Math.round((elapsed / total) * 100))) : 0;
-
-  let statusLabel = 'En route';
-  if (timeToNext <= 2) {
-    statusLabel = 'Arriving soon';
-  } else if (timeToNext <= 5) {
-    statusLabel = 'Approaching';
-  }
-
+  // Unreachable for well-formed spans; a defensive echo rather than a throw.
   return {
-    phase: 'active',
-    statusLabel,
-    countdown: formatMinutes(Math.max(0, last.timeInMinutes - currentTime)),
-    progress,
-    currentStop: { name: current.name, time: current.time },
-    nextStop: next ? { name: next.name, time: next.time } : null,
-    timeToNextStopMin: timeToNext,
+    phase: 'riding',
+    statusLabel: { key: 'trackStatusEnRoute' },
+    countdown: countdownLabel(Math.max(0, last.end - current)),
+    progress: overallProgress(current),
+    legIndex: 0,
+    currentStop: null,
+    nextStop: null,
+    timeToNextStopMin: 0,
+    transfer: null,
+    transfers,
+    legs: legViews(0, 0),
   };
 }
 
-export function buildActiveTrackFromTrip(
-  trip: TransitSearchResult,
-  searchDay: string,
-): Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> {
-  const today = new Date().toISOString().slice(0, 10);
+/**
+ * The single-leg view, for cards that track one trip.
+ *
+ * Delegates to `computeJourneyStatus` so there is one implementation of the time
+ * maths, and flattens the journey phases onto the older `TrackPhase`.
+ */
+export function computeBusStatus(track: ActiveTrack, now = new Date()): BusTrackStatus {
+  const journey = computeJourneyStatus(track, now);
+  if (trackLegs(track).length === 0) {
+    return {
+      phase: 'unknown',
+      statusLabel: { key: 'trackStatusTracking' },
+      countdown: { key: 'trackStatusMinutes', params: { count: 0 } },
+      progress: 0,
+      currentStop: null,
+      nextStop: null,
+      timeToNextStopMin: 0,
+    };
+  }
+  const phase: TrackPhase =
+    journey.phase === 'waiting'
+      ? 'waiting'
+      : journey.phase === 'completed'
+        ? 'completed'
+        : 'active';
+  return {
+    phase,
+    statusLabel: journey.statusLabel,
+    countdown: journey.countdown,
+    progress: journey.progress,
+    currentStop: journey.currentStop,
+    nextStop: journey.nextStop,
+    timeToNextStopMin: journey.timeToNextStopMin,
+  };
+}
+
+/**
+ * When a tracked itinerary stops being worth a countdown.
+ *
+ * The flat 4h TTL was sized for one bus; a journey with a 50-minute change can
+ * outlive it and vanish mid-trip. Derived from the itinerary instead — half an
+ * hour past the final arrival, so a late bus still shows — and clamped to 8h so
+ * a malformed record cannot pin a row on screen indefinitely (09 §3.3).
+ */
+export function deriveTrackExpiry(
+  legs: TrackedLeg[],
+  searchDate: string | undefined,
+  now = Date.now(),
+): number {
+  const usable = legs.filter((leg) => leg.stops?.length);
+  if (usable.length === 0) {
+    return now + ACTIVE_TRACK_TTL_MS;
+  }
+  const spans = legSpans(usable);
+  // `end` is measured from the departure day, so the base has to be that day —
+  // anchoring on today would shift a journey tracked for tomorrow by 24h.
+  const arrival =
+    departureDayStart(searchDate, new Date(now)) + spans[spans.length - 1].end * 60_000;
+  return Math.min(arrival + TRACK_GRACE_MS, now + MAX_TRACK_TTL_MS);
+}
+
+/**
+ * Lift one persisted single-trip record into the multi-leg shape (09 §3.1).
+ *
+ * The contract here is that NOTHING is ever dropped. A subscriber losing their
+ * pins on an app update is the exact failure the whole of 09 exists to prevent,
+ * so a record that is already migrated passes through, and one that is neither
+ * old-shaped nor new-shaped — corrupt, or written by a build we do not know —
+ * is kept with an empty `legs` rather than filtered out. An empty leg list
+ * renders as an unavailable pin the user can delete; a missing row reads as
+ * data loss.
+ *
+ * Exported for the migration tests, which is the only way to assert on a
+ * persisted blob without standing up AsyncStorage.
+ */
+export function liftTrackedRecord<T extends { legs?: unknown; transfers?: unknown }>(record: T): T {
+  if (!record || typeof record !== 'object') {
+    return record;
+  }
+  if (Array.isArray(record.legs)) {
+    // Already migrated. Backfill `transfers` only if the writer omitted it.
+    return Array.isArray(record.transfers) ? record : { ...record, transfers: [] };
+  }
+
+  const legacy = record as T & {
+    tripId?: number;
+    routeNumber?: string;
+    origin?: string;
+    destination?: string;
+    stops?: TripStop[];
+    nextDeparture?: string;
+    estimatedArrival?: string;
+  };
+  const hasTrip = typeof legacy.tripId === 'number';
+
+  return {
+    ...record,
+    legs: hasTrip
+      ? [
+          {
+            tripId: legacy.tripId as number,
+            routeNumber: legacy.routeNumber ?? '',
+            origin: legacy.origin ?? '',
+            destination: legacy.destination ?? '',
+            // A pin never stored a departure/arrival, only the trip's own stop
+            // list, so fall back to its ends rather than inventing times.
+            start: legacy.nextDeparture ?? legacy.stops?.[0]?.time ?? '',
+            end:
+              legacy.estimatedArrival ??
+              legacy.stops?.[(legacy.stops?.length ?? 1) - 1]?.time ??
+              '',
+            stops: legacy.stops ?? [],
+          },
+        ]
+      : [],
+    transfers: [],
+  };
+}
+
+/** One leg, from a plain single-trip search result. */
+export function tripAsTrackedLeg(trip: TransitSearchResult): TrackedLeg {
   const stops = trip.stops?.length
     ? trip.stops
     : [
@@ -149,9 +523,30 @@ export function buildActiveTrackFromTrip(
     routeNumber: trip.route,
     origin: trip.origin,
     destination: trip.destination,
+    start: trip.start,
+    end: trip.end,
+    stops: withDayOffsets(stops),
+    ...(trip.boarding ? { boardSequence: trip.boarding.sequence } : {}),
+    ...(trip.alighting ? { alightSequence: trip.alighting.sequence } : {}),
+  };
+}
+
+export function buildActiveTrackFromTrip(
+  trip: TransitSearchResult,
+  searchDay: string,
+): Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> {
+  const today = new Date().toISOString().slice(0, 10);
+  const leg = tripAsTrackedLeg(trip);
+  return {
+    tripId: trip.id,
+    routeNumber: trip.route,
+    origin: trip.origin,
+    destination: trip.destination,
     searchDay,
     searchDate: today,
-    stops,
+    legs: [leg],
+    transfers: [],
+    stops: leg.stops,
     nextDeparture: trip.start,
     estimatedArrival: trip.end,
   };
@@ -159,3 +554,7 @@ export function buildActiveTrackFromTrip(
 
 export const MAX_ACTIVE_TRACKS = 5;
 export const ACTIVE_TRACK_TTL_MS = 4 * 60 * 60 * 1000;
+/** Ceiling on a derived expiry — a long itinerary still has to end. */
+export const MAX_TRACK_TTL_MS = 8 * 60 * 60 * 1000;
+/** Kept past the final arrival, so a late bus does not drop off mid-trip. */
+export const TRACK_GRACE_MS = 30 * 60 * 1000;
