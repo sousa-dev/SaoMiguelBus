@@ -69,6 +69,11 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => AsyncStorage),
       // Token lives in secure storage only; persist the profile for instant UI.
       partialize: (state) => ({ user: state.user }),
+      // AsyncStorage's web backend touches window.localStorage. Auto-rehydrating at
+      // module load would run that during Expo Router's Node-side SSR pass for web,
+      // where window doesn't exist — so rehydrate is triggered explicitly from a
+      // client-only effect instead (see app/_layout.tsx).
+      skipHydration: true,
       onRehydrateStorage: () => () => {
         // Persist rehydration can overwrite a fresh /auth/me — refresh after cache load.
         void useAuthStore.getState().hydrate();

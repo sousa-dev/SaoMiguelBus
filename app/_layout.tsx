@@ -81,7 +81,9 @@ function AppShell({
       runHydrate();
       return;
     }
-    return useAuthStore.persist.onFinishHydration(runHydrate);
+    const unsubscribe = useAuthStore.persist.onFinishHydration(runHydrate);
+    void useAuthStore.persist.rehydrate();
+    return unsubscribe;
   }, []);
   useEntitlementSync();
   usePersonalizationPlatformBackfill();

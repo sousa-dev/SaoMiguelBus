@@ -8,9 +8,14 @@ import { Platform } from 'react-native';
  */
 const TOKEN_KEY = 'azores_hub_auth_token';
 const isWeb = Platform.OS === 'web';
+// AsyncStorage's web backend reads window.localStorage directly. Expo Router's
+// server-side render pass for web runs this module in Node, where window is
+// undefined, so guard against that instead of letting it reject.
+const hasWindow = typeof window !== 'undefined';
 
 export async function saveAuthToken(token: string): Promise<void> {
   if (isWeb) {
+    if (!hasWindow) return;
     await AsyncStorage.setItem(TOKEN_KEY, token);
     return;
   }
@@ -19,6 +24,7 @@ export async function saveAuthToken(token: string): Promise<void> {
 
 export async function loadAuthToken(): Promise<string | null> {
   if (isWeb) {
+    if (!hasWindow) return null;
     return AsyncStorage.getItem(TOKEN_KEY);
   }
   return SecureStore.getItemAsync(TOKEN_KEY);
@@ -26,6 +32,7 @@ export async function loadAuthToken(): Promise<string | null> {
 
 export async function deleteAuthToken(): Promise<void> {
   if (isWeb) {
+    if (!hasWindow) return;
     await AsyncStorage.removeItem(TOKEN_KEY);
     return;
   }
