@@ -19,6 +19,7 @@ import { describe, it } from 'node:test';
 
 import {
   bannerCopy,
+  canPin,
   canTrack,
   nextPreviewDataset,
   resolveBanner,
@@ -198,6 +199,15 @@ describe('resolveScheduleUi — preview warning and tracking', () => {
     assert.equal(canTrack(previewable, true), false);
     assert.equal(canTrack(previewable, false), true);
     assert.equal(canTrack(null, false), true, 'unconfigured must behave as today');
+  });
+
+  it('does NOT disable pinning while previewing (09 Gap A)', () => {
+    // A pin stores a search shortcut and schedules nothing, so the reason
+    // tracking stands down does not apply to it. Sharing the gate took the whole
+    // action row away the moment a subscriber toggled the preview on.
+    const previewable = config({ phase: 'preview', previewDataset: 'azoresbus' });
+    assert.equal(canTrack(previewable, true), false, 'tracking still gated');
+    assert.equal(canPin(), true, 'pinning survives the preview');
   });
 });
 

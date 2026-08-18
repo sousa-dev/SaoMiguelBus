@@ -6,6 +6,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
 import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
+import { canPin } from '@/features/transit/lib/schedule-config';
 import { useProfileStore } from '@/lib/profile-store';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -53,21 +54,28 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
     void guardPremiumAction(() => pinFromTrip(trip, searchDay), 'track_pin');
   };
 
-  // A previewed timetable is not in force, so there is nothing to track against.
-  if (!canTrackTrips) {
+  // Split gate (09 §2 Gap A). Tracking still stands down against a timetable that
+  // is not in force — a countdown would fire on the wrong days — but pinning
+  // schedules nothing, so the row survives the preview instead of disappearing
+  // with it. The row itself renders whenever at least one action is available.
+  const showTrack = canTrackTrips;
+  const showPinAction = showPin && canPin();
+  if (!showTrack && !showPinAction) {
     return null;
   }
 
   return (
     <View style={styles.row}>
-      <IconButton
-        icon={MapPin}
-        variant={tracking ? 'filled' : 'tonal'}
-        color={tracking ? theme.primary : theme.muted}
-        accessibilityLabel={tracking ? t('transitStopTrack') : t('transitStartTrack')}
-        onPress={onTrack}
-      />
-      {showPin ? (
+      {showTrack ? (
+        <IconButton
+          icon={MapPin}
+          variant={tracking ? 'filled' : 'tonal'}
+          color={tracking ? theme.primary : theme.muted}
+          accessibilityLabel={tracking ? t('transitStopTrack') : t('transitStartTrack')}
+          onPress={onTrack}
+        />
+      ) : null}
+      {showPinAction ? (
         <IconButton
           icon={Pin}
           variant="tonal"

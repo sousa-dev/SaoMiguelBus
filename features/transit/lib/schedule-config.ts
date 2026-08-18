@@ -130,6 +130,23 @@ export function canTrack(
 }
 
 /**
+ * Pinning is NOT gated on the preview (09 §2 Gap A).
+ *
+ * A pin stores a search shortcut and schedules nothing — there is no countdown to
+ * fire on the wrong day — and it is re-resolved against the active network when
+ * it is opened (`resolvePinnedRoutes`). Sharing `canTrack`'s gate meant the whole
+ * action row vanished the moment a subscriber toggled the preview on, so the one
+ * way to see the new network made a paying user's app strictly poorer than a free
+ * one's.
+ *
+ * A function rather than a constant so the call sites already read like a gate
+ * when a real reason to withhold pinning appears.
+ */
+export function canPin(): boolean {
+  return true;
+}
+
+/**
  * The stored preview toggle, after the server has had its say. A user who turned
  * preview on in August must not be stuck in a meaningless mode in September.
  */
