@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/ui/StateView';
 import { space } from '@/lib/tokens';
-import { Bus, Shuffle } from 'lucide-react-native';
+import { Bus, Clock, Shuffle } from 'lucide-react-native';
 
 import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
@@ -329,6 +329,14 @@ export default function TransitScreen() {
   const canOfferTransfers = Boolean(
     showEmptyResults && !allowTransfers && (search.transfersAvailable ?? 0) > 0,
   );
+  // A late-time search can legitimately find nothing after the chosen hour
+  // while service still runs earlier in the day — that is not "no route
+  // between these stops" and must not say so. Checked after the transfers
+  // offer: if turning transfers on would already find something, that is the
+  // more useful prompt.
+  const canOfferWholeDay = Boolean(
+    showEmptyResults && !canOfferTransfers && (search.earlierJourneysAvailable ?? 0) > 0,
+  );
   const showInstructions = !searchEnabled && !hasResults;
 
   return (
@@ -401,6 +409,13 @@ export default function TransitScreen() {
                 })}
                 actionLabel={t('enableTransfersButton')}
                 onAction={() => setAllowTransfers(true)}
+              />
+            ) : canOfferWholeDay ? (
+              <EmptyState
+                icon={Clock}
+                title={t('noRoutesAfterTimeMessage', { time })}
+                actionLabel={t('noRoutesAfterTimeAction')}
+                onAction={() => setTime(DEFAULT_SEARCH_TIME)}
               />
             ) : (
               <EmptyState

@@ -47,6 +47,9 @@ export function useTransitSearchWithOffline(params: {
   const dataset = useTransitDataset();
   const canSearch = Boolean(params.origin && params.destination);
   const maxTransfers = params.allowTransfers === false ? 0 : 1;
+  // The rider's own picker, not the clock — do not bucket this the way
+  // `departuresStartTime` buckets "now" (see 04 §Fix note 1).
+  const start = params.userTime || FULL_DAY_START;
 
   const rawQuery = useQuery({
     // The dataset belongs in the key even outside preview: without it a screen
@@ -59,6 +62,7 @@ export function useTransitSearchWithOffline(params: {
         destination: params.destination,
         day: params.day,
         isoDate: params.isoDate ?? null,
+        start,
       },
       isOnline ? 'online' : 'offline',
       dataset ?? 'server',
@@ -70,34 +74,65 @@ export function useTransitSearchWithOffline(params: {
           origin: params.origin,
           destination: params.destination,
           day: params.day,
-          start: FULL_DAY_START,
+          start,
           dataset,
           maxTransfers,
         });
+        // One extra request, only on an otherwise-dead screen (same trade
+        // `transfersAvailable` makes): tells the empty state whether nothing
+        // runs after `start`, or nothing runs between these stops at all.
+        let earlierJourneysAvailable: number | undefined;
+        if (result.journeys.length === 0 && start !== FULL_DAY_START) {
+          const wholeDay = await searchTransitJourneys({
+            origin: params.origin,
+            destination: params.destination,
+            day: params.day,
+            start: FULL_DAY_START,
+            dataset,
+            maxTransfers,
+          });
+          earlierJourneysAvailable = wholeDay.journeys.length;
+        }
         track('transit', 'search', {
           origin: params.origin,
           destination: params.destination,
           day_type: params.day,
-          start_time: FULL_DAY_START,
+          start_time: start,
           results_count: result.journeys.length,
           transfer_results_count: result.journeys.filter((j) => j.transfers > 0).length,
           max_transfers: maxTransfers,
           transfers_available: result.transfersAvailable ?? null,
           dataset: dataset ?? 'server',
         });
-        return result;
+        return { ...result, earlierJourneysAvailable };
       }
       // The schema-versioned bundle answers "does this trip run on THIS ISO
       // date?", which the v1 weekday enum cannot (98 B0). Fall back to v1 only
       // when there is no v2 copy on disk.
       const v2 = await loadCachedBundleV2();
       if (v2) {
+        const isoDate = params.isoDate ?? localIsoDate(new Date());
         const result = offlineJourneySearchV2(v2, {
           origin: params.origin,
           destination: params.destination,
-          isoDate: params.isoDate ?? localIsoDate(new Date()),
+          isoDate,
+          start,
           maxTransfers,
         });
+        // Offline must agree with online on what "no routes" means, so it
+        // gets the same whole-day re-query rather than silently having no
+        // answer for the distinction.
+        let earlierJourneysAvailable: number | undefined;
+        if (result.journeys.length === 0 && start !== FULL_DAY_START) {
+          const wholeDay = offlineJourneySearchV2(v2, {
+            origin: params.origin,
+            destination: params.destination,
+            isoDate,
+            start: FULL_DAY_START,
+            maxTransfers,
+          });
+          earlierJourneysAvailable = wholeDay.journeys.length;
+        }
         track('transit', 'offline_search', {
           origin: params.origin,
           destination: params.destination,
@@ -107,7 +142,7 @@ export function useTransitSearchWithOffline(params: {
           transfers_available: result.transfersAvailable ?? null,
           schema: 2,
         });
-        return result;
+        return { ...result, earlierJourneysAvailable };
       }
 
       const bundle = await loadCachedBundle();
@@ -155,6 +190,12 @@ export function useTransitSearchWithOffline(params: {
      * number — the prompt must never offer a retry that turns up nothing.
      */
     transfersAvailable: rawQuery.data?.transfersAvailable,
+    /**
+     * How many itineraries the whole day WOULD find, when this search asked
+     * for a time after midnight and found none. `undefined` whenever there is
+     * no honest number — v1 offline has no time filter to distinguish against.
+     */
+    earlierJourneysAvailable: rawQuery.data?.earlierJourneysAvailable,
   };
 }
 

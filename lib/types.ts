@@ -220,12 +220,19 @@ export interface TransitJourney {
  * prompt honest: it is the number of itineraries a change WOULD find, computed
  * by the server, so the app never offers a retry that turns up nothing. Present
  * only when the search asked for direct-only AND found none.
+ *
+ * `earlierJourneysAvailable` is the same trade applied to `start`: the number
+ * of itineraries a whole-day search WOULD find, computed client-side by
+ * re-querying with `start=00h00`, so the app never tells a rider "no route
+ * between these stops" when the truth is "not after the time you picked".
+ * Present only when the search asked for a time after midnight AND found none.
  */
 export interface TransitJourneySearch {
   journeys: TransitJourney[];
   /** Changes of bus this search allowed. 0 = one bus only. */
   maxTransfers: number;
   transfersAvailable?: number;
+  earlierJourneysAvailable?: number;
 }
 
 /**
