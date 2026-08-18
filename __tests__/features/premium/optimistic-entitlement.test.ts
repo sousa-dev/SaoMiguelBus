@@ -11,6 +11,7 @@ function mockCustomerInfo(partial: {
     expirationDate?: string | null;
     willRenew?: boolean;
     isActive?: boolean;
+    store?: string;
   } | null;
   nonSubscriptionTransactions?: {
     productIdentifier: string;
@@ -32,7 +33,7 @@ function mockCustomerInfo(partial: {
       latestPurchaseDate: '2026-01-01T00:00:00.000Z',
       originalPurchaseDate: '2026-01-01T00:00:00.000Z',
       periodType: 'NORMAL',
-      store: 'APP_STORE',
+      store: entitlement.store ?? 'APP_STORE',
       isSandbox: true,
       unsubscribeDetectedAt: null,
       billingIssueDetectedAt: null,
@@ -120,5 +121,74 @@ describe('resolvePremiumEntitlementFromCustomerInfo', () => {
   it('returns null when no entitlement and no tourist txs', () => {
     const info = mockCustomerInfo({});
     assert.equal(resolvePremiumEntitlementFromCustomerInfo(info, 'app_store'), null);
+  });
+
+  /**
+   * A dashboard grant — an admin or team account, a support make-good, a
+   * lifetime award. It is active with no expiry and never renews, exactly like a
+   * SPENT tourist pass, and was being read as the latter and thrown away.
+   *
+   * The consequence was not merely "shows as free": RevenueCat saw the
+   * entitlement, so `presentPaywallIfNeeded` correctly refused to show a paywall,
+   * and every premium action became a tap that did nothing at all.
+   */
+  it('treats a promotional grant as premium, despite no expiry and no renewal', () => {
+    const info = mockCustomerInfo({
+      entitlement: {
+        expirationDate: null,
+        willRenew: false,
+        isActive: true,
+        store: 'PROMOTIONAL',
+      },
+    });
+    const result = resolvePremiumEntitlementFromCustomerInfo(info, 'app_store');
+    assert.equal(result?.tier, 'premium');
+    assert.equal(result?.currentPeriodEnd, null, 'a grant does not expire');
+    assert.equal(result?.manageVia, 'none', 'not managed in any store');
+  });
+
+  it('keeps a promotional grant premium even with a long-expired tourist pass', () => {
+    const info = mockCustomerInfo({
+      entitlement: {
+        expirationDate: null,
+        willRenew: false,
+        isActive: true,
+        store: 'PROMOTIONAL',
+      },
+      nonSubscriptionTransactions: [
+        {
+          productIdentifier: '7_day_premium',
+          purchaseDate: '2026-01-01T12:00:00.000Z',
+          transactionIdentifier: 'tx1',
+          purchaseToken: null,
+        },
+      ],
+    });
+    const result = resolvePremiumEntitlementFromCustomerInfo(
+      info,
+      'app_store',
+      new Date('2026-02-01T12:00:00.000Z').getTime(),
+    );
+    assert.equal(result?.tier, 'premium');
+  });
+
+  it('still expires a spent tourist pass — the grant check must not swallow it', () => {
+    const info = mockCustomerInfo({
+      entitlement: { expirationDate: null, willRenew: false, isActive: true, store: 'APP_STORE' },
+      nonSubscriptionTransactions: [
+        {
+          productIdentifier: '7_day_premium',
+          purchaseDate: '2026-01-01T12:00:00.000Z',
+          transactionIdentifier: 'tx1',
+          purchaseToken: null,
+        },
+      ],
+    });
+    const result = resolvePremiumEntitlementFromCustomerInfo(
+      info,
+      'app_store',
+      new Date('2026-02-01T12:00:00.000Z').getTime(),
+    );
+    assert.equal(result, null);
   });
 });

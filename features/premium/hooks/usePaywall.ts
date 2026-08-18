@@ -62,7 +62,14 @@ export function usePaywall() {
 
   const afterPaywallResult = useCallback(
     async (result: PAYWALL_RESULT | null) => {
-      if (result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED) {
+      // NOT_PRESENTED is reconciled too, and that is the point: it means the
+      // native SDK sees an entitlement the app does not, so refreshing here is
+      // what closes the gap rather than leaving the two disagreeing every tap.
+      if (
+        result === PAYWALL_RESULT.PURCHASED ||
+        result === PAYWALL_RESULT.RESTORED ||
+        result === PAYWALL_RESULT.NOT_PRESENTED
+      ) {
         const info = await Purchases.getCustomerInfo();
         await reconcile(info);
         if (result === PAYWALL_RESULT.PURCHASED && !useAuthStore.getState().token) {
