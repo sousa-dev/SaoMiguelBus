@@ -31,6 +31,7 @@ import { useEntitlementSync } from '@/features/account/hooks/useEntitlement';
 import { usePersonalizationPlatformBackfill } from '@/features/account/hooks/usePersonalizationPlatformBackfill';
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { useAutoTrackPinnedRoutes } from '@/features/transit/hooks/useAutoTrackPinnedRoutes';
 import { useScheduleTransition } from '@/features/transit/hooks/useScheduleTransition';
 import { useAuthStore } from '@/lib/auth-store';
 import '@/lib/i18n';
@@ -64,6 +65,9 @@ function AppShell({
   // published — a 24h-persisted config would otherwise still be applied after it
   // stopped being true (03 §1, 98 §4 gap "Stale bootstrap").
   useScheduleTransition(bootstrap?.transitSchedule);
+  // Lives here rather than on the transit tab: a rider who opens the app on the
+  // hub still expects their 09h15 to be following itself by the time they look.
+  useAutoTrackPinnedRoutes();
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);

@@ -55,6 +55,12 @@ export function ActiveTrackingSection() {
           <Text style={[typography.body, { color: theme.text }]}>
             {track.origin} → {track.destination}
           </Text>
+          {/* A countdown the rider never started needs to say where it came from. */}
+          {track.auto ? (
+            <Text style={[typography.caption, { color: theme.info, marginTop: space.xs }]}>
+              {t('trackStartedFromPin')}
+            </Text>
+          ) : null}
           <Text style={[typography.caption, { color: theme.muted, marginTop: space.xs }]}>
             {t(journey.statusLabel.key, journey.statusLabel.params)} ·{' '}
             {t(journey.countdown.key, journey.countdown.params)}

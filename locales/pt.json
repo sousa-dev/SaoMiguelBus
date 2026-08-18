@@ -1408,5 +1408,6 @@
     "transitPinnedNoServiceTitle": "Já não tem horário",
     "transitPinnedNoServiceMessage": "{{route}} já não parte às {{time}} nos próximos 7 dias. Vê o horário para escolher outra viagem.",
     "transitPinnedFollowFailedTitle": "Não foi possível verificar",
-    "transitPinnedFollowFailedMessage": "Não foi possível carregar o horário. Tenta novamente."
+    "transitPinnedFollowFailedMessage": "Não foi possível carregar o horário. Tenta novamente.",
+    "trackStartedFromPin": "Iniciado a partir da rota fixada"
 }

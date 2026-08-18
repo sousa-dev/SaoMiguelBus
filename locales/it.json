@@ -1408,5 +1408,6 @@
     "transitPinnedNoServiceTitle": "Non più in orario",
     "transitPinnedNoServiceMessage": "{{route}} non parte più alle {{time}} nei prossimi 7 giorni. Apri l'orario per scegliere un'altra corsa.",
     "transitPinnedFollowFailedTitle": "Verifica non riuscita",
-    "transitPinnedFollowFailedMessage": "Impossibile caricare l'orario. Riprova."
+    "transitPinnedFollowFailedMessage": "Impossibile caricare l'orario. Riprova.",
+    "trackStartedFromPin": "Avviato dal percorso fissato"
 }

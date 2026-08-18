@@ -14,7 +14,7 @@
  * themselves (09 §2 Gap B).
  */
 
-import { localIsoDate, withDayOffsets } from '@/lib/bus-tracking';
+import { deriveTrackExpiry, localIsoDate, withDayOffsets } from '@/lib/bus-tracking';
 import type { PinnedRoute, TrackedLeg, TrackedTransfer } from '@/lib/profile-store';
 import type {
   TransitDataset,
@@ -137,6 +137,32 @@ export function journeyAsActiveTrack(
     searchDate,
     nextDeparture: pin.legs[0]?.start ?? journey.start,
     estimatedArrival: pin.legs[pin.legs.length - 1]?.end ?? journey.end,
+  };
+}
+
+/**
+ * The complete record `startTracking` expects, expiry included.
+ *
+ * Exists so the two callers cannot drift: the track button builds one on a tap,
+ * and the pinned-route sweep builds one on its own. The sweep deliberately does
+ * NOT go through `useBusTracking` — that hook runs a 30-second tick to refresh
+ * the countdowns, and the sweep is mounted at the app shell, where a tick would
+ * re-render the whole navigator twice a minute for nothing.
+ */
+export function journeyTrackPayload(
+  journey: TransitJourney,
+  searchDay: string,
+  dataset: TransitDataset | null,
+  format: (route: string) => string,
+  options?: { auto?: boolean },
+) {
+  const payload = journeyAsActiveTrack(journey, searchDay, dataset, format);
+  return {
+    ...payload,
+    // Flagged so the row can say why it is there: a countdown the rider never
+    // started is otherwise unexplained.
+    ...(options?.auto ? { auto: true } : {}),
+    expiresAt: deriveTrackExpiry(payload.legs, payload.searchDate),
   };
 }
 

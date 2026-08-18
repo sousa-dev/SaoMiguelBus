@@ -101,6 +101,11 @@ export interface ActiveTrack {
   estimatedArrival: string;
   expiresAt: number;
   createdAt: number;
+  /**
+   * Armed by the pinned-route sweep rather than by a tap. Only used to say so on
+   * the row — a track the rider did not start is otherwise unexplained.
+   */
+  auto?: boolean;
 
   // --- legacy fields, kept for one release so persisted state still reads ---
   /** @deprecated use `legs[0].tripId` */ tripId?: number;
@@ -134,6 +139,18 @@ export interface TrackingState {
   active: ActiveTrack[];
   pinned: PinnedRoute[];
   lastCleanup: number;
+  /**
+   * Pins the auto-track sweep has already armed, keyed `${pinId}|${YYYY-MM-DD}`.
+   *
+   * At most once per pin per day. Without it, stopping an auto-started track
+   * would be undone by the next time the app came back to the foreground — the
+   * rider would be unable to dismiss it at all. Yesterday's keys are dropped on
+   * write, so this cannot grow.
+   *
+   * Optional: persisted state written before auto-tracking existed has no such
+   * field, and an absent map simply means nothing has been armed yet.
+   */
+  autoTracked?: Record<string, number>;
 }
 
 const MAX_RECENTS = 10;
@@ -252,6 +269,11 @@ interface ProfileState {
    * a different network (09 §3.5). Runs every 30s from `useBusTracking`.
    */
   pruneTracking: (now?: number, dataset?: TransitDataset | null) => void;
+  /**
+   * Record that the sweep has armed this pin today, so it is not armed again.
+   * Entries from other days are discarded on the way through.
+   */
+  markAutoTracked: (pinId: string, day: string) => void;
   /**
    * Re-point saved data at the active network after the changeover (03 §5d, 09 §3.5).
    * Never deletes: unresolvable favourites and pins are kept and flagged.
@@ -493,6 +515,20 @@ export const useProfileStore = create<ProfileState>()(
             ...tracking,
             active,
             lastCleanup: now,
+          },
+        });
+      },
+
+      markAutoTracked: (pinId, day) => {
+        const { tracking } = get();
+        const suffix = `|${day}`;
+        const kept = Object.entries(tracking.autoTracked ?? {}).filter(([key]) =>
+          key.endsWith(suffix),
+        );
+        set({
+          tracking: {
+            ...tracking,
+            autoTracked: { ...Object.fromEntries(kept), [`${pinId}${suffix}`]: Date.now() },
           },
         });
       },

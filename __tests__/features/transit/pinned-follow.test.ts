@@ -23,11 +23,16 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
+  AUTO_TRACK_LEAD_MIN,
   DEPARTURE_TOLERANCE_MIN,
   FOLLOW_HORIZON_DAYS,
   findPinnedJourney,
+  journeyWindow,
   matchesPin,
   nextServiceDays,
+  pinWindow,
+  pinsDueNow,
+  planAutoTracks,
   resolvePinnedFollow,
   type FollowDay,
 } from '@/features/transit/lib/pinned-follow';
@@ -327,6 +332,132 @@ describe('resolvePinnedFollow — what tapping the button should do', () => {
     assert.equal(status.legIndex, 1, 'the leg they are about to board');
     assert.equal(status.transfer?.at, 'Lagoa');
     assert.equal(status.timeToNextStopMin, 8);
+  });
+});
+
+describe('auto-arming — a pin that starts following itself', () => {
+  const pin = pinOf(directJourney('09h15', '09h34'));
+  const todayJourneys = [directJourney('09h15', '09h34', 'today')];
+
+  it('is due inside the lead window and not before it', () => {
+    // The window is read off the pin's OWN stored times, so this costs nothing.
+    assert.equal(pinWindow(pin, TODAY, at(8, 29)), 'early');
+    assert.equal(pinWindow(pin, TODAY, at(8, 30)), 'due', `${AUTO_TRACK_LEAD_MIN} min before`);
+    assert.equal(pinWindow(pin, TODAY, at(9, 0)), 'due');
+  });
+
+  it('stays due while the bus is moving, whatever the lead window says', () => {
+    assert.equal(pinWindow(pin, TODAY, at(9, 26)), 'due');
+  });
+
+  it('is over once the itinerary has finished', () => {
+    assert.equal(pinWindow(pin, TODAY, at(18, 0)), 'over');
+  });
+
+  it('is over for a pin the migration could not lift, rather than throwing', () => {
+    assert.equal(pinWindow({ ...pin, legs: [] }, TODAY, at(9, 0)), 'over');
+  });
+
+  it('reads the same window off a real journey', () => {
+    assert.equal(journeyWindow(todayJourneys[0], 'weekday', TODAY, at(8, 45)), 'due');
+    assert.equal(journeyWindow(todayJourneys[0], 'weekday', TODAY, at(6, 0)), 'early');
+    assert.equal(journeyWindow(todayJourneys[0], 'weekday', TODAY, at(18, 0)), 'over');
+  });
+
+  it('narrows twenty pins to the handful worth a request', () => {
+    const morning = { ...pin, id: 'morning' };
+    const evening = {
+      ...pinOf(directJourney('19h15', '19h34')),
+      id: 'evening',
+    };
+    const due = pinsDueNow([morning, evening], TODAY, at(9, 0));
+    assert.deepEqual(
+      due.map((p) => p.id),
+      ['morning'],
+      'the evening pin costs nothing to rule out',
+    );
+  });
+
+  it('skips a pin the cutover greyed out', () => {
+    const unavailable = { ...pin, id: 'gone', unavailable: true };
+    assert.deepEqual(pinsDueNow([unavailable], TODAY, at(9, 0)), []);
+  });
+
+  it('arms a due pin once its run is confirmed against today', () => {
+    const plan = planAutoTracks({
+      pins: [pin],
+      journeysFor: () => todayJourneys,
+      today: TODAY,
+      dayType: 'weekday',
+      now: at(8, 45),
+      slots: 4,
+    });
+    assert.equal(plan.length, 1);
+    assert.equal(plan[0].journey.id, 'today');
+  });
+
+  it('does not arm a pin whose run is not in today’s answers', () => {
+    const plan = planAutoTracks({
+      pins: [pin],
+      // The 110 runs today, but never at 09h15.
+      journeysFor: () => [directJourney('11h15', '11h34', 'other')],
+      today: TODAY,
+      dayType: 'weekday',
+      now: at(8, 45),
+      slots: 4,
+    });
+    assert.deepEqual(plan, []);
+  });
+
+  it('does not arm the same pin twice in a day — a dismissal has to stick', () => {
+    const plan = planAutoTracks({
+      pins: [pin],
+      journeysFor: () => todayJourneys,
+      today: TODAY,
+      dayType: 'weekday',
+      now: at(8, 45),
+      slots: 4,
+      alreadyArmed: (candidate) => candidate.id === pin.id,
+    });
+    assert.deepEqual(plan, []);
+  });
+
+  it('spends a scarce slot on the nearest bus, and the rider’s own bus first', () => {
+    const soon = { ...pinOf(directJourney('09h15', '09h34')), id: 'soon' };
+    const later = { ...pinOf(directJourney('09h40', '09h59')), id: 'later' };
+    const aboard = { ...pinOf(directJourney('08h50', '09h30')), id: 'aboard' };
+    const answers: Record<string, TransitJourney[]> = {
+      soon: [directJourney('09h15', '09h34', 'soon-j')],
+      later: [directJourney('09h40', '09h59', 'later-j')],
+      aboard: [directJourney('08h50', '09h30', 'aboard-j')],
+    };
+
+    const plan = planAutoTracks({
+      pins: [later, soon, aboard],
+      journeysFor: (candidate) => answers[candidate.id] ?? [],
+      today: TODAY,
+      dayType: 'weekday',
+      now: at(9, 5),
+      slots: 2,
+    });
+
+    assert.deepEqual(
+      plan.map((entry) => entry.pin.id),
+      ['aboard', 'soon'],
+      'already riding outranks any countdown, and "later" loses the last slot',
+    );
+  });
+
+  it('arms nothing when the reserved slot is all that is left', () => {
+    const plan = planAutoTracks({
+      pins: [pin],
+      journeysFor: () => todayJourneys,
+      today: TODAY,
+      dayType: 'weekday',
+      now: at(8, 45),
+      slots: 0,
+    });
+    assert.deepEqual(plan, []);
   });
 });
 

@@ -20,7 +20,11 @@
  */
 
 import { journeyAsActiveTrack } from '@/features/transit/lib/journey-legs';
-import { computeJourneyStatus, timeStringToMinutes } from '@/lib/bus-tracking';
+import {
+  computeJourneyStatus,
+  timeStringToMinutes,
+  type JourneyTrackStatus,
+} from '@/lib/bus-tracking';
 import type { PinnedRoute } from '@/lib/profile-store';
 import { displayRouteNumber, resolveDayType, type DayType } from '@/lib/transit-format';
 import type { TransitJourney } from '@/lib/types';
@@ -45,6 +49,24 @@ export const FOLLOW_HORIZON_DAYS = 7;
  * this network are measured in tens of minutes, not fives.
  */
 export const DEPARTURE_TOLERANCE_MIN = 5;
+
+/**
+ * How long before departure a pinned run arms itself.
+ *
+ * Wide enough that it is already on screen while the rider is still deciding to
+ * leave, narrow enough that five slots are not filled by buses hours away. A run
+ * that is already moving arms regardless of this.
+ */
+export const AUTO_TRACK_LEAD_MIN = 45;
+
+/**
+ * Slots the sweep will not take.
+ *
+ * Auto-tracking is always on, so without this a rider with five due pins would
+ * find every slot spent and be refused when they tried to track something by
+ * hand — for a reason they never chose and cannot see.
+ */
+export const AUTO_TRACK_SLOT_RESERVE = 1;
 
 /** One day of the horizon, with the answers for it. */
 export interface FollowDay {
@@ -164,6 +186,154 @@ export function findPinnedJourney(
 function hasFinished(journey: TransitJourney, dayType: DayType, date: string, now: Date): boolean {
   const track = journeyAsActiveTrack(journey, dayType, null, displayRouteNumber, date);
   return computeJourneyStatus(track, now).phase === 'completed';
+}
+
+/* ------------------------------------------------------------------ *
+ * Auto-arming: pinned routes that start following themselves.
+ * ------------------------------------------------------------------ */
+
+/** Where a run sits relative to the rider right now. */
+export type AutoTrackWindow =
+  /** Boarding within the lead time, or already under way. */
+  | 'due'
+  /** Runs today, but not for a while yet. */
+  | 'early'
+  /** Already finished, or has no usable times. */
+  | 'over';
+
+function windowOf(status: JourneyTrackStatus, leadMinutes: number): AutoTrackWindow {
+  if (status.phase === 'completed') {
+    return 'over';
+  }
+  // Riding and transferring are always due — the rider is on the itinerary.
+  if (status.phase !== 'waiting') {
+    return 'due';
+  }
+  return status.timeToNextStopMin <= leadMinutes ? 'due' : 'early';
+}
+
+/**
+ * The window from the pin's OWN stored times — no network involved.
+ *
+ * This is what keeps the sweep cheap. A rider may hold twenty pins, and a pin
+ * only ever matches a run leaving at the time it stores, so the stored times
+ * alone rule almost all of them out before a single request is made. The handful
+ * that survive are then confirmed against the real timetable, because a stored
+ * time proves nothing about whether the run still operates today.
+ */
+export function pinWindow(
+  pin: PinnedRoute,
+  today: string,
+  now: Date,
+  leadMinutes = AUTO_TRACK_LEAD_MIN,
+): AutoTrackWindow {
+  const legs = pin.legs ?? [];
+  if (legs.length === 0 || !legs.some((leg) => leg.stops?.length)) {
+    return 'over';
+  }
+  const status = computeJourneyStatus(
+    {
+      legs,
+      transfers: pin.transfers ?? [],
+      searchDate: today,
+      nextDeparture: legs[0].start,
+    },
+    now,
+  );
+  return windowOf(status, leadMinutes);
+}
+
+/** The same window, for a real journey out of today's answers. */
+export function journeyWindow(
+  journey: TransitJourney,
+  dayType: DayType,
+  today: string,
+  now: Date,
+  leadMinutes = AUTO_TRACK_LEAD_MIN,
+): AutoTrackWindow {
+  const track = journeyAsActiveTrack(journey, dayType, null, displayRouteNumber, today);
+  return windowOf(computeJourneyStatus(track, now), leadMinutes);
+}
+
+/** A pin worth spending a request on: pinnable, not spent, due by its own clock. */
+export function pinsDueNow(
+  pins: PinnedRoute[],
+  today: string,
+  now: Date,
+  options: {
+    alreadyArmed?: (pin: PinnedRoute) => boolean;
+    leadMinutes?: number;
+  } = {},
+): PinnedRoute[] {
+  const lead = options.leadMinutes ?? AUTO_TRACK_LEAD_MIN;
+  return pins.filter((pin) => {
+    if (pin.unavailable || options.alreadyArmed?.(pin)) {
+      return false;
+    }
+    return pinWindow(pin, today, now, lead) === 'due';
+  });
+}
+
+export interface AutoTrackPlanEntry {
+  pin: PinnedRoute;
+  journey: TransitJourney;
+}
+
+/**
+ * Which pins to arm, in the order they matter.
+ *
+ * Confirms each candidate against the day's real answers — the pin's stored
+ * times say when the rider wants to travel, not whether the bus runs — and stops
+ * at `slots`, most imminent first, so a scarce slot goes to the bus the rider is
+ * closest to boarding rather than to whichever pin happens to sort first.
+ */
+export function planAutoTracks(input: {
+  pins: PinnedRoute[];
+  journeysFor: (pin: PinnedRoute) => TransitJourney[];
+  today: string;
+  dayType: DayType;
+  now: Date;
+  slots: number;
+  alreadyArmed?: (pin: PinnedRoute) => boolean;
+  leadMinutes?: number;
+}): AutoTrackPlanEntry[] {
+  const lead = input.leadMinutes ?? AUTO_TRACK_LEAD_MIN;
+  if (input.slots <= 0) {
+    return [];
+  }
+
+  const ranked: { entry: AutoTrackPlanEntry; rank: number }[] = [];
+  for (const pin of input.pins) {
+    if (pin.unavailable || input.alreadyArmed?.(pin)) {
+      continue;
+    }
+    if (pinWindow(pin, input.today, input.now, lead) !== 'due') {
+      continue;
+    }
+    const journey = findPinnedJourney(input.journeysFor(pin), pin);
+    if (!journey) {
+      continue;
+    }
+    const track = journeyAsActiveTrack(
+      journey,
+      input.dayType,
+      null,
+      displayRouteNumber,
+      input.today,
+    );
+    const status = computeJourneyStatus(track, input.now);
+    if (windowOf(status, lead) !== 'due') {
+      continue;
+    }
+    // Already aboard outranks any countdown; otherwise the nearer boarding wins.
+    const rank = status.phase === 'waiting' ? status.timeToNextStopMin : -1;
+    ranked.push({ entry: { pin, journey }, rank });
+  }
+
+  return ranked
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, input.slots)
+    .map((item) => item.entry);
 }
 
 /**

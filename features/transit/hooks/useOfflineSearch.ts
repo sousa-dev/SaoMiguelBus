@@ -81,7 +81,7 @@ export function journeySearchQueryKey(params: JourneySearchParams) {
 export async function fetchJourneySearch(
   params: JourneySearchParams & {
     probeEarlier?: boolean;
-    source?: 'search' | 'follow_pin';
+    source?: 'search' | 'follow_pin' | 'auto_track';
   },
 ): Promise<TransitJourneySearch> {
   const { origin, destination, day, start, dataset, maxTransfers, isOnline } = params;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { journeyAsActiveTrack, journeyAsPinnedRoute } from '@/features/transit/lib/journey-legs';
+import { journeyAsPinnedRoute, journeyTrackPayload } from '@/features/transit/lib/journey-legs';
 import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import {
   MAX_ACTIVE_TRACKS,
@@ -71,13 +71,11 @@ export function useBusTracking() {
     });
   };
 
-  const startFromJourney = (journey: TransitJourney, searchDay: string) => {
-    const payload = journeyAsActiveTrack(journey, searchDay, dataset, displayRouteNumber);
-    return startTracking({
-      ...payload,
-      expiresAt: deriveTrackExpiry(payload.legs, payload.searchDate),
-    });
-  };
+  const startFromJourney = (
+    journey: TransitJourney,
+    searchDay: string,
+    options?: { auto?: boolean },
+  ) => startTracking(journeyTrackPayload(journey, searchDay, dataset, displayRouteNumber, options));
 
   const pinFromJourney = (journey: TransitJourney, searchDay: string) =>
     pinRoute(journeyAsPinnedRoute(journey, searchDay, dataset, displayRouteNumber));

@@ -1408,5 +1408,6 @@
     "transitPinnedNoServiceTitle": "No longer scheduled",
     "transitPinnedNoServiceMessage": "{{route}} no longer departs at {{time}} in the next 7 days. Open the schedule to pick another trip.",
     "transitPinnedFollowFailedTitle": "Could not check",
-    "transitPinnedFollowFailedMessage": "The schedule could not be loaded. Try again."
+    "transitPinnedFollowFailedMessage": "The schedule could not be loaded. Try again.",
+    "trackStartedFromPin": "Started from your pinned route"
 }
