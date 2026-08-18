@@ -1,6 +1,6 @@
 import { MapPin, X } from 'lucide-react-native';
-import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMemo, useRef } from 'react';
+import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
@@ -25,6 +25,7 @@ function sortStops(stops: string[]): string[] {
 export function MinibusStopPicker({ label, value, placeholder, stops, onChangeText }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const inputRef = useRef<TextInput>(null);
 
   const options = useMemo(() => {
     const sorted = sortStops(stops);
@@ -35,12 +36,19 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
     return sorted.filter((stop) => normalizeToken(stop).includes(query));
   }, [value, stops]);
 
+  const selectStop = (stop: string) => {
+    onChangeText(stop);
+    inputRef.current?.blur();
+    Keyboard.dismiss();
+  };
+
   return (
     <View style={styles.wrap}>
       {label ? <Text style={[typography.label, { color: theme.muted }]}>{label}</Text> : null}
       <View style={[styles.field, { backgroundColor: theme.surfaceVariant, borderColor: theme.border }]}>
         <MapPin size={20} color={theme.primary} style={styles.pin} />
         <TextInput
+          ref={inputRef}
           accessibilityLabel={label}
           placeholder={placeholder}
           placeholderTextColor={theme.muted}
@@ -79,7 +87,7 @@ export function MinibusStopPicker({ label, value, placeholder, stops, onChangeTe
                 key={stop}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
-                onPress={() => onChangeText(stop)}
+                onPress={() => selectStop(stop)}
                 style={[
                   styles.option,
                   selected && { backgroundColor: theme.surfaceVariant },

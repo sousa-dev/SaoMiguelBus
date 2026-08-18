@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight, MapPin, Star, X } from 'lucide-react-native';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
@@ -36,6 +36,7 @@ type Props = {
 export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const inputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState(value);
   // Filtering runs against this, not `query` directly: on a 816-stop network a
   // one- or two-letter prefix can match hundreds of rows, so the list only
@@ -112,6 +113,8 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
     setDebouncedQuery(name);
     onSelect(name);
     setSuggestionsOpen(false);
+    inputRef.current?.blur();
+    Keyboard.dismiss();
   };
 
   // One renderer for both places a stop row appears — a plain match and a
@@ -166,6 +169,7 @@ export function StopPicker({ placeholder, value, stops, onSelect, pinColor }: Pr
       >
         <MapPin size={20} color={iconColor} style={styles.pin} />
         <TextInput
+          ref={inputRef}
           style={[styles.input, { color: theme.text }]}
           placeholder={placeholder}
           placeholderTextColor={theme.muted}
