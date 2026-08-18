@@ -1409,5 +1409,7 @@
     "transitPinnedNoServiceMessage": "{{route}} більше не вирушає о {{time}} протягом наступних 7 днів. Відкрий розклад, щоб обрати іншу поїздку.",
     "transitPinnedFollowFailedTitle": "Не вдалося перевірити",
     "transitPinnedFollowFailedMessage": "Не вдалося завантажити розклад. Спробуй ще раз.",
-    "trackStartedFromPin": "Розпочато із закріпленого маршруту"
+    "trackStartedFromPin": "Розпочато із закріпленого маршруту",
+    "premiumUnavailableTitle": "Покупки недоступні",
+    "premiumUnavailableMessage": "Не вдалося відкрити підписку на цьому пристрої. Спробуй пізніше."
 }

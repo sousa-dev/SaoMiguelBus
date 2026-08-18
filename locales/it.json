@@ -1409,5 +1409,7 @@
     "transitPinnedNoServiceMessage": "{{route}} non parte più alle {{time}} nei prossimi 7 giorni. Apri l'orario per scegliere un'altra corsa.",
     "transitPinnedFollowFailedTitle": "Verifica non riuscita",
     "transitPinnedFollowFailedMessage": "Impossibile caricare l'orario. Riprova.",
-    "trackStartedFromPin": "Avviato dal percorso fissato"
+    "trackStartedFromPin": "Avviato dal percorso fissato",
+    "premiumUnavailableTitle": "Acquisti non disponibili",
+    "premiumUnavailableMessage": "Non è stato possibile aprire l'abbonamento su questo dispositivo. Riprova più tardi."
 }

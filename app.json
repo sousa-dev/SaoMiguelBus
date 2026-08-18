@@ -8,7 +8,7 @@
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.1.59",
+    "version": "5.1.60",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",
@@ -71,7 +71,7 @@
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
-      "versionCode": 47,
+      "versionCode": 55,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#a9d566"

@@ -1409,5 +1409,7 @@
     "transitPinnedNoServiceMessage": "未来 7 天内 {{route}} 不再于 {{time}} 发车。请查看时刻表选择其他班次。",
     "transitPinnedFollowFailedTitle": "无法查询",
     "transitPinnedFollowFailedMessage": "无法加载时刻表，请重试。",
-    "trackStartedFromPin": "已根据置顶路线自动开始"
+    "trackStartedFromPin": "已根据置顶路线自动开始",
+    "premiumUnavailableTitle": "暂时无法购买",
+    "premiumUnavailableMessage": "无法在此设备上打开订阅页面，请稍后再试。"
 }

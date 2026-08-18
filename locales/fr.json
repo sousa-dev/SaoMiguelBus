@@ -1409,5 +1409,7 @@
     "transitPinnedNoServiceMessage": "{{route}} ne part plus à {{time}} dans les 7 prochains jours. Ouvre l'horaire pour choisir un autre trajet.",
     "transitPinnedFollowFailedTitle": "Vérification impossible",
     "transitPinnedFollowFailedMessage": "Impossible de charger l'horaire. Réessaie.",
-    "trackStartedFromPin": "Lancé depuis votre itinéraire épinglé"
+    "trackStartedFromPin": "Lancé depuis votre itinéraire épinglé",
+    "premiumUnavailableTitle": "Achats indisponibles",
+    "premiumUnavailableMessage": "Impossible d'ouvrir l'abonnement sur cet appareil. Réessaie plus tard."
 }

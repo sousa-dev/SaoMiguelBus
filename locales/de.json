@@ -1409,5 +1409,7 @@
     "transitPinnedNoServiceMessage": "{{route}} fährt in den nächsten 7 Tagen nicht mehr um {{time}}. Öffne den Fahrplan für eine andere Fahrt.",
     "transitPinnedFollowFailedTitle": "Prüfung fehlgeschlagen",
     "transitPinnedFollowFailedMessage": "Der Fahrplan konnte nicht geladen werden. Versuche es erneut.",
-    "trackStartedFromPin": "Automatisch aus deiner gemerkten Route gestartet"
+    "trackStartedFromPin": "Automatisch aus deiner gemerkten Route gestartet",
+    "premiumUnavailableTitle": "Käufe nicht verfügbar",
+    "premiumUnavailableMessage": "Das Abo konnte auf diesem Gerät nicht geöffnet werden. Bitte versuche es später erneut."
 }
