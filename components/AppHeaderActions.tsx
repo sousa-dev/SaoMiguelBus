@@ -115,7 +115,7 @@ export function AppHeaderActions() {
         icon={MoreHorizontal}
         variant="ghost"
         color={theme.onSurface}
-        accessibilityLabel={t('transitHeaderMoreOptions', { defaultValue: 'More options' })}
+        accessibilityLabel={t('transitHeaderMoreOptions')}
         onPress={openOverflowMenu}
       />
     );
