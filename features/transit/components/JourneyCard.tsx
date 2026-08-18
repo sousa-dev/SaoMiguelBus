@@ -19,10 +19,12 @@ import { useTranslation } from 'react-i18next';
 
 import { JourneyMap } from '@/features/transit/components/JourneyMap';
 import { RouteTimeline } from '@/features/transit/components/RouteTimeline';
+import { ShareJourneyButton } from '@/features/transit/components/ShareJourneyButton';
 import { ShareTripButton } from '@/features/transit/components/ShareTripButton';
+import { JourneyTrackButton } from '@/features/transit/components/JourneyTrackButton';
 import { TrackButton } from '@/features/transit/components/TrackButton';
 import { SchedulePreviewChip } from '@/features/transit/components/SchedulePreviewNotice';
-import { rideLegAsTrip } from '@/features/transit/lib/journey-legs';
+import { hasMultipleRideLegs, rideLegAsTrip } from '@/features/transit/lib/journey-legs';
 import { useTripVote } from '@/features/transit/hooks/useTransitQueries';
 import {
   displayRouteNumber,
@@ -75,84 +77,98 @@ export function JourneyCard({ journey, searchDay, expandedByDefault = false }: P
         elevation(2, theme.text),
       ]}
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Bus size={22} color={theme.primary} />
-          {rides.map((leg, index) => (
-            <React.Fragment key={`${leg.tripId}-badge`}>
-              {index > 0 ? <ArrowRight size={14} color={theme.muted} /> : null}
-              <Text style={[styles.routeNumber, { color: theme.primary }]}>
-                {displayRouteNumber(leg.route)}
-              </Text>
-            </React.Fragment>
-          ))}
-        </View>
-
-        <View style={styles.headerRight}>
-          {tightChange ? (
-            <View style={[styles.chip, { borderColor: theme.warning }]}>
-              <TriangleAlert size={12} color={theme.warning} />
-            </View>
-          ) : null}
-          {journey.dayOffset > 0 ? (
-            <View style={[styles.chip, { borderColor: theme.warning }]}>
-              <Text style={[typography.caption, { color: theme.warning }]}>+1</Text>
-            </View>
-          ) : null}
-          <View style={styles.metaRow}>
-            <Shuffle size={14} color={theme.muted} />
-            <Text style={[typography.caption, { color: theme.muted, marginLeft: 4 }]}>
-              {journey.transfers === 0
-                ? t('transitDirectJourney')
-                : t('transitTransfersCount', { count: journey.transfers })}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <SchedulePreviewChip />
-
-      {needsConfirmation ? (
-        <Pressable
-          onPress={openCharterInfo}
-          style={[
-            styles.charterBanner,
-            { backgroundColor: theme.warningSurface, borderColor: theme.warning },
-          ]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[typography.caption, { color: theme.warning, fontWeight: '700' }]}>
-              {t('confirmationRequired')}
-            </Text>
-            <Text style={[typography.caption, { color: theme.warning }]}>
-              {t('confirmationMessage')}
-            </Text>
-          </View>
-          <Phone size={18} color={theme.warning} />
-        </Pressable>
-      ) : null}
-
-      <RouteTimeline
-        startTime={journey.start}
-        endTime={journey.end}
-        originName={rides[0]?.board.name ?? ''}
-        destinationName={rides[rides.length - 1]?.alight.name ?? ''}
-      />
-
       <Pressable
         onPress={() => setExpanded((value) => !value)}
-        style={styles.expandBtn}
-        accessibilityLabel={t('clickToSeeDetails')}
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        accessibilityLabel={expanded ? t('transitHideSteps') : t('transitShowSteps')}
       >
-        <Text style={[typography.caption, { color: theme.info, fontWeight: '600' }]}>
-          {expanded ? t('transitHideSteps') : t('transitShowSteps')}
-        </Text>
-        {expanded ? (
-          <ChevronUp size={20} color={theme.info} />
-        ) : (
-          <ChevronDown size={20} color={theme.info} />
-        )}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Bus size={22} color={theme.primary} />
+            {rides.map((leg, index) => (
+              <React.Fragment key={`${leg.tripId}-badge`}>
+                {index > 0 ? <ArrowRight size={14} color={theme.muted} /> : null}
+                <Text style={[styles.routeNumber, { color: theme.primary }]}>
+                  {displayRouteNumber(leg.route)}
+                </Text>
+              </React.Fragment>
+            ))}
+          </View>
+
+          <View style={styles.headerRight}>
+            {tightChange ? (
+              <View style={[styles.chip, { borderColor: theme.warning }]}>
+                <TriangleAlert size={12} color={theme.warning} />
+              </View>
+            ) : null}
+            {journey.dayOffset > 0 ? (
+              <View style={[styles.chip, { borderColor: theme.warning }]}>
+                <Text style={[typography.caption, { color: theme.warning }]}>+1</Text>
+              </View>
+            ) : null}
+            <View style={styles.metaRow}>
+              <Shuffle size={14} color={theme.muted} />
+              <Text style={[typography.caption, { color: theme.muted, marginLeft: 4 }]}>
+                {journey.transfers === 0
+                  ? t('transitDirectJourney')
+                  : t('transitTransfersCount', { count: journey.transfers })}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <SchedulePreviewChip />
+
+        {needsConfirmation ? (
+          <Pressable
+            onPress={openCharterInfo}
+            style={[
+              styles.charterBanner,
+              { backgroundColor: theme.warningSurface, borderColor: theme.warning },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.caption, { color: theme.warning, fontWeight: '700' }]}>
+                {t('confirmationRequired')}
+              </Text>
+              <Text style={[typography.caption, { color: theme.warning }]}>
+                {t('confirmationMessage')}
+              </Text>
+            </View>
+            <Phone size={18} color={theme.warning} />
+          </Pressable>
+        ) : null}
+
+        <RouteTimeline
+          startTime={journey.start}
+          endTime={journey.end}
+          originName={rides[0]?.board.name ?? ''}
+          destinationName={rides[rides.length - 1]?.alight.name ?? ''}
+        />
       </Pressable>
+
+      <View style={styles.cardActionsRow}>
+        <Pressable
+          onPress={() => setExpanded((value) => !value)}
+          style={styles.expandBtn}
+          accessibilityLabel={t('clickToSeeDetails')}
+        >
+          <Text style={[typography.caption, { color: theme.info, fontWeight: '600' }]}>
+            {expanded ? t('transitHideSteps') : t('transitShowSteps')}
+          </Text>
+          {expanded ? (
+            <ChevronUp size={20} color={theme.info} />
+          ) : (
+            <ChevronDown size={20} color={theme.info} />
+          )}
+        </Pressable>
+
+        <View style={styles.cardActions}>
+          <ShareJourneyButton journey={journey} />
+          <JourneyTrackButton journey={journey} searchDay={searchDay} />
+        </View>
+      </View>
 
       {expanded ? (
         <View style={styles.legs}>
@@ -351,11 +367,14 @@ function RideLegPanel({
       </View>
 
       {/* Per LEG, not per journey: tracking and sharing are per-bus operations
-          and `ActiveTrack`/`PinnedRoute` hold one trip each. */}
-      <View style={styles.actions}>
-        <TrackButton trip={trip} searchDay={searchDay} />
-        <ShareTripButton trip={trip} />
-      </View>
+          and `ActiveTrack`/`PinnedRoute` hold one trip each. Hidden on a direct
+          journey, where the card-level actions already cover this one bus. */}
+      {hasMultipleRideLegs(journey) ? (
+        <View style={styles.actions}>
+          <TrackButton trip={trip} searchDay={searchDay} />
+          <ShareTripButton trip={trip} />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -390,13 +409,22 @@ const styles = StyleSheet.create({
     marginBottom: space.sm,
     gap: space.sm,
   },
+  cardActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: space.sm,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+  },
   expandBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: space.xs,
     paddingVertical: space.sm,
-    marginTop: space.sm,
   },
   mapPreview: { marginBottom: space.xs },
   legs: { gap: space.sm },
