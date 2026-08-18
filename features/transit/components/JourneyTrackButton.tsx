@@ -79,8 +79,7 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
       return;
     }
     void guardPremiumAction(() => {
-      if (!pinFromJourney(journey, searchDay)) {
-        // The only non-duplicate reason to fail is the cap (09 §3.2).
+      if (pinFromJourney(journey, searchDay) === 'cap') {
         Alert.alert(t('transitPinCapTitle'), t('transitPinCapMessage'));
       }
     }, 'track_pin');

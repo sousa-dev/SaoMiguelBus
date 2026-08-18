@@ -197,6 +197,16 @@ function itineraryKey(entry: {
   return `${entry.journeyId ?? shape}|${pairKey(entry.origin, entry.destination)}`;
 }
 
+/**
+ * Why a pin did or did not land.
+ *
+ * A bare `false` conflated "already pinned" with "you have hit the cap", and the
+ * two call sites guessed differently — `TrackButton` swallowed both, so the cap
+ * was a silent no-op, and alerting on `false` there would have told a rider
+ * re-pinning a saved route that their list was full.
+ */
+export type PinResult = 'ok' | 'duplicate' | 'cap';
+
 interface ProfileState {
   displayName: string | null;
   favoriteRoutes: FavoriteRoute[];
@@ -235,7 +245,7 @@ interface ProfileState {
     input: Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> & { expiresAt?: number },
   ) => boolean;
   stopTracking: (trackId: string) => void;
-  pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => boolean;
+  pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => PinResult;
   unpinRoute: (pinId: string) => void;
   /**
    * Drops expired tracks, and — when `dataset` is supplied — tracks built against
@@ -424,10 +434,10 @@ export const useProfileStore = create<ProfileState>()(
         const key = itineraryKey(input);
         const duplicate = tracking.pinned.find((p) => itineraryKey(p) === key);
         if (duplicate) {
-          return false;
+          return 'duplicate';
         }
         if (tracking.pinned.length >= MAX_PINNED_ROUTES) {
-          return false;
+          return 'cap';
         }
         const pin: PinnedRoute = {
           ...input,
@@ -441,7 +451,7 @@ export const useProfileStore = create<ProfileState>()(
           },
         });
         track('transit', 'track_pin', { trip_id: input.tripId, route: input.routeNumber });
-        return true;
+        return 'ok';
       },
 
       unpinRoute: (pinId) => {

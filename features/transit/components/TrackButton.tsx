@@ -51,7 +51,13 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   };
 
   const onPin = () => {
-    void guardPremiumAction(() => pinFromTrip(trip, searchDay), 'track_pin');
+    void guardPremiumAction(() => {
+      // Only the cap is worth interrupting for: re-pinning something already
+      // saved is a no-op the rider does not need an alert about.
+      if (pinFromTrip(trip, searchDay) === 'cap') {
+        Alert.alert(t('transitPinCapTitle'), t('transitPinCapMessage'));
+      }
+    }, 'track_pin');
   };
 
   // Split gate (09 §2 Gap A). Tracking still stands down against a timetable that

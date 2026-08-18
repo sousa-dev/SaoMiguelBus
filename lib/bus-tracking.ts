@@ -146,6 +146,21 @@ function startOfLocalDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
+/**
+ * Today as `YYYY-MM-DD` in LOCAL time — never `toISOString()`, which is UTC.
+ *
+ * `departureDayStart` parses this back with `new Date(y, m - 1, d)`, i.e. as a
+ * local date. Writing it in UTC makes the two disagree for the part of the day
+ * either side of midnight: at 23h30 Azores winter (UTC-1) `toISOString()`
+ * already reads tomorrow, so the countdown anchored a bus leaving in 15 minutes
+ * to tomorrow's midnight and displayed ~24h.
+ */
+export function localIsoDate(date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 /** Local midnight of the day the itinerary departs — the origin of every offset. */
 function departureDayStart(searchDate: string | undefined, now: Date): number {
   if (searchDate) {
@@ -449,7 +464,14 @@ export function deriveTrackExpiry(
   // anchoring on today would shift a journey tracked for tomorrow by 24h.
   const arrival =
     departureDayStart(searchDate, new Date(now)) + spans[spans.length - 1].end * 60_000;
-  return Math.min(arrival + TRACK_GRACE_MS, now + MAX_TRACK_TTL_MS);
+  // Floored, not just capped. The default search time is 00h00, so a rider can
+  // and does track a bus that has already run — and a derived expiry in the past
+  // meant `pruneTracking` deleted the row within 30s of it being created, with
+  // no message. It now lives long enough to say "completed" and be dismissed.
+  return Math.max(
+    Math.min(arrival + TRACK_GRACE_MS, now + MAX_TRACK_TTL_MS),
+    now + MIN_TRACK_TTL_MS,
+  );
 }
 
 /**
@@ -535,7 +557,7 @@ export function buildActiveTrackFromTrip(
   trip: TransitSearchResult,
   searchDay: string,
 ): Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localIsoDate();
   const leg = tripAsTrackedLeg(trip);
   return {
     tripId: trip.id,
@@ -558,3 +580,9 @@ export const ACTIVE_TRACK_TTL_MS = 4 * 60 * 60 * 1000;
 export const MAX_TRACK_TTL_MS = 8 * 60 * 60 * 1000;
 /** Kept past the final arrival, so a late bus does not drop off mid-trip. */
 export const TRACK_GRACE_MS = 30 * 60 * 1000;
+/**
+ * Floor on a derived expiry. Tracking a trip that has already finished is a
+ * legitimate thing to do by accident — the search defaults to 00h00 — and the
+ * row has to outlive the 30s prune or it disappears with no explanation.
+ */
+export const MIN_TRACK_TTL_MS = 30 * 60 * 1000;

@@ -14,7 +14,7 @@
  * themselves (09 §2 Gap B).
  */
 
-import { withDayOffsets } from '@/lib/bus-tracking';
+import { localIsoDate, withDayOffsets } from '@/lib/bus-tracking';
 import type { PinnedRoute, TrackedLeg, TrackedTransfer } from '@/lib/profile-store';
 import type {
   TransitDataset,
@@ -129,7 +129,7 @@ export function journeyAsActiveTrack(
   searchDay: string,
   dataset: TransitDataset | null,
   format: (route: string) => string,
-  searchDate = new Date().toISOString().slice(0, 10),
+  searchDate = localIsoDate(),
 ) {
   const pin = journeyAsPinnedRoute(journey, searchDay, dataset, format);
   return {
