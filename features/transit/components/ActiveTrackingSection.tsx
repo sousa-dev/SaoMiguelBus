@@ -9,7 +9,7 @@ import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
 import { usePremium } from '@/lib/premium-store';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
-import type { JourneyTrackStatus } from '@/lib/bus-tracking';
+import { journeyPositionLabels, type JourneyTrackStatus } from '@/lib/bus-tracking';
 
 export function ActiveTrackingSection() {
   const theme = useAppTheme();
@@ -59,10 +59,44 @@ export function ActiveTrackingSection() {
             {t(journey.statusLabel.key, journey.statusLabel.params)} ·{' '}
             {t(journey.countdown.key, journey.countdown.params)}
           </Text>
+          <TrackPosition journey={journey} />
           <LegStrip journey={journey} />
         </View>
       ))}
     </TransitCollapsibleSection>
+  );
+}
+
+/**
+ * Where the bus actually is.
+ *
+ * `computeJourneyStatus` has always returned `currentStop`, `nextStop` and
+ * `timeToNextStopMin`, and nothing rendered them: the widget said "En route ·
+ * 24 min" and left the rider to work out which of a dozen stops that meant.
+ *
+ * The disclaimer is not boilerplate. This is a schedule estimate — there is no
+ * live vehicle feed on this network — and a premium widget naming a stop and a
+ * minute count reads exactly like one that has a GPS fix unless it says so.
+ */
+function TrackPosition({ journey }: { journey: JourneyTrackStatus }) {
+  const theme = useAppTheme();
+  const { t } = useTranslation();
+  const { primary, secondary } = journeyPositionLabels(journey);
+
+  return (
+    <View style={styles.position}>
+      <Text style={[typography.body, { color: theme.text }]}>
+        {t(primary.key, primary.params)}
+      </Text>
+      {secondary ? (
+        <Text style={[typography.caption, { color: theme.muted }]}>
+          {t(secondary.key, secondary.params)}
+        </Text>
+      ) : null}
+      <Text style={[typography.caption, { color: theme.muted, opacity: 0.8 }]}>
+        {t('trackPositionEstimated')}
+      </Text>
+    </View>
   );
 }
 
@@ -140,6 +174,7 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  position: { marginTop: space.sm, gap: 2 },
   strip: { marginTop: space.sm, gap: space.xs },
   legRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   legRoute: { minWidth: 36 },

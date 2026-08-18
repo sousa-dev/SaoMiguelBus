@@ -1,12 +1,13 @@
 import { Pin, X } from 'lucide-react-native';
 import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
 import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
+import { useFollowPinnedRoute } from '@/features/transit/hooks/useFollowPinnedRoute';
 import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
 import { usePremium } from '@/lib/premium-store';
 import { space, typography } from '@/lib/tokens';
@@ -23,7 +24,8 @@ export function PinnedRoutesSection({ onSelect }: Props) {
   const isPremium = usePremium();
   const { canTrackTrips } = useScheduleConfig();
   const { guardPremiumAction } = usePremiumGate();
-  const { pinned, unpinRoute, canStartMore } = useBusTracking();
+  const { pinned, unpinRoute } = useBusTracking();
+  const { followPin, followingId } = useFollowPinnedRoute();
 
   // Webapp parity: pinned routes are a premium-only widget.
   if (!isPremium || pinned.length === 0) {
@@ -92,22 +94,23 @@ export function PinnedRoutesSection({ onSelect }: Props) {
                 the gate splits, it does not disappear). */}
             {canTrackTrips && !pin.unavailable ? (
               <Pressable
-                style={[styles.action, { borderColor: theme.primary }]}
+                style={[
+                  styles.action,
+                  { borderColor: theme.primary },
+                  followingId ? styles.busy : null,
+                ]}
+                disabled={followingId !== null}
                 onPress={() =>
-                  void guardPremiumAction(() => {
-                    if (!canStartMore) {
-                      Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
-                      return;
-                    }
-                    // Trip ids roll overnight and the migration drops them
-                    // outright, so following a pin means re-running its search
-                    // and tracking the itinerary that comes back.
-                    onSelect(pin.origin, pin.destination);
-                  }, 'track_start')
+                  // Trip ids roll overnight and the migration drops them
+                  // outright, so following a pin means re-running its search
+                  // and tracking the itinerary that comes back.
+                  void guardPremiumAction(() => void followPin(pin), 'track_start')
                 }
               >
                 <Text style={[typography.caption, { color: theme.primary }]}>
-                  {t('transitPinnedFollow')}
+                  {followingId === pin.id
+                    ? t('transitPinnedFollowSearching')
+                    : t('transitPinnedFollow')}
                 </Text>
               </Pressable>
             ) : null}
@@ -151,6 +154,7 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   unavailable: { opacity: 0.55 },
+  busy: { opacity: 0.6 },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   actions: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
   action: {

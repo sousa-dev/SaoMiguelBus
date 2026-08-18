@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { journeyAsActiveTrack, journeyAsPinnedRoute } from '@/features/transit/lib/journey-legs';
 import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import {
+  MAX_ACTIVE_TRACKS,
   buildActiveTrackFromTrip,
   computeBusStatus,
   computeJourneyStatus,
@@ -44,7 +45,7 @@ export function useBusTracking() {
     [tracking.active, tick],
   );
 
-  const canStartMore = tracking.active.length < 5;
+  const canStartMore = tracking.active.length < MAX_ACTIVE_TRACKS;
 
   const startFromTrip = (trip: TransitSearchResult, searchDay: string) => {
     const payload = buildActiveTrackFromTrip(trip, searchDay);

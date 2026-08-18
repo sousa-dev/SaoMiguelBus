@@ -31,10 +31,18 @@ export type TrackPhase = 'waiting' | 'active' | 'completed' | 'unknown';
 /** Where the rider is in a multi-leg itinerary (09 §3.3). */
 export type JourneyTrackPhase = 'waiting' | 'riding' | 'transferring' | 'completed';
 
-/** An i18n key plus its interpolation values. The caller runs it through `t`. */
+/**
+ * An i18n key plus its interpolation values. The caller runs it through `t`.
+ *
+ * Values are `string | number` because the position lines interpolate stop and
+ * route NAMES as well as minute counts. Minute counts are passed as `minutes`,
+ * never `count`: `count` is what i18next resolves plurals against, and every
+ * locale here abbreviates the unit invariantly, exactly as `trackStatusMinutes`
+ * and `trackStatusTransferWait` already do.
+ */
 export interface TrackLabel {
   key: string;
-  params?: Record<string, number>;
+  params?: Record<string, string | number>;
 }
 
 export interface BusTrackStatus {
@@ -404,6 +412,94 @@ export function computeJourneyStatus(
     transfers,
     legs: legViews(0, 0),
   };
+}
+
+/** The two lines that answer "where is it?" — see `journeyPositionLabels`. */
+export interface JourneyPositionLabels {
+  primary: TrackLabel;
+  secondary: TrackLabel | null;
+}
+
+/**
+ * Where the bus is, as i18n descriptors.
+ *
+ * `computeJourneyStatus` has always known the answer — `currentStop`, `nextStop`
+ * and `timeToNextStopMin` are computed on every tick — and until now nothing
+ * rendered any of it, so the paid widget said "En route · 24 min" and left the
+ * rider to guess which of the twelve stops that meant.
+ *
+ * "Where is it" means something different in each phase, so each gets its own
+ * pair: the stop it is due to leave from while WAITING, the stop behind and the
+ * stop ahead while RIDING, the interchange and the bus being caught while
+ * TRANSFERRING, and the final stop once COMPLETED.
+ *
+ * Every number here is derived from the timetable. There is no live vehicle feed
+ * on this network, which is why the row also carries `trackPositionEstimated` —
+ * a rider must not read an estimate as a GPS fix.
+ */
+export function journeyPositionLabels(status: JourneyTrackStatus): JourneyPositionLabels {
+  // Never negative: a bus sitting exactly on its scheduled minute reads "now",
+  // not "-0 min".
+  const minutes = Math.max(0, Math.round(status.timeToNextStopMin));
+
+  switch (status.phase) {
+    case 'waiting': {
+      if (!status.nextStop) {
+        return { primary: { key: 'trackStatusTracking' }, secondary: null };
+      }
+      return {
+        primary: { key: 'trackPositionBoardsAt', params: { stop: status.nextStop.name } },
+        secondary: { key: 'trackPositionDepartsIn', params: { minutes } },
+      };
+    }
+
+    case 'riding': {
+      // No next stop means the bus is standing at the leg's last stop.
+      if (!status.nextStop) {
+        const last = status.currentStop?.name ?? status.legs[status.legIndex]?.destination;
+        return {
+          primary: last
+            ? { key: 'trackPositionFinalStop', params: { stop: last } }
+            : { key: 'trackStatusEnRoute' },
+          secondary: null,
+        };
+      }
+      return {
+        primary: status.currentStop
+          ? { key: 'trackPositionPassed', params: { stop: status.currentStop.name } }
+          : { key: 'trackStatusEnRoute' },
+        secondary: {
+          key: 'trackPositionNextStop',
+          params: { stop: status.nextStop.name, minutes },
+        },
+      };
+    }
+
+    case 'transferring': {
+      // `legIndex` is already the leg being BOARDED, so this names the bus the
+      // rider is waiting for rather than the one they just left.
+      const at = status.transfer?.at ?? status.nextStop?.name;
+      const route = status.legs[status.legIndex]?.routeNumber ?? '';
+      return {
+        primary: at
+          ? { key: 'trackPositionChangeAt', params: { stop: at, route } }
+          : { key: 'trackStatusTransferring' },
+        secondary: {
+          key: status.transfer?.tight ? 'trackPositionChangeTightIn' : 'trackPositionChangeIn',
+          params: { minutes },
+        },
+      };
+    }
+
+    case 'completed':
+    default:
+      return {
+        primary: status.currentStop
+          ? { key: 'trackPositionArrived', params: { stop: status.currentStop.name } }
+          : { key: 'trackStatusCompleted' },
+        secondary: null,
+      };
+  }
 }
 
 /**

@@ -78,6 +78,36 @@ export function formatRelativeTime(iso: string, locale?: string): string {
   return '';
 }
 
+/**
+ * A calendar day named the way someone would say it out loud, e.g. "segunda-feira, 24 ago.".
+ *
+ * Used to answer "when does this next run?" for a pinned itinerary, where a bare
+ * `2026-08-24` is a worse answer than the weekday — the rider is deciding whether
+ * that is tomorrow or after the weekend.
+ *
+ * Takes a local `YYYY-MM-DD` and parses it as a LOCAL date: `new Date('2026-08-24')`
+ * is UTC midnight, which reads as the 23rd anywhere west of UTC, including the
+ * timezone this app serves.
+ */
+export function formatWeekdayDate(isoDate: string, locale?: string): string {
+  const [year, month, day] = isoDate.split('-').map((part) => parseInt(part, 10));
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return isoDate;
+  }
+  const date = new Date(year, month - 1, day);
+  const resolvedLocale = locale ?? (typeof navigator !== 'undefined' ? navigator.language : 'en');
+  try {
+    return new Intl.DateTimeFormat(resolvedLocale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+    }).format(date);
+  } catch {
+    // A build without full ICU still has to say something true.
+    return isoDate;
+  }
+}
+
 /** Local clock time from ISO timestamp, e.g. "16:52". */
 export function formatLocalTime(iso: string, locale?: string): string {
   const date = new Date(iso);
