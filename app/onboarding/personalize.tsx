@@ -121,17 +121,27 @@ export default function PersonalizeScreen() {
 
   const HeroIcon = STEP_HERO_ICONS[step] ?? Sparkles;
 
-  const exitToHub = () => {
+  /**
+   * Where onboarding lets go of the user.
+   *
+   * The bus search, not the hub: it is the app's home screen and the reason
+   * almost everyone installs this. Landing on the hub made a first-time user
+   * find the thing they came for before they could use it.
+   *
+   * Re-entered from Settings this is an EDIT, so it goes back where it was
+   * opened from rather than throwing the user onto a tab they did not ask for.
+   */
+  const exitOnboarding = () => {
     if (isEdit) {
       router.back();
       return;
     }
-    router.replace('/(tabs)/hub');
+    router.replace('/(tabs)/transit');
   };
 
   const onSkip = () => {
     skip();
-    exitToHub();
+    exitOnboarding();
   };
 
   const onFinish = async () => {
@@ -151,7 +161,7 @@ export default function PersonalizeScreen() {
         home_municipality: storedMunicipality,
         edit: isEdit,
       });
-      exitToHub();
+      exitOnboarding();
     } finally {
       setBusy(false);
     }
