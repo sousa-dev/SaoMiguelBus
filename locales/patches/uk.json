@@ -319,7 +319,7 @@
     "authErrorValidation": "{{message}}",
     "settingsPremium": "Premium",
     "premiumHeaderButtonActive": "Premium",
-    "navBarMinibusLabel": "PDL Mini Bus",
+    "navBarMinibusLabel": "PDL MiniBus",
     "minibusPriceEur": "€{{price}}",
     "transitStopDeparturesFrom": "Відправлення з {{time}}",
     "transitStopNoMoreDeparturesToday": "Сьогодні відправлень більше немає",

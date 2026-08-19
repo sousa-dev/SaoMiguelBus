@@ -17,7 +17,7 @@ export const TAB_SCREEN_TO_MODULE_KEY: Record<string, ModuleKey> = Object.fromEn
   Object.entries(MODULE_KEY_TO_TAB_SCREEN).map(([k, v]) => [v, k as ModuleKey]),
 ) as Record<string, ModuleKey>;
 
-/** Fixed bottom nav bar: Inicio, Bus, Experiências, Mini Bus PDL, Meteorologia. */
+/** Fixed bottom nav bar: Inicio, Bus, Experiências, PDL MiniBus, Meteorologia. */
 export const FIXED_TAB_MODULE_KEYS: ModuleKey[] = ['transit', 'events', 'minibus', 'weather'];
 
 /** Hub first, then the fixed set of bottom-tab modules. */

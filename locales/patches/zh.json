@@ -319,7 +319,7 @@
     "premiumOfflineDownloaded": "离线数据已就绪",
     "accountAdminBadge": "Admin",
     "authErrorValidation": "{{message}}",
-    "navBarMinibusLabel": "PDL Mini Bus",
+    "navBarMinibusLabel": "PDL MiniBus",
     "minibusPriceEur": "€{{price}}",
     "hubSubtitle": "选择模块，或将常用模块固定到首页。",
     "hubPinModule": "固定到首页",

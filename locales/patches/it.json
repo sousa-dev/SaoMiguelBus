@@ -333,7 +333,7 @@
     "authErrorValidation": "{{message}}",
     "settingsPremium": "Premium",
     "premiumHeaderButtonActive": "Premium",
-    "navBarMinibusLabel": "PDL Mini Bus",
+    "navBarMinibusLabel": "PDL MiniBus",
     "minibusPriceEur": "€{{price}}",
     "transitStopDeparturesFrom": "Partenze dalle {{time}}",
     "transitStopNoMoreDeparturesToday": "Nessun’altra partenza oggi",

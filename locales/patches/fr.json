@@ -209,7 +209,7 @@
     "authErrorValidation": "{{message}}",
     "settingsPremium": "Premium",
     "premiumHeaderButtonActive": "Premium",
-    "navBarMinibusLabel": "PDL Mini Bus",
+    "navBarMinibusLabel": "PDL MiniBus",
     "minibusPdfTitle": "Document",
     "minibusPriceEur": "€{{price}}",
     "minibusDirectJourney": "Direct",
