@@ -14,6 +14,11 @@ function personalizationStorageKey() {
   return `azores_hub_personalization_${staticIslandConfig.islandKey}`;
 }
 
+type ProfilePatch = {
+  userType?: UserType;
+  homeMunicipality?: string | null;
+};
+
 interface PersonalizationState {
   seen: boolean;
   completed: boolean;
@@ -23,6 +28,8 @@ interface PersonalizationState {
   setUserType: (userType: UserType) => void;
   toggleInterest: (key: ModuleKey) => void;
   setHomeMunicipality: (key: string | null) => void;
+  /** Profile-screen edits: persist locally and sync when consent allows. */
+  updateProfile: (patch: ProfilePatch) => Promise<void>;
   complete: () => Promise<void>;
   skip: () => void;
   resetAll: () => void;
@@ -70,6 +77,25 @@ export const usePersonalizationStore = create<PersonalizationState>()(
       },
 
       setHomeMunicipality: (key) => set({ homeMunicipality: key }),
+
+      updateProfile: async (patch) => {
+        const nextUserType = patch.userType !== undefined ? patch.userType : get().userType;
+        const nextMunicipality =
+          patch.homeMunicipality !== undefined ? patch.homeMunicipality : get().homeMunicipality;
+
+        set({
+          userType: nextUserType,
+          homeMunicipality: nextMunicipality,
+          ...(nextUserType ? { completed: true, seen: true } : {}),
+        });
+
+        const { interests } = get();
+        await syncToBackend({
+          userType: nextUserType,
+          interests,
+          homeMunicipality: nextMunicipality,
+        });
+      },
 
       complete: async () => {
         const { userType, interests, homeMunicipality } = get();

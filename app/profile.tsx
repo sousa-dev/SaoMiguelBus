@@ -23,6 +23,7 @@ import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from '
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { ProfilePersonalizationSection } from '@/components/profile/ProfilePersonalizationSection';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -117,6 +118,7 @@ export default function ProfileScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenTopAdBanner embedded />
+        <ProfilePersonalizationSection />
         <Section title={t('profileNameTitle')} icon={User}>
           <Card>
             <ProfileNameInput />

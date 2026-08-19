@@ -1,10 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
 import {
-  Briefcase,
   Check,
   ChevronLeft,
-  Compass,
-  Home,
   Languages,
   LayoutGrid,
   MapPin,
@@ -40,12 +37,7 @@ import { usePersonalizationStore } from '@/lib/personalization-store';
 import { hitSlop, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { UserType } from '@/lib/types';
-
-const USER_TYPE_OPTIONS: { value: UserType; labelKey: string; Icon: LucideIcon }[] = [
-  { value: 'tourist', labelKey: 'personalizeUserTypeTourist', Icon: Compass },
-  { value: 'resident', labelKey: 'personalizeUserTypeResident', Icon: Home },
-  { value: 'newcomer', labelKey: 'personalizeUserTypeNewcomer', Icon: Briefcase },
-];
+import { USER_TYPE_OPTIONS } from '@/lib/user-type-options';
 
 const STEP_HERO_ICONS: LucideIcon[] = [Languages, Sparkles, LayoutGrid, MapPin];
 
