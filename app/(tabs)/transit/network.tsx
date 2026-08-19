@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
@@ -175,6 +176,8 @@ export default function TransitNetworkScreen() {
       openStop(stop.id);
       return;
     }
+    setPanelOpen(false);
+    Keyboard.dismiss();
     focusStop(stop, { fly: false });
   };
 
