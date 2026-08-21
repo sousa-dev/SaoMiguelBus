@@ -81,17 +81,55 @@ carry everything an announcement needs:
 
 | Field | Used for |
 |---|---|
-| `cutoverAt` | The instant the network changes — the basis for the fire time |
-| `banner.id` | The dedupe key. Already the banner's dismissal key, so it is already stable and already changes when the operator wants the message re-shown |
+| `cutoverAt` | The instant the network changes — the basis for **both** the fire time and the dedupe key |
 | `phase` | Suppression: nothing is announced once the phase is `settled` |
 
-> **`cutoverAt` is `null` in production today.** The seed migration
-> `src/transit/migrations/0008_seed_azoresbus_flags.py` ships it *deliberately disarmed*
-> ("Arming it before a reviewed sync has populated…"). Arming it is a **Django-admin edit of a
-> `JSONField`**, not an API code change, so it remains available under this plan's repo scope
-> — but it is a **hard prerequisite**. With `cutoverAt` null, `resolveAnnouncements` correctly
-> returns nothing and no notification is ever scheduled. This is tracked as a release blocker
-> in [10](./10-rollout-and-risks.md) §3.
+**Verified against production** (`sao-miguel` `feature_flags.azoresbus`, read 2026-08-21):
+
+```json
+"cutoverAt":   "2026-09-01T00:00:00+00:00",
+"bannerUntil": "2026-10-01T00:00:00+00:00",
+"previewEnabled": true
+```
+
+The cutover **is armed**, at Azores local midnight on 1 September (Azores is UTC+0 under summer
+DST, so the `+00:00` offset is local midnight, not an hour out). `bannerUntil` a month later
+means the phase is `live` — not `settled` — throughout the announcement window, so nothing is
+suppressed. No configuration change is required for this plan.
+
+> The seed migration `0008_seed_azoresbus_flags.py` ships `cutoverAt` as `null` on purpose, but
+> it merges as `{**FLAGS, **existing}` — *"Never clobber an operator's edits: only fill in what
+> is missing"* — so the operator's armed value survives the migration. The migration having run
+> does **not** mean the flag is null.
+
+### 3.1.1 Why the dedupe key is NOT `banner.id`
+
+The obvious choice is wrong, and their production config is what exposes it.
+
+`resolveBanner()` merges a per-phase override **including its `id`**
+(`features/transit/lib/schedule-config.ts:84-88`), and the deployed banner carries exactly such
+an override:
+
+| Phase | Window | Resolved `banner.id` |
+|---|---|---|
+| `preview` | until 31 Aug | `azoresbus-preview-2026-08` |
+| `live` | 1 Sept → 1 Oct | `azoresbus-live-2026-09` |
+
+**The id changes at the precise moment the announcement fires.** Scheduling happens during
+`preview` and records `azoresbus-preview-2026-08`; the next resolution runs during `live`, sees
+`azoresbus-live-2026-09`, finds no match in the fired store, and schedules again. Only the
+past-instant rule (§3.3) would stop a duplicate — a correctness guarantee resting on two
+unrelated rules happening to interact.
+
+The dedupe key is therefore derived from the **cutover instant itself**:
+
+```ts
+const announcementId = `cutover:${config.cutoverAt}`;   // "cutover:2026-09-01T00:00:00+00:00"
+```
+
+Stable across every phase, and it changes exactly when it should — if the operator moves the
+date, that is a genuinely new announcement and re-firing is correct. `banner.id` is left to do
+the one job it was designed for: banner dismissal.
 
 ### 3.2 Deriving the fire instant (KTD7)
 
@@ -123,13 +161,17 @@ app. This is the single most important test case in [09](./09-testing.md) §3.
 
 ### 3.4 Dedupe
 
-`announcement-store.ts` persists a map of `id → firedAt`. Before scheduling, the id is checked;
-after a successful `scheduleNotificationAsync`, it is recorded. Two properties follow:
+`announcement-store.ts` persists a map of `id → firedAt`, keyed on the cutover-derived id from
+§3.1.1. Before scheduling, the id is checked; after a successful `scheduleNotificationAsync`, it
+is recorded. Three properties follow:
 
 - **Rescheduling is idempotent.** The arming hook runs on launch and on foreground; only the
   first run schedules anything.
 - **An id already scheduled-but-not-yet-fired is not rescheduled**, so a rider who opens the
   app four times on 31 August gets one notification on 1 September, not four.
+- **Crossing a phase boundary changes nothing.** Because the key is the cutover instant rather
+  than the phase-resolved `banner.id`, the app resolving the same announcement on 31 August
+  (`preview`) and 1 September (`live`) computes the identical key both times.
 
 Uninstall clears both the store and the OS's pending notifications together, so a reinstall is
 correctly treated as a fresh device.

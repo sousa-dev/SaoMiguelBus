@@ -82,12 +82,31 @@ population is close to the population that would have seen `ScheduleChangeBanner
 
 ## 3. Release blockers
 
-Neither is code in this repo. Both will silently produce "the feature does nothing."
-
-| Blocker | Owner | Detail |
+| Blocker | Status | Detail |
 |---|---|---|
-| **`cutoverAt` must be armed** | Ops / admin | `src/transit/migrations/0008_seed_azoresbus_flags.py` ships it **deliberately null**. `Island.feature_flags` is a `JSONField` on an editable admin, so this is a **Django-admin edit, not an API code change** — available under this plan's repo scope. With it null, `resolveAnnouncements` correctly returns `[]` and no announcement ever schedules |
-| **Notification icon asset** | Design | `assets/images/notification-icon.png`, white-on-transparent silhouette. Shipping the app icon here produces the grey square on Android |
+| ~~`cutoverAt` must be armed~~ | ✅ **Cleared** | Verified against production 2026-08-21: `cutoverAt = "2026-09-01T00:00:00+00:00"`, `bannerUntil = "2026-10-01T00:00:00+00:00"`, `previewEnabled = true`. Azores is UTC+0 under summer DST, so the offset is local midnight. Phase is `live` throughout the announcement window, so nothing is suppressed. **No config change needed.** The AzoresBus dataset is synced and live |
+| **Notification icon asset** | ⬜ Outstanding | `assets/images/notification-icon.png`, white-on-transparent silhouette. Shipping the app icon here produces the grey square on Android |
+
+### 3.1 `trackingEnabled: false` is a dead flag — do not act on it
+
+Production carries `"trackingEnabled": false` in the same block, which reads as though premium
+bus tracking is switched off. It is not.
+
+`resolveScheduleUi` computes `showTracking: Boolean(config?.trackingEnabled)`
+(`features/transit/lib/schedule-config.ts:114`) and exposes it on `ScheduleUi` — **and no
+component in the app reads it.** The only consumers of the whole `ScheduleUi` tracking concept
+go through `canTrackTrips`, which is `canTrack()` → `!showPreviewWarning` and never consults
+`trackingEnabled`.
+
+Two consequences:
+
+- **The bell must gate on `canTrackTrips`, not `trackingEnabled`** ([02](./02-journey-alarms-ux.md) §3.1).
+  Gating on the flag would ship a feature that is invisible in production for a reason nobody
+  would find.
+- **Do not "fix" this by setting the flag to `true`** as part of this work. Either wire
+  `showTracking` up deliberately or delete it — but that is a separate change with its own
+  blast radius, and flipping a flag whose only consumer is dead code is a no-op that looks like
+  a fix.
 
 ---
 
@@ -109,7 +128,8 @@ Neither is code in this repo. Both will silently produce "the feature does nothi
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | 1 September announcement reaches few riders | **High** | Medium | §2. Banner is primary; measure actual reach |
-| `cutoverAt` never armed | Medium | High | §3 — call it out in the release checklist, not in a code comment |
+| ~~`cutoverAt` never armed~~ | — | — | Cleared — verified armed in production, §3 |
+| Dedupe keyed on the phase-resolved `banner.id` | Medium | Medium | The deployed banner carries a `phases.preview` override that changes its `id` at the cutover instant. Key on `cutoverAt` instead ([01](./01-service-announcements.md) §3.1.1); regression-tested in [09](./09-testing.md) §3 |
 | Permission denied at the prompt | Medium | High per-rider | Prompt at highest intent ([05](./05-permissions-and-lifecycle.md) §2.1); recoverable via the settings nudge |
 | iOS force-quit suppresses delivery | Low | Medium | Platform behaviour, not fixable. Copy never promises certainty ([07](./07-i18n-and-copy.md) §2 rule 2) |
 | Alarms fire for a stale itinerary | Medium | High | Cancellation on `pruneTracking`, dataset change, and expiry ([05](./05-permissions-and-lifecycle.md) §5.2). The most likely source of a genuinely bad bug |

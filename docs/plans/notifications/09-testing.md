@@ -94,8 +94,9 @@ records having already been fixed:
 | `cutoverAt` today, `now` **before** `announceHour` | one announcement, later today |
 | `cutoverAt` in the past by days | `[]` |
 | `cutoverAt` given in a non-UTC offset (`2027-01-01T00:00:00-01:00`) | fires on the correct **local** date — mirrors `test_schedule_phase.py:83`, which exists because a winter cutover at local midnight is 01:00 UTC |
-| `banner.id` changes | a different dedupe id, so a re-armed announcement can fire again |
-| `banner: null` | falls back to a stable derived id; still dedupes |
+| **Production config, phase `preview` vs `live`** | the **same** dedupe id both times. Fixture uses the deployed banner, whose `phases.preview` override changes `banner.id` from `azoresbus-live-2026-09` to `azoresbus-preview-2026-08` — the id must be derived from `cutoverAt`, never from the resolved banner ([01](./01-service-announcements.md) §3.1.1) |
+| `banner: null` entirely | still resolves an announcement — the id does not depend on the banner |
+| `cutoverAt` changed by the operator | a different dedupe id, so a moved date correctly re-announces |
 
 ---
 
