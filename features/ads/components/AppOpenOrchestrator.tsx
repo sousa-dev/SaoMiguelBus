@@ -1,6 +1,6 @@
 import { useSegments } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Platform, type AppStateStatus } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { InternalFullscreenAdModal } from '@/features/ads/components/InternalFullscreenAdModal';
 import {
@@ -8,6 +8,7 @@ import {
   evaluateInternalAppOpenPolicy,
   type AppOpenTrigger,
 } from '@/features/ads/lib/app-open-policy';
+import { shouldTreatAsForegroundReturn } from '@/features/ads/lib/app-open-trigger';
 import { loadLastFullScreenAdAt, markFullScreenAdShown } from '@/features/ads/lib/app-open-storage';
 import { shouldForceInternalAds } from '@/features/ads/lib/force-internal-ads';
 import {
@@ -37,6 +38,9 @@ import { usePremium } from '@/lib/premium-store';
 
 const LOAD_TIMEOUT_MS = 3_000;
 const LOAD_POLL_MS = 200;
+
+/** Process start, captured at module load — before any component mounts. */
+const LAUNCHED_AT = Date.now();
 
 type Props = {
   appReady: boolean;
@@ -75,7 +79,7 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
   const runningRef = useRef(false);
   const coldStartDoneRef = useRef(false);
-  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const wasBackgroundedRef = useRef(false);
 
   const admobEligible = isAdMobEligible(showAds);
   const canShowAds = showAds;
@@ -233,17 +237,22 @@ export function AppOpenOrchestrator({ appReady, onSplashDismiss }: Props) {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
-      const prevState = appStateRef.current;
-      appStateRef.current = nextState;
+      if (nextState === 'background') {
+        wasBackgroundedRef.current = true;
+        return;
+      }
 
-      if (
-        prevState.match(/inactive|background/) &&
-        nextState === 'active' &&
-        appReady &&
-        hydrated &&
-        consentDecided &&
-        !onConsentScreen
-      ) {
+      const isForegroundReturn = shouldTreatAsForegroundReturn({
+        wasBackgrounded: wasBackgroundedRef.current,
+        nextState,
+        msSinceLaunch: Date.now() - LAUNCHED_AT,
+      });
+
+      if (nextState === 'active') {
+        wasBackgroundedRef.current = false;
+      }
+
+      if (isForegroundReturn && appReady && hydrated && consentDecided && !onConsentScreen) {
         void attemptShow('foreground');
       }
     });

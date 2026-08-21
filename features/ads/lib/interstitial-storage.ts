@@ -1,35 +1,38 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { InterstitialSessionState } from '@/features/ads/lib/interstitial-policy';
+import type { InterstitialIntent } from '@/features/ads/lib/interstitial-request';
+import {
+  getSessionFlags,
+  resetSessionFlags,
+  updateSessionFlags,
+} from '@/features/ads/lib/interstitial-session-flags';
 
 const DISMISSED_AT_KEY = 'azores_hub_interstitial_dismissed_at';
 
-/** In-memory session flags — reset on cold start, mirroring webapp sessionStorage. */
-let sessionFlags: Pick<InterstitialSessionState, 'hasSearchedThisSession' | 'sessionDismissed'> =
-  {
-    hasSearchedThisSession: false,
-    sessionDismissed: false,
-  };
-
-export async function loadInterstitialSessionState(): Promise<InterstitialSessionState> {
+/**
+ * Session flags are per intent and live in memory; `dismissedAt` stays shared
+ * and persisted, so dismissing any interstitial cools down the probabilistic
+ * branch everywhere.
+ */
+export async function loadInterstitialSessionState(
+  intent: InterstitialIntent,
+): Promise<InterstitialSessionState> {
   const dismissedRaw = await AsyncStorage.getItem(DISMISSED_AT_KEY);
   const dismissedAt = dismissedRaw ? Number(dismissedRaw) : null;
 
   return {
-    ...sessionFlags,
+    ...getSessionFlags(intent),
     dismissedAt: Number.isFinite(dismissedAt) ? dismissedAt : null,
   };
 }
 
 export async function persistInterstitialSessionState(
+  intent: InterstitialIntent,
   patch: Partial<InterstitialSessionState>,
 ): Promise<void> {
-  if (patch.hasSearchedThisSession != null) {
-    sessionFlags.hasSearchedThisSession = patch.hasSearchedThisSession;
-  }
-  if (patch.sessionDismissed != null) {
-    sessionFlags.sessionDismissed = patch.sessionDismissed;
-  }
+  updateSessionFlags(intent, patch);
+
   if (patch.dismissedAt !== undefined) {
     if (patch.dismissedAt == null) {
       await AsyncStorage.removeItem(DISMISSED_AT_KEY);
@@ -39,18 +42,18 @@ export async function persistInterstitialSessionState(
   }
 }
 
-export async function markInterstitialDismissed(nowMs: number): Promise<void> {
-  await persistInterstitialSessionState({
+export async function markInterstitialDismissed(
+  intent: InterstitialIntent,
+  nowMs: number,
+): Promise<void> {
+  await persistInterstitialSessionState(intent, {
     sessionDismissed: true,
     dismissedAt: nowMs,
   });
 }
 
 export function resetInterstitialSessionFlags(): void {
-  sessionFlags = {
-    hasSearchedThisSession: false,
-    sessionDismissed: false,
-  };
+  resetSessionFlags();
 }
 
 /** Test helper — reset in-memory session and persisted cooldown. */

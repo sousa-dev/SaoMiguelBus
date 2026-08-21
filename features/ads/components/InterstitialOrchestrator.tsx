@@ -14,11 +14,14 @@ import {
 } from '@/features/ads/lib/fullscreen-ad-state';
 import { planInterstitialShow } from '@/features/ads/lib/interstitial-waterfall';
 import { markInterstitialDismissed } from '@/features/ads/lib/interstitial-storage';
+import { shouldOpenPaywallAfterInterstitial } from '@/features/ads/lib/post-interstitial-paywall';
 import type { InternalAdCreative } from '@/features/ads/lib/internal-ads/types';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
+import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 type Props = {
@@ -29,7 +32,9 @@ type Props = {
 };
 
 export function InterstitialOrchestrator({ trigger, ready }: Props) {
-  const { showAds } = useAdFreeWindow();
+  const { showAds, isAdFreeActive } = useAdFreeWindow();
+  const isPremium = usePremium();
+  const { openPaywall } = usePaywall();
   const { data: bootstrap } = useBootstrapCached();
   const enabledModuleKeys = useMemo(
     () => resolveEnabledModules(bootstrap?.island?.enabledModules),
@@ -43,8 +48,29 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
   const [showUpsell, setShowUpsell] = useState(false);
   const runningRef = useRef(false);
   const lastTriggerRef = useRef(0);
+  /**
+   * `onInterstitialClosed` is a global AdMob listener, and this component is
+   * mounted on several tab screens at once. Without this flag a MiniBus
+   * live-entry ad would also fire every mounted orchestrator, rolling the
+   * paywall more than once for a single ad.
+   */
+  const presentedAdMobRef = useRef(false);
 
-  const dismissAll = useCallback(async () => {
+  /** Coin flip after a real ad: open the paywall, or leave the user alone. */
+  const maybeOpenPaywall = useCallback(() => {
+    const open = shouldOpenPaywallAfterInterstitial({
+      isPremium,
+      isAdFreeActive,
+      showedRealAd: true,
+      randomValue: Math.random(),
+    });
+    if (!open) {
+      return;
+    }
+    void openPaywall('post_interstitial');
+  }, [isAdFreeActive, isPremium, openPaywall]);
+
+  const clearAll = useCallback(() => {
     setShowFirstParty(false);
     setShowInternal(false);
     setShowUpsell(false);
@@ -52,16 +78,27 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
     setInternalCreative(null);
     setFirstPartyInterstitialVisible(false);
     setInternalFullscreenAdVisible(false);
-    await markInterstitialDismissed(Date.now());
   }, []);
+
+  /** The upsell modal is the fallback ad itself — no paywall roll on top. */
+  const onUpsellDismiss = useCallback(async () => {
+    clearAll();
+    await markInterstitialDismissed('search', Date.now());
+  }, [clearAll]);
+
+  const onFirstPartyDismiss = useCallback(async () => {
+    clearAll();
+    await markInterstitialDismissed('search', Date.now());
+    maybeOpenPaywall();
+  }, [clearAll, maybeOpenPaywall]);
 
   const onInternalDismiss = useCallback(() => {
     setShowInternal(false);
     setInternalCreative(null);
     setInternalFullscreenAdVisible(false);
-    setShowUpsell(true);
-    void markInterstitialDismissed(Date.now());
-  }, []);
+    void markInterstitialDismissed('search', Date.now());
+    maybeOpenPaywall();
+  }, [maybeOpenPaywall]);
 
   const applyPlan = useCallback(async (plan: Awaited<ReturnType<typeof planInterstitialShow>>) => {
     switch (plan.kind) {
@@ -75,6 +112,7 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
         track('transit', 'ad_impression', { on: 'interstitial', adId: plan.ad.id });
         return;
       case 'admob':
+        presentedAdMobRef.current = true;
         void markFullScreenAdShown(Date.now());
         return;
       case 'internal':
@@ -117,9 +155,13 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
 
   useEffect(() => {
     return onInterstitialClosed(() => {
-      setShowUpsell(true);
+      if (!presentedAdMobRef.current) {
+        return;
+      }
+      presentedAdMobRef.current = false;
+      maybeOpenPaywall();
     });
-  }, []);
+  }, [maybeOpenPaywall]);
 
   return (
     <InterstitialModals
@@ -129,11 +171,11 @@ export function InterstitialOrchestrator({ trigger, ready }: Props) {
       showInternal={showInternal}
       showUpsell={showUpsell}
       onFirstPartyDismiss={() => {
-        void dismissAll();
+        void onFirstPartyDismiss();
       }}
       onInternalDismiss={onInternalDismiss}
       onUpsellDismiss={() => {
-        void dismissAll();
+        void onUpsellDismiss();
       }}
     />
   );

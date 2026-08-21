@@ -1,5 +1,13 @@
-/** Minimum gap between App Open and interstitial full-screen ads. */
-export const APP_OPEN_INTERSTITIAL_COOLDOWN_MS = 2 * 60 * 1000;
+/**
+ * Minimum gap between App Open and interstitial full-screen ads.
+ *
+ * Riders switch apps constantly mid-journey — to a map, to messages, back. At
+ * the old two-minute gap almost every return earned another full-screen ad,
+ * which is what the "app is all about ads" reviews describe. Thirty minutes
+ * matches `INTERSTITIAL_COOLDOWN_MS` in `interstitial-policy`; Google's own App
+ * Open guidance is considerably longer still.
+ */
+export const APP_OPEN_INTERSTITIAL_COOLDOWN_MS = 30 * 60 * 1000;
 
 export type AppOpenTrigger = 'cold_start' | 'foreground';
 

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { InteractionManager } from 'react-native';
 
 import { InterstitialModals } from '@/features/ads/components/InterstitialModals';
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
@@ -14,10 +15,13 @@ import {
 } from '@/features/ads/lib/interstitial-request';
 import { planInterstitialShow } from '@/features/ads/lib/interstitial-waterfall';
 import { markInterstitialDismissed } from '@/features/ads/lib/interstitial-storage';
+import { shouldOpenPaywallAfterInterstitial } from '@/features/ads/lib/post-interstitial-paywall';
 import type { InternalAdCreative } from '@/features/ads/lib/internal-ads/types';
 import { useBootstrapCached } from '@/features/transit/hooks/useTransitQueries';
 import { resolveEnabledModules } from '@/config/island';
+import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
+import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 /**
@@ -25,7 +29,9 @@ import type { AdPayload } from '@/lib/types';
  * Mount once at app root.
  */
 export function InterstitialRequestHost() {
-  const { showAds } = useAdFreeWindow();
+  const { showAds, isAdFreeActive } = useAdFreeWindow();
+  const isPremium = usePremium();
+  const { openPaywall } = usePaywall();
   const { data: bootstrap } = useBootstrapCached();
   const enabledModuleKeys = useMemo(
     () => resolveEnabledModules(bootstrap?.island?.enabledModules),
@@ -45,10 +51,30 @@ export function InterstitialRequestHost() {
       awaitingExternalRef.current = false;
       completeInterstitialRequest();
     }
-    await markInterstitialDismissed(Date.now());
+    await markInterstitialDismissed('live_entry', Date.now());
   }, []);
 
-  const dismissAll = useCallback(async () => {
+  /**
+   * Coin flip after a real ad. Dismissing this interstitial also releases the
+   * pending live-map navigation, so wait for that push to settle before
+   * presenting the paywall over it.
+   */
+  const maybeOpenPaywall = useCallback(() => {
+    const open = shouldOpenPaywallAfterInterstitial({
+      isPremium,
+      isAdFreeActive,
+      showedRealAd: true,
+      randomValue: Math.random(),
+    });
+    if (!open) {
+      return;
+    }
+    InteractionManager.runAfterInteractions(() => {
+      void openPaywall('post_interstitial_live_entry');
+    });
+  }, [isAdFreeActive, isPremium, openPaywall]);
+
+  const clearAll = useCallback(() => {
     setShowFirstParty(false);
     setShowInternal(false);
     setShowUpsell(false);
@@ -56,16 +82,27 @@ export function InterstitialRequestHost() {
     setInternalCreative(null);
     setFirstPartyInterstitialVisible(false);
     setInternalFullscreenAdVisible(false);
+  }, []);
+
+  /** The upsell modal is the fallback ad itself — no paywall roll on top. */
+  const onUpsellDismiss = useCallback(async () => {
+    clearAll();
     await finishPresentation();
-  }, [finishPresentation]);
+  }, [clearAll, finishPresentation]);
+
+  const onFirstPartyDismiss = useCallback(async () => {
+    clearAll();
+    await finishPresentation();
+    maybeOpenPaywall();
+  }, [clearAll, finishPresentation, maybeOpenPaywall]);
 
   const onInternalDismiss = useCallback(() => {
     setShowInternal(false);
     setInternalCreative(null);
     setInternalFullscreenAdVisible(false);
     void finishPresentation();
-    setShowUpsell(true);
-  }, [finishPresentation]);
+    maybeOpenPaywall();
+  }, [finishPresentation, maybeOpenPaywall]);
 
   const applyPlan = useCallback(
     async (plan: Awaited<ReturnType<typeof planInterstitialShow>>) => {
@@ -128,7 +165,7 @@ export function InterstitialRequestHost() {
             }
             await finishPresentation();
             if (shown) {
-              setShowUpsell(true);
+              maybeOpenPaywall();
             }
             return;
           }
@@ -141,7 +178,7 @@ export function InterstitialRequestHost() {
         }
       })();
     });
-  }, [applyPlan, enabledModuleKeys, finishPresentation, showAds]);
+  }, [applyPlan, enabledModuleKeys, finishPresentation, maybeOpenPaywall, showAds]);
 
   return (
     <InterstitialModals
@@ -151,11 +188,11 @@ export function InterstitialRequestHost() {
       showInternal={showInternal}
       showUpsell={showUpsell}
       onFirstPartyDismiss={() => {
-        void dismissAll();
+        void onFirstPartyDismiss();
       }}
       onInternalDismiss={onInternalDismiss}
       onUpsellDismiss={() => {
-        void dismissAll();
+        void onUpsellDismiss();
       }}
     />
   );

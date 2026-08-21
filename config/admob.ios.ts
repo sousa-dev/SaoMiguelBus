@@ -8,9 +8,16 @@ const TEST = {
   rewarded: 'ca-app-pub-3940256099942544/1712485313',
 } as const;
 
-function env(key: string): string | undefined {
-  const value = process.env[key]?.trim();
-  return value || undefined;
+/**
+ * Every `EXPO_PUBLIC_*` read below MUST stay a literal
+ * `process.env.EXPO_PUBLIC_…` member expression. `babel-preset-expo` inlines
+ * only static member expressions; a dynamic `process.env[key]` lookup survives
+ * into the bundle and evaluates to `undefined` at runtime, so release builds
+ * silently fall through to {@link ADMOB_DEFAULTS}.
+ */
+function clean(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed || undefined;
 }
 
 export function isAdMobSupportedPlatform(): boolean {
@@ -21,32 +28,33 @@ export function getAdMobBannerUnitId(): string | null {
   if (__DEV__) {
     return TEST.banner;
   }
-  return env('EXPO_PUBLIC_ADMOB_BANNER_IOS') ?? ADMOB_DEFAULTS.bannerIos;
+  return clean(process.env.EXPO_PUBLIC_ADMOB_BANNER_IOS) ?? ADMOB_DEFAULTS.bannerIos;
 }
 
 export function getAdMobInterstitialUnitId(): string | null {
   if (__DEV__) {
     return TEST.interstitial;
   }
-  return env('EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS') ?? ADMOB_DEFAULTS.interstitialIos;
+  return clean(process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS) ?? ADMOB_DEFAULTS.interstitialIos;
 }
 
 export function getAdMobAppOpenUnitId(): string | null {
   if (__DEV__) {
     return TEST.appOpen;
   }
-  return env('EXPO_PUBLIC_ADMOB_APP_OPEN_IOS') ?? ADMOB_DEFAULTS.appOpenIos;
+  return clean(process.env.EXPO_PUBLIC_ADMOB_APP_OPEN_IOS) ?? ADMOB_DEFAULTS.appOpenIos;
 }
 
 export function getAdMobRewardedUnitId(): string | null {
   if (__DEV__) {
     return TEST.rewarded;
   }
-  const id = env('EXPO_PUBLIC_ADMOB_REWARDED_IOS') ?? ADMOB_DEFAULTS.rewardedIos;
-  return id?.trim() ? id : null;
+  return (
+    clean(process.env.EXPO_PUBLIC_ADMOB_REWARDED_IOS) ?? clean(ADMOB_DEFAULTS.rewardedIos) ?? null
+  );
 }
 
 export const ADMOB_APP_IDS = {
-  android: env('EXPO_PUBLIC_ADMOB_APP_ID_ANDROID') ?? ADMOB_DEFAULTS.appIdAndroid,
-  ios: env('EXPO_PUBLIC_ADMOB_APP_ID_IOS') ?? ADMOB_DEFAULTS.appIdIos,
+  android: clean(process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID) ?? ADMOB_DEFAULTS.appIdAndroid,
+  ios: clean(process.env.EXPO_PUBLIC_ADMOB_APP_ID_IOS) ?? ADMOB_DEFAULTS.appIdIos,
 } as const;

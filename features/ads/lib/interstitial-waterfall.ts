@@ -38,15 +38,16 @@ export async function planInterstitialShow(
   enabledModuleKeys: ModuleKey[],
   options?: PlanInterstitialOptions,
 ): Promise<InterstitialShowPlan> {
-  if (intent === 'search') {
-    const state = await loadInterstitialSessionState();
-    const decision = evaluateInterstitialPolicy(state, Date.now(), Math.random());
-    if (decision.nextState && Object.keys(decision.nextState).length > 0) {
-      await persistInterstitialSessionState(decision.nextState);
-    }
-    if (!decision.show) {
-      return { kind: 'none' };
-    }
+  // Every intent is rate-limited: guaranteed on the first show of the session,
+  // probabilistic afterwards. MiniBus live entry used to skip this entirely and
+  // fired a full-screen ad on every single open.
+  const state = await loadInterstitialSessionState(intent);
+  const decision = evaluateInterstitialPolicy(state, Date.now(), Math.random());
+  if (decision.nextState && Object.keys(decision.nextState).length > 0) {
+    await persistInterstitialSessionState(intent, decision.nextState);
+  }
+  if (!decision.show) {
+    return { kind: 'none' };
   }
 
   if (shouldForceInternalAds()) {

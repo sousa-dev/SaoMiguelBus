@@ -8,7 +8,9 @@ module.exports = {
   interstitialIos: 'ca-app-pub-8246676797736648/4740696523',
   appOpenAndroid: 'ca-app-pub-8246676797736648/8940132690',
   appOpenIos: 'ca-app-pub-8246676797736648/2553812035',
-  /** Set via EXPO_PUBLIC_ADMOB_REWARDED_* after creating Rewarded units in AdMob console. */
-  rewardedAndroid: '',
-  rewardedIos: '',
+  /** Rewarded units back the "watch a video for ad-free browsing" offer. An
+   * empty value here silently hides that offer in release builds, so keep the
+   * real unit IDs in sync with EXPO_PUBLIC_ADMOB_REWARDED_*. */
+  rewardedAndroid: 'ca-app-pub-8246676797736648/2906622099',
+  rewardedIos: 'ca-app-pub-8246676797736648/4275544083',
 };
