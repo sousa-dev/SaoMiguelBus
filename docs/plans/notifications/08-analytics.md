@@ -52,13 +52,23 @@ feature would merely be surfacing.
 
 | Event | Properties | Fired when |
 |---|---|---|
-| `notifications.permission_request` | `trigger` (`arm` \| `announcement_row`) | OS prompt shown |
-| `notifications.permission_result` | `trigger`, `status` (`granted` \| `denied` \| `undetermined`) | OS prompt answered |
+| `notifications.permission_gate` | `gate` (`granted` \| `askable` \| `blocked`), `trigger` | Gate evaluated before any action |
+| `notifications.permission_request` | `trigger` (`arm` \| `announcement_row` \| `settings_row`) | OS prompt actually shown |
+| `notifications.permission_result` | `trigger`, `status` (`granted` \| `denied`), `can_ask_again` | OS prompt answered |
+| `notifications.settings_opened` | `from` (`blocked_sheet` \| `revoked_warning` \| `settings_row`) | `Linking.openSettings()` called |
+| `notifications.settings_returned` | `gate`, `resumed` (bool) | Foreground after a settings trip with a pending intent |
 | `notifications.permission_revoked_detected` | `armed_tracks` | Foreground check finds permission gone while tracks are armed |
-| `notifications.settings_opened` | `from` (`nudge` \| `revoked_warning`) | `Linking.openSettings()` called |
 
-Grant rate by `trigger` answers whether prompting after the preference sheet was the right
-call. If `announcement_row` converts far worse, the free channel's reach is the thing to fix.
+Three things worth reading together:
+
+- **`permission_gate{gate: 'blocked'}` is the size of the recoverable audience** — riders who
+  want alerts but cannot be prompted. If it is large, the Settings row in
+  [02](./02-journey-alarms-ux.md) §4.4 is carrying real weight and deserves prominence.
+- **`settings_opened` → `settings_returned{resumed: true}`** is the conversion rate of the whole
+  §3.2–3.3 recovery path. A high `settings_opened` with a low `resumed` means riders are going
+  to Settings and not finding the toggle — a copy problem, not a code one.
+- **Grant rate by `trigger`** answers whether prompting after the preference sheet was right. If
+  `announcement_row` converts far worse, the free channel's reach is the thing to fix.
 
 ### Service announcements
 

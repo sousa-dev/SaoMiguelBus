@@ -126,21 +126,72 @@ records having already been fixed:
 Everything in `scheduler.ts` and `channels.ts`, plus everything about the OS. Run on **both**
 platforms; the failure modes differ.
 
-### Permission
+### Permission — the three gates ([05](./05-permissions-and-lifecycle.md) §2.0)
 - [ ] First arm shows the OS prompt *after* the preference sheet, not before
-- [ ] Denying leaves the bell empty and shows the settings nudge
-- [ ] `Open settings` lands on the app's notification settings
+- [ ] **`askable`**: denying shows the soft inline line only — no sheet, no Settings push
+- [ ] **`askable`**: tapping the bell again *does* re-show the OS dialog
+- [ ] **`blocked`**: tapping the bell shows the *Turn on notifications* sheet and **never** calls
+      `requestPermissionsAsync()` — confirm no invisible dead tap
+- [ ] **`blocked`** is reached correctly: one denial on iOS; **two** on Android 13+
+- [ ] `Open Settings` lands on the app's own settings page on both platforms
+- [ ] Android 13+ specifically: `POST_NOTIFICATIONS` is requested, not silently assumed
+- [ ] iOS provisional authorisation (if ever enabled) counts as granted, not denied
+
+### Return from Settings ([05](./05-permissions-and-lifecycle.md) §3.3)
+- [ ] Grant in Settings → return → **the arm completes by itself** and the bell fills
+- [ ] Grant in Settings → return → the confirmation line appears
+- [ ] Return **without** granting → intent discarded silently, sheet is *not* re-shown
+- [ ] Same resume works for the free announcement row, scheduling it immediately on return
+- [ ] App killed by the OS while in Settings → returning is clean, no crash, bell simply empty
+
+### Settings row ([02](./02-journey-alarms-ux.md) §4.4)
+- [ ] Status line matches the live OS gate in all three states
+- [ ] Status updates after changing permission in system settings and returning
+- [ ] From `blocked`, the row routes to Settings and the resume still applies
+
+### Revocation
 - [ ] Revoking permission in system settings, then foregrounding, shows the inline warning
-- [ ] Re-granting restores delivery of still-pending alarms
-- [ ] Android 13+ specifically: `POST_NOTIFICATIONS` is requested (not silently assumed)
+- [ ] Re-granting restores delivery of still-pending alarms (they were never cancelled)
+
+### Android exact alarms ([05](./05-permissions-and-lifecycle.md) §4B) — test on Android 14+
+This is the highest-risk area in the feature; a fresh install on Android 14+ starts **denied**.
+- [ ] Fresh install on Android 14+: `canScheduleExactAlarms()` is `false` — confirm the app
+      **does not crash** when arming (the `SecurityException` path)
+- [ ] Ticking "Get off at next stop" while denied shows the precise-timing sheet, not a failure
+- [ ] `Not now` still arms `leaveNow` and `change`, with *around* copy rather than a minute
+- [ ] `alight` and `complete` are visibly disabled with the explanatory line
+- [ ] Granting via `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` → return → all four types available
+- [ ] Granting in system settings **outside** the flow is picked up
+      (`ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED`)
+- [ ] With permission granted, an alarm fires within ~1 minute of its scheduled time
+- [ ] Without it, measure the actual delay in Doze and confirm the early bias absorbs it
+- [ ] Android 11 and below: no prompt appears at all; the gate reports `granted`
+
+### Store compliance ([11](./11-platform-compliance.md))
+- [ ] **No notification anywhere contains an upsell or opens the paywall** (R25) — read every
+      string in `07` and every `data.route` before submission
+- [ ] Service-updates switch is visible and functional **for a free rider** (R26)
+- [ ] Turning it off stops announcements while journey alarms keep working
+- [ ] Built manifest contains `SCHEDULE_EXACT_ALARM` and **not** `USE_EXACT_ALARM`
+- [ ] Built manifest does **not** contain `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`
+- [ ] Built `Info.plist` has **no** `UIBackgroundModes` from this feature
+- [ ] `complete` and announcements are `active`, not `timeSensitive` — verify by observing that
+      they respect a Focus mode while `leaveNow` breaks through
+- [ ] Adding `android.permissions` to `app.json` did not drop permissions other modules need
+      (`expo-location`, ads SDK) — diff the built manifest against the previous release
 
 ### Delivery
 - [ ] Alarm fires with the app **backgrounded**
-- [ ] Alarm fires with the app **force-quit** — iOS is the risk here
+- [ ] Alarm fires with the app **force-quit** — expected to work on both platforms, since the OS
+      holds the schedule. Confirm rather than assume; it is the assumption most often got wrong
 - [ ] Alarm fires with the device locked, and is legible on the lock screen
 - [ ] Foreground delivery shows a banner (`setNotificationHandler`)
 - [ ] Android: journey alarms are `HIGH` (heads-up), announcements are `DEFAULT` (quiet)
 - [ ] Android: the notification icon is a white silhouette, not a grey square
+- [ ] **iOS: with a Focus mode active**, a journey alarm still breaks through
+      (`interruptionLevel: 'timeSensitive'`) and an announcement correctly does not
+- [ ] iOS: the notification shows the app icon, and the bus glyph is recognisable at 20pt
+- [ ] iOS: a journey's alarms group under one `threadIdentifier` in Notification Centre
 
 ### Cancellation
 - [ ] Disarming cancels pending alarms — verify nothing fires afterwards

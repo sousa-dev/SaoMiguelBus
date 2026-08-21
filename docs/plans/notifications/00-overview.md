@@ -138,11 +138,33 @@ stop at the old time, and finds the bus gone.
 
 - **R17.** Notification permission is requested at the moment the rider first arms something,
   never at launch, and never as a cold prompt on a screen that has not explained why.
-- **R18.** A permission denial is handled without breaking the feature: the rider is told what
-  happened and offered a route to OS settings; nothing silently no-ops.
+- **R18.** Permission is evaluated as **three** states — granted, askable, blocked — never as a
+  granted/denied boolean. `requestPermissionsAsync()` is never called while blocked, because it
+  resolves denied with no dialog and produces an invisible dead tap.
+- **R18a.** A rider who previously refused, and now asks to turn notifications on, is told why no
+  dialog appears and is routed to system Settings.
+- **R18b.** Returning from Settings with permission granted **completes the action the rider
+  started**, rather than leaving them to repeat it.
+- **R18c.** The route back is permanently discoverable from `app/settings.tsx`, not only from a
+  journey card, and reports the live OS state.
 - **R19.** Every user-visible string exists in all eight locale files, keeping
   `__tests__/lib/locale-parity.test.ts` green.
 - **R20.** All scheduling logic is pure and unit-tested under the existing `tsx --test` runner.
+
+### Platform compliance ([11](./11-platform-compliance.md))
+
+- **R21.** Android: `SCHEDULE_EXACT_ALARM` is declared, `canScheduleExactAlarms()` is checked
+  before every schedule, and its absence never throws. `USE_EXACT_ALARM` is **not** declared —
+  it is Play-restricted to alarm and calendar apps, and a rejection would block the whole app.
+- **R22.** Without exact-alarm permission, `alight` and `complete` are disabled rather than
+  delivered late; `leaveNow` and `change` are offered with an early bias. Copy says *around*, not
+  a precise minute.
+- **R23.** `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` is never requested.
+- **R24.** iOS: `timeSensitive` is claimed only for `leaveNow`, `change`, and `alight`.
+  `complete` and announcements are `active`.
+- **R25.** **No notification ever contains premium marketing, a paywall prompt, or a
+  subscription reminder** — not in content, not via its deep link.
+- **R26.** Service announcements have an in-app opt-out, ungated, on both platforms.
 
 ---
 
@@ -220,7 +242,12 @@ cancellation trigger for free, with no second source of truth to drift.
 - **This does not make tracking real-time.** There is no vehicle feed on this network. Every
   instant here is timetable-derived, and the UI must never let an alarm read as a GPS fix —
   the same discipline `journeyPositionLabels` already applies with `trackPositionEstimated`.
-- **This does not guarantee delivery.** A device that is off, a permission that was denied, an
-  app that was force-quit on iOS — all produce silence. Copy must never promise certainty.
+- **This does not guarantee delivery.** A device that is off, a permission that was denied or
+  later revoked, a Focus mode without the time-sensitive entitlement — all produce silence. Copy
+  must never promise certainty.
+  > Force-quit is **not** on that list. A scheduled local notification is handed to the OS at
+  > arm time and fires regardless of app state, iOS included. What force-quit stops is
+  > *background execution* — silent push, background fetch — none of which this feature uses.
+  > See [05](./05-permissions-and-lifecycle.md) §5.4.
 - **This does not reach a rider who has not updated the app.** Central to the 1 September
   risk; see [10](./10-rollout-and-risks.md) §2.

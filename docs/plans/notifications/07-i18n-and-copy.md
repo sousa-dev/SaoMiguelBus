@@ -110,13 +110,41 @@ The tight-change pair exists because `TrackedTransfer.tight` is already computed
 | `notificationsArmedAlight` | …and one stop before you arrive | …e uma paragem antes de chegar |
 | `notificationsSomeSkipped` | Some alerts were skipped — this journey has already started | Alguns alertas foram ignorados — esta viagem já começou |
 | `notificationsAllPast` | This journey has already departed | Esta viagem já partiu |
-| `notificationsDeniedTitle` | Notifications are turned off | As notificações estão desativadas |
-| `notificationsDeniedBody` | São Miguel Hub can't send you bus alerts until notifications are allowed for the app. | O São Miguel Hub não pode enviar alertas até permitir notificações para a aplicação. |
-| `notificationsOpenSettings` | Open settings | Abrir definições |
+| `notificationsDeniedInline` | Alerts are off. You can turn them on any time. | Os alertas estão desativados. Pode ativá-los quando quiser. |
+| `notificationsBlockedTitle` | Turn on notifications | Ativar notificações |
+| `notificationsBlockedBody` | You previously turned notifications off for São Miguel Hub, so we can't ask again from here. Open Settings to turn them back on, and we'll set up your alerts when you come back. | Desativou anteriormente as notificações do São Miguel Hub, por isso não podemos voltar a pedir aqui. Abra as Definições para as reativar e configuramos os seus alertas quando voltar. |
+| `notificationsOpenSettings` | Open Settings | Abrir Definições |
+| `notificationsResumed` | Notifications on — we'll alert you about this journey | Notificações ativadas — avisamos sobre esta viagem |
 | `notificationsRevokedWarning` | Alerts are off for this app | Os alertas estão desativados para esta aplicação |
 | `notificationsRevokedAction` | Turn them back on | Reativar |
 | `notificationsSettingsRow` | Notifications | Notificações |
 | `notificationsSettingsSubtitle` | Bus alerts and service updates | Alertas de autocarros e avisos de serviço |
+| `notificationsStatusGranted` | Alerts are on | Os alertas estão ativados |
+| `notificationsStatusAskable` | Alerts are off | Os alertas estão desativados |
+| `notificationsStatusBlocked` | Alerts are blocked in system settings | Os alertas estão bloqueados nas definições do sistema |
+| `notificationsServiceUpdates` | Service updates | Avisos de serviço |
+| `notificationsServiceUpdatesHint` | Timetable changes and service notices | Alterações de horários e avisos de serviço |
+
+### Android exact-alarm permission ([05](./05-permissions-and-lifecycle.md) §4B) — Android only
+
+| Key | EN | PT |
+|---|---|---|
+| `notificationsExactTitle` | Turn on precise timing | Ativar temporização precisa |
+| `notificationsExactBody` | Android needs permission to alert you at an exact minute. Without it we can only warn you roughly, so stop alerts stay off. | O Android precisa de permissão para o avisar ao minuto exato. Sem isso só podemos avisar aproximadamente, por isso os alertas de paragem ficam desativados. |
+| `notificationsExactInlineOff` | Precise timing is off | A temporização precisa está desativada |
+| `notificationsExactInlineAction` | Turn it on | Ativar |
+| `notificationsExactUnavailableRow` | Needs precise timing | Requer temporização precisa |
+| `notificationsArmedApprox` | We'll tell you around {{times}} | Avisamos por volta das {{times}} |
+
+> `notificationsArmedApprox` is not a duplicate of `notificationsArmed`. When exact alarms are
+> unavailable the delivery window is ±10 minutes, and the confirmation must say *around* rather
+> than name a minute it cannot hit — §2 rule 2.
+
+> **`Denied` and `Blocked` are two different strings on purpose** ([05](./05-permissions-and-lifecycle.md) §2.0).
+> *Denied-but-askable* is a soft inline line — the rider just answered the question and must not
+> be nagged or sent to Settings. *Blocked* has to explain why no dialog appears, or the rider
+> reasonably reads the missing prompt as a broken button. Collapsing them into one message makes
+> one of the two cases wrong.
 
 ### Android channel names
 

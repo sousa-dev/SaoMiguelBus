@@ -29,6 +29,7 @@ every dimension, which is why they are specified separately:
 | [08-analytics.md](./08-analytics.md) | Events emitted |
 | [09-testing.md](./09-testing.md) | What is tested and how, given the runner is `tsx --test` |
 | [10-rollout-and-risks.md](./10-rollout-and-risks.md) | Config, store review, the 1 September reach problem, deferred work |
+| [11-platform-compliance.md](./11-platform-compliance.md) | Apple and Google rules, and the two findings that changed the design |
 
 ## Decisions taken before writing
 
@@ -45,3 +46,5 @@ Recorded here so a reader knows which options were considered and closed.
 | Announcement gating | Free, ungated | Premium; free-with-upsell |
 | Platform | iOS + Android | Expo Web (not used by this project) |
 | Delivery | Local notifications | Remote push (see [10](./10-rollout-and-risks.md) §6) |
+| Android exact alarms | `SCHEDULE_EXACT_ALARM` (user-granted) | `USE_EXACT_ALARM` — Play-restricted to alarm/calendar apps; a rejection blocks the whole app |
+| iOS Focus break-through | `timeSensitive` for 3 of 4 alarm types | Claiming it for all four; `critical` alerts |

@@ -53,6 +53,12 @@ export interface NotificationPrefs {
   complete: AlarmPref;      // default { enabled: false, leadMinutes: 0 }
   /** Opt-in for the auto-track sweep — see 02 §6. Default false. */
   notifyPinnedRoutes: boolean;
+  /**
+   * Free service announcements — timetable changes and service notices.
+   * Default TRUE. Required as an in-app opt-out by App Store guideline 4.5.4;
+   * Android riders also get OS-level control via the separate channel (11 §I1.2).
+   */
+  serviceAnnouncements: boolean;
 }
 
 interface NotificationPrefsState {

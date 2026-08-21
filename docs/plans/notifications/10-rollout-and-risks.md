@@ -14,7 +14,7 @@ has not been made yet.
 
 | # | Unit | Depends on |
 |---|---|---|
-| 1 | `expo-notifications` installed, `app.json` plugin + notification icon, Android channels registered, `setNotificationHandler` wired | — |
+| 1 | `expo-notifications` installed, `app.json` plugin + notification icon + `SCHEDULE_EXACT_ALARM` + time-sensitive entitlement, Android channels registered, `setNotificationHandler` wired. **Confirm whether the library guards `canScheduleExactAlarms()` or throws** ([05](./05-permissions-and-lifecycle.md) §4B.2) | — |
 | 2 | Export `legSpans` and `departureDayStart` from `lib/bus-tracking.ts` (visibility only) | — |
 | 3 | `lib/notifications/plan.ts` + unit tests | 2 |
 | 4 | `lib/notifications/content.ts` + unit tests; EN/PT strings | 3 |
@@ -23,7 +23,9 @@ has not been made yet.
 | 7 | `ActiveTrack.notify` + `notificationIds`; cancellation in `stopTracking` and `pruneTracking` | 6 |
 | 8 | Preference sheet component | 5 |
 | 9 | Bell in `TrackButton` and `JourneyTrackButton`, behind `guardPremiumAction` | 6, 7, 8 |
-| 10 | Permission flow: request-after-sheet, denial nudge, revocation warning | 9 |
+| 10 | Permission: three-state gate (`granted`/`askable`/`blocked`), request-after-sheet, soft denial line, blocked→Settings sheet, **return-from-Settings resume**, revocation warning | 9 |
+| 10a | **Android exact-alarm gate**: `canScheduleExactAlarms()` guard, `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` route, state-changed broadcast, degradation rule (`alight`/`complete` disabled, `leaveNow`/`change` biased early), *around* copy ([05](./05-permissions-and-lifecycle.md) §4B) | 6, 10 |
+| 10b | Per-alarm `interruptionLevel` — `timeSensitive` for `leaveNow`/`change`/`alight`, `active` for `complete` and announcements; `threadIdentifier` grouping | 6 |
 | 11 | `lib/notifications/announcements.ts` + unit tests | — |
 | 12 | `useServiceAnnouncements()` + in-app permission row | 6, 11 |
 | 13 | Settings row: defaults editor, premium listing for free riders | 8 |
@@ -85,7 +87,23 @@ population is close to the population that would have seen `ScheduleChangeBanner
 | Blocker | Status | Detail |
 |---|---|---|
 | ~~`cutoverAt` must be armed~~ | ✅ **Cleared** | Verified against production 2026-08-21: `cutoverAt = "2026-09-01T00:00:00+00:00"`, `bannerUntil = "2026-10-01T00:00:00+00:00"`, `previewEnabled = true`. Azores is UTC+0 under summer DST, so the offset is local midnight. Phase is `live` throughout the announcement window, so nothing is suppressed. **No config change needed.** The AzoresBus dataset is synced and live |
-| **Notification icon asset** | ⬜ Outstanding | `assets/images/notification-icon.png`, white-on-transparent silhouette. Shipping the app icon here produces the grey square on Android |
+| ~~Notification icon asset~~ | ✅ **Cleared** | `assets/images/notification-icon.png` in place — 96×96 RGBA, Material `bus_alert` (front-facing bus + alert badge), matching the bus glyph at the centre of the app logo. Verified: all visible pixels pure white (±1), alpha 0→255 across 212 levels (anti-aliased), 10% padding on all four sides, transparent corners. Sourced from an Android Asset Studio density set; the 96×96 xxxhdpi member is the one Expo's config plugin needs |
+
+**No blockers remain.** Both prerequisites outside the app code are satisfied.
+
+### 3.2 Why the icon lives in `assets/`, not `android/app/src/main/res/`
+
+The source set arrived as a full Android density tree (`drawable-mdpi` … `drawable-xxxhdpi`).
+It is deliberately **not** copied there:
+
+- **`/android` and `/ios` are gitignored** (`.gitignore:41-42`). Native-tree drawables would be
+  untracked, absent on a fresh clone, and destroyed by the next `npx expo prebuild`.
+- The `expo-notifications` config plugin takes **one** source image and generates every density
+  bucket itself at prebuild time, referencing its own generated resource name. Hand-placed
+  `ic_stat_bus_alert` drawables would be unreferenced dead weight alongside it.
+
+So the single 96×96 lives in tracked `assets/`, and the plugin does the rest. The other four
+densities are redundant under this setup.
 
 ### 3.1 `trackingEnabled: false` is a dead flag — do not act on it
 
@@ -118,6 +136,9 @@ Two consequences:
 | **iOS: no background modes** | These are *local* notifications. Do **not** add `UIBackgroundModes` — declaring capabilities the app does not use invites rejection |
 | **iOS privacy manifest** | Unchanged. Local scheduling touches none of the declared `NSPrivacyAccessedAPITypes`, and this feature collects nothing |
 | **Android 13+ `POST_NOTIFICATIONS`** | Added by the plugin; requested at runtime per [05](./05-permissions-and-lifecycle.md) §2 |
+| **Android `SCHEDULE_EXACT_ALARM`** | Declared manually. Play-safe — it is `USE_EXACT_ALARM` that is restricted to alarm/calendar apps, and we do **not** declare it ([11](./11-platform-compliance.md) §A1) |
+| **iOS time-sensitive entitlement** | Reviewed by hand. Include an App Review note: *"Time-sensitive notifications are used for public-transport departure, connection, and alighting alerts, where a delayed or summarised notification causes the user to miss their bus. Notifications are user-armed per journey and can be turned off individually."* |
+| **Guideline 4.5.4** | No notification carries marketing or a paywall (R25); service announcements have an ungated in-app opt-out (R26) |
 | **Google Play Data Safety** | No change — nothing new is collected or transmitted |
 | **Version bump** | `app.json` `version` patch segment, per the standing project rule. `android.versionCode` increments as usual |
 
@@ -130,8 +151,15 @@ Two consequences:
 | 1 September announcement reaches few riders | **High** | Medium | §2. Banner is primary; measure actual reach |
 | ~~`cutoverAt` never armed~~ | — | — | Cleared — verified armed in production, §3 |
 | Dedupe keyed on the phase-resolved `banner.id` | Medium | Medium | The deployed banner carries a `phases.preview` override that changes its `id` at the cutover instant. Key on `cutoverAt` instead ([01](./01-service-announcements.md) §3.1.1); regression-tested in [09](./09-testing.md) §3 |
-| Permission denied at the prompt | Medium | High per-rider | Prompt at highest intent ([05](./05-permissions-and-lifecycle.md) §2.1); recoverable via the settings nudge |
-| iOS force-quit suppresses delivery | Low | Medium | Platform behaviour, not fixable. Copy never promises certainty ([07](./07-i18n-and-copy.md) §2 rule 2) |
+| Permission denied at the prompt | Medium | High per-rider | Prompt at highest intent ([05](./05-permissions-and-lifecycle.md) §2.1); recoverable via the Settings route and permanently reachable from the settings row |
+| **`requestPermissionsAsync()` called while blocked → invisible dead tap** | **Medium if unguarded** | High | Branch on the three-state gate ([05](./05-permissions-and-lifecycle.md) §2.0). The OS shows nothing and resolves denied instantly, so the rider presses a button and sees no response. Same class as `b764b2a`, *"a paywall that cannot be shown must not be a dead tap"* — one denial on iOS, two on Android 13+, reaches this state permanently |
+| Rider grants in Settings and returns to an unchanged screen | Medium | Medium | Pending-intent resume on foreground ([05](./05-permissions-and-lifecycle.md) §3.3). Without it the trip to Settings appears to have achieved nothing and the rider must redo the whole flow |
+| **Android alarms delivered 10–30 min late** | **High if unguarded** | **High** | The headline finding of the compliance sweep. `SCHEDULE_EXACT_ALARM` is denied by default on Android 14+ for new installs, and an inexact alarm is delayed by *at least* 10 minutes — a missed bus, from a notification the rider trusted. Gate + degradation rule ([05](./05-permissions-and-lifecycle.md) §4B) |
+| **`SecurityException` crash scheduling an exact alarm without permission** | Medium | **High — a crash** | Guard on `canScheduleExactAlarms()`. Whether `expo-notifications` already guards is undocumented; confirm in unit 1, do not assume ([05](./05-permissions-and-lifecycle.md) §4B.2) |
+| Play rejection for a restricted alarm permission | Low | **Very high — blocks the whole app** | Declare `SCHEDULE_EXACT_ALARM`, never `USE_EXACT_ALARM`. The latter is restricted to alarm/calendar apps and this is a nine-module hub ([11](./11-platform-compliance.md) §A1) |
+| Apple questions the time-sensitive entitlement | Low | Medium | Claim it for three alarm types, not four (R24). A "you have arrived" alert marked Focus-breaking is what invites the question |
+| iOS Focus mode swallows a journey alarm | **Medium** | High | Set `interruptionLevel: 'timeSensitive'` on journey alarms and declare the `com.apple.developer.usernotifications.time-sensitive` entitlement ([05](./05-permissions-and-lifecycle.md) §4A.2). Without it a commuting rider with Focus on gets nothing — and that is exactly the target rider |
+| Apple queries the time-sensitive entitlement at review | Low | Medium | Transit departure alerts are within Apple's stated intent for the level. State the use plainly in the App Review note |
 | Alarms fire for a stale itinerary | Medium | High | Cancellation on `pruneTracking`, dataset change, and expiry ([05](./05-permissions-and-lifecycle.md) §5.2). The most likely source of a genuinely bad bug |
 | Notification fires for an already-departed journey | Medium | Medium | Past-instant rule (R14), unit-tested exhaustively ([09](./09-testing.md) §2) |
 | Locale parity break | Medium | Low (CI catches it) | ~40 keys × 8 files; translate in one commit |

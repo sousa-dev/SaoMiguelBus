@@ -62,7 +62,7 @@ but never the reverse.
 | Free | any | `Bell`, muted | Opens the RevenueCat paywall via `guardPremiumAction`. On purchase/restore, proceeds straight into arming — no second tap |
 | Premium | not armed | `Bell`, tonal | Opens the preference sheet (§4), then arms |
 | Premium | armed | `BellRing`, filled, accent | Disarms immediately, cancels pending notifications, no confirmation |
-| Any | permission denied at OS level | `Bell` with a slash affordance | Opens the settings-nudge sheet ([05](./05-permissions-and-lifecycle.md) §3) |
+| Any | notifications **blocked** at OS level (denied, no re-prompt possible) | `BellOff` | Opens the *Turn on notifications* sheet, which routes to system Settings and resumes the arm on return ([05](./05-permissions-and-lifecycle.md) §3.2–3.3) |
 
 **Disarming is never gated.** Exactly as `TrackButton` already handles stopping: *"Stopping an
 active track is always allowed; starting is premium-gated."* A lapsed subscriber must always
@@ -130,8 +130,38 @@ Arming nothing while showing a filled bell would be a lie about what the app is 
 
 A **Notifications** row in `app/settings.tsx`, alongside the existing Appearance / Language /
 Privacy rows, opens the same sheet in "edit default" mode — no journey attached, primary
-button reads *Save*. This is also where a rider who denied OS permission is offered the route
-back ([05](./05-permissions-and-lifecycle.md) §3).
+button reads *Save*.
+
+This row is also the **permanent, discoverable route back** for a rider who turned notifications
+off and later changes their mind — the "I rejected it before and now I want it on" path. It
+carries a status line reflecting the live OS gate, read fresh on each open
+([05](./05-permissions-and-lifecycle.md) §2.0):
+
+| Gate | Status line | Row action |
+|---|---|---|
+| `granted` | *Alerts are on* | Opens the defaults sheet |
+| `askable` | *Alerts are off* | Requests permission, then opens the defaults sheet |
+| `blocked` | **Alerts are blocked in system settings** | Opens the *Turn on notifications* sheet → Settings ([05](./05-permissions-and-lifecycle.md) §3.2) |
+
+A rider who blocked notifications months ago should not have to find a journey card and tap a
+bell to discover why nothing arrives. Settings is where people look for this, so the answer and
+the fix both live there.
+
+The row also carries two switches, **both visible to free riders**:
+
+| Switch | Default | Gated? |
+|---|---|---|
+| **Service updates** — timetable changes and service notices | on | **No.** Free feature; premium-gating the opt-out would be nonsense |
+| **Also notify me for my pinned routes** (§6) | off | Premium |
+
+The service-updates switch is required, not optional polish: App Store guideline 4.5.4 expects an
+**in-app** method to opt out. Journey alarms already have one — disarm the bell — but
+announcements are auto-scheduled, and on iOS the only alternative was the OS-wide toggle, which
+kills bus alerts too. Android riders had per-channel control; iOS riders had all-or-nothing
+([11](./11-platform-compliance.md) §I1.2).
+
+On Android, `SCHEDULE_EXACT_ALARM` state surfaces here too when it is missing, with the route to
+fix it ([05](./05-permissions-and-lifecycle.md) §4B.4).
 
 ---
 
