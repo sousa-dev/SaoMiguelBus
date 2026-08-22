@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { setDevToolsAdmin } from '@/lib/dev-tools-flag';
 import { deleteAuthToken, loadAuthToken, saveAuthToken } from '@/lib/secure-token';
 import type { AuthUser } from '@/lib/types';
 
@@ -81,6 +82,14 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
+// Mirror the superuser flag into the React-free dev-tools gate, so sync
+// consumers (ads, persisted overrides) see the same audience the UI does.
+// Subscribed once here rather than set at each mutation site, so rehydration
+// and /auth/me refreshes are covered too.
+useAuthStore.subscribe((state) => {
+  setDevToolsAdmin(Boolean(state.user?.isSuperuser));
+});
 
 export function getAuthToken(): string | null {
   return useAuthStore.getState().token;

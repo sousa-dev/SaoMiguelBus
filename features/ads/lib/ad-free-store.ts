@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { clearAdFreeWindow, grantAdFreeWindow, loadAdFreeUntil } from '@/features/ads/lib/ad-free-storage';
+import { devToolsEnabled } from '@/lib/dev-tools-flag';
 
 interface AdFreeStoreState {
   adFreeUntilMs: number | null;
@@ -45,7 +46,7 @@ export const useAdFreeStore = create<AdFreeStoreState>((set, get) => ({
   },
 
   resetAdFreeWindow: async () => {
-    if (!__DEV__) {
+    if (!devToolsEnabled()) {
       return;
     }
     await clearAdFreeWindow();

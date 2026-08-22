@@ -16,7 +16,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { SimulatedPhase } from '@/features/transit/lib/schedule-config';
-import { useAuthStore } from '@/lib/auth-store';
+import { useDevToolsEnabled } from '@/lib/dev-tools';
 
 const SCHEDULE_DEV_KEY = 'azores_hub_schedule_dev';
 
@@ -40,15 +40,12 @@ export const useScheduleDevStore = create<ScheduleDevState>()(
 );
 
 /**
- * Whether this device may simulate the changeover at all: a dev build, or the
- * same superuser flag that opens marketplace moderation.
- *
- * Subscribed rather than read via `getState`, so signing out of an admin
- * account drops the simulation on the spot instead of at the next remount.
+ * Whether this device may simulate the changeover at all — the shared
+ * developer-tools audience: a dev build, or the same superuser flag that opens
+ * marketplace moderation.
  */
 export function useCanSimulateSchedule(): boolean {
-  const isAdmin = useAuthStore((s) => Boolean(s.user?.isSuperuser));
-  return __DEV__ || isAdmin;
+  return useDevToolsEnabled();
 }
 
 /** The effective override — always `'off'` for users who may not simulate. */

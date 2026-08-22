@@ -1,9 +1,9 @@
 import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
+import { devToolsEnabled } from '@/lib/dev-tools-flag';
 
-/** DEV-only QA override: skip API/AdMob and show internal fallback creatives. */
+/** Dev-tools QA override: skip API/AdMob and show internal fallback creatives. */
 export function shouldForceInternalAds(): boolean {
-  const isDev = typeof __DEV__ !== 'undefined' && __DEV__;
-  if (!isDev) {
+  if (!devToolsEnabled()) {
     return false;
   }
   return useAdsDevStore.getState().forceInternalAdsFallback;
