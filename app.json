@@ -8,7 +8,7 @@
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.1.64",
+    "version": "5.1.92",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",
@@ -18,6 +18,9 @@
       "bundleIdentifier": "com.sousadev.saomiguelhub",
       "usesAppleSignIn": true,
       "appleTeamId": "28NZ2LLDF5",
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      },
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -72,6 +75,9 @@
     "android": {
       "package": "com.hsousa_apps.Autocarros",
       "versionCode": 55,
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#a9d566"
@@ -132,7 +138,15 @@
           "faceIDPermission": false
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#a9d566",
+          "defaultChannel": "journey-alarms"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
