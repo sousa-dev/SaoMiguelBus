@@ -32,8 +32,14 @@ import { usePersonalizationPlatformBackfill } from '@/features/account/hooks/use
 import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBootstrap';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useAutoTrackPinnedRoutes } from '@/features/transit/hooks/useAutoTrackPinnedRoutes';
+import { useEntitlementLapseCancellation } from '@/features/transit/hooks/useEntitlementLapseCancellation';
+import { useNotificationPermissionResume } from '@/features/transit/hooks/useNotificationPermissionResume';
+import { useNotificationReconcile } from '@/features/transit/hooks/useNotificationReconcile';
+import { useNotificationTapRouting } from '@/features/transit/hooks/useNotificationTapRouting';
+import { useServiceAnnouncements } from '@/features/transit/hooks/useServiceAnnouncements';
 import { useScheduleTransition } from '@/features/transit/hooks/useScheduleTransition';
 import { useAuthStore } from '@/lib/auth-store';
+import { initNotifications } from '@/lib/notifications/scheduler';
 import '@/lib/i18n';
 import { loadSavedLocale } from '@/lib/locale-prefs';
 import i18n, { normalizeLocaleCode, resources } from '@/lib/i18n';
@@ -68,6 +74,30 @@ function AppShell({
   // Lives here rather than on the transit tab: a rider who opens the app on the
   // hub still expects their 09h15 to be following itself by the time they look.
   useAutoTrackPinnedRoutes();
+  // The OS surface has to be live before anything is scheduled against it:
+  // Android channels must exist, and the foreground presentation handler must be
+  // installed before a notification can land. Once per launch, here rather than
+  // lazily on the first arm — where a rider tapping the bell would be racing it.
+  useEffect(() => {
+    void initNotifications();
+  }, []);
+  // Once per launch, after the profile store rehydrates: cancel alarms no live
+  // track claims, and re-arm tracks the OS has forgotten (04 §6.2).
+  useNotificationReconcile();
+  // Finishes an arm the rider left to grant permission in system settings, and
+  // notices when permission has been taken away while journeys are armed
+  // (05 §3.3, §3.4). In the shell so it survives the card being scrolled away.
+  useNotificationPermissionResume();
+  // Routes a tapped notification, warm or cold-start, once the router exists
+  // (05 §6).
+  useNotificationTapRouting();
+  // Premium alarms stand down when the subscription does — including when it
+  // lapsed while the app was closed (06 §3).
+  useEntitlementLapseCancellation();
+  // In the SHELL, not on the transit screen: this is a nine-module hub, and a
+  // rider who opens it for the weather must still have the 1 September warning
+  // scheduled (01 §4). The permission row it produces renders on transit.
+  useServiceAnnouncements();
   const hasAnalytics = useConsentStore((s) => s.hasAnalyticsConsent());
   const storedPolicyVersion = useConsentStore((s) => s.policyVersion);
   const requireReconsent = useConsentStore((s) => s.requireReconsent);

@@ -28,6 +28,9 @@ import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-native';
 import { PremiumSettingsSection } from '@/features/premium/components/PremiumSettingsSection';
 import { useInAppReviewConfig } from '@/features/app-review/hooks/useInAppReviewConfig';
 import { maybeRequestAppReview } from '@/features/app-review/lib/maybe-request-app-review';
+import { NotificationSettingsSection } from '@/features/transit/components/NotificationSettingsSection';
+import { useNotificationPrefsStore } from '@/lib/notification-prefs-store';
+import { cancelAllScheduledNotifications } from '@/lib/notifications/scheduler';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
@@ -43,6 +46,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { deleteMyData, exportMyData } from '@/lib/api';
 import { confirmAction, notify } from '@/lib/confirm';
 import { defaultPurposes, useConsentStore } from '@/lib/consent-store';
+import { useDevToolsEnabled } from '@/lib/dev-tools';
 import { shareJsonExport } from '@/lib/data-export';
 import { resolvePickerLocales } from '@/lib/i18n';
 import { LEGAL_URLS } from '@/lib/legal-urls';
@@ -79,6 +83,7 @@ export default function SettingsScreen() {
   const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
   const requestSplashPreview = useSplashDevStore((s) => s.requestPreview);
   const canSimulateSchedule = useCanSimulateSchedule();
+  const devToolsVisible = useDevToolsEnabled();
   const simulatedPhase = useScheduleDevStore((s) => s.simulatedPhase);
   const setSimulatedPhase = useScheduleDevStore((s) => s.setSimulatedPhase);
   const reviewConfig = useInAppReviewConfig();
@@ -169,6 +174,10 @@ export default function SettingsScreen() {
           recentSearches: profile.recentSearches,
           votes: profile.votes,
           tracking: profile.tracking,
+          // The rider's own choices, so they belong in their export.
+          // `firedAnnouncements` is deliberately excluded: it is delivery
+          // bookkeeping, not personal data anyone would recognise (03 §4.1).
+          notifications: useNotificationPrefsStore.getState().defaults,
           consent: {
             decided: consent.decided,
             purposes: consent.purposes,
@@ -206,8 +215,16 @@ export default function SettingsScreen() {
       // Wipe on-device data and reset consent to the protective default (consent
       // was erased server-side). We keep `decided` so the consent gate doesn't
       // redirect — re-arming it here while the Settings modal is open loops.
+      // FIRST, and the order is not cosmetic (03 §4.2). Pending notifications
+      // live in the OS, not in AsyncStorage: wiping the stores without
+      // cancelling would leave alarms scheduled to fire days later, on a device
+      // whose owner has just asked for their data to be deleted, with no record
+      // left of why. Resetting first would also destroy the `notificationIds`
+      // needed to cancel them.
+      await cancelAllScheduledNotifications();
       useProfileStore.getState().resetAll();
       usePersonalizationStore.getState().resetAll();
+      useNotificationPrefsStore.getState().resetAll();
       useConsentStore.getState().setPurposes(defaultPurposes);
       notify(t('settingsDataDeletedTitle'), t('settingsDataDeleted'));
     } catch {
@@ -284,6 +301,11 @@ export default function SettingsScreen() {
         </Text>
         <LanguagePicker locales={locales} activeLocale={i18n.language} onSelect={changeLanguage} />
 
+        {/* Beside Appearance and Language, because this is also the permanent
+            route back for a rider who blocked notifications and later wants
+            them (02 §4.4) — not something to be found only from a journey card. */}
+        <NotificationSettingsSection />
+
         <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
           {t('settingsPrivacy')}
         </Text>
@@ -351,7 +373,10 @@ export default function SettingsScreen() {
           </>
         ) : null}
 
-        {__DEV__ ? (
+        {/* Same audience as the changeover simulation above: a dev build or a
+            superuser. Each toggle re-applies the gate where it is read, so an
+            override left behind by an admin does nothing once signed out. */}
+        {devToolsVisible ? (
           <>
             <Text style={[typography.overline, styles.sectionLabel, { color: theme.muted }]}>
               {t('settingsDeveloper')}

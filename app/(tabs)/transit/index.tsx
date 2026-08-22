@@ -20,6 +20,7 @@ import { TransitPricesLink } from '@/features/transit/components/TransitPricesLi
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
 import { ScheduleChangeBanner } from '@/features/transit/components/ScheduleChangeBanner';
+import { ServiceAnnouncementPrompt } from '@/features/transit/components/ServiceAnnouncementPrompt';
 import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
 import { RouteWeatherGrid } from '@/features/transit/components/RouteWeatherGrid';
 import { TransitInstructionCard } from '@/features/transit/components/TransitInstructionCard';
@@ -363,6 +364,12 @@ export default function TransitScreen() {
 
           {/* Renders nothing until the server arms a cutover instant (03 §2). */}
           <ScheduleChangeBanner />
+
+          {/* Directly under the banner, because it is the same subject: the
+              banner says the timetables are changing, this offers to tell them
+              on the day without needing the app open. Renders nothing unless an
+              announcement is genuinely pending and permission is absent. */}
+          <ServiceAnnouncementPrompt />
 
           {/* Below the schedule banner on purpose: the network map shows the NEW
               timetables, so the "these are not in force yet" warning has to be

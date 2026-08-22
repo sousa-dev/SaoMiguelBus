@@ -3,11 +3,14 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
+import { NotifyBellButton } from '@/features/transit/components/NotifyBellButton';
+import { NotifyBellNotice } from '@/features/transit/components/NotifyBellNotice';
+import { useNotifyBell } from '@/features/transit/hooks/useNotifyBell';
 import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
 import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
 import { canPin } from '@/features/transit/lib/schedule-config';
-import { useProfileStore } from '@/lib/profile-store';
+import { useProfileStore, type ActiveTrack } from '@/lib/profile-store';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TransitSearchResult } from '@/lib/types';
@@ -28,9 +31,12 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   const { guardPremiumAction } = usePremiumGate();
   const active = useProfileStore((s) => s.tracking.active);
   const tracking = isTrackingTrip(trip.id, trip.origin, trip.destination);
-  const activeId = active.find(
-    (a) => a.tripId === trip.id && a.origin === trip.origin && a.destination === trip.destination,
-  )?.id;
+  const matchesTrip = (a: ActiveTrack) =>
+    a.origin === trip.origin &&
+    a.destination === trip.destination &&
+    (a.legs?.[0]?.tripId === trip.id || a.tripId === trip.id);
+  const activeTrack = active.find(matchesTrip);
+  const activeId = activeTrack?.id;
 
   const onTrack = () => {
     // Stopping an active track is always allowed; starting is premium-gated.
@@ -60,6 +66,33 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
     }, 'track_pin');
   };
 
+  /**
+   * The bell arms a specific journey, so it needs a track — and starting one is
+   * the same premium action the track button performs. Returns null when the
+   * cap refuses it, having already said so, exactly as `onTrack` does.
+   */
+  const ensureTrack = (): ActiveTrack | null => {
+    const existing = useProfileStore.getState().tracking.active.find(matchesTrip);
+    if (existing) {
+      return existing;
+    }
+    if (!canStartMore || !startFromTrip(trip, searchDay)) {
+      Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
+      return null;
+    }
+    // `startTracking` reports success, not the record it made — so the freshly
+    // written store is where the id comes from.
+    return useProfileStore.getState().tracking.active.find(matchesTrip) ?? null;
+  };
+
+  const notify = useNotifyBell({
+    track: activeTrack,
+    ensureTrack,
+    // A single trip is one bus: there is no change, so the sheet hides that row.
+    hasTransfers: false,
+    source: 'notify_trip',
+  });
+
   // Split gate (09 §2 Gap A). Tracking still stands down against a timetable that
   // is not in force — a countdown would fire on the wrong days — but pinning
   // schedules nothing, so the row survives the preview instead of disappearing
@@ -71,7 +104,8 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
   }
 
   return (
-    <View style={styles.row}>
+    <View style={styles.wrap}>
+      <View style={styles.row}>
       {showTrack ? (
         <IconButton
           icon={MapPin}
@@ -90,10 +124,17 @@ export function TrackButton({ trip, searchDay, showPin = true }: Props) {
           onPress={onPin}
         />
       ) : null}
+      {/* The bell inherits the TRACKING gate, not the pinning one: an alarm is
+          scheduled against a specific timetable, so it must stand down while the
+          rider previews times that are not yet in force (02 §3.1). */}
+      {showTrack ? <NotifyBellButton state={notify} /> : null}
+      </View>
+      {showTrack ? <NotifyBellNotice state={notify} track={activeTrack} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
+  wrap: { marginTop: space.sm },
+  row: { flexDirection: 'row', gap: space.sm },
 });

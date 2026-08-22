@@ -1,11 +1,13 @@
-import { LocateFixed, X } from 'lucide-react-native';
+import { BellOff, LocateFixed, X } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
+import { trackSettingsOpened } from '@/lib/notifications/analytics';
+import { useNotificationUiStore } from '@/lib/notifications/ui-store';
 import { usePremium } from '@/lib/premium-store';
 import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -16,6 +18,11 @@ export function ActiveTrackingSection() {
   const { t } = useTranslation();
   const isPremium = usePremium();
   const { active, stopTracking } = useBusTracking();
+  // Permission can be switched off outside the app at any time. The OS keeps the
+  // scheduled alarms and simply stops showing them, with no callback — so the
+  // foreground check in `useNotificationPermissionResume` is the only thing that
+  // can tell the rider their armed journeys have gone quiet (05 §3.4).
+  const permissionRevoked = useNotificationUiStore((s) => s.permissionRevoked);
 
   // Webapp parity: the active-tracking widget is premium-only.
   if (!isPremium || active.length === 0) {
@@ -55,6 +62,28 @@ export function ActiveTrackingSection() {
           <Text style={[typography.body, { color: theme.text }]}>
             {track.origin} → {track.destination}
           </Text>
+          {/* The alarms are NOT cancelled when permission goes away: re-granting
+              restores delivery for everything still pending, and discarding the
+              rider's setup over a toggle they may flip back in ten seconds would
+              be its own bug (05 §3.4). */}
+          {permissionRevoked && track.notify ? (
+            <Pressable
+              onPress={() => {
+                trackSettingsOpened('revoked_warning');
+                void Linking.openSettings();
+              }}
+              accessibilityRole="button"
+              style={styles.revokedRow}
+            >
+              <BellOff size={14} color={theme.warning} strokeWidth={2} />
+              <Text style={[typography.caption, { color: theme.warning, flex: 1 }]}>
+                {t('notificationsRevokedWarning')}
+              </Text>
+              <Text style={[typography.caption, { color: theme.primary }]}>
+                {t('notificationsRevokedAction')}
+              </Text>
+            </Pressable>
+          ) : null}
           {/* A countdown the rider never started needs to say where it came from. */}
           {track.auto ? (
             <Text style={[typography.caption, { color: theme.info, marginTop: space.xs }]}>
@@ -174,6 +203,12 @@ function LegStrip({ journey }: { journey: JourneyTrackStatus }) {
 }
 
 const styles = StyleSheet.create({
+  revokedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    marginTop: space.xs,
+  },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,

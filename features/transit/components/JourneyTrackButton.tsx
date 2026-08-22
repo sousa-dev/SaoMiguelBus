@@ -16,10 +16,14 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
+import { NotifyBellButton } from '@/features/transit/components/NotifyBellButton';
+import { NotifyBellNotice } from '@/features/transit/components/NotifyBellNotice';
+import { useNotifyBell } from '@/features/transit/hooks/useNotifyBell';
 import { usePremiumGate } from '@/features/premium/hooks/usePremiumGate';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
 import { useScheduleConfig } from '@/features/transit/hooks/useScheduleConfig';
 import { canPin } from '@/features/transit/lib/schedule-config';
+import { useProfileStore, type ActiveTrack } from '@/lib/profile-store';
 import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { TransitJourney } from '@/lib/types';
@@ -52,6 +56,31 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
   const tracking = isTrackingJourney(journey.id);
   const isPinned = isPinnedJourney(journey.id);
   const trackId = activeJourneyId(journey.id);
+  const activeTrack = useProfileStore((s) =>
+    s.tracking.active.find((t) => t.journeyId === journey.id),
+  );
+  // A direct journey has no change to warn about, so the sheet hides that row
+  // rather than offering a checkbox that would arm nothing (02 §4.1).
+  const hasTransfers = (journey.legs ?? []).filter((leg) => leg.kind === 'ride').length > 1;
+
+  /**
+   * Find or start the track the bell arms. Returns null when the active-track
+   * cap refuses it, having already said so — the same path `onTrack` takes.
+   */
+  const ensureTrack = (): ActiveTrack | null => {
+    const byJourney = () =>
+      useProfileStore.getState().tracking.active.find((t) => t.journeyId === journey.id) ?? null;
+    const existing = byJourney();
+    if (existing) {
+      return existing;
+    }
+    if (!canStartMore || !startFromJourney(journey, searchDay)) {
+      Alert.alert(t('transitTrackCapTitle'), t('transitTrackCapMessage'));
+      return null;
+    }
+    // `startTracking` reports success, not the record it made.
+    return byJourney();
+  };
 
   const onTrack = () => {
     // Stopping an active track is always allowed; starting is premium-gated.
@@ -85,6 +114,13 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
     }, 'track_pin');
   };
 
+  const notify = useNotifyBell({
+    track: activeTrack,
+    ensureTrack,
+    hasTransfers,
+    source: 'notify_journey',
+  });
+
   const showTrack = canTrackTrips;
   const showPinAction = showPin && canPin();
   if (!showTrack && !showPinAction) {
@@ -92,7 +128,8 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
   }
 
   return (
-    <View style={styles.row}>
+    <View style={styles.wrap}>
+      <View style={styles.row}>
       {showTrack ? (
         <IconButton
           icon={MapPin}
@@ -111,10 +148,17 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
           onPress={onPin}
         />
       ) : null}
+      {/* Gated on tracking, never on pinning: alarms are scheduled against a
+          timetable, and a preview timetable would fire them on the wrong days
+          (02 §3.1). */}
+      {showTrack ? <NotifyBellButton state={notify} /> : null}
+      </View>
+      {showTrack ? <NotifyBellNotice state={notify} track={activeTrack} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
+  wrap: { marginTop: space.sm },
+  row: { flexDirection: 'row', gap: space.sm },
 });
