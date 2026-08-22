@@ -2,17 +2,13 @@ import { useCallback, useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import { useAdFreeStore } from '@/features/ads/lib/ad-free-store';
-import { isRewardedAdFreeUserType } from '@/features/ads/lib/reward-offer-availability';
 import { adFreeRemainingMs, shouldShowAds } from '@/features/ads/lib/ad-visibility';
-import { usePersonalizationStore } from '@/lib/personalization-store';
 import { usePremium } from '@/lib/premium-store';
 
 function useAdFreeDerived(isPremium: boolean) {
-  const userType = usePersonalizationStore((s) => s.userType);
   const adFreeUntilMs = useAdFreeStore((s) => s.adFreeUntilMs);
   const nowMs = useAdFreeStore((s) => s.nowMs);
-  const rewardEligible = isRewardedAdFreeUserType(userType);
-  const effectiveUntilMs = isPremium || !rewardEligible ? null : adFreeUntilMs;
+  const effectiveUntilMs = isPremium ? null : adFreeUntilMs;
   const isAdFreeActive =
     !isPremium && effectiveUntilMs != null && effectiveUntilMs > nowMs;
   const remainingMs = isPremium ? 0 : adFreeRemainingMs(effectiveUntilMs, nowMs);
@@ -70,18 +66,17 @@ export function useAdFreeWindowBootstrap() {
  */
 export function useAdFreeWindow() {
   const isPremium = usePremium();
-  const userType = usePersonalizationStore((s) => s.userType);
   const hydrated = useAdFreeStore((s) => s.hydrated);
   const refresh = useAdFreeStore((s) => s.refresh);
   const grantFromRewardStore = useAdFreeStore((s) => s.grantFromReward);
   const derived = useAdFreeDerived(isPremium);
 
   const grantFromReward = useCallback(async () => {
-    if (isPremium || !isRewardedAdFreeUserType(userType)) {
+    if (isPremium) {
       return null;
     }
     return grantFromRewardStore();
-  }, [grantFromRewardStore, isPremium, userType]);
+  }, [grantFromRewardStore, isPremium]);
 
   return {
     hydrated,
