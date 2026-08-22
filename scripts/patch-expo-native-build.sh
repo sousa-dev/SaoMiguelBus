@@ -44,7 +44,25 @@ fi
 # --- expo-modules-core ---
 CORE="${ROOT}/node_modules/expo-modules-core/ios"
 if [[ -d "${CORE}" ]]; then
+  # Upstream writes `weak let`, which is not valid Swift at all — `weak` requires
+  # a mutable binding — so this rewrite is what makes the package compile.
   find "${CORE}" -name '*.swift' -exec sed -i '' 's/weak let /weak var /g' {} +
+
+  # ...but the rewrite above trades one Swift 6 error for another wherever the
+  # property lives in a class that declares `Sendable`: an immutable stored
+  # property is fine there, a mutable one is rejected outright.
+  #
+  #   SharedObjectRegistry.swift:37: stored property 'appContext' of
+  #   'Sendable'-conforming class 'SharedObjectRegistry' is mutable
+  #
+  # `@unchecked` is the same escape hatch this script already applies to the
+  # equivalent classes in expo-modules-jsi above, and it is sound for the same
+  # reason: the reference is only ever read on the JS thread that owns the
+  # registry. Idempotent — re-running finds nothing left to change.
+  REGISTRY="${CORE}/Core/SharedObjects/SharedObjectRegistry.swift"
+  if [[ -f "${REGISTRY}" ]]; then
+    sed -i '' 's/public final class SharedObjectRegistry: Sendable/public final class SharedObjectRegistry: @unchecked Sendable/' "${REGISTRY}"
+  fi
 fi
 
 # --- expo-constants (quote script paths in podspec) ---
