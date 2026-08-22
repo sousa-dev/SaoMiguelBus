@@ -79,15 +79,30 @@ src/android-project/app/.idea/
 android.keystore
 
 # --- EAS-only excludes (not needed for the build) ---
+#
+# EVERY pattern below is anchored with a leading slash, and must stay that way.
+# A trailing-slash-only pattern like `src/` is NOT root-relative in gitignore
+# syntax — it matches a directory of that name at ANY depth. Unanchored `src/`
+# stripped `modules/exact-alarm/android/src/` from the upload, which left
+# autolinking to generate a reference to `ExactAlarmModule` whose source was no
+# longer there:
+#
+#   e: ExpoModulesPackageList.kt:25:31 Unresolved reference 'ExactAlarmModule'
+#   > Task :expo:compileReleaseKotlin FAILED
+#
+# It builds locally because .gitignore has no such pattern, so this fails only
+# on EAS. Verify any change here with:
+#   git ls-files --exclude-from=.easignore --ignored --cached
+
 # Legacy native projects (not imported by the Expo app)
-src/
-legacy/
+/src/
+/legacy/
 
 # Docs & specs
-docs/
-doc/
-SDD/
-MIGRATION_PLAN.md
+/docs/
+/doc/
+/SDD/
+/MIGRATION_PLAN.md
 
 # Tests (not needed in the build archive)
-__tests__/
+/__tests__/
