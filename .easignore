@@ -43,6 +43,13 @@ yarn-error.*
 /ios
 /android
 
+# Local Expo modules (modules/*) — Gradle/Xcode output only. The SOURCE in
+# modules/ must stay tracked: autolinking discovers it at prebuild time, so a
+# build that cannot see it silently ships without the native module.
+modules/*/android/build/
+modules/*/android/.gradle/
+modules/*/ios/build/
+
 # Legacy Android Studio project (src/android-project)
 src/android-project/.gradle/
 src/android-project/.idea/
