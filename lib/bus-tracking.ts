@@ -121,8 +121,16 @@ export function withDayOffsets(stops: TripStop[], startOffset = 0): TrackedStop[
   });
 }
 
-/** Minutes since midnight of the itinerary's first day. */
-function stopMinutes(stop: TrackedStop): number {
+/**
+ * Minutes since midnight of the itinerary's first day.
+ *
+ * Exported for the notification planner, which resolves the "get off at the next
+ * stop" alarm against a specific stop of the final leg. It must use THIS
+ * arithmetic and not its own: the `dayOffset` multiplication is the single line
+ * that stops a past-midnight stop reading as 23 hours in the past, and a second
+ * copy of it is a second place for that bug to come back (notifications 04 §2).
+ */
+export function stopMinutes(stop: TrackedStop): number {
   return timeStringToMinutes(stop.time) + (stop.dayOffset ?? 0) * MINUTES_PER_DAY;
 }
 
@@ -169,8 +177,15 @@ export function localIsoDate(date = new Date()): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-/** Local midnight of the day the itinerary departs — the origin of every offset. */
-function departureDayStart(searchDate: string | undefined, now: Date): number {
+/**
+ * Local midnight of the day the itinerary departs — the origin of every offset.
+ *
+ * Exported for the notification planner (notifications 04 §2.1), which turns the
+ * minute offsets `legSpans` produces back into absolute `Date` instants to hand
+ * the OS. Note it parses `searchDate` as a LOCAL date, which is exactly why
+ * `localIsoDate()` — never `toISOString()` — has to have been what wrote it.
+ */
+export function departureDayStart(searchDate: string | undefined, now: Date): number {
   if (searchDate) {
     const [y, m, d] = searchDate.split('-').map((part) => parseInt(part, 10));
     if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
@@ -211,8 +226,13 @@ function trackLegs(track: Pick<ActiveTrack, 'legs'>): TrackedLeg[] {
  * Absolute minutes for every leg, in one pass, so day offsets accumulate ACROSS
  * legs: a second bus boarded after midnight is on day 1 even though its own stop
  * list never wraps.
+ *
+ * Exported for the notification planner (notifications 04 §2.1, KTD3) —
+ * visibility only, no behaviour change. Re-deriving these offsets elsewhere is
+ * the single most likely way to ship an alarm on the wrong day, so the planner
+ * consumes this rather than computing its own.
  */
-function legSpans(legs: TrackedLeg[]): { stops: TrackedStop[]; start: number; end: number }[] {
+export function legSpans(legs: TrackedLeg[]): { stops: TrackedStop[]; start: number; end: number }[] {
   const spans: { stops: TrackedStop[]; start: number; end: number }[] = [];
   let previousEnd = -Infinity;
   let carry = 0;
