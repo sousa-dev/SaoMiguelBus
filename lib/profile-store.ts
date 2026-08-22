@@ -5,6 +5,8 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { staticIslandConfig } from '@/config/island';
 import { track } from '@/lib/analytics';
 import { liftTrackedRecord } from '@/lib/bus-tracking';
+import { cancelNotificationIds } from '@/lib/notifications/scheduler';
+import type { NotificationPrefs } from '@/lib/notifications/types';
 import type { TransitDataset, TripStop } from '@/lib/types';
 
 export interface FavoriteRoute {
@@ -106,6 +108,28 @@ export interface ActiveTrack {
    * the row — a track the rider did not start is otherwise unexplained.
    */
   auto?: boolean;
+  /**
+   * The notification preferences this track was armed with, or absent if the
+   * rider never armed it (03 §3).
+   *
+   * Stored on the TRACK rather than read from the preferences store at fire
+   * time, so a journey armed with a one-off selection keeps that selection even
+   * after the rider edits their defaults — the alarms already handed to the OS
+   * reflect what they actually agreed to.
+   *
+   * Its presence IS the armed state. There is no separate boolean to fall out of
+   * sync with whether `notificationIds` is populated.
+   */
+  notify?: NotificationPrefs;
+  /**
+   * OS identifiers of this track's pending notifications, for cancellation (KTD9).
+   *
+   * Living here means the lifecycle that already removes tracks — `stopTracking`,
+   * `pruneTracking` on expiry, and the dataset-change sweep — becomes the
+   * cancellation trigger for free, with no second source of truth to drift from
+   * this one.
+   */
+  notificationIds?: string[];
 
   // --- legacy fields, kept for one release so persisted state still reads ---
   /** @deprecated use `legs[0].tripId` */ tripId?: number;
@@ -185,6 +209,24 @@ function recentKey(search: Pick<RecentSearch, 'origin' | 'destination' | 'day'>)
   return `${pairKey(search.origin, search.destination)}|${search.day}`;
 }
 
+/**
+ * Cancel the pending alarms of tracks that are going away.
+ *
+ * Fire-and-forget on purpose (05 §5.2). `pruneTracking` is a synchronous store
+ * action called every 30 seconds from `useBusTracking`, and cancellation is an
+ * async OS call — awaiting it here would make every store action async and put
+ * an OS round-trip on a timer tick. Nothing downstream depends on the
+ * cancellation having completed: the ids are already forgotten in the store, and
+ * a cancel that fails leaves an alarm the launch reconciliation will collect as
+ * an orphan.
+ */
+function cancelTrackNotifications(tracks: ActiveTrack[]) {
+  const ids = tracks.flatMap((t) => t.notificationIds ?? []);
+  if (ids.length > 0) {
+    void cancelNotificationIds(ids);
+  }
+}
+
 function newTrackId() {
   return `track_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -262,6 +304,23 @@ interface ProfileState {
     input: Omit<ActiveTrack, 'id' | 'createdAt' | 'expiresAt'> & { expiresAt?: number },
   ) => boolean;
   stopTracking: (trackId: string) => void;
+  /**
+   * Record that a track is armed, with the preferences used and the OS
+   * identifiers to cancel later (KTD9). Called after `armTrack` returns.
+   */
+  setTrackNotifications: (
+    trackId: string,
+    notify: NotificationPrefs,
+    notificationIds: string[],
+  ) => void;
+  /**
+   * Disarm one track: cancel its pending alarms and forget them.
+   *
+   * Never gated. A lapsed subscriber must always be able to turn something off,
+   * exactly as `TrackButton` already allows stopping a track it would not let
+   * them start.
+   */
+  clearTrackNotifications: (trackId: string) => void;
   pinRoute: (input: Omit<PinnedRoute, 'id' | 'pinnedAt'>) => PinResult;
   unpinRoute: (pinId: string) => void;
   /**
@@ -442,13 +501,44 @@ export const useProfileStore = create<ProfileState>()(
 
       stopTracking: (trackId) => {
         const { tracking } = get();
+        const removed = tracking.active.find((t) => t.id === trackId);
         set({
           tracking: {
             ...tracking,
             active: tracking.active.filter((t) => t.id !== trackId),
           },
         });
+        // Stopping the countdown stops the alarms with it. Leaving them behind
+        // would fire "get off at the next stop" for a journey the app no longer
+        // shows anywhere (05 §5.2).
+        cancelTrackNotifications(removed ? [removed] : []);
         track('transit', 'track_stop', { track_id: trackId });
+      },
+
+      setTrackNotifications: (trackId, notify, notificationIds) => {
+        const { tracking } = get();
+        set({
+          tracking: {
+            ...tracking,
+            active: tracking.active.map((t) =>
+              t.id === trackId ? { ...t, notify, notificationIds } : t,
+            ),
+          },
+        });
+      },
+
+      clearTrackNotifications: (trackId) => {
+        const { tracking } = get();
+        const armed = tracking.active.find((t) => t.id === trackId);
+        set({
+          tracking: {
+            ...tracking,
+            active: tracking.active.map((t) =>
+              t.id === trackId ? { ...t, notify: undefined, notificationIds: undefined } : t,
+            ),
+          },
+        });
+        cancelTrackNotifications(armed ? [armed] : []);
       },
 
       pinRoute: (input) => {
@@ -489,8 +579,18 @@ export const useProfileStore = create<ProfileState>()(
 
       pruneTracking: (now = Date.now(), dataset) => {
         const { tracking } = get();
+        // The dropped tracks are collected rather than just counted: their
+        // notification ids are the only handle on alarms the OS is still
+        // holding, and once the track is gone they are unrecoverable. This is
+        // the single most important cancellation site (05 §5.2) — a track that
+        // expires while the app is closed would otherwise leave "get off at the
+        // next stop" scheduled for a journey the app has forgotten, and a
+        // network switch would leave alarms naming stops from a dataset the
+        // rider is no longer looking at.
+        const dropped: ActiveTrack[] = [];
         const active = tracking.active.filter((t) => {
           if (t.expiresAt <= now) {
+            dropped.push(t);
             return false;
           }
           // A countdown built from the old network's stop times is wrong the
@@ -503,11 +603,12 @@ export const useProfileStore = create<ProfileState>()(
           // user started seconds ago, the moment bootstrap landed. Unstamped
           // tracks age out on their own within hours anyway.
           if (dataset != null && t.dataset != null && t.dataset !== dataset) {
+            dropped.push(t);
             return false;
           }
           return true;
         });
-        if (active.length === tracking.active.length) {
+        if (dropped.length === 0) {
           return;
         }
         set({
@@ -517,6 +618,7 @@ export const useProfileStore = create<ProfileState>()(
             lastCleanup: now,
           },
         });
+        cancelTrackNotifications(dropped);
       },
 
       markAutoTracked: (pinId, day) => {
@@ -535,6 +637,13 @@ export const useProfileStore = create<ProfileState>()(
 
       applyUserDataMigration: (next) => {
         const { tracking } = get();
+        // The changeover migration drops tracks that did not survive the dataset
+        // change. Their alarms were built from the old network's stop times and
+        // would fire with names from a network the rider is no longer on.
+        if (next.active) {
+          const kept = new Set(next.active.map((t) => t.id));
+          cancelTrackNotifications(tracking.active.filter((t) => !kept.has(t.id)));
+        }
         set({
           favoriteStops: next.favoriteStops,
           favoriteRoutes: next.favoriteRoutes,
@@ -548,6 +657,12 @@ export const useProfileStore = create<ProfileState>()(
       },
 
       resetAll: () => {
+        // Pending notifications live in the OS, not in AsyncStorage. Wiping the
+        // store without cancelling would leave alarms scheduled for days, on a
+        // device whose owner has just asked for their data to be deleted, with
+        // no record left of why — and resetting first would destroy the very ids
+        // needed to cancel them (03 §4.2).
+        cancelTrackNotifications(get().tracking.active);
         set({
           displayName: null,
           favoriteRoutes: [],
