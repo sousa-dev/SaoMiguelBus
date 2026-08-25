@@ -1,0 +1,96 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+
+import { Screen } from '@/components/Screen';
+import { TrafficReportForm } from '@/features/traffic/components/TrafficReportForm';
+import {
+  useCreateTrafficReport,
+  useTrafficCategories,
+} from '@/features/traffic/hooks/useTrafficQueries';
+import { useNearbyLocation } from '@/features/traffic/hooks/useNearbyLocation';
+import { clampCoordinate, isWithinIslandBounds } from '@/lib/island-map';
+import { useNetworkStatus } from '@/lib/network-status';
+import { useAppStackScreenOptions } from '@/lib/navigation';
+import type { TrafficReportWriteInput } from '@/lib/types';
+import { useTrafficStore } from '@/lib/traffic-store';
+
+function parseCoord(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+export default function NewTrafficReportScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const screenOptions = useAppStackScreenOptions();
+  const { isOnline } = useNetworkStatus();
+  const params = useLocalSearchParams<{ category?: string; lat?: string; lng?: string }>();
+
+  const categories = useTrafficCategories();
+  const create = useCreateTrafficReport();
+  const addReport = useTrafficStore((s) => s.addReport);
+  const { coords: gpsCoords } = useNearbyLocation(true);
+  const userOnIsland = gpsCoords ? isWithinIslandBounds(gpsCoords.lat, gpsCoords.lng) : false;
+
+  const paramCoords = useMemo(() => {
+    const lat = parseCoord(params.lat);
+    const lng = parseCoord(params.lng);
+    if (lat == null || lng == null) {
+      return null;
+    }
+    return clampCoordinate(lat, lng);
+  }, [params.lat, params.lng]);
+
+  const [reportCoords, setReportCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Pre-fill only from an explicit map pin (draft) — never silently use the
+  // user's current GPS location. The user must choose the spot deliberately.
+  useEffect(() => {
+    if (paramCoords) {
+      setReportCoords(paramCoords);
+    }
+  }, [paramCoords]);
+
+  const onSubmit = async (input: TrafficReportWriteInput) => {
+    setError(null);
+    try {
+      // Offline submits are queued locally (safety report) and flush on reconnect.
+      const result = await create.mutateAsync(input);
+      if (!('queued' in result)) {
+        addReport(result.id);
+      }
+      router.back();
+    } catch {
+      setError(t('trafficReportError'));
+    }
+  };
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          ...screenOptions,
+          headerShown: true,
+          headerBackVisible: false,
+        }}
+      />
+      <Screen>
+        <TrafficReportForm
+          categories={categories.data ?? []}
+          initialCategory={params.category}
+          coords={reportCoords}
+          gpsCoords={userOnIsland ? gpsCoords : null}
+          userOnIsland={userOnIsland}
+          onCoordsChange={setReportCoords}
+          submitting={create.isPending}
+          error={error}
+          offline={!isOnline}
+          onSubmit={(input) => void onSubmit(input)}
+        />
+      </Screen>
+    </>
+  );
+}

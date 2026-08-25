@@ -1,20 +1,30 @@
-# Sao Miguel Bus
-São Miguel Island Bus Schedule App.
+# São Miguel Bus → Azores Hub (revamp)
 
-### In this app you can ###
-* Access all the São Miguel Island Bus Schedule
-* Check at what time a bus stops at Bus Stops all around the Island                               
-* Add "Trips" to your favorites for quick access
-* Get Multi-Bus Trips Support.
-* Get Step by Step instructions for a trip.
-* Get a Map with the route displayed.
+Expo client (Android, iOS, Web) for the **Azores Hub** platform — Phase 2+ on branch `revamp`.
 
+## Layout
 
-###### All the information on this app was found on the bus companies' websites.  
+| Path | Purpose |
+|------|---------|
+| [`app/`](./app/) | Expo Router screens (tabs, onboarding, consent) |
+| [`config/`](./config/) | Island branding (`EXPO_PUBLIC_ISLAND_KEY`) |
+| [`features/`](./features/) | Module UI (transit first) |
+| [`lib/`](./lib/) | API client, analytics, consent, theme, i18n |
+| [`locales/`](./locales/) | 8 languages ported from legacy webapp |
+| [`legacy/`](./legacy/) | Frozen pre-revamp mobile app |
+| [`SDD/`](./SDD/) | Software design documents |
 
-### v4.0 ###
-[![playstore](https://user-images.githubusercontent.com/56836057/133408897-e5d0c2f2-26d3-48cb-8e83-838344b3f02a.png)](https://play.google.com/store/apps/details?id=com.hsousa_apps.Autocarros&hl=pt)
+## Run (Expo Go)
 
-### TODO ###
-* Improve App Visuals
-* Bus Trip price information.
+```bash
+cp .env.example .env   # EXPO_PUBLIC_API_URL, EXPO_PUBLIC_ISLAND_KEY
+npm install
+npx expo start
+```
+
+Point `EXPO_PUBLIC_API_URL` at a running [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) `revamp` backend (`/api/v3/*`). All requests send `X-Island: sao-miguel`.
+
+## Related repos
+
+- **API:** [SaoMiguelBus-api](https://github.com/sousa-dev/SaoMiguelBus-api) — Django 5, `/api/v3` + compat shims
+- **Web PWA:** [SaoMiguelBus-webapp](https://github.com/sousa-dev/SaoMiguelBus-webapp) (reference only)

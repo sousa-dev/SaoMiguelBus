@@ -1,0 +1,9 @@
+<!--
+  Deliberately empty.
+
+  `SCHEDULE_EXACT_ALARM` is declared by the app, in `app.json` under
+  `android.permissions`, so that the permission list stays in one reviewable
+  place alongside everything else the app asks for. Declaring it here as well
+  would merge to the same result while hiding it from that review.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

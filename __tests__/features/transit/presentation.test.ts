@@ -1,0 +1,289 @@
+/**
+ * 03 §5b and §6 — the pure decisions behind the boarding-pole chip, the walking
+ * hint and the pricing screen. The renderers are thin readers over these, and are
+ * covered by manual QA.
+ */
+
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, it } from 'node:test';
+
+import {
+  arrivesNextDay,
+  distanceMetres,
+  poleWalkHintMetres,
+  resolveAlightingPole,
+  resolveBoardingPole,
+} from '@/features/transit/lib/boarding-pole';
+import {
+  categorySummary,
+  fareBandUnit,
+  formatTariffPrice,
+  resolveTariffsState,
+  tariffInfoLinks,
+  tariffRenderer,
+  tariffRows,
+  type TariffsResponse,
+} from '@/features/transit/lib/tariffs';
+
+describe('boarding pole — 03 §5b', () => {
+  const withPole = {
+    boarding: { code: '1002', lat: 37.737628, lon: -25.67039, sequence: 40, dayOffset: 0 },
+    alighting: { code: '5186', lat: 37.825211, lon: -25.497905, sequence: 59, dayOffset: 0 },
+  };
+
+  it('renders the code printed on the physical pole', () => {
+    assert.equal(resolveBoardingPole(withPole)?.code, '1002');
+    assert.equal(resolveAlightingPole(withPole)?.code, '5186');
+  });
+
+  it('renders nothing — not undefined — for a legacy result', () => {
+    assert.equal(resolveBoardingPole({ boarding: undefined }), null);
+    assert.equal(resolveAlightingPole({ alighting: undefined }), null);
+  });
+
+  it('renders nothing when the code is blank rather than an empty chip', () => {
+    const blank = { boarding: { code: '', lat: 0, lon: 0, sequence: 1, dayOffset: 0 } };
+    assert.equal(resolveBoardingPole(blank), null);
+  });
+
+  it('marks a night trip that lands after midnight', () => {
+    assert.equal(arrivesNextDay(withPole), false);
+    assert.equal(
+      arrivesNextDay({
+        boarding: { code: 'a', lat: 0, lon: 0, sequence: 1, dayOffset: 0 },
+        alighting: { code: 'b', lat: 0, lon: 0, sequence: 47, dayOffset: 1 },
+      }),
+      true,
+    );
+  });
+});
+
+describe('walking hint — only the groups that are actually far apart', () => {
+  it('measures a known separation', () => {
+    // Roughly 100 m apart along a meridian.
+    const metres = distanceMetres({ lat: 37.7376, lon: -25.6704 }, { lat: 37.7385, lon: -25.6704 });
+    assert.ok(metres > 90 && metres < 110, `expected ~100 m, got ${metres}`);
+  });
+
+  it('shows a hint for COVOADA, which spans 164 m', () => {
+    const hint = poleWalkHintMetres([
+      { lat: 37.7500, lon: -25.6900 },
+      { lat: 37.7515, lon: -25.6900 },
+    ]);
+    assert.ok(hint && hint > 100, `expected a hint, got ${hint}`);
+  });
+
+  it('shows nothing for an ordinary 11 m road pair', () => {
+    assert.equal(
+      poleWalkHintMetres([
+        { lat: 37.7376, lon: -25.6704 },
+        { lat: 37.7377, lon: -25.6704 },
+      ]),
+      null,
+    );
+  });
+
+  it('shows nothing for a single pole', () => {
+    assert.equal(poleWalkHintMetres([{ lat: 37.7376, lon: -25.6704 }]), null);
+  });
+});
+
+describe('tariffs — tables only, never a computed fare (03 §6)', () => {
+  const payload: TariffsResponse = {
+    effectiveDate: '2026-09-01',
+    lastUpdatedAt: '2026-08-05T13:47:25Z',
+    fetchedAt: '2026-08-20T04:00:00Z',
+    isFuture: true,
+    notes: 'Tarifário em vigor a partir de 1 de setembro.',
+    infos: [],
+    categories: [
+      {
+        name: 'Passes',
+        tariffs: [
+          {
+            name: 'Passe Normal', note: '', fareUnitType: 'km',
+            prices: [
+              { band: '0 a 5', price: '31.75' },
+              { band: '6 a 7', price: '35.10' },
+              { band: '8', price: '38.45' },
+            ],
+          },
+          {
+            name: 'Cartão', note: 'Emissão', fareUnitType: null,
+            prices: [{ band: null, price: '6.00' }],
+          },
+        ],
+      },
+    ],
+  };
+
+  it('renders a banded table when the payload declares a fare unit', () => {
+    assert.equal(tariffRenderer(payload.categories[0].tariffs[0]), 'banded');
+  });
+
+  it('renders a single price when there is no fare unit', () => {
+    assert.equal(tariffRenderer(payload.categories[0].tariffs[1]), 'single');
+  });
+
+  it('keys off fareUnitType, not the band count', () => {
+    // 01 §7: the two shapes are distinguished by the PRESENCE of fareUnitType.
+    // A distance-banded tariff that happens to have one band is still banded.
+    const oneBand = {
+      name: 'Mensal', note: '', fareUnitType: 'km',
+      prices: [{ band: '0 a 5', price: '31.75' }],
+    };
+    assert.equal(tariffRenderer(oneBand), 'banded');
+  });
+
+  it('keeps band labels verbatim and in payload order', () => {
+    const rows = tariffRows(payload.categories[0].tariffs[0]);
+    assert.deepEqual(rows.map((r) => r.band), ['0 a 5', '6 a 7', '8']);
+    assert.equal(rows[0].price, '31.75', 'the payload value is carried through unchanged');
+  });
+
+  it('treats a 404 as empty, not as an error — production returns it today', () => {
+    assert.equal(resolveTariffsState(null, { status: 404 }), 'empty');
+  });
+
+  it('treats a real failure as unavailable', () => {
+    assert.equal(resolveTariffsState(null, { status: 500 }), 'unavailable');
+    assert.equal(resolveTariffsState(null, new TypeError('Network request failed')), 'unavailable');
+  });
+
+  it('renders an empty state for an empty payload, never a fallback price', () => {
+    assert.equal(resolveTariffsState({ ...payload, categories: [] }), 'empty');
+    assert.equal(
+      resolveTariffsState({ ...payload, categories: [{ name: 'Passes', tariffs: [] }] }),
+      'empty',
+    );
+  });
+
+  it('is ready when there is something to show', () => {
+    assert.equal(resolveTariffsState(payload), 'ready');
+  });
+});
+
+describe('fare bands are distances — 01 §7', () => {
+  it('reports the unit the payload declares', () => {
+    assert.equal(fareBandUnit({ fareUnitType: 'km' }), 'km');
+  });
+
+  it('reports no unit for a flat price, so no distance column is drawn', () => {
+    assert.equal(fareBandUnit({ fareUnitType: null }), null);
+    assert.equal(fareBandUnit({ fareUnitType: '' }), null);
+    assert.equal(fareBandUnit({ fareUnitType: '   ' }), null);
+  });
+
+  it('passes an unknown unit through rather than assuming km', () => {
+    // The operator can restructure this; a new unit must still render.
+    assert.equal(fareBandUnit({ fareUnitType: 'zonas' }), 'zonas');
+  });
+});
+
+describe('prices render as euros', () => {
+  it('formats a payload number as currency', () => {
+    const formatted = formatTariffPrice(31.75, 'pt-PT');
+    assert.match(formatted, /€/, 'the amount must carry its currency');
+    assert.match(formatted, /31/, 'and it is the payload amount, not a rounded one');
+  });
+
+  it('formats a numeric string the same way', () => {
+    assert.equal(formatTariffPrice('31.75', 'pt-PT'), formatTariffPrice(31.75, 'pt-PT'));
+  });
+
+  it('shows the cents on a whole number — 7 is a price, not a count', () => {
+    const formatted = formatTariffPrice(7, 'pt-PT');
+    assert.match(formatted, /7[.,]00/);
+  });
+
+  it('formats a free fare rather than blanking it', () => {
+    // The social passes are genuinely €0.00; an empty cell would read as missing.
+    assert.match(formatTariffPrice(0, 'pt-PT'), /0[.,]00/);
+  });
+
+  it('renders nothing when the payload has no price', () => {
+    assert.equal(formatTariffPrice(null, 'pt-PT'), '');
+    assert.equal(formatTariffPrice('', 'pt-PT'), '');
+  });
+
+  it('passes a non-numeric value through verbatim rather than inventing one', () => {
+    assert.equal(formatTariffPrice('sob consulta', 'pt-PT'), 'sob consulta');
+  });
+
+  it('never fabricates an amount for an unusable locale', () => {
+    assert.match(formatTariffPrice(31.75, 'not-a-locale'), /31/);
+  });
+});
+
+describe('category summary — what is inside a collapsed section', () => {
+  const category = {
+    name: 'Passes Mensais',
+    tariffs: [
+      { name: 'Mensal', note: '', fareUnitType: 'km', prices: [] },
+      { name: 'Mensal Jovem', note: '', fareUnitType: 'km', prices: [] },
+    ],
+  };
+
+  it('lists the tariff names, so a collapsed section still says what it holds', () => {
+    assert.equal(categorySummary(category), 'Mensal · Mensal Jovem');
+  });
+
+  it('is empty for a category with no tariffs', () => {
+    assert.equal(categorySummary({ name: 'Vazio', tariffs: [] }), '');
+  });
+});
+
+describe('operator link-outs — the honest answer to "what will my ride cost?"', () => {
+  it('returns usable links only', () => {
+    const links = tariffInfoLinks([
+      { text: 'Info passes', url: 'https://azoresbus.pt/downloads/docs/Info_passes.pdf' },
+      { text: 'No link' },
+      { url: 'https://example.com' },
+      'nonsense',
+      null,
+    ]);
+    assert.equal(links.length, 2);
+    assert.equal(links[0].text, 'Info passes');
+    assert.equal(links[1].text, 'https://example.com', 'falls back to the url as its own label');
+  });
+
+  it('is empty when the payload has none', () => {
+    assert.deepEqual(tariffInfoLinks([]), []);
+    assert.deepEqual(tariffInfoLinks(undefined), []);
+  });
+});
+
+describe('no price literal anywhere in the pricing path (03 §6)', () => {
+  const FILES = [
+    'features/transit/lib/tariffs.ts',
+    'features/transit/hooks/useTariffs.ts',
+    'app/(tabs)/transit/prices.tsx',
+    'features/transit/components/TariffTable.tsx',
+  ];
+
+  // A currency SYMBOL is allowed — prices render as euros, and the formatter
+  // needs one. An AMOUNT is not: not €7, not €31.75, not the €6 card fee. A
+  // fallback price is worse than an empty state because it is silently wrong.
+  const PRICE_LITERAL = /(?:€|EUR\b)\s*\d|\d\s*(?:€|EUR\b)/;
+
+  it('would catch a hardcoded price', () => {
+    // Without this the guard could rot into a regex that matches nothing.
+    for (const sample of ['€7', '31.75 €', 'price = 6 EUR', 'EUR 12']) {
+      assert.equal(PRICE_LITERAL.test(sample), true, `missed ${sample}`);
+    }
+  });
+
+  it('allows a bare currency symbol used for formatting', () => {
+    assert.equal(PRICE_LITERAL.test('`${amount.toFixed(2)} €`'), false);
+    assert.equal(PRICE_LITERAL.test("currency: 'EUR'"), false);
+  });
+
+  it('contains no price literal', () => {
+    for (const file of FILES) {
+      const source = readFileSync(join(process.cwd(), file), 'utf8');
+      assert.equal(PRICE_LITERAL.test(source), false, `${file} contains a price literal`);
+    }
+  });
+});

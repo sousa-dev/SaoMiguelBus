@@ -1,0 +1,93 @@
+# NOTE: When .easignore exists, EAS uses it INSTEAD of .gitignore for the
+# upload archive. It must therefore reproduce every .gitignore exclusion,
+# plus the EAS-only excludes at the bottom.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+.env
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# Local Expo modules (modules/*) — Gradle/Xcode output only. The SOURCE in
+# modules/ must stay tracked: autolinking discovers it at prebuild time, so a
+# build that cannot see it silently ships without the native module.
+modules/*/android/build/
+modules/*/android/.gradle/
+modules/*/ios/build/
+
+# Legacy Android Studio project (src/android-project)
+src/android-project/.gradle/
+src/android-project/.idea/
+src/android-project/**/build/
+src/android-project/app/debug/
+src/android-project/app/release/
+src/android-project/local.properties
+
+# Legacy Flutter project (src/saomiguelbus)
+src/saomiguelbus/.dart_tool/
+src/saomiguelbus/.idea/
+src/saomiguelbus/.vscode/
+src/saomiguelbus/build/
+src/saomiguelbus/**/*.iml
+src/saomiguelbus/pubspec.lock
+src/saomiguelbus/pubspec*.lock
+src/saomiguelbus/.flutter-plugins
+src/saomiguelbus/.flutter-plugins-dependencies
+src/saomiguelbus/android/.gradle/
+src/saomiguelbus/android/local.properties
+src/saomiguelbus/ios/Pods/
+src/saomiguelbus/ios/Podfile.lock
+src/saomiguelbus/macos/Pods/
+src/saomiguelbus/macos/Podfile.lock
+src/android-project/app/.idea/
+
+android.keystore
+
+# --- EAS-only excludes (not needed for the build) ---
+# Legacy native projects (not imported by the Expo app)
+src/
+legacy/
+
+# Docs & specs
+docs/
+doc/
+SDD/
+MIGRATION_PLAN.md
+
+# Tests (not needed in the build archive)
+__tests__/

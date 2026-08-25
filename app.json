@@ -1,0 +1,163 @@
+{
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-8246676797736648~5996375679",
+    "ios_app_id": "ca-app-pub-8246676797736648~6167653791",
+    "delay_app_measurement_init": true
+  },
+  "expo": {
+    "name": "São Miguel Hub",
+    "slug": "sao-miguel-hub",
+    "owner": "sousa-dev",
+    "version": "5.1.93",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "saomiguelhub",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sousadev.saomiguelhub",
+      "usesAppleSignIn": true,
+      "appleTeamId": "28NZ2LLDF5",
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "pt",
+        "CFBundleLocalizations": [
+          "pt",
+          "en",
+          "de",
+          "es",
+          "fr",
+          "it",
+          "uk",
+          "zh-Hans"
+        ],
+        "NSUserTrackingUsageDescription": "Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.",
+        "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
+        "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "35F9.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "E174.1"
+            ]
+          }
+        ]
+      }
+    },
+    "android": {
+      "package": "com.hsousa_apps.Autocarros",
+      "versionCode": 55,
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#a9d566"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#a9d566"
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-mail-composer",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "buildReactNativeFromSource": true,
+            "usePrecompiledModules": false
+          }
+        }
+      ],
+      "./plugins/withIosBuildFixes",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
+          "locationAlwaysPermission": false,
+          "locationAlwaysAndWhenInUsePermission": false,
+          "motionUsagePermission": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidMotionActivityEnabled": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "São Miguel Hub accesses your photo library so you can attach a screenshot to a feedback or bug report.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#a9d566",
+          "defaultChannel": "journey-alarms"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "EXPO_PUBLIC_API_URL": "http://127.0.0.1:8000",
+      "EXPO_PUBLIC_ISLAND_KEY": "sao-miguel",
+      "router": {},
+      "eas": {
+        "projectId": "17a513ef-847e-4c04-94c9-ff1d55ca2fda"
+      }
+    }
+  }
+}

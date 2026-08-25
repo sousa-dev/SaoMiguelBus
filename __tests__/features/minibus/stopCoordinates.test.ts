@@ -1,0 +1,203 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  displayStopSequence,
+  enrichJourneyCoordinates,
+  fitRegionForCoordinates,
+  isLoopTerminus,
+  journeyHasMapCoordinates,
+  journeyPolylines,
+  lineMapStops,
+  linePolyline,
+  lineRoutePolyline,
+  normalizeMapHighlightKey,
+} from '@/features/minibus/stopCoordinates';
+import type { MinibusJourney, MinibusNetwork, MinibusNetworkStop } from '@/lib/types';
+
+function geoStop(sequence: number, key: string, lat: number, lng: number): MinibusNetworkStop {
+  return {
+    sequence,
+    key,
+    name_pt: key,
+    match_key: key,
+    interchange_key: key,
+    interchange_lines: [],
+    latitude: lat,
+    longitude: lng,
+  };
+}
+
+describe('stopCoordinates', () => {
+  it('linePolyline returns ordered coordinates', () => {
+    const stops = [
+      geoStop(2, 'a-02', 37.74, -25.68),
+      geoStop(1, 'a-01', 37.73, -25.67),
+    ];
+    const coords = linePolyline(stops);
+    assert.equal(coords.length, 2);
+    assert.equal(coords[0]?.latitude, 37.73);
+    assert.equal(coords[1]?.latitude, 37.74);
+  });
+
+  it('lineRoutePolyline prefers stored AVL encoded polyline', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, [
+      { direction: 0, encoded_polyline: 'uxieF~tt{CLMRA' },
+    ]);
+    assert.ok(coords.length > 2);
+    assert.notEqual(coords[0]?.latitude, 37.73);
+  });
+
+  it('lineRoutePolyline falls back to stop coordinates when shapes missing', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, []);
+    assert.deepEqual(coords, linePolyline(stops));
+  });
+
+  it('lineRoutePolyline falls back when encoded polyline is invalid', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+    ];
+    const coords = lineRoutePolyline(stops, [{ direction: 0, encoded_polyline: '!!!' }]);
+    assert.deepEqual(coords, linePolyline(stops));
+  });
+
+  it('linePolyline skips stops missing coordinates', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      { ...geoStop(2, 'a-02', 0, 0), latitude: null, longitude: null },
+    ];
+    const coords = linePolyline(stops);
+    assert.equal(coords.length, 1);
+  });
+
+  it('journeyPolylines returns one polyline per leg', () => {
+    const journey: MinibusJourney = {
+      transfers: 1,
+      total_stops: 4,
+      transfer_stops: [{ name: 'Transfer', from_line: 'A', to_line: 'D' }],
+      legs: [
+        {
+          line_code: 'A',
+          line_slug: 'line-a',
+          line_name: 'A',
+          line_color: '#fbc707',
+          board: { key: 'a-01', name: 'Start', line_code: 'A', sequence: 1, latitude: 37.73, longitude: -25.67 },
+          alight: { key: 'a-02', name: 'Mid', line_code: 'A', sequence: 2, latitude: 37.74, longitude: -25.68 },
+          stops: [
+            { key: 'a-01', name: 'Start', line_code: 'A', sequence: 1, latitude: 37.73, longitude: -25.67 },
+            { key: 'a-02', name: 'Mid', line_code: 'A', sequence: 2, latitude: 37.74, longitude: -25.68 },
+          ],
+          num_stops: 2,
+          departure_time: null,
+          arrival_time: null,
+        },
+        {
+          line_code: 'D',
+          line_slug: 'line-d',
+          line_name: 'D',
+          line_color: '#e30613',
+          board: { key: 'd-01', name: 'Board', line_code: 'D', sequence: 1, latitude: 37.75, longitude: -25.69 },
+          alight: { key: 'd-02', name: 'End', line_code: 'D', sequence: 2, latitude: 37.76, longitude: -25.7 },
+          stops: [
+            { key: 'd-01', name: 'Board', line_code: 'D', sequence: 1, latitude: 37.75, longitude: -25.69 },
+            { key: 'd-02', name: 'End', line_code: 'D', sequence: 2, latitude: 37.76, longitude: -25.7 },
+          ],
+          num_stops: 2,
+          departure_time: null,
+          arrival_time: null,
+        },
+      ],
+    };
+
+    const polylines = journeyPolylines(journey);
+    assert.equal(polylines.length, 2);
+    assert.equal(polylines[0]?.color, '#fbc707');
+    assert.equal(polylines[1]?.color, '#e30613');
+  });
+
+  it('fitRegionForCoordinates returns padded region', () => {
+    const region = fitRegionForCoordinates([
+      { latitude: 37.73, longitude: -25.67 },
+      { latitude: 37.76, longitude: -25.7 },
+    ]);
+    assert.ok(region.latitudeDelta >= 0.015);
+    assert.ok(region.longitudeDelta >= 0.015);
+  });
+
+  it('lineMapStops drops loop terminus when it shares coords with stop 1', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(2, 'a-02', 37.74, -25.68),
+      geoStop(21, 'a-21', 37.73, -25.67),
+    ];
+    const mapStops = lineMapStops(stops);
+    assert.equal(mapStops.length, 2);
+    assert.equal(mapStops[0]?.key, 'a-01');
+    assert.equal(mapStops[1]?.key, 'a-02');
+    assert.equal(linePolyline(stops).length, 2);
+  });
+
+  it('displayStopSequence shows 1 on loop terminus', () => {
+    const stops = [
+      geoStop(1, 'a-01', 37.73, -25.67),
+      geoStop(21, 'a-21', 37.73, -25.67),
+    ];
+    assert.equal(displayStopSequence(stops[1], stops), 1);
+    assert.ok(isLoopTerminus(stops[1], stops));
+    assert.equal(normalizeMapHighlightKey('a-21', stops), 'a-01');
+  });
+
+  it('enrichJourneyCoordinates fills coords from the network graph', () => {
+    const network: MinibusNetwork = {
+      interchanges_by_key: {},
+      lines: [
+        {
+          code: 'D',
+          slug: 'line-d',
+          name: 'D',
+          color: '#f00',
+          direction: 'circular',
+          stop_count: 2,
+          stops: [
+            geoStop(1, 'd-01', 37.73, -25.67),
+            geoStop(2, 'd-02', 37.74, -25.68),
+          ],
+        },
+      ],
+    };
+    const journey: MinibusJourney = {
+      transfers: 0,
+      total_stops: 2,
+      transfer_stops: [],
+      legs: [
+        {
+          line_code: 'D',
+          line_slug: 'line-d',
+          line_name: 'D',
+          line_color: '#f00',
+          board: { key: 'd-01', name: 'Start', line_code: 'D', sequence: 1 },
+          alight: { key: 'd-02', name: 'End', line_code: 'D', sequence: 2 },
+          stops: [
+            { key: 'd-01', name: 'Start', line_code: 'D', sequence: 1 },
+            { key: 'd-02', name: 'End', line_code: 'D', sequence: 2 },
+          ],
+          num_stops: 2,
+          departure_time: null,
+          arrival_time: null,
+        },
+      ],
+    };
+    const enriched = enrichJourneyCoordinates(journey, network);
+    assert.equal(enriched.legs[0]?.board.latitude, 37.73);
+    assert.ok(journeyHasMapCoordinates(enriched));
+  });
+});

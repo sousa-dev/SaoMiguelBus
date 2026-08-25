@@ -1,0 +1,69 @@
+import { create } from 'zustand';
+
+import { clearAdFreeWindow, grantAdFreeWindow, loadAdFreeUntil } from '@/features/ads/lib/ad-free-storage';
+import { devToolsEnabled } from '@/lib/dev-tools-flag';
+
+interface AdFreeStoreState {
+  adFreeUntilMs: number | null;
+  nowMs: number;
+  hydrated: boolean;
+  hydrate: () => Promise<void>;
+  refresh: () => Promise<void>;
+  grantFromReward: () => Promise<number>;
+  resetAdFreeWindow: () => Promise<void>;
+  tickNow: () => void;
+}
+
+let hydratePromise: Promise<void> | null = null;
+
+export const useAdFreeStore = create<AdFreeStoreState>((set, get) => ({
+  adFreeUntilMs: null,
+  nowMs: Date.now(),
+  hydrated: false,
+
+  hydrate: async () => {
+    if (get().hydrated) {
+      return;
+    }
+    if (!hydratePromise) {
+      hydratePromise = (async () => {
+        const until = await loadAdFreeUntil();
+        set({ adFreeUntilMs: until, nowMs: Date.now(), hydrated: true });
+      })();
+    }
+    await hydratePromise;
+  },
+
+  refresh: async () => {
+    const until = await loadAdFreeUntil();
+    set({ adFreeUntilMs: until, nowMs: Date.now(), hydrated: true });
+  },
+
+  grantFromReward: async () => {
+    const until = await grantAdFreeWindow();
+    set({ adFreeUntilMs: until, nowMs: Date.now(), hydrated: true });
+    return until;
+  },
+
+  resetAdFreeWindow: async () => {
+    if (!devToolsEnabled()) {
+      return;
+    }
+    await clearAdFreeWindow();
+    set({ adFreeUntilMs: null, nowMs: Date.now(), hydrated: true });
+  },
+
+  tickNow: () => {
+    set({ nowMs: Date.now() });
+  },
+}));
+
+/** Test-only reset — clears in-memory state and hydration latch. */
+export function resetAdFreeStoreForTests(): void {
+  hydratePromise = null;
+  useAdFreeStore.setState({
+    adFreeUntilMs: null,
+    nowMs: Date.now(),
+    hydrated: false,
+  });
+}

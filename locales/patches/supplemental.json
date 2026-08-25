@@ -1,0 +1,18 @@
+{
+  "uk": {
+    "settingsHub": "Центр",
+    "internalAdModuleTitleMarketplace": "Місцеві послуги"
+  },
+  "es": {
+    "internalAdModuleTitleMarketplace": "Servicios locales"
+  },
+  "fr": {
+    "settingsHub": "Accueil",
+    "internalAdModuleTitleMarketplace": "Services locaux"
+  },
+  "it": {
+    "settingsHub": "Centro",
+    "internalAdModuleTitleMarketplace": "Servizi locali",
+    "hubLayoutLabel": "Disposizione"
+  }
+}

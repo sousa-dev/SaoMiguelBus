@@ -1,0 +1,196 @@
+# Azores Hub — Migration Plan & Software Design Document (SDD)
+
+> **Status:** Phase 1 — **compat cutover validated.** Revamp backend (`SaoMiguelBus-api` `revamp`) serves all **web PWA** legacy URLs via the `compat` app; production data import pipeline (JSON export → batched JSONL → Celery) is operational. Remaining Phase 1: Android/Flutter compat endpoints, parity gate, DNS cutover to revamp.
+> **Author:** Architecture (Cursor agent)
+> **Target repos:** [`SaoMiguelBus-api`](https://github.com/sousa-dev/SaoMiguelBus-api) (djast backend, `revamp`) + [`SaoMiguelBus`](https://github.com/sousa-dev/SaoMiguelBus) (Expo client + this SDD)
+> **Source material:** legacy `SaoMiguelBus` (mobile), `SaoMiguelBus-api` (Django/DRF), `SaoMiguelBus-webapp` (vanilla-JS PWA)
+
+This document is the **executive index** for the migration. The detailed design lives in the [`SDD/`](./SDD) directory. Nothing here authorizes writing application code — it defines the architecture and the phased plan we will execute **after sign-off**.
+
+---
+
+## 1. TL;DR
+
+We are turning a single-purpose São Miguel bus-schedule app into **Azores Hub**: a white-labelable "island guide + community hub" that ships from one Expo (React Native + Web) codebase against a modernized, multi-tenant Django backend built on the **djast** starter vendored at `SaoMiguelBus-api/boilerplate/` (promoted to the API repo root).
+
+The legacy stack is functional but fragile:
+
+- **Backend:** Django 3.0.14 (EOL), DRF function-views, **no relational schedule model** — a "schedule" is one `Route` row whose `stops` column is a *stringified Python dict* (`{'Stop A': '08h30', ...}`). Tracking is a single flat `Stat` table. Premium is a manual email allow-list. No `Island`/tenant concept.
+- **Frontend:** a ~2,400-line `index.html` + ~5k lines of global-scoped JS, Tailwind via CDN, no build step, API base URL hardcoded, triple analytics stack (GA + Umami + `/api/v1/stat`).
+- **Mobile:** parallel native-Android (Kotlin) and partial Flutter ports, each with their own embedded copy of the schedule.
+
+Azores Hub consolidates clients into **one Expo app** (`SaoMiguelBus`) and the API into **`SaoMiguelBus-api`** (flat Django apps under `src/`, feature toggles, legacy in `legacy/`), introduces an `Island` tenant root, a normalized transit schema, `import_legacy` ETL from the legacy DB, a unified `AnalyticsEvent` pipeline, and freemium monetization (reusing boilerplate `stripe_payments`).
+
+See [`SDD/00-overview.md`](./SDD/00-overview.md) for the full vision and scope.
+
+---
+
+## 2. Guiding principles
+
+1. **Tenant-first.** Every domain row is scoped to an `Island`. The query layer filters by the active island by default; cloning a new island is config + data, not code.
+2. **One codebase, three targets.** Expo Router drives Android, iOS, and Web from a single source. Branding/theming is data, not forks.
+3. **Privacy by design.** No raw IPs or stable user IDs in analytics without consent. Pseudonymized session hashing, automated retention, DSAR-ready schema.
+4. **Backward-compatible cutover.** Legacy `/api/v1` and `/api/v2` contracts are preserved behind a compatibility shim so existing Play Store / web clients keep working during migration.
+5. **Modular monolith, not microservices.** Each feature (Transit, News, Earthquakes, Marketplace, Trails, Traffic, Events) is a Django app + an Expo feature module sharing common tenant/analytics/consent infra.
+6. **Don't lose history.** All data accumulated since 2020 (routes, stats, ads, subscriptions, likes) is migrated, normalized, and pseudonymized in flight.
+7. **API-first, full CRUD, TDD.** User-generated modules (Events, Marketplace, Traffic) ship full REST CRUD ([`04`](./SDD/04-api-design.md)) usable by the app **and** by third-party partner sites (companies/people posting) via scoped API keys. Every endpoint is built test-first (≥80% service coverage) and documented (OpenAPI + guide + partner API docs) in the same PR.
+
+---
+
+## 3. Target architecture at a glance
+
+```
+                         ┌───────────────────────────────────────────┐
+                         │            Expo app (RN + Web)              │
+                         │  one codebase · Android · iOS · Web         │
+                         │  theme/config injected per ISLAND_KEY       │
+                         └───────────────┬─────────────────────────────┘
+                                         │ HTTPS / JSON (X-Island header)
+                                         ▼
+        ┌────────────────────────────────────────────────────────────────┐
+        │                  djast Django backend (modular monolith)         │
+        │  tenancy · auth · analytics · consent · billing                  │
+        │  ┌────────┬────────┬───────────┬─────────┬────────┬───────────┐  │
+        │  │transit │ news   │earthquakes│market   │trails  │ traffic   │  │
+        │  │        │        │           │place    │        │ events    │  │
+        │  └────────┴────────┴───────────┴─────────┴────────┴───────────┘  │
+        │  DRF (api.py + services.py) · PostgreSQL · Celery + Redis        │
+        └───────┬───────────────────────────────────┬──────────────────────┘
+                │                                     │
+        ┌───────▼────────┐                   ┌────────▼─────────────────────┐
+        │ External feeds  │                   │ Monetization & infra          │
+        │ EMSC seismic    │                   │ Stripe / RevenueCat           │
+        │ dados.gov.pt    │                   │ AdMob / AdSense               │
+        │ RSS news        │                   │ Viator affiliate              │
+        │ Google Maps     │                   │ Object storage / CDN          │
+        └─────────────────┘                   └───────────────────────────────┘
+```
+
+Full detail: [`SDD/01-architecture.md`](./SDD/01-architecture.md).
+
+---
+
+## 4. SDD index
+
+| Doc | Contents |
+|-----|----------|
+| [`00-overview.md`](./SDD/00-overview.md) | Vision, scope, personas, glossary, success metrics |
+| [`01-architecture.md`](./SDD/01-architecture.md) | System architecture, tech stack, `SaoMiguelBus-api` + boilerplate layout, environments |
+| [`02-multi-island-whitelabel.md`](./SDD/02-multi-island-whitelabel.md) | `Island`/`Hub` tenant root, request scoping, frontend theming config |
+| [`03-data-model.md`](./SDD/03-data-model.md) | Full target schema per module + legacy→new field mapping |
+| [`04-api-design.md`](./SDD/04-api-design.md) | REST conventions, versioning, auth, legacy compatibility shims |
+| [`05-data-migration.md`](./SDD/05-data-migration.md) | `import_legacy` / `migrate_legacy`, ETL sources, parity validation, cutover |
+| [`06-analytics-tracking.md`](./SDD/06-analytics-tracking.md) | `AnalyticsEvent` normalization, module-wide instrumentation |
+| [`07-gdpr-data-governance.md`](./SDD/07-gdpr-data-governance.md) | CMP, pseudonymization, retention jobs, DSAR runbook |
+| [`08-monetization-freemium.md`](./SDD/08-monetization-freemium.md) | Free/Premium tiers, Stripe + RevenueCat, ads, Pay-to-Promote |
+| [`09-modules.md`](./SDD/09-modules.md) | News, Earthquakes, Marketplace, Trails/Tourist, Traffic, Events, Viator |
+| [`10-frontend-architecture.md`](./SDD/10-frontend-architecture.md) | Expo Router layout, state, offline maps, CMP integration |
+| [`11-security-auth.md`](./SDD/11-security-auth.md) | Identity, secrets, abuse/crowdsourcing trust, threat model |
+| [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md) | Risks, assumptions, decisions needed before coding |
+
+---
+
+## 5. Phased migration plan
+
+Each phase has an **objective**, **scope**, **exit criteria**, and **dependencies**. Phases are sequenced so that nothing later is blocked, and so the legacy app keeps running throughout. Effort is described in terms of subsystems touched and risk — not calendar time.
+
+### Phase 0 — Foundations & sign-off (this document)
+
+- **Objective:** agree the architecture, schema, and governance model.
+- **Scope:** this SDD; promote `SaoMiguelBus-api/boilerplate/` to root; lock external-API contracts (EMSC, dados.gov.pt, RSS). Djast capabilities are documented in [`01-architecture.md`](./SDD/01-architecture.md) (A1 resolved).
+- **Exit criteria:** stakeholder approval of the SDD; open questions in [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md) resolved or accepted.
+
+### Phase 1 — Architecture, multi-island schema & migration strategy
+
+- **Objective:** stand up the new backend skeleton with the tenant root and a working data-migration path.
+- **Scope:**
+  - Promote `boilerplate/` → `SaoMiguelBus-api` root; add SMB apps via feature toggles; PostgreSQL, Celery + Redis ([`01`](./SDD/01-architecture.md)).
+  - Implement the `Island`/`Hub` tenant root + request scoping middleware and `TenantScopedModel` base ([`02`](./SDD/02-multi-island-whitelabel.md)).
+  - Define the **normalized transit schema** (`Operator`, `Line`, `Stop`, `Trip`, `StopTime`, `Calendar`) plus `Ad`, `Info`, `Holiday`, `RouteFeedback` ([`03`](./SDD/03-data-model.md)).
+  - Implement **`import_legacy`** + **`migrate_legacy <step>`** — ETL from `legacy/src/db.sqlite3` or prod Postgres + `scripts/csv/` fallbacks ([`05`](./SDD/05-data-migration.md)).
+  - **`compat`** app: full legacy URL inventory → old `/api/v1` + `/api/v2` shapes ([`04`](./SDD/04-api-design.md) §4).
+- **Exit criteria:** new backend serves São Miguel transit data through both the new API and the compat shim; migrated data byte-diff-validated against production `/api/v2/webapp/load`.
+- **Progress (2026-06-01):**
+  - ✓ `import_legacy` + batched `--export-dir` + async Celery (`LegacyImportJob`)
+  - ✓ Legacy export from production (`main-temp`: `/api/v1/export/legacy/batch`)
+  - ✓ **Web PWA compat** — all endpoints in [`04-api-design.md`](./SDD/04-api-design.md) client matrix (v2 stops/route/webapp/load/like/dislike; v1 gmaps/stat/ad/subscription)
+  - ✓ Tenancy middleware — island from `X-Island` / `?island=` / `DEFAULT_ISLAND_KEY` (no hostname/IP parsing)
+  - ✓ Staging validation at `staging.api.saomiguelbus.com` — webapp uses `api.saomiguelbus.com` (DNS cutover pending)
+  - ☐ `validate_legacy_parity` green on production import
+  - ☐ Android v2 `android/load`, Flutter v1 `stops`, remaining P1/P2 compat inventory
+- **Depends on:** Phase 0.
+
+### Phase 2 — GDPR/Analytics foundation, theming & Expo bootstrap
+
+- **Objective:** privacy-safe analytics spine and the cross-platform app shell.
+- **Scope:**
+  - `AnalyticsEvent` model + ingestion endpoint + client SDK contract; deprecate flat `Stat` (migrate historical `Stat` rows into `AnalyticsEvent`) ([`06`](./SDD/06-analytics-tracking.md)).
+  - Consent model, pseudonymized session hashing, Celery retention/anonymization tasks (14-month default), DSAR export/delete commands ([`07`](./SDD/07-gdpr-data-governance.md)).
+  - Expo Router app skeleton: tab navigation, global theme provider driven by `ISLAND_NAME` / `PRIMARY_COLOR` / `SECONDARY_COLOR` / logos, i18n port of the 8 existing locales, CMP consent flow on first launch ([`02`](./SDD/02-multi-island-whitelabel.md), [`10`](./SDD/10-frontend-architecture.md)).
+- **Exit criteria:** app boots on Android/iOS/Web with São Miguel branding; consent gate works; a sample event flows end-to-end into `AnalyticsEvent` only after consent; retention job verified on seeded data.
+- **Depends on:** Phase 1 (tenant root, backend skeleton).
+
+### Phase 3 — Core transit migration & external data integrations
+
+- **Objective:** feature-parity transit experience + the daily-utility data feeds.
+- **Scope:**
+  - Port transit search (origin→destination, day-type, step-by-step directions via Google Maps proxy) onto the new schema and Expo UI; favorites, likes/dislikes, offline schedule cache ([`09`](./SDD/09-modules.md)).
+  - **Trails:** Celery sync from `dados.gov.pt` open-data API → `Trail`/`TrailStage` models; offline map tiles + micro-climate weather ([`09`](./SDD/09-modules.md)).
+  - **Earthquakes:** EMSC-CSEM polling → `SeismicEvent`; crowdsourced "I felt it" reports ([`09`](./SDD/09-modules.md)).
+  - **News:** Celery RSS scraper/parser for Azorean journals → `NewsArticle` with source attribution ([`09`](./SDD/09-modules.md)).
+- **Exit criteria:** São Miguel users get transit + trails + earthquakes + news in the new app; feeds refresh on schedule; all instrumented through `AnalyticsEvent`.
+- **Depends on:** Phases 1–2.
+
+### Phase 4 — Community & crowdsourced modules
+
+- **Objective:** the "hub/community" surface area.
+- **Scope:**
+  - **Marketplace:** tradesperson directory (`ServiceProvider`, `ServiceCategory`, `Review`), free listings, **full CRUD** + moderation ([`09`](./SDD/09-modules.md)).
+  - **Events:** community submission + moderation (`CommunityEvent`), **full CRUD**; Viator affiliate page migration for passive commission ([`09`](./SDD/09-modules.md)).
+  - **Traffic (Waze-style):** `TrafficReport` (radar/accident/hazard) with geo + **full CRUD** + upvote/expiry trust model and GPS push notifications ([`09`](./SDD/09-modules.md), [`11`](./SDD/11-security-auth.md)).
+  - **Partner write API:** `PartnerApiKey` (scoped, per-island) so external company/people sites can create/edit/withdraw events & listings through the same REST endpoints ([`04`](./SDD/04-api-design.md) §2.3, [`11`](./SDD/11-security-auth.md)).
+  - **TDD + docs:** test-first per [`04`](./SDD/04-api-design.md) §6; ship OpenAPI/Swagger, per-app `AGENT_INSTRUCTIONS.md`, and a Partner API guide ([`04`](./SDD/04-api-design.md) §8).
+- **Exit criteria:** users **and** partner keys can CRUD providers/events/reports through documented REST endpoints; moderation tooling exists; CRUD + permission + tenant-isolation tests green; API docs published; abuse controls in place.
+- **Depends on:** Phases 1–3 (tenant, analytics, auth, push infra).
+
+### Phase 5 — Monetization
+
+- **Objective:** turn on revenue.
+- **Scope:**
+  - **Subscriptions:** Stripe (web) + RevenueCat (iOS/Android IAP) → unified `Entitlement`; migrate legacy email allow-list subscribers ([`08`](./SDD/08-monetization-freemium.md)).
+  - **Free tier ads:** AdMob (native) + AdSense (web), suppressed for premium; keep first-party `Ad` campaigns ([`08`](./SDD/08-monetization-freemium.md)).
+  - **Pay-to-Promote:** boost mechanics for Marketplace providers and Events (`Promotion` model, no commissions/monthly fees) ([`08`](./SDD/08-monetization-freemium.md)).
+  - **Premium features:** ad-free, real-time GPS alerts, personalized notifications.
+- **Exit criteria:** a user can subscribe on each platform and lose ads; a provider/promoter can purchase a boost; entitlements reconcile across Stripe/RevenueCat webhooks.
+- **Depends on:** Phases 1–4.
+
+---
+
+## 6. Cutover & rollback strategy
+
+- **Strangler-fig:** new backend runs alongside legacy; the compat shim lets us migrate clients endpoint-by-endpoint. Legacy DB stays read-only-replicated into the new one during dual-run.
+- **Per-island flag:** `Island.is_live` gates whether a tenant is served from new vs legacy.
+- **Rollback:** because the shim preserves legacy response shapes and the legacy stack remains deployed, we can repoint DNS/API base back to legacy at any phase boundary.
+
+Details: [`05-data-migration.md`](./SDD/05-data-migration.md).
+
+---
+
+## 7. Assumptions
+
+- **Resolved:** djast starter at `SaoMiguelBus-api/boilerplate/` (allauth, Stripe, Celery, DRF, feature toggles). Backend at API repo root; SDD in `SaoMiguelBus/SDD/`. See [`12-risks-open-questions.md`](./SDD/12-risks-open-questions.md) §1.
+- **Still open:** legacy prod Postgres for ETL (A3), external feed availability (A4), GA/Umami reuse (A5).
+- External APIs: rate limits handled via cached Celery sync where possible.
+
+---
+
+## 8. Next steps (cutover)
+
+1. **Finish production import** — confirm `LegacyImportJob` completed on revamp staging; verify stops/routes in Django admin (`transit`, `analytics`, `billing`).
+2. **Parity gate** — run `python manage.py validate_legacy_parity` (search + bootstrap diff vs legacy).
+3. **DNS cutover** — point `api.saomiguelbus.com` at revamp backend (webapp already uses production hostname; no client redeploy needed beyond cache bust).
+4. **Smoke-test web PWA** — stops load, route search, directions, ads, subscription verify against live compat API.
+5. **Expand compat** — `GET /api/v2/android/load`, `GET /api/v1/stops` (Flutter), desktop v1 routes, holidays/infos/groups (P1).
+6. **Phase 2** — `AnalyticsEvent` ingestion, consent/CMP, Expo bootstrap (see Phase 2 above).
+
+**Branches:** `SaoMiguelBus-api` → `revamp`; SDD → `cursor/sdd-phase-1-38ca`; legacy export → `main-temp`.
