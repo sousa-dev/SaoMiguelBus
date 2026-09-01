@@ -62,22 +62,31 @@ function routeParts(pathname: string): string[] {
   return normalizePath(pathname).split('/').filter(Boolean);
 }
 
-/** Routes where the global FAB must not appear (form/modal screens). */
+/**
+ * Routes where the global FAB must not appear. Stored NORMALIZED — matched via
+ * `normalizePath`, the same way every other lookup in this file resolves a
+ * route, so a `/(tabs)`-prefixed pathname and a bare one hit the same entry.
+ */
 const HIDDEN_SEGMENTS = new Set(['feedback', 'settings', 'onboarding', 'profile']);
 const HIDDEN_PATHS = new Set([
-  '/(tabs)/marketplace/new',
-  '/marketplace/new',
-  '/(tabs)/traffic/new',
-  '/traffic/new',
+  'marketplace/new',
+  'traffic/new',
   // The network map is a full-bleed map with its own controls at every corner
   // — search top-left, zoom top-right, the focused-stop stepper along the
   // bottom. The FAB lands on top of the stepper.
-  '/(tabs)/transit/network',
-  '/transit/network',
+  'transit/network',
+  // Result lists that interleave inline ad slots. The FAB is anchored bottom-right
+  // over the scroll area, so a banner scrolling past it ends up partly covered —
+  // and covering a Google ad with app chrome is an AdMob policy violation, the same
+  // family as cropping one. These screens keep the ads and drop the FAB.
+  'transit',
+  'transit/directions',
+  'minibus',
+  'minibus/search',
 ]);
 
 export function isFabHidden(pathname: string): boolean {
-  if (HIDDEN_PATHS.has(pathname)) {
+  if (HIDDEN_PATHS.has(normalizePath(pathname))) {
     return true;
   }
   if (pathname.startsWith('/marketplace/edit') || pathname.includes('/marketplace/edit')) {
