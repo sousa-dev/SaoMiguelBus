@@ -1,15 +1,15 @@
-type FleetBarTitleTranslate = (
-  key: string,
-  options?: Record<string, string | number>,
-) => string;
+/** Moved to `features/live-tracking/lib/liveFleetBarTitle`; binds minibus copy keys. */
+import { liveFleetBarTitle as liveFleetBarTitleShared } from '@/features/live-tracking/lib/liveFleetBarTitle';
+
+const MINIBUS_FLEET_BAR_KEYS = {
+  title: 'minibusLiveFleetBarTitle',
+  titleFiltered: 'minibusLiveFleetBarTitleFiltered',
+};
 
 export function liveFleetBarTitle(
-  t: FleetBarTitleTranslate,
+  t: Parameters<typeof liveFleetBarTitleShared>[0],
   count: number,
   filteredLineCode: string | null,
 ): string {
-  if (filteredLineCode) {
-    return t('minibusLiveFleetBarTitleFiltered', { line: filteredLineCode, count });
-  }
-  return t('minibusLiveFleetBarTitle', { count });
+  return liveFleetBarTitleShared(t, count, filteredLineCode, MINIBUS_FLEET_BAR_KEYS);
 }

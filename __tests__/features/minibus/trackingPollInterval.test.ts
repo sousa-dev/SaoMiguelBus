@@ -20,14 +20,14 @@ describe('minibusTrackingPollIntervalMs', () => {
     assert.equal(minibusTrackingPollIntervalMs(sampleMeta(60)), 60_000);
   });
 
-  it('falls back to 10s when meta is missing', () => {
-    assert.equal(minibusTrackingPollIntervalMs(undefined), 10_000);
-    assert.equal(minibusTrackingPollIntervalMs(null), 10_000);
+  it('falls back to 60s when meta is missing', () => {
+    assert.equal(minibusTrackingPollIntervalMs(undefined), 60_000);
+    assert.equal(minibusTrackingPollIntervalMs(null), 60_000);
   });
 
-  it('falls back to 10s when cacheMaxAgeSeconds is invalid', () => {
-    assert.equal(minibusTrackingPollIntervalMs(sampleMeta(0)), 10_000);
-    assert.equal(minibusTrackingPollIntervalMs({ ...sampleMeta(60), cacheMaxAgeSeconds: -1 }), 10_000);
+  it('falls back to 60s when cacheMaxAgeSeconds is invalid', () => {
+    assert.equal(minibusTrackingPollIntervalMs(sampleMeta(0)), 60_000);
+    assert.equal(minibusTrackingPollIntervalMs({ ...sampleMeta(60), cacheMaxAgeSeconds: -1 }), 60_000);
   });
 });
 

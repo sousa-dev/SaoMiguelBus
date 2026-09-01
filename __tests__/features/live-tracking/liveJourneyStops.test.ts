@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { liveJourneyStopsFromCirculations } from '@/features/minibus/lib/liveJourneyStops';
+import { liveJourneyStopsFromCirculations } from '@/features/live-tracking/lib/liveJourneyStops';
 import type { MinibusCirculation } from '@/lib/types';
 
 describe('liveJourneyStopsFromCirculations', () => {

@@ -5,7 +5,7 @@ import {
   buildTrackingFreshnessLabels,
   formatTrackingIntervalLabel,
   formatTrackingUpdatedAtTime,
-} from '@/features/minibus/lib/trackingFreshness';
+} from '@/features/live-tracking/lib/trackingFreshness';
 import { formatLocalTime } from '@/lib/format-time';
 import type { MinibusTrackingMeta } from '@/lib/types';
 

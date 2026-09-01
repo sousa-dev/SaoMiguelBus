@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { scrollTargetIndex } from '@/features/minibus/lib/liveVehicleSheetScroll';
-import type { MinibusLiveEtaRow } from '@/features/minibus/lib/liveEtas';
+import { scrollTargetIndex } from '@/features/live-tracking/lib/liveVehicleSheetScroll';
+import type { MinibusLiveEtaRow } from '@/features/live-tracking/lib/liveEtas';
 
 const row = (sequence: number, isCurrent: boolean): MinibusLiveEtaRow => ({
   sequence,

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { formatCirculationRows } from '@/features/minibus/lib/liveEtas';
+import { formatCirculationRows } from '@/features/live-tracking/lib/liveEtas';
 import type { MinibusCirculation } from '@/lib/types';
 
 const t = {

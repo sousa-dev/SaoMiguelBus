@@ -1,8 +1,12 @@
+/** Moved to `features/live-tracking/lib/vehicle-marker-overlay`; binds the minibus id namespace. */
+import {
+  LIVE_VEHICLE_MARKER_SIZE,
+  vehicleMarkerOverlay as vehicleMarkerOverlayShared,
+} from '@/features/live-tracking/lib/vehicle-marker-overlay';
 import type { MapMarkerOverlay } from '@/lib/map-overlays';
-import { onColorFor } from '@/lib/color-utils';
 import type { MinibusVehicleSummary } from '@/lib/types';
 
-export const MINIBUS_VEHICLE_MARKER_SIZE = 28;
+export const MINIBUS_VEHICLE_MARKER_SIZE = LIVE_VEHICLE_MARKER_SIZE;
 
 export function vehicleMarkerOverlay(
   vehicle: MinibusVehicleSummary,
@@ -10,22 +14,8 @@ export function vehicleMarkerOverlay(
   label: string,
   onPress?: () => void,
 ): MapMarkerOverlay | null {
-  const lat = vehicle.position?.lat;
-  const lon = vehicle.position?.lon;
-  if (typeof lat !== 'number' || typeof lon !== 'number') {
-    return null;
-  }
-
-  return {
-    id: `minibus-vehicle-${vehicle.id}`,
-    latitude: lat,
-    longitude: lon,
-    pinColor,
-    iconKind: 'bus',
-    iconColor: onColorFor(pinColor),
-    size: MINIBUS_VEHICLE_MARKER_SIZE,
-    highlighted: false,
-    title: label,
+  return vehicleMarkerOverlayShared(vehicle, pinColor, label, {
+    idPrefix: 'minibus',
     onPress,
-  };
+  });
 }

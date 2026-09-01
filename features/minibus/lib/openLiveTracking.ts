@@ -1,16 +1,11 @@
-import { InteractionManager } from 'react-native';
-import type { Router } from 'expo-router';
+/** Moved to `features/live-tracking/lib/openLiveTracking`; builds the minibus href. */
+import type { useRouter } from 'expo-router';
+
+type Router = ReturnType<typeof useRouter>;
+
+import { liveMapHref, openLiveMap } from '@/features/live-tracking/lib/openLiveTracking';
 
 /** Push live map after native/modal transitions settle (post-interstitial safe). */
 export function openMinibusLiveMap(router: Router, lineSlug?: string | null) {
-  const href =
-    lineSlug != null && lineSlug.length > 0
-      ? `/minibus/live?line=${encodeURIComponent(lineSlug)}`
-      : '/minibus/live';
-
-  InteractionManager.runAfterInteractions(() => {
-    requestAnimationFrame(() => {
-      router.push(href);
-    });
-  });
+  openLiveMap(router, liveMapHref('/minibus/live', lineSlug));
 }

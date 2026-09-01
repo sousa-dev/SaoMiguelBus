@@ -1,6 +1,7 @@
 import type { MinibusTrackingMeta } from '@/lib/types';
 
-const DEFAULT_POLL_MS = 10_000;
+/** Only used when the server sends no meta; mirrors MINIBUS_TRACKING_CACHE_TTL. */
+const DEFAULT_POLL_MS = 60_000;
 
 export function minibusTrackingPollIntervalMs(meta?: MinibusTrackingMeta | null): number {
   const seconds = meta?.cacheMaxAgeSeconds;
