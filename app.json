@@ -8,7 +8,7 @@
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.1.93",
+    "version": "5.2.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",
@@ -74,15 +74,14 @@
     },
     "android": {
       "package": "com.hsousa_apps.Autocarros",
-      "versionCode": 55,
+      "versionCode": 64,
       "permissions": [
         "android.permission.SCHEDULE_EXACT_ALARM"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#a9d566"
-      },
-      "predictiveBackGestureEnabled": true
+      }
     },
     "web": {
       "bundler": "metro",
