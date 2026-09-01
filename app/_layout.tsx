@@ -11,11 +11,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '@/lib/dev-logging';
 
+import { AndroidBackHandler } from '@/components/AndroidBackHandler';
 import { AppSidebar } from '@/components/AppSidebar';
 import { BrandedSplashOverlay } from '@/components/BrandedSplashOverlay';
 import { ConsentGate } from '@/components/ConsentGate';
 import { GlobalFab } from '@/components/GlobalFab';
 import { GlobalOfflineBanner } from '@/components/GlobalOfflineBanner';
+import { NavigationTheme } from '@/components/NavigationTheme';
 import { PremiumOfflinePrompt } from '@/components/PremiumOfflinePrompt';
 import { AppUpdatePrompt } from '@/features/app-update/components/AppUpdatePrompt';
 import { SaveSubscriptionPrompt } from '@/features/premium/components/SaveSubscriptionPrompt';
@@ -166,43 +168,46 @@ function AppShell({
   return (
     <SafeAreaProvider>
       <ThemeProvider bootstrap={bootstrap ?? null}>
-        <AppStatusBar />
-        <ConsentGate>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="settings"
-              options={{
-                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-              }}
-            />
-            <Stack.Screen
-              name="profile"
-              options={{
-                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-              }}
-            />
-            <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="onboarding/personalize" />
-            <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
-            <Stack.Screen
-              name="auth/sign-in"
-              options={{
-                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-              }}
-            />
-          </Stack>
-          <GlobalFab />
-          <AppSidebar />
-          <GlobalOfflineBanner />
-          <PremiumOfflinePrompt />
-          <AppUpdatePrompt />
-          <SaveSubscriptionPrompt />
-          <AdFreeRewardModalHost />
-          <InterstitialRequestHost />
-          <HopOnHopOffSheetHost />
-        </ConsentGate>
-        <AppOpenOrchestrator appReady={appReady} onSplashDismiss={onSplashDismiss} />
+        <NavigationTheme>
+          <AppStatusBar />
+          <ConsentGate>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="settings"
+                options={{
+                  presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                }}
+              />
+              <Stack.Screen
+                name="profile"
+                options={{
+                  presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                }}
+              />
+              <Stack.Screen name="onboarding/consent" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="onboarding/personalize" />
+              <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
+              <Stack.Screen
+                name="auth/sign-in"
+                options={{
+                  presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                }}
+              />
+            </Stack>
+            <AndroidBackHandler />
+            <GlobalFab />
+            <AppSidebar />
+            <GlobalOfflineBanner />
+            <PremiumOfflinePrompt />
+            <AppUpdatePrompt />
+            <SaveSubscriptionPrompt />
+            <AdFreeRewardModalHost />
+            <InterstitialRequestHost />
+            <HopOnHopOffSheetHost />
+          </ConsentGate>
+          <AppOpenOrchestrator appReady={appReady} onSplashDismiss={onSplashDismiss} />
+        </NavigationTheme>
       </ThemeProvider>
     </SafeAreaProvider>
   );
