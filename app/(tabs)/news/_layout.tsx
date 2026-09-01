@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { useModuleRootHeaderOptions } from '@/components/AppHeaderActions';
+import { stackBackScreenOptions } from '@/components/StackBackButton';
 import { ModuleStackScreenLayout } from '@/features/ads/components/ModuleStackScreenLayout';
 import { useAppStackScreenOptions } from '@/lib/navigation';
 
@@ -11,7 +12,7 @@ export default function NewsLayout() {
   return (
     <Stack screenOptions={screenOptions} screenLayout={ModuleStackScreenLayout}>
       <Stack.Screen name="index" options={moduleRootHeader} />
-      <Stack.Screen name="[articleId]" />
+      <Stack.Screen name="[articleId]" options={stackBackScreenOptions('/(tabs)/news')} />
     </Stack>
   );
 }

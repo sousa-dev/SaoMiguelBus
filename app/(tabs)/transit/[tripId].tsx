@@ -1,8 +1,8 @@
 import { Share2 } from 'lucide-react-native';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BackHandler, ScrollView, StyleSheet } from 'react-native';
-import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -54,23 +54,9 @@ export default function TripDetailScreen() {
   const theme = useAppTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const navigation = useNavigation();
   const { isOnline } = useNetworkStatus();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
   const id = Number(tripId);
-
-  useFocusEffect(
-    useCallback(() => {
-      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (navigation.canGoBack()) {
-          return false;
-        }
-        router.replace('/(tabs)/transit');
-        return true;
-      });
-      return () => sub.remove();
-    }, [navigation, router]),
-  );
 
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();

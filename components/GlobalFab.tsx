@@ -2,7 +2,7 @@ import { usePathname, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { MessageSquarePlus, X, Zap } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,6 +41,19 @@ export function GlobalFab() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // Back closes the speed-dial before it touches navigation — same contract as the
+  // sidebar. Registered only while open, so it keeps priority over AndroidBackHandler.
+  useEffect(() => {
+    if (!open || Platform.OS !== 'android') {
+      return;
+    }
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setOpen(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [open]);
 
   const screenLabel = useMemo(() => {
     const key = getScreenLabelKey(pathname);

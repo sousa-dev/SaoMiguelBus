@@ -87,7 +87,8 @@ export default function EarthquakeDetailScreen() {
 
   const openOnSeismicMap = () => {
     track('seismic', 'view', { screen: 'map', source: 'detail', event_id: data.id });
-    router.replace({
+    // `push`, not `replace`: back from the map returns to this detail screen.
+    router.push({
       pathname: '/(tabs)/earthquakes',
       params: {
         focusLat: String(data.latitude),

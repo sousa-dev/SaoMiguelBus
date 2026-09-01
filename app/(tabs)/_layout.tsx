@@ -72,6 +72,10 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      // Back retraces the tabs the rider actually visited. The default `firstRoute`
+      // sends them to `hub`, which they may never have opened — the landing tab is
+      // configurable and defaults to `transit`.
+      backBehavior="history"
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.onSurfaceMuted,
