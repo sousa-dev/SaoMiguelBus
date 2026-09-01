@@ -38,7 +38,18 @@ import {
 import { coordinateToRegion, getIslandMapRegion } from '@/lib/island-map';
 import type { MapOverlaySpec } from '@/lib/map-overlays';
 import { useNetwork } from '@/lib/network-provider';
-import { MIN_QUERY_LENGTH, SEARCH_DEBOUNCE_MS, filterStops } from '@/lib/stop-search';
+import {
+  MIN_QUERY_LENGTH,
+  SEARCH_DEBOUNCE_MS,
+  buildStopEntries,
+} from '@/lib/stop-search';
+import {
+  flattenStopEntries,
+  rowIndexOfStop,
+  stopsOfRows,
+  type StopSectionRow,
+} from '@/lib/stop-section-rows';
+import { StopAreaRow, StopRow } from '@/features/transit/components/StopSectionRow';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 import type { Stop } from '@/lib/types';
@@ -103,12 +114,13 @@ export default function TransitNetworkScreen() {
     });
 
   const mapRef = useRef<MapView | AndroidOsmWebMapHandle | null>(null);
-  const listRef = useRef<FlatList<Stop> | null>(null);
+  const listRef = useRef<FlatList<StopSectionRow<Stop>> | null>(null);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   // The stop the map is centred on, and the one an "open" gesture applies to.
   const [focusedStopId, setFocusedStopId] = useState<number | null>(null);
+  const [collapsedAreas, setCollapsedAreas] = useState<ReadonlySet<string>>(new Set());
 
   // Same debounce as the planner's pickers: on an 816-stop network a two-letter
   // prefix matches hundreds of rows, and refiltering per keystroke is wasted.
@@ -120,7 +132,6 @@ export default function TransitNetworkScreen() {
   // Searched against the DEDUPED list: the raw stops carry each stop twice
   // (full name + short alias) under one id, which here would be two rows that
   // fly the map to the same pin.
-  const matches = useMemo(() => filterStops(unique, debouncedQuery), [unique, debouncedQuery]);
   const searching = debouncedQuery.trim().length >= MIN_QUERY_LENGTH;
 
   const allSorted = useMemo(
@@ -129,11 +140,35 @@ export default function TransitNetworkScreen() {
   );
 
   /**
-   * What the list shows AND what the arrows step through — the same sequence,
-   * so "next" always means the row below the one highlighted. Narrowing the
-   * search narrows the walk.
+   * Village sections while searching, via the same `buildStopEntries` the
+   * journey planner's pickers use — typing "Capelas" should read the same here
+   * as it does there. Unfiltered stays a plain alphabetical list: 800 rows
+   * collapsed into villages is a worse starting point than the stops.
    */
-  const listStops = searching ? matches : allSorted;
+  const rows = useMemo((): StopSectionRow<Stop>[] => {
+    if (!searching) {
+      return allSorted.map((stop) => ({ kind: 'stop', stop, indented: false }));
+    }
+    return flattenStopEntries(buildStopEntries(unique, debouncedQuery), collapsedAreas);
+  }, [allSorted, collapsedAreas, debouncedQuery, searching, unique]);
+
+  /**
+   * What the list shows AND what the arrows step through — the same sequence,
+   * so "next" always means the row below the one highlighted. Derived FROM the
+   * rendered rows, so a collapsed section is skipped by the arrows too.
+   */
+  const listStops = useMemo(() => stopsOfRows(rows), [rows]);
+
+  const toggleArea = (key: string) =>
+    setCollapsedAreas((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
   const focusedStop = useMemo(
     () => unique.find((stop) => stop.id === focusedStopId) ?? null,
     [unique, focusedStopId],
@@ -195,9 +230,15 @@ export default function TransitNetworkScreen() {
           ? 0
           : listStops.length - 1
         : (focusedIndex + delta + listStops.length) % listStops.length;
-    focusStop(listStops[next], { fly: true });
+    const target = listStops[next];
+    focusStop(target, { fly: true });
     if (panelOpen) {
-      listRef.current?.scrollToIndex({ index: next, animated: true, viewPosition: 0.5 });
+      // The ROW index, not the stop index: every section header above the stop
+      // shifts it down by one, so stepping would land short without this.
+      const rowIndex = rowIndexOfStop(rows, (stop) => stop.id === target.id);
+      if (rowIndex >= 0) {
+        listRef.current?.scrollToIndex({ index: rowIndex, animated: true, viewPosition: 0.5 });
+      }
     }
   };
 
@@ -347,11 +388,16 @@ export default function TransitNetworkScreen() {
               ) : (
                 <FlatList
                   ref={listRef}
-                  data={listStops}
+                  data={rows}
                   // Virtualised: the unfiltered list is every stop on the
                   // island, and mounting 800+ rows to scroll a handful is what
                   // makes this panel feel broken on older Androids.
-                  keyExtractor={(stop) => stop.name}
+                  // Keyed on the NAME for stops: the legacy list carries each
+                  // stop twice (full name + short alias) reusing one id, so the
+                  // id is not unique here but the name is by construction.
+                  keyExtractor={(row) =>
+                    row.kind === 'area' ? `area:${row.key}` : `stop:${row.stop.name}`
+                  }
                   getItemLayout={(_, index) => ({
                     length: ROW_HEIGHT,
                     offset: ROW_HEIGHT * index,
@@ -362,14 +408,27 @@ export default function TransitNetworkScreen() {
                   keyboardShouldPersistTaps="handled"
                   nestedScrollEnabled
                   renderItem={({ item }) => {
-                    const focused = item.id === focusedStopId;
+                    if (item.kind === 'area') {
+                      return (
+                        <StopAreaRow
+                          label={item.key}
+                          count={item.count}
+                          collapsed={item.collapsed}
+                          height={ROW_HEIGHT}
+                          onToggle={() => toggleArea(item.key)}
+                        />
+                      );
+                    }
+                    const stop = item.stop;
+                    const focused = stop.id === focusedStopId;
                     return (
                       <Pressable
-                        onPress={() => onStopRowPress(item)}
+                        onPress={() => onStopRowPress(stop)}
                         accessibilityRole="button"
-                        accessibilityLabel={item.name}
+                        accessibilityLabel={stop.name}
                         style={[
                           styles.resultRow,
+                          item.indented ? styles.resultRowIndented : null,
                           focused ? { backgroundColor: theme.surfaceVariant } : null,
                         ]}
                       >
@@ -381,7 +440,7 @@ export default function TransitNetworkScreen() {
                             { color: theme.text },
                           ]}
                         >
-                          {item.name}
+                          {stop.name}
                         </Text>
                         {/* The affordance for the second tap — without it the
                             row gives no sign that tapping again does something
@@ -526,6 +585,8 @@ const styles = StyleSheet.create({
     gap: space.xs,
     paddingHorizontal: space.md,
   },
+  /** Members sit under their village header, so the grouping survives a scroll. */
+  resultRowIndented: { paddingLeft: space['2xl'] },
   resultName: { flex: 1 },
   focusBar: {
     position: 'absolute',
