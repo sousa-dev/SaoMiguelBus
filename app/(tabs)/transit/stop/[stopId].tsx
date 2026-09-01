@@ -7,11 +7,21 @@ import { useQuery } from '@tanstack/react-query';
 import { Bus, CloudOff, ExternalLink, MapPin, Star } from 'lucide-react-native';
 
 import { Screen } from '@/components/Screen';
+import { AzoresbusStopArrivals } from '@/features/azoresbus/components/AzoresbusStopArrivals';
+import { useAzoresbusStopArrivals } from '@/features/azoresbus/hooks/useAzoresbusStopArrivals';
+import { useTrackArrivalsOnce } from '@/features/azoresbus/hooks/useTrackArrivalsOnce';
+import { azoresbusLiveVehicleHref } from '@/features/azoresbus/lib/liveHref';
+import { trackLiveSelectVehicle } from '@/features/azoresbus/lib/live-analytics';
+import {
+  useResolvedTransitDataset,
+  useScheduleConfig,
+} from '@/features/transit/hooks/useScheduleConfig';
 import { OsmMapView } from '@/components/OsmMapView';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
 import { IconButton } from '@/components/ui/IconButton';
 import { DepartureRow } from '@/features/transit/components/DepartureRow';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
+import { useStops } from '@/features/transit/hooks/useTransitQueries';
 import { fetchStopDetail } from '@/lib/api';
 import { coordinateToRegion, fitRegionForCoordinates } from '@/lib/island-map';
 import type { MapOverlaySpec } from '@/lib/map-overlays';
@@ -74,6 +84,27 @@ export default function TransitStopScreen() {
   // DEPARTURES_START_BUCKET_MINUTES for why rounding down is the right way.
   const start = departuresStartTime(now);
 
+  // Live arrivals sit above the timetable, but only where they can exist: the
+  // legacy network has no AVL feed, and the flag can retire the feature without
+  // an app release.
+  // `useTransitDataset` is the WIRE value and is null unless previewing, so the
+  // gate needs the resolved one -- otherwise this never renders.
+  // Already cached app-wide: the header and map need nothing else.
+  const { data: allStops = [] } = useStops();
+  const { showTracking } = useScheduleConfig();
+  const resolvedDataset = useResolvedTransitDataset();
+  const liveEnabled = showTracking && resolvedDataset === 'azoresbus';
+  const arrivalsQuery = useAzoresbusStopArrivals(
+    Number.isFinite(stopId) && stopId > 0 ? stopId : null,
+    { enabled: liveEnabled, screenActive: liveEnabled },
+  );
+
+  useTrackArrivalsOnce(
+    'stop_page',
+    liveEnabled ? stopId : null,
+    arrivalsQuery.data?.arrivals,
+  );
+
   const query = useQuery({
     queryKey: ['transit', 'stop', stopId, day, start, dataset ?? 'server'],
     // `start` is what turns "today's timetable" into "what leaves from here
@@ -87,23 +118,49 @@ export default function TransitStopScreen() {
   });
 
   const stop = query.data;
-  const favorite = stop ? favoriteStops.some((f) => f.id === stop.id) : false;
+
+  /**
+   * Name and coordinates, from the stop list the app already has cached.
+   *
+   * The detail response carries these too, but it also carries the timetable,
+   * and waiting for all of it before drawing anything meant a rider stared at a
+   * spinner to learn the name of the stop they had just tapped. Everything the
+   * header and map need is in the list, so the page opens immediately and the
+   * slower sections fill in around it.
+   */
+  const identity = useMemo(() => {
+    if (stop) {
+      return { name: stop.name, lat: stop.lat, lon: stop.lon };
+    }
+    const cached = allStops.find((candidate) => candidate.id === stopId);
+    return cached
+      ? { name: cached.name, lat: cached.latitude, lon: cached.longitude }
+      : null;
+  }, [allStops, stop, stopId]);
+
+  const favorite = identity ? favoriteStops.some((f) => f.id === stopId) : false;
 
   const markers = useMemo(() => {
-    if (!stop) {
+    if (!identity) {
       return [];
     }
     // Fall back to the stop itself when there are no poles, which is every
-    // legacy stop — a single approximate pin still answers "roughly where".
-    return stop.poles.length > 0
+    // legacy stop — and also the state before the detail arrives. A single
+    // approximate pin still answers "roughly where".
+    return stop && stop.poles.length > 0
       ? stop.poles.map((pole) => ({
           id: `pole-${pole.code}`,
           title: pole.code,
           latitude: pole.lat,
           longitude: pole.lon,
         }))
-      : [{ id: 'stop', title: stop.name, latitude: stop.lat, longitude: stop.lon }];
-  }, [stop]);
+      : [{
+          id: 'stop',
+          title: identity.name,
+          latitude: identity.lat,
+          longitude: identity.lon,
+        }];
+  }, [identity, stop]);
 
   const region = useMemo(() => {
     if (markers.length === 0) {
@@ -136,7 +193,9 @@ export default function TransitStopScreen() {
     [markers],
   );
 
-  if (query.isLoading) {
+  // Only genuinely blocked when we know nothing at all -- a cold start with no
+  // cached stop list. Everything else renders now and fills in.
+  if (!identity && query.isLoading) {
     return (
       <Screen withStackHeader>
         <LoadingState />
@@ -144,7 +203,7 @@ export default function TransitStopScreen() {
     );
   }
 
-  if (!stop) {
+  if (!identity) {
     return (
       <Screen withStackHeader>
         <EmptyState icon={MapPin} title={t('transitStopNotFound')} />
@@ -153,10 +212,10 @@ export default function TransitStopScreen() {
   }
 
   const openInMaps = () => {
-    const label = encodeURIComponent(stop.name);
+    const label = encodeURIComponent(identity?.name ?? '');
     const url = Platform.select({
-      ios: `maps://?ll=${stop.lat},${stop.lon}&q=${label}`,
-      default: `geo:${stop.lat},${stop.lon}?q=${stop.lat},${stop.lon}(${label})`,
+      ios: `maps://?ll=${identity?.lat},${identity?.lon}&q=${label}`,
+      default: `geo:${identity?.lat},${identity?.lon}?q=${identity?.lat},${identity?.lon}(${label})`,
     });
     void Linking.openURL(url);
   };
@@ -166,9 +225,9 @@ export default function TransitStopScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text style={[typography.headline, { color: theme.text }]}>{stop.name}</Text>
+            <Text style={[typography.headline, { color: theme.text }]}>{identity.name}</Text>
             <Text style={[typography.caption, { color: theme.muted }]}>
-              {stop.lat.toFixed(5)}, {stop.lon.toFixed(5)}
+              {identity.lat.toFixed(5)}, {identity.lon.toFixed(5)}
             </Text>
           </View>
           <IconButton
@@ -177,7 +236,7 @@ export default function TransitStopScreen() {
             color={favorite ? theme.warning : theme.muted}
             fill={favorite ? 'currentColor' : undefined}
             accessibilityLabel={favorite ? t('removeFavorites') : t('addToFavorites')}
-            onPress={() => toggleFavoriteStop({ id: stop.id, name: stop.name })}
+            onPress={() => toggleFavoriteStop({ id: stopId, name: identity.name })}
           />
         </View>
 
@@ -187,7 +246,7 @@ export default function TransitStopScreen() {
               style={styles.map}
               initialRegion={region}
               androidOverlays={androidOverlays}
-              accessibilityLabel={t('transitStopMapA11y', { stop: stop.name })}
+              accessibilityLabel={t('transitStopMapA11y', { stop: identity.name })}
             >
               {Platform.OS === 'ios'
                 ? markers.map((marker) => (
@@ -226,7 +285,7 @@ export default function TransitStopScreen() {
           </Text>
         </Pressable>
 
-        {stop.poles.length > 1 ? (
+        {stop && stop.poles.length > 1 ? (
           <Section title={t('transitStopPoles')}>
             <Text style={[typography.caption, { color: theme.muted }]}>
               {t('transitStopPolesHint')}
@@ -244,7 +303,7 @@ export default function TransitStopScreen() {
           </Section>
         ) : null}
 
-        {stop.lines.length > 0 ? (
+        {stop && stop.lines.length > 0 ? (
           <Section title={t('transitStopLines')}>
             <View style={styles.chips}>
               {stop.lines.map((line) => (
@@ -261,6 +320,22 @@ export default function TransitStopScreen() {
           </Section>
         ) : null}
 
+        {liveEnabled ? (
+          <Section title={t('azoresbusLiveStopArrivals')}>
+            <AzoresbusStopArrivals
+              arrivals={arrivalsQuery.data?.arrivals}
+              isLoading={arrivalsQuery.isLoading}
+              isError={arrivalsQuery.isError}
+              updatedAt={arrivalsQuery.dataUpdatedAt}
+              isRefetching={arrivalsQuery.isRefetching}
+              onSelectVehicle={(vehicleId) => {
+                trackLiveSelectVehicle('stop_page', { vehicle: vehicleId });
+                router.push(azoresbusLiveVehicleHref(vehicleId));
+              }}
+            />
+          </Section>
+        ) : null}
+
         <Section title={t('transitStopNextDepartures')}>
           {/* Says out loud which window is being shown. Without it an empty
               list at 23:00 is indistinguishable from a stop with no service,
@@ -269,7 +344,11 @@ export default function TransitStopScreen() {
           <Text style={[typography.caption, styles.departuresFrom, { color: theme.muted }]}>
             {t('transitStopDeparturesFrom', { time: start.replace('h', ':') })}
           </Text>
-          {stop.departures.length === 0 ? (
+          {!stop ? (
+            <Text style={[typography.caption, { color: theme.muted }]}>
+              {t('transitStopLoadingDepartures')}
+            </Text>
+          ) : stop.departures.length === 0 ? (
             <Text style={[typography.caption, { color: theme.muted }]}>
               {t('transitStopNoMoreDeparturesToday')}
             </Text>
@@ -278,7 +357,7 @@ export default function TransitStopScreen() {
               <DepartureRow
                 key={`${departure.tripId}-${departure.sequence}`}
                 departure={departure}
-                fallbackDestination={stop.name}
+                fallbackDestination={identity.name}
                 onPress={() =>
                   router.push({
                     pathname: '/(tabs)/transit/[tripId]',

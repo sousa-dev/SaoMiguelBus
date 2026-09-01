@@ -1,0 +1,1037 @@
+{
+  "id": "11011203",
+  "fleetId": "3609",
+  "licensePlate": "",
+  "position": {
+    "lat": 37.822403,
+    "lon": -25.524635
+  },
+  "speed": 12.12506,
+  "status": "inTransitTo",
+  "currentStopSequence": 37,
+  "route": {
+    "id": "7",
+    "nameShort": "110",
+    "name": "PONTA DELGADA - FURNAS",
+    "color": "2D59A9"
+  },
+  "journey": {
+    "id": "1861",
+    "type": "scheduled",
+    "shape": "cyoeFb_pyCLiBeBqKpG\\nA?hAFp@Ex@mICmAEe@O",
+    "name": "09:10 >> 10:40",
+    "start": "09:10:00",
+    "end": "10:40:00",
+    "startTime": 33000,
+    "endTime": 38400,
+    "direction": 1,
+    "isActive": true,
+    "circulations": [
+      {
+        "sequence": 1,
+        "stage": {
+          "id": "1115",
+          "name": "FURNAS (ÁGUAS QUENTES)",
+          "nameShort": "4031",
+          "position": {
+            "lat": 37.769267,
+            "lon": -25.318436
+          }
+        },
+        "departureTime": 33000,
+        "arrivalTime": 33000,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 2,
+        "stage": {
+          "id": "1134",
+          "name": "FURNAS (CAMINHO NOVO)",
+          "nameShort": "4036",
+          "position": {
+            "lat": 37.769139,
+            "lon": -25.315918
+          }
+        },
+        "departureTime": 33030,
+        "arrivalTime": 33030,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 3,
+        "stage": {
+          "id": "1130",
+          "name": "FURNAS (CEMITÉRIO)",
+          "nameShort": "4037",
+          "position": {
+            "lat": 37.767143,
+            "lon": -25.314981
+          }
+        },
+        "departureTime": 33060,
+        "arrivalTime": 33060,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 4,
+        "stage": {
+          "id": "1135",
+          "name": "FURNAS (CAMINHO DAS QUEIMADAS)",
+          "nameShort": "4035",
+          "position": {
+            "lat": 37.768347,
+            "lon": -25.310759
+          }
+        },
+        "departureTime": 33111,
+        "arrivalTime": 33111,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 5,
+        "stage": {
+          "id": "1131",
+          "name": "FURNAS (PQ. CAMPISMO)",
+          "nameShort": "4051",
+          "position": {
+            "lat": 37.770026,
+            "lon": -25.309527
+          }
+        },
+        "departureTime": 33146,
+        "arrivalTime": 33146,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 6,
+        "stage": {
+          "id": "1118",
+          "name": "FURNAS (POLÍCIA)",
+          "nameShort": "4052",
+          "position": {
+            "lat": 37.772356,
+            "lon": -25.309634
+          }
+        },
+        "departureTime": 33216,
+        "arrivalTime": 33216,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 7,
+        "stage": {
+          "id": "1114",
+          "name": "FURNAS (CALDEIRAS)",
+          "nameShort": "4033",
+          "position": {
+            "lat": 37.771359,
+            "lon": -25.3033
+          }
+        },
+        "departureTime": 33300,
+        "arrivalTime": 33300,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 8,
+        "stage": {
+          "id": "1117",
+          "name": "FURNAS (LG. DAS CALDEIRAS)",
+          "nameShort": "4046",
+          "position": {
+            "lat": 37.772934,
+            "lon": -25.3044
+          }
+        },
+        "departureTime": 33321,
+        "arrivalTime": 33321,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 9,
+        "stage": {
+          "id": "1125",
+          "name": "FURNAS (R. FORMOSA)",
+          "nameShort": "4057",
+          "position": {
+            "lat": 37.77429,
+            "lon": -25.307785
+          }
+        },
+        "departureTime": 33368,
+        "arrivalTime": 33368,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 10,
+        "stage": {
+          "id": "1129",
+          "name": "FURNAS (R. DE ESTALEIRO)",
+          "nameShort": "4056",
+          "position": {
+            "lat": 37.778276,
+            "lon": -25.308733
+          }
+        },
+        "departureTime": 33436,
+        "arrivalTime": 33436,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 11,
+        "stage": {
+          "id": "1133",
+          "name": "FURNAS (GOLF CLUB)",
+          "nameShort": "4041",
+          "position": {
+            "lat": 37.781052,
+            "lon": -25.34045
+          }
+        },
+        "departureTime": 33766,
+        "arrivalTime": 33766,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 12,
+        "stage": {
+          "id": "1239",
+          "name": "BURGUETE (TANQUES DE ÁGUA)",
+          "nameShort": "5019",
+          "position": {
+            "lat": 37.818611,
+            "lon": -25.362593
+          }
+        },
+        "departureTime": 34306,
+        "arrivalTime": 34306,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 13,
+        "stage": {
+          "id": "1279",
+          "name": "BURGUETE (TRAVESSA)",
+          "nameShort": "5017",
+          "position": {
+            "lat": 37.825118,
+            "lon": -25.363901
+          }
+        },
+        "departureTime": 34387,
+        "arrivalTime": 34387,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 14,
+        "stage": {
+          "id": "1288",
+          "name": "LOMBA DA MAIA (BURGUETE)",
+          "nameShort": "5059",
+          "position": {
+            "lat": 37.829367,
+            "lon": -25.361795
+          }
+        },
+        "departureTime": 34445,
+        "arrivalTime": 34445,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 15,
+        "stage": {
+          "id": "1293",
+          "name": "LOMBINHA DA MAIA (ESCOLA)",
+          "nameShort": "5070",
+          "position": {
+            "lat": 37.830178,
+            "lon": -25.373171
+          }
+        },
+        "departureTime": 34563,
+        "arrivalTime": 34563,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 16,
+        "stage": {
+          "id": "1334",
+          "name": "LOMBINHA DA MAIA (CEMITÉRIO)",
+          "nameShort": "5069",
+          "position": {
+            "lat": 37.829934,
+            "lon": -25.375139
+          }
+        },
+        "departureTime": 34584,
+        "arrivalTime": 34584,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 17,
+        "stage": {
+          "id": "1302",
+          "name": "MAIA (SANTA CASA)",
+          "nameShort": "5087",
+          "position": {
+            "lat": 37.831408,
+            "lon": -25.387303
+          }
+        },
+        "departureTime": 34713,
+        "arrivalTime": 34713,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 18,
+        "stage": {
+          "id": "1298",
+          "name": "MAIA (CANTO DE STO. ANTÓNIO)",
+          "nameShort": "5075",
+          "position": {
+            "lat": 37.831077,
+            "lon": -25.388292
+          }
+        },
+        "departureTime": 34722,
+        "arrivalTime": 34722,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 19,
+        "stage": {
+          "id": "1299",
+          "name": "MAIA (RAMAL DE SÃO PEDRO)",
+          "nameShort": "5084",
+          "position": {
+            "lat": 37.831227,
+            "lon": -25.391933
+          }
+        },
+        "departureTime": 34770,
+        "arrivalTime": 34770,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 20,
+        "stage": {
+          "id": "1303",
+          "name": "MAIA (ESCOLA)",
+          "nameShort": "5082",
+          "position": {
+            "lat": 37.8329,
+            "lon": -25.391
+          }
+        },
+        "departureTime": 34800,
+        "arrivalTime": 34800,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 21,
+        "stage": {
+          "id": "1300",
+          "name": "MAIA (RAMAL DE SÃO PEDRO)",
+          "nameShort": "5085",
+          "position": {
+            "lat": 37.831183,
+            "lon": -25.392009
+          }
+        },
+        "departureTime": 34854,
+        "arrivalTime": 34854,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 22,
+        "stage": {
+          "id": "1290",
+          "name": "MAIA (S. PEDRO)",
+          "nameShort": "5089",
+          "position": {
+            "lat": 37.829433,
+            "lon": -25.393552
+          }
+        },
+        "departureTime": 34892,
+        "arrivalTime": 34892,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 23,
+        "stage": {
+          "id": "1332",
+          "name": "MAIA (CEMITÉRIO)",
+          "nameShort": "5077",
+          "position": {
+            "lat": 37.829137,
+            "lon": -25.396979
+          }
+        },
+        "departureTime": 34923,
+        "arrivalTime": 34923,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 24,
+        "stage": {
+          "id": "1286",
+          "name": "CALÇOS DE MAIA",
+          "nameShort": "5073",
+          "position": {
+            "lat": 37.827592,
+            "lon": -25.400126
+          }
+        },
+        "departureTime": 34959,
+        "arrivalTime": 34959,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 25,
+        "stage": {
+          "id": "1250",
+          "name": "S. BRÁS (R. TOMÉ V. PACHECO)",
+          "nameShort": "5193",
+          "position": {
+            "lat": 37.82086,
+            "lon": -25.410164
+          }
+        },
+        "departureTime": 35069,
+        "arrivalTime": 35069,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 26,
+        "stage": {
+          "id": "1247",
+          "name": "S. BRÁS (CANTINHO DO CAIS)",
+          "nameShort": "5191",
+          "position": {
+            "lat": 37.820465,
+            "lon": -25.413555
+          }
+        },
+        "departureTime": 35100,
+        "arrivalTime": 35100,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 27,
+        "stage": {
+          "id": "1350",
+          "name": "PORTO FORMOSO (X)",
+          "nameShort": "5118",
+          "position": {
+            "lat": 37.817159,
+            "lon": -25.441619
+          }
+        },
+        "departureTime": 35280,
+        "arrivalTime": 35280,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 28,
+        "stage": {
+          "id": "1258",
+          "name": "CASA DE GALO",
+          "nameShort": "5114",
+          "position": {
+            "lat": 37.814821,
+            "lon": -25.454567
+          }
+        },
+        "departureTime": 35400,
+        "arrivalTime": 35400,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 29,
+        "stage": {
+          "id": "1245",
+          "name": "RIBEIRINHA (ACESSO VIA RÁPIDA)",
+          "nameShort": "5185",
+          "position": {
+            "lat": 37.82116,
+            "lon": -25.49485
+          }
+        },
+        "departureTime": 35640,
+        "arrivalTime": 35640,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 30,
+        "stage": {
+          "id": "1479",
+          "name": "RIBEIRINHA (AV. JOAQUIM MARIA CABRAL)",
+          "nameShort": "5225",
+          "position": {
+            "lat": 37.824479,
+            "lon": -25.498384
+          }
+        },
+        "departureTime": 35674,
+        "arrivalTime": 35674,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 31,
+        "stage": {
+          "id": "1283",
+          "name": "RIBEIRINHA (R. DA ASSOMADA)",
+          "nameShort": "5187",
+          "position": {
+            "lat": 37.825825,
+            "lon": -25.499876
+          }
+        },
+        "departureTime": 35687,
+        "arrivalTime": 35687,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 32,
+        "stage": {
+          "id": "1320",
+          "name": "RIBEIRINHA (ROTUNDA)",
+          "nameShort": "5189",
+          "position": {
+            "lat": 37.826619,
+            "lon": -25.50113
+          }
+        },
+        "departureTime": 35700,
+        "arrivalTime": 35700,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 33,
+        "stage": {
+          "id": "1141",
+          "name": "RIBEIRA GRANDE (CEMITÉRIO)",
+          "nameShort": "5011",
+          "position": {
+            "lat": 37.826102,
+            "lon": -25.509862
+          }
+        },
+        "departureTime": 35781,
+        "arrivalTime": 35781,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 34,
+        "stage": {
+          "id": "1280",
+          "name": "RIBEIRA GRANDE (EBI)",
+          "nameShort": "5006",
+          "position": {
+            "lat": 37.825033,
+            "lon": -25.514826
+          }
+        },
+        "departureTime": 35825,
+        "arrivalTime": 35825,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 35,
+        "stage": {
+          "id": "1277",
+          "name": "RIBEIRA GRANDE (ROSÁRIO)",
+          "nameShort": "5013",
+          "position": {
+            "lat": 37.824609,
+            "lon": -25.517155
+          }
+        },
+        "departureTime": 35850,
+        "arrivalTime": 35850,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 36,
+        "stage": {
+          "id": "1274",
+          "name": "RIBEIRA GRANDE (IGREJA)",
+          "nameShort": "5005",
+          "position": {
+            "lat": 37.8239,
+            "lon": -25.5201
+          }
+        },
+        "departureTime": 35880,
+        "arrivalTime": 35880,
+        "dueInMinutes": null
+      },
+      {
+        "sequence": 37,
+        "stage": {
+          "id": "1140",
+          "name": "RIBEIRA GRANDE (TERMINAL)",
+          "nameShort": "5001",
+          "position": {
+            "lat": 37.822327,
+            "lon": -25.523268
+          }
+        },
+        "departureTime": 36900,
+        "arrivalTime": 36900,
+        "dueInMinutes": 0
+      },
+      {
+        "sequence": 38,
+        "stage": {
+          "id": "1255",
+          "name": "RIBEIRA GRANDE (VILA NOVA)",
+          "nameShort": "5008",
+          "position": {
+            "lat": 37.821551,
+            "lon": -25.526579
+          }
+        },
+        "departureTime": 36940,
+        "arrivalTime": 36940,
+        "dueInMinutes": 0
+      },
+      {
+        "sequence": 39,
+        "stage": {
+          "id": "1248",
+          "name": "RIBEIRA GRANDE (PR. DO EMIGRANTE)",
+          "nameShort": "5009",
+          "position": {
+            "lat": 37.82058,
+            "lon": -25.52869
+          }
+        },
+        "departureTime": 36963,
+        "arrivalTime": 36963,
+        "dueInMinutes": 1
+      },
+      {
+        "sequence": 40,
+        "stage": {
+          "id": "1240",
+          "name": "RIBEIRA SECA (AREAL)",
+          "nameShort": "5161",
+          "position": {
+            "lat": 37.8187,
+            "lon": -25.5347
+          }
+        },
+        "departureTime": 37020,
+        "arrivalTime": 37020,
+        "dueInMinutes": 2
+      },
+      {
+        "sequence": 41,
+        "stage": {
+          "id": "1236",
+          "name": "RIBEIRA SECA (CAVALHADAS)",
+          "nameShort": "5170",
+          "position": {
+            "lat": 37.81682,
+            "lon": -25.53769
+          }
+        },
+        "departureTime": 37045,
+        "arrivalTime": 37045,
+        "dueInMinutes": 2
+      },
+      {
+        "sequence": 42,
+        "stage": {
+          "id": "1232",
+          "name": "RIBEIRA SECA (IGREJA)",
+          "nameShort": "5167",
+          "position": {
+            "lat": 37.816122,
+            "lon": -25.535075
+          }
+        },
+        "departureTime": 37070,
+        "arrivalTime": 37070,
+        "dueInMinutes": 2
+      },
+      {
+        "sequence": 43,
+        "stage": {
+          "id": "1211",
+          "name": "RIBEIRA SECA (R. DA SAUDADE)",
+          "nameShort": "5171",
+          "position": {
+            "lat": 37.812918,
+            "lon": -25.53495
+          }
+        },
+        "departureTime": 37110,
+        "arrivalTime": 37110,
+        "dueInMinutes": 3
+      },
+      {
+        "sequence": 44,
+        "stage": {
+          "id": "1169",
+          "name": "RIBEIRA SECA (LG. DA FONTE)",
+          "nameShort": "5169",
+          "position": {
+            "lat": 37.799353,
+            "lon": -25.563308
+          }
+        },
+        "departureTime": 37255,
+        "arrivalTime": 37255,
+        "dueInMinutes": 5
+      },
+      {
+        "sequence": 45,
+        "stage": {
+          "id": "1158",
+          "name": "CONCEIÇÃO DAS VINHAS",
+          "nameShort": "5035",
+          "position": {
+            "lat": 37.795858,
+            "lon": -25.575447
+          }
+        },
+        "departureTime": 37305,
+        "arrivalTime": 37305,
+        "dueInMinutes": 6
+      },
+      {
+        "sequence": 46,
+        "stage": {
+          "id": "1152",
+          "name": "RIBEIRA SECA (ALMINHAS)",
+          "nameShort": "5159",
+          "position": {
+            "lat": 37.792881,
+            "lon": -25.581546
+          }
+        },
+        "departureTime": 37355,
+        "arrivalTime": 37355,
+        "dueInMinutes": 7
+      },
+      {
+        "sequence": 47,
+        "stage": {
+          "id": "1150",
+          "name": "TECNOVIA",
+          "nameShort": "5222",
+          "position": {
+            "lat": 37.791183,
+            "lon": -25.592307
+          }
+        },
+        "departureTime": 37405,
+        "arrivalTime": 37405,
+        "dueInMinutes": 8
+      },
+      {
+        "sequence": 48,
+        "stage": {
+          "id": "1318",
+          "name": "PICO DA PEDRA (X ER3-1A)",
+          "nameShort": "5036",
+          "position": {
+            "lat": 37.786382,
+            "lon": -25.603823
+          }
+        },
+        "departureTime": 37455,
+        "arrivalTime": 37455,
+        "dueInMinutes": 9
+      },
+      {
+        "sequence": 49,
+        "stage": {
+          "id": "1146",
+          "name": "AGRILOJA",
+          "nameShort": "5015",
+          "position": {
+            "lat": 37.783428,
+            "lon": -25.607398
+          }
+        },
+        "departureTime": 37490,
+        "arrivalTime": 37490,
+        "dueInMinutes": 9
+      },
+      {
+        "sequence": 50,
+        "stage": {
+          "id": "1144",
+          "name": "PROVISE/SERVIEL",
+          "nameShort": "5134",
+          "position": {
+            "lat": 37.774732,
+            "lon": -25.61022
+          }
+        },
+        "departureTime": 37540,
+        "arrivalTime": 37540,
+        "dueInMinutes": 10
+      },
+      {
+        "sequence": 51,
+        "stage": {
+          "id": "533",
+          "name": "LIVRAMENTO (CALDEIRÃO)",
+          "nameShort": "1523",
+          "position": {
+            "lat": 37.767125,
+            "lon": -25.613363
+          }
+        },
+        "departureTime": 37590,
+        "arrivalTime": 37590,
+        "dueInMinutes": 11
+      },
+      {
+        "sequence": 52,
+        "stage": {
+          "id": "527",
+          "name": "S. ROQUE (CAN. DAS NECESSIDADES)",
+          "nameShort": "1524",
+          "position": {
+            "lat": 37.766332,
+            "lon": -25.61435
+          }
+        },
+        "departureTime": 37640,
+        "arrivalTime": 37640,
+        "dueInMinutes": 12
+      },
+      {
+        "sequence": 53,
+        "stage": {
+          "id": "530",
+          "name": "S. ROQUE (CASA DA EIRA)",
+          "nameShort": "1737",
+          "position": {
+            "lat": 37.7667,
+            "lon": -25.6167
+          }
+        },
+        "departureTime": 37690,
+        "arrivalTime": 37690,
+        "dueInMinutes": 13
+      },
+      {
+        "sequence": 54,
+        "stage": {
+          "id": "520",
+          "name": "S. ROQUE (EST. DE S. MIGUEL)",
+          "nameShort": "1659",
+          "position": {
+            "lat": 37.764512,
+            "lon": -25.624286
+          }
+        },
+        "departureTime": 37810,
+        "arrivalTime": 37810,
+        "dueInMinutes": 15
+      },
+      {
+        "sequence": 55,
+        "stage": {
+          "id": "504",
+          "name": "S. ROQUE (VILA ALDA)",
+          "nameShort": "1747",
+          "position": {
+            "lat": 37.759312,
+            "lon": -25.635576
+          }
+        },
+        "departureTime": 37960,
+        "arrivalTime": 37960,
+        "dueInMinutes": 17
+      },
+      {
+        "sequence": 56,
+        "stage": {
+          "id": "328",
+          "name": "S. ROQUE (AL. DE STA. TERESA)",
+          "nameShort": "1653",
+          "position": {
+            "lat": 37.757515,
+            "lon": -25.63694
+          }
+        },
+        "departureTime": 37991,
+        "arrivalTime": 37991,
+        "dueInMinutes": 18
+      },
+      {
+        "sequence": 57,
+        "stage": {
+          "id": "325",
+          "name": "FAJÃ DE BAIXO (CAN. DE STO. ANTÓNIO)",
+          "nameShort": "1369",
+          "position": {
+            "lat": 37.753939,
+            "lon": -25.639999
+          }
+        },
+        "departureTime": 38040,
+        "arrivalTime": 38040,
+        "dueInMinutes": 19
+      },
+      {
+        "sequence": 58,
+        "stage": {
+          "id": "383",
+          "name": "FAJÃ DE BAIXO (CANTO DOS PRESTES)",
+          "nameShort": "1357",
+          "position": {
+            "lat": 37.752326,
+            "lon": -25.641578
+          }
+        },
+        "departureTime": 38063,
+        "arrivalTime": 38063,
+        "dueInMinutes": 19
+      },
+      {
+        "sequence": 59,
+        "stage": {
+          "id": "466",
+          "name": "FAJÃ DE BAIXO (BAIRRO DE BELÉM)",
+          "nameShort": "1348",
+          "position": {
+            "lat": 37.750803,
+            "lon": -25.642834
+          }
+        },
+        "departureTime": 38083,
+        "arrivalTime": 38083,
+        "dueInMinutes": 19
+      },
+      {
+        "sequence": 60,
+        "stage": {
+          "id": "381",
+          "name": "FAJÃ DE BAIXO (N. SRA. DE BELÉM)",
+          "nameShort": "1370",
+          "position": {
+            "lat": 37.748752,
+            "lon": -25.645724
+          }
+        },
+        "departureTime": 38121,
+        "arrivalTime": 38121,
+        "dueInMinutes": 20
+      },
+      {
+        "sequence": 61,
+        "stage": {
+          "id": "233",
+          "name": "P. DELGADA (ROT. LARANJEIRAS)",
+          "nameShort": "1035",
+          "position": {
+            "lat": 37.74492,
+            "lon": -25.650364
+          }
+        },
+        "departureTime": 38195,
+        "arrivalTime": 38195,
+        "dueInMinutes": 21
+      },
+      {
+        "sequence": 62,
+        "stage": {
+          "id": "270",
+          "name": "P. DELGADA (PNEUS S. MIGUEL)",
+          "nameShort": "1044",
+          "position": {
+            "lat": 37.74352,
+            "lon": -25.651271
+          }
+        },
+        "departureTime": 38213,
+        "arrivalTime": 38213,
+        "dueInMinutes": 21
+      },
+      {
+        "sequence": 63,
+        "stage": {
+          "id": "238",
+          "name": "P. DELGADA (R. DA BOA NOVA)",
+          "nameShort": "1047",
+          "position": {
+            "lat": 37.742443,
+            "lon": -25.655115
+          }
+        },
+        "departureTime": 38251,
+        "arrivalTime": 38251,
+        "dueInMinutes": 22
+      },
+      {
+        "sequence": 64,
+        "stage": {
+          "id": "188",
+          "name": "P. DELGADA (R. ENG. JOSÉ CORDEIRO)",
+          "nameShort": "1056",
+          "position": {
+            "lat": 37.742526,
+            "lon": -25.657218
+          }
+        },
+        "departureTime": 38270,
+        "arrivalTime": 38270,
+        "dueInMinutes": 22
+      },
+      {
+        "sequence": 65,
+        "stage": {
+          "id": "206",
+          "name": "P. DELGADA (PISCINAS)",
+          "nameShort": "1042",
+          "position": {
+            "lat": 37.740309,
+            "lon": -25.661989
+          }
+        },
+        "departureTime": 38325,
+        "arrivalTime": 38325,
+        "dueInMinutes": 23
+      },
+      {
+        "sequence": 66,
+        "stage": {
+          "id": "207",
+          "name": "P. DELGADA (MARINA)",
+          "nameShort": "1037",
+          "position": {
+            "lat": 37.739876,
+            "lon": -25.66624
+          }
+        },
+        "departureTime": 38364,
+        "arrivalTime": 38364,
+        "dueInMinutes": 24
+      },
+      {
+        "sequence": 67,
+        "stage": {
+          "id": "179",
+          "name": "P. DELGADA (ALFÂNDEGA)",
+          "nameShort": "1001",
+          "position": {
+            "lat": 37.738394,
+            "lon": -25.669207
+          }
+        },
+        "departureTime": 38400,
+        "arrivalTime": 38400,
+        "dueInMinutes": 25
+      }
+    ]
+  }
+}

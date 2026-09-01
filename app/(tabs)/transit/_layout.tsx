@@ -28,6 +28,10 @@ export default function TransitLayout() {
         options={stackBackScreenOptions('/(tabs)/transit')}
       />
       <Stack.Screen
+        name="live"
+        options={stackBackScreenOptions('/(tabs)/transit')}
+      />
+      <Stack.Screen
         name="line/[code]"
         options={stackBackScreenOptions('/(tabs)/transit')}
       />

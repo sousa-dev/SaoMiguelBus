@@ -32,9 +32,19 @@ import {
   useTransitSearchWithOffline,
 } from '@/features/transit/hooks/useOfflineSearch';
 import { useBootstrap, useStops } from '@/features/transit/hooks/useTransitQueries';
-import { useResolvedTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
+import {
+  useResolvedTransitDataset,
+  useScheduleConfig,
+} from '@/features/transit/hooks/useScheduleConfig';
 import type { TransitDataset } from '@/lib/types';
 import { TransitMapLinks } from '@/features/transit/components/TransitMapLinks';
+import { AzoresbusLiveHubCard } from '@/features/azoresbus/components/AzoresbusLiveHubCard';
+import { useAzoresbusTrackingHealth } from '@/features/azoresbus/hooks/useAzoresbusTrackingHealth';
+import { useOpenAzoresbusLiveTracking } from '@/features/azoresbus/hooks/useOpenAzoresbusLiveTracking';
+import {
+  isAzoresbusLiveEntryEnabled,
+  shouldShowAzoresbusLiveEntry,
+} from '@/features/azoresbus/lib/liveEntryVisibility';
 import { useUserDataMigration } from '@/features/transit/hooks/useUserDataMigration';
 import { useNetwork } from '@/lib/network-provider';
 import { WifiOff } from 'lucide-react-native';
@@ -95,6 +105,26 @@ export default function TransitScreen() {
   // Maps exist only where geometry does, which today means AzoresBus.
   const resolvedDataset = useResolvedTransitDataset();
   const hasMaps = resolvedDataset === 'azoresbus';
+  // Live tracking is gated on three independent things: the server flag (does
+  // this feature exist here at all), the network, and whether the AVL is
+  // actually up. Only probe health once the first two already say yes, so a
+  // legacy-dataset or flag-off island never calls the endpoint.
+  const { showTracking } = useScheduleConfig();
+  const liveTrackingPossible = showTracking && hasMaps;
+  const azoresbusHealth = useAzoresbusTrackingHealth({
+    enabled: liveTrackingPossible && isOnline,
+  });
+  const showLiveEntry = shouldShowAzoresbusLiveEntry(
+    liveTrackingPossible,
+    isOnline,
+    azoresbusHealth.data,
+  );
+  const liveEntryEnabled = isAzoresbusLiveEntryEnabled(
+    liveTrackingPossible,
+    isOnline,
+    azoresbusHealth.data,
+  );
+  const { openLiveTracking } = useOpenAzoresbusLiveTracking();
   // Re-point saved favourites and recents whenever the active network changes
   // (03 §5d). Driven by the stop list, never by a date.
   useUserDataMigration();
@@ -121,7 +151,9 @@ export default function TransitScreen() {
     const folded = wanted.trim().toLowerCase();
     const match = stops.find((stop) => stop.name.trim().toLowerCase() === folded);
     if (match) {
-      router.replace({
+      // `push`, not `replace`: the stop page needs the transit index under it so back
+      // returns here instead of leaving the app.
+      router.push({
         pathname: '/(tabs)/transit/stop/[stopId]',
         params: { stopId: String(match.id) },
       });
@@ -375,6 +407,18 @@ export default function TransitScreen() {
               timetables, so the "these are not in force yet" warning has to be
               read first or the map quietly contradicts it. */}
           {hasMaps ? <TransitMapLinks /> : null}
+
+          {/* Directly under the network map, because it answers the next
+              question that map raises: not "where do the buses go" but "where
+              are they now". No margin — TransitWebShell's column gap spaces it. */}
+          {showLiveEntry ? (
+            <AzoresbusLiveHubCard
+              enabled={liveEntryEnabled}
+              onPress={() => {
+                void openLiveTracking({ source: 'transit_hub' });
+              }}
+            />
+          ) : null}
 
           <View onLayout={(event) => { plannerY.current = event.nativeEvent.layout.y; }}>
           {!stopsLoading || !isOnline ? (

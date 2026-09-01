@@ -77,6 +77,11 @@ import type {
   MinibusVehiclesResponse,
   MinibusVehicleDetailResponse,
   MinibusTrackingHealthResponse,
+  AzoresbusVehiclesResponse,
+  AzoresbusVehicleDetailResponse,
+  AzoresbusRoutesResponse,
+  AzoresbusStopArrivalsResponse,
+  AzoresbusTrackingHealthResponse,
   TransitDataset,
 } from '@/lib/types';
 
@@ -743,6 +748,59 @@ export async function fetchMinibusVehicle(trackingId: string): Promise<MinibusVe
     ...data,
     trackingSourceUrl: resolvePublicTrackingUrl(data.trackingSourceUrl),
   };
+}
+
+export async function fetchAzoresbusVehicles(): Promise<AzoresbusVehiclesResponse> {
+  return apiFetch<AzoresbusVehiclesResponse>('/api/v3/azoresbus/vehicles');
+}
+
+/** Note the bare vehicle: unlike minibus there is no `{ vehicle: … }` wrapper. */
+export async function fetchAzoresbusVehicle(
+  vehicleId: string,
+): Promise<AzoresbusVehicleDetailResponse> {
+  return apiFetch<AzoresbusVehicleDetailResponse>(
+    `/api/v3/azoresbus/vehicles/${encodeURIComponent(vehicleId)}`,
+  );
+}
+
+export async function fetchAzoresbusRoutes(): Promise<AzoresbusRoutesResponse> {
+  return apiFetch<AzoresbusRoutesResponse>('/api/v3/azoresbus/routes');
+}
+
+export async function fetchAzoresbusStopArrivals(
+  stopId: number,
+): Promise<AzoresbusStopArrivalsResponse> {
+  return apiFetch<AzoresbusStopArrivalsResponse>(
+    `/api/v3/azoresbus/stops/${stopId}/arrivals`,
+  );
+}
+
+/**
+ * Availability probe.
+ *
+ * The server answers an outage with HTTP 502 carrying `status: 'unavailable'`,
+ * so `apiFetch` rejects on what is actually a perfectly good answer. Normalising
+ * that here rather than in the hook keeps every caller on one shape and stops
+ * react-query retrying a verdict we already have -- a retry would mean a second
+ * upstream probe through the Pi to be told the same thing.
+ *
+ * A genuine transport failure (airplane mode mid-flight) still rejects, because
+ * that one IS worth retrying.
+ */
+export async function fetchAzoresbusTrackingHealth(options?: {
+  force?: boolean;
+}): Promise<AzoresbusTrackingHealthResponse> {
+  const query = options?.force ? '?force=1' : '';
+  try {
+    return await apiFetch<AzoresbusTrackingHealthResponse>(
+      `/api/v3/azoresbus/tracking/health${query}`,
+    );
+  } catch (error) {
+    if (error instanceof ApiRequestError) {
+      return { status: 'unavailable', vehicles: 0 };
+    }
+    throw error;
+  }
 }
 
 export async function fetchSeismicEvents(params?: {

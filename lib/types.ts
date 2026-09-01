@@ -1052,6 +1052,147 @@ export interface MinibusTrackingHealthResponse extends MinibusMeta {
   reason?: string;
 }
 
+// --- AzoresBus live vehicle tracking (Eleven Systems AVL proxy) --- //
+//
+// Same vendor as Mini Bus, DIFFERENT wire shape. Three traps worth stating
+// before the types, because each one reads as a harmless copy-paste:
+//
+//   * There is NO cache metadata anywhere. Freshness is derived on the client
+//     from react-query's `dataUpdatedAt` (see `freshnessFromQuery`), not read
+//     off the response like minibus does.
+//   * The detail endpoint returns the vehicle BARE. There is no `{vehicle: …}`
+//     wrapper to unpack.
+//   * On the LIST, `status` is PUNCTUALITY and `busStatus` is the movement
+//     state. On the DETAIL, `status` carries the movement state instead.
+//     Reading `status` for movement on a list item silently always says
+//     "on time" -- it never throws, it just quietly lies.
+
+export interface AzoresbusVehiclePosition {
+  lat: number;
+  lon: number;
+}
+
+/**
+ * `nameShort` is the transit `Line.code` for the azoresbus dataset, so it joins
+ * straight onto `/api/v3/transit/lines/<code>/shape` and the line detail screen.
+ *
+ * `color` is a SERVICE CLASS, not an identity: 49 of the 56 routes share
+ * `2D59A9`. Never use it to tell one line from another.
+ */
+export interface AzoresbusRoute {
+  id: string;
+  nameShort: string;
+  name: string;
+  color: string;
+}
+
+export interface AzoresbusCirculationStage {
+  id: string;
+  /** The operator's own spelling, e.g. "P. DELGADA (ALFÂNDEGA)". */
+  name: string;
+  nameShort: string;
+  /**
+   * Our name for this stop, resolved server-side by joining the upstream stage
+   * id against the stop table. Falls back to `name` when the join misses, so it
+   * is always safe to display — prefer it over `name` everywhere.
+   *
+   * It is NOT `name` run through a formatter: the two feeds disagree outright
+   * for about a fifth of stops (the operator's "CASA DA EIRA" is our
+   * "Café Holandês"), so only the id join gives the right answer.
+   */
+  canonicalName?: string;
+  /** Our `Stop.id`, for deep links. Null when the stop predates the last sync. */
+  stopId?: number | null;
+  position?: AzoresbusVehiclePosition;
+}
+
+export interface AzoresbusCirculation {
+  sequence: number;
+  stage: AzoresbusCirculationStage;
+  /** Seconds since local midnight. */
+  departureTime?: number | null;
+  arrivalTime?: number | null;
+  /** Present only from `currentStopSequence` onwards; null means "behind us". */
+  dueInMinutes?: number | null;
+}
+
+export interface AzoresbusVehicleJourney {
+  id: string;
+  type: string;
+  shape: string;
+  /** e.g. "08:35 >> 09:05". */
+  name?: string;
+  start?: string;
+  end?: string;
+  startTime?: number | null;
+  endTime?: number | null;
+  direction?: number | null;
+  isActive?: boolean | null;
+  circulations?: AzoresbusCirculation[];
+}
+
+export interface AzoresbusVehicleSummary {
+  id: string;
+  position: AzoresbusVehiclePosition;
+  /** Punctuality on the list, movement state on the detail. See note above. */
+  status: string;
+  /** Movement state. List only; '' when upstream omits it. */
+  busStatus?: string;
+  /** Seconds late; negative is early. */
+  delay?: number | null;
+  speed?: number | null;
+  /** 6 hex digits, no leading '#'. Service class, not line identity. */
+  color: string;
+  /** Server-enriched from the route index; null until that index is warm. */
+  route?: AzoresbusRoute | null;
+}
+
+export interface AzoresbusVehicleDetail extends AzoresbusVehicleSummary {
+  fleetId: string;
+  /** Empty for every vehicle in the live feed today -- do not build UI on it. */
+  licensePlate: string;
+  currentStopSequence: number | null;
+  route: AzoresbusRoute;
+  journey: AzoresbusVehicleJourney;
+}
+
+export interface AzoresbusVehiclesResponse {
+  vehicles: AzoresbusVehicleSummary[];
+}
+
+/** The detail endpoint returns the vehicle itself -- there is no wrapper. */
+export type AzoresbusVehicleDetailResponse = AzoresbusVehicleDetail;
+
+export interface AzoresbusRoutesResponse {
+  routes: AzoresbusRoute[];
+}
+
+/** One live bus inbound to a stop. */
+export interface AzoresbusStopArrival {
+  vehicleId: string;
+  dueInMinutes: number;
+  lineCode: string;
+  lineName: string;
+  lineColor: string;
+  journeyId: string;
+  /**
+   * True when we could not re-read the vehicle and fell back to an aged
+   * estimate. Show it as approximate rather than hiding the bus.
+   */
+  stale: boolean;
+}
+
+export interface AzoresbusStopArrivalsResponse {
+  arrivals: AzoresbusStopArrival[];
+}
+
+export type AzoresbusTrackingStatus = 'ok' | 'disabled' | 'unavailable';
+
+export interface AzoresbusTrackingHealthResponse {
+  status: AzoresbusTrackingStatus;
+  vehicles: number;
+}
+
 // --- First-party ads (compat /api/v1/ad) --- //
 
 /**
