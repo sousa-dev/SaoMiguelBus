@@ -47,6 +47,10 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         text-align: center;
         text-shadow: 0 1px 2px rgba(0,0,0,0.45);
       }
+      @keyframes live-pulse {
+        0% { transform: scale(0.6); opacity: 0.5; }
+        100% { transform: scale(1.9); opacity: 0; }
+      }
     </style>
   </head>
   <body>
@@ -118,11 +122,18 @@ export function leafletMapHtml(initialConfig: LeafletMapConfig): string {
         const halo = highlighted
           ? '<div style="position:absolute;inset:-5px;border-radius:999px;border:2px solid #111;box-shadow:0 0 0 2px #fff"></div>'
           : '';
+        // A real looping CSS animation, not a static ring like the
+        // "highlighted" halo above -- this WebView runs actual HTML/CSS, so
+        // the pulse costs no JS and no per-frame bridge traffic.
+        const pulseRing = marker.pulsing
+          ? '<div style="position:absolute;inset:-7px;border-radius:999px;background:' + fill +
+            ';animation:live-pulse 1.4s ease-out infinite"></div>'
+          : '';
         return L.divIcon({
           className: '',
           html:
             '<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%)">' +
-            '<div style="position:relative;width:' + px + 'px;height:' + px + 'px">' + halo +
+            '<div style="position:relative;width:' + px + 'px;height:' + px + 'px">' + halo + pulseRing +
             '<div style="width:' + px + 'px;height:' + px + 'px;border-radius:' + radius + 'px;background:' + fill +
             ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center">' +
             innerHtml + '</div></div>' + caption + '</div>',

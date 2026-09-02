@@ -83,6 +83,7 @@ import type {
   AzoresbusStopArrivalsResponse,
   AzoresbusTrackingHealthResponse,
   TransitDataset,
+  TransitTripsLiveResponse,
 } from '@/lib/types';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
@@ -798,6 +799,32 @@ export async function fetchAzoresbusTrackingHealth(options?: {
   } catch (error) {
     if (error instanceof ApiRequestError) {
       return { status: 'unavailable', vehicles: 0 };
+    }
+    throw error;
+  }
+}
+
+/**
+ * The live bus for each tracked trip.
+ *
+ * Any HTTP error (flag off 503, upstream down 502, throttled 429) collapses to
+ * "no live data" -- the timetable estimate is the fallback, and react-query
+ * retrying a 503 would just hammer the proxy for the same verdict. Transport
+ * failures still reject, because those are worth retrying.
+ */
+export async function fetchTransitTripsLive(
+  tripIds: number[],
+): Promise<TransitTripsLiveResponse> {
+  if (tripIds.length === 0) {
+    return { trips: [] };
+  }
+  try {
+    return await apiFetch<TransitTripsLiveResponse>(
+      `/api/v3/azoresbus/trips/live?tripIds=${tripIds.join(',')}`,
+    );
+  } catch (error) {
+    if (error instanceof ApiRequestError) {
+      return { trips: [] };
     }
     throw error;
   }

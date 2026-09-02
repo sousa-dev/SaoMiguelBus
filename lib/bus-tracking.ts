@@ -66,6 +66,18 @@ export interface JourneyLegStatus {
   progress: number;
 }
 
+/** The real bus behind a leg, when the AVL feed could attribute one. */
+export interface JourneyLiveInfo {
+  legIndex: number;
+  vehicleId: string;
+  position: { lat: number; lon: number };
+  /** Minutes late (negative early), rounded; null when upstream gave no delay. */
+  delayMinutes: number | null;
+  currentStopSequence: number | null;
+  capturedAt: string;
+  stale: boolean;
+}
+
 export interface JourneyTrackStatus {
   phase: JourneyTrackPhase;
   statusLabel: TrackLabel;
@@ -82,6 +94,12 @@ export interface JourneyTrackStatus {
   /** Every change in the itinerary, `transfers[i]` sitting before `legs[i + 1]`. */
   transfers: TrackedTransfer[];
   legs: JourneyLegStatus[];
+  /**
+   * Set only by `features/transit/lib/live-track.ts` once a real AVL position
+   * has been merged in. `computeJourneyStatus` never sets it: the timetable
+   * status is the input to that merge, not its output.
+   */
+  live?: JourneyLiveInfo | null;
 }
 
 const MINUTES_PER_DAY = 1440;
@@ -195,7 +213,7 @@ export function departureDayStart(searchDate: string | undefined, now: Date): nu
   return startOfLocalDay(now);
 }
 
-function nowMinutes(searchDate: string | undefined, now: Date): number {
+export function nowMinutes(searchDate: string | undefined, now: Date): number {
   const wallClock = now.getHours() * 60 + now.getMinutes();
   const dayIndex = Math.round(
     (startOfLocalDay(now) - departureDayStart(searchDate, now)) / 86_400_000,
@@ -203,7 +221,7 @@ function nowMinutes(searchDate: string | undefined, now: Date): number {
   return dayIndex * MINUTES_PER_DAY + wallClock;
 }
 
-function countdownLabel(minutes: number, mode: 'departure' | 'arrival' = 'arrival'): TrackLabel {
+export function countdownLabel(minutes: number, mode: 'departure' | 'arrival' = 'arrival'): TrackLabel {
   if (minutes <= 0) {
     return { key: mode === 'departure' ? 'trackStatusDepartingNow' : 'trackStatusArrivingNow' };
   }

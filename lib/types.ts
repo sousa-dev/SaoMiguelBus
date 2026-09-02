@@ -1193,6 +1193,44 @@ export interface AzoresbusTrackingHealthResponse {
   vehicles: number;
 }
 
+export type TransitTripLiveState = 'live' | 'not_found' | 'unsupported';
+
+export interface TransitTripLiveNextStop {
+  /** Same sequence space as the trip's stop times. */
+  sequence: number | null;
+  name: string;
+  stopId: number | null;
+  dueInMinutes: number;
+}
+
+export interface TransitTripLiveVehicle {
+  id: string;
+  position: AzoresbusVehiclePosition;
+  /** Seconds late; negative is early; null when upstream omits it. */
+  delaySeconds: number | null;
+  speed: number | null;
+  /** Movement state (`inTransitTo` / `idleAt` / `incomingAt`). */
+  status: string;
+  currentStopSequence: number | null;
+  nextStop: TransitTripLiveNextStop | null;
+  /** Every stop still ahead of the bus, nearest first. `nextStop` is `upcomingStops[0]`. */
+  upcomingStops: TransitTripLiveNextStop[];
+  /** When the fleet position was read. ISO 8601. */
+  capturedAt: string;
+  /** The detail could not be read: position is real, progress is unknown. */
+  stale: boolean;
+}
+
+export interface TransitTripLive {
+  tripId: number;
+  state: TransitTripLiveState;
+  vehicle: TransitTripLiveVehicle | null;
+}
+
+export interface TransitTripsLiveResponse {
+  trips: TransitTripLive[];
+}
+
 // --- First-party ads (compat /api/v1/ad) --- //
 
 /**

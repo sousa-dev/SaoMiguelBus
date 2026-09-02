@@ -9,11 +9,13 @@ import { EmptyState } from '@/components/ui/StateView';
 import { ChevronDown, ChevronRight, Map as MapIcon } from 'lucide-react-native';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { JourneyMap } from '@/features/transit/components/JourneyMap';
+import { useTrackLive } from '@/features/transit/hooks/useTrackLive';
 import {
   buildJourneyMapData,
   groupJourneySteps,
   type JourneyMapPin,
 } from '@/features/transit/lib/journey-map-data';
+import { journeyLiveVehicles, journeyRideTripIds } from '@/features/transit/lib/journey-live-markers';
 import { useJourneyGeometry } from '@/features/transit/hooks/useJourneyGeometry';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
@@ -60,6 +62,13 @@ export default function TransitMapScreen() {
   const data = useMemo(
     () => (journey ? buildJourneyMapData(journey, geometries) : null),
     [journey, geometries],
+  );
+
+  const rideTripIds = useMemo(() => journeyRideTripIds(journey), [journey]);
+  const { trips: liveTrips } = useTrackLive(rideTripIds);
+  const liveVehicles = useMemo(
+    () => (journey ? journeyLiveVehicles(journey, liveTrips) : []),
+    [journey, liveTrips],
   );
 
   if (!journey) {
@@ -124,6 +133,7 @@ export default function TransitMapScreen() {
           variant="full"
           highlightedStopId={selected?.stopId ?? null}
           onStopPress={selectOrOpen}
+          liveVehicles={liveVehicles}
         />
       </View>
 

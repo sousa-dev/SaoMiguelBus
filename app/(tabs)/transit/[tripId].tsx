@@ -17,7 +17,10 @@ import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { shareTrip } from '@/features/transit/share-trip';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { useBootstrap, useTripDetail } from '@/features/transit/hooks/useTransitQueries';
+import { useTrackLive } from '@/features/transit/hooks/useTrackLive';
 import { findCachedTrip } from '@/features/transit/lib/cached-trip';
+import { journeyLiveVehicles } from '@/features/transit/lib/journey-live-markers';
+import { annotateStopTimes } from '@/features/transit/lib/trip-live-stops';
 import { fetchStopDetail, fetchTripGeometry } from '@/lib/api';
 import { useFabActions } from '@/lib/fab-store';
 import { resolveInfo } from '@/lib/infos';
@@ -60,6 +63,7 @@ export default function TripDetailScreen() {
 
   const tripQuery = useTripDetail(id, Number.isFinite(id));
   const bootstrap = useBootstrap();
+  const { trips: liveTrips } = useTrackLive(Number.isFinite(id) ? [id] : []);
   const queryClient = useQueryClient();
   const dataset = useTransitDataset();
 
@@ -121,6 +125,13 @@ export default function TripDetailScreen() {
   }, [otherDeparturesQuery.data, rawTrip]);
 
   const journey = detail ? journeyFromTripDetail(detail) : null;
+  const liveVehicles = journey ? journeyLiveVehicles(journey, liveTrips) : [];
+  // A stale reading is a real position with an unknown ETA (services_trip_live
+  // sends an empty `upcomingStops` for it) — nothing to overlay onto the stop
+  // list, so this naturally skips annotating anything in that case too.
+  const liveVehicle = liveTrips.find((row) => row.tripId === id && row.state === 'live')?.vehicle;
+  const formatEta = (minutes: number) =>
+    minutes <= 0 ? t('azoresbusLiveEtaNow') : t('azoresbusLiveEtaMinutes', { count: minutes });
 
   const openFullMap = () => {
     if (!journey) {
@@ -176,6 +187,10 @@ export default function TripDetailScreen() {
   }
 
   const trip = rawTrip!;
+  const displayTrip =
+    liveVehicle && liveVehicle.upcomingStops.length > 0
+      ? { ...trip, stops: annotateStopTimes(trip.stops, liveVehicle.upcomingStops, formatEta) }
+      : trip;
 
   const infoNotice =
     bootstrap.data?.infos?.find((info) => {
@@ -203,9 +218,16 @@ export default function TripDetailScreen() {
             </Card>
           ) : null}
 
-          {journey ? <JourneyMap journey={journey} variant="preview" onPress={openFullMap} /> : null}
+          {journey ? (
+            <JourneyMap
+              journey={journey}
+              variant="preview"
+              onPress={openFullMap}
+              liveVehicles={liveVehicles}
+            />
+          ) : null}
 
-          <TripDetail trip={trip} />
+          <TripDetail trip={displayTrip} />
 
           {otherDepartures.length > 0 ? (
             <Card>

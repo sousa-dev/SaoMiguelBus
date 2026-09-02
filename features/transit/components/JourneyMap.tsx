@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { CloudOff, Map as MapIcon } from 'lucide-react-native';
 
 import { OsmMapView } from '@/components/OsmMapView';
+import { AzoresbusVehicleMarker } from '@/features/azoresbus/components/AzoresbusVehicleMarker';
+import { AZORESBUS_VEHICLE_MARKER_SIZE } from '@/features/azoresbus/lib/vehicle-marker-overlay';
 import { JourneyMapMarker } from '@/features/transit/components/JourneyMapMarker';
 import { useJourneyGeometry } from '@/features/transit/hooks/useJourneyGeometry';
 import {
@@ -19,7 +21,9 @@ import {
   journeyMapCoordinates,
   type JourneyMapPin,
 } from '@/features/transit/lib/journey-map-data';
+import type { JourneyLiveVehicle } from '@/features/transit/lib/journey-live-markers';
 import { journeyPinOverlay } from '@/features/transit/lib/journey-pin-overlay';
+import { vehicleMarkerOverlay } from '@/features/live-tracking/lib/vehicle-marker-overlay';
 import { coordinateToRegion, fitRegionForCoordinates } from '@/lib/island-map';
 import type { MapOverlaySpec } from '@/lib/map-overlays';
 import { useNetwork } from '@/lib/network-provider';
@@ -46,6 +50,8 @@ type Props = {
   highlightedStopId?: number | null;
   onStopPress?: (pin: JourneyMapPin) => void;
   onPress?: () => void;
+  /** The real bus behind a ride leg, when the AVL feed could attribute one. */
+  liveVehicles?: JourneyLiveVehicle[];
 };
 
 /**
@@ -58,7 +64,7 @@ type Props = {
  * to Furnas straight through the caldera. A rider would believe it.
  */
 export const JourneyMap = forwardRef<JourneyMapHandle, Props>(function JourneyMap(
-  { journey, variant = 'full', highlightedStopId = null, onStopPress, onPress },
+  { journey, variant = 'full', highlightedStopId = null, onStopPress, onPress, liveVehicles = [] },
   ref,
 ) {
   const theme = useAppTheme();
@@ -78,13 +84,23 @@ export const JourneyMap = forwardRef<JourneyMapHandle, Props>(function JourneyMa
 
   const androidOverlays = useMemo(
     (): MapOverlaySpec => ({
-      markers: data.pins.map((pin) =>
-        journeyPinOverlay(
-          pin,
-          pin.stopId === highlightedStopId,
-          onStopPress ? () => onStopPress(pin) : undefined,
+      markers: [
+        ...data.pins.map((pin) =>
+          journeyPinOverlay(
+            pin,
+            pin.stopId === highlightedStopId,
+            onStopPress ? () => onStopPress(pin) : undefined,
+          ),
         ),
-      ),
+        ...liveVehicles.flatMap((vehicle) => {
+          const marker = vehicleMarkerOverlay(vehicle, vehicle.color, vehicle.label, {
+            idPrefix: 'transit-live',
+            size: AZORESBUS_VEHICLE_MARKER_SIZE,
+            pulsing: true,
+          });
+          return marker ? [marker] : [];
+        }),
+      ],
       polylines: data.lines.map((line) => ({
         id: line.id,
         coordinates: line.coordinates,
@@ -92,7 +108,7 @@ export const JourneyMap = forwardRef<JourneyMapHandle, Props>(function JourneyMa
         strokeWidth: variant === 'preview' ? 4 : 5,
       })),
     }),
-    [data, highlightedStopId, onStopPress, variant],
+    [data, highlightedStopId, liveVehicles, onStopPress, variant],
   );
 
   useImperativeHandle(ref, () => ({
@@ -166,6 +182,17 @@ export const JourneyMap = forwardRef<JourneyMapHandle, Props>(function JourneyMa
               pin={pin}
               highlighted={pin.stopId === highlightedStopId}
               onPress={onStopPress ? () => onStopPress(pin) : undefined}
+            />
+          ))
+        : null}
+      {Platform.OS === 'ios'
+        ? liveVehicles.map((vehicle) => (
+            <AzoresbusVehicleMarker
+              key={`live-${vehicle.id}`}
+              vehicle={vehicle}
+              pinColor={vehicle.color}
+              label={vehicle.label}
+              pulsing
             />
           ))
         : null}

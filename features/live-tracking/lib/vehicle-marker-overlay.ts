@@ -9,6 +9,8 @@ export type VehicleMarkerOverlayOptions = {
   idPrefix: string;
   size?: number;
   onPress?: () => void;
+  /** A looping expand-and-fade ring — for a single tracked bus, not a fleet. */
+  pulsing?: boolean;
 };
 
 export function vehicleMarkerOverlay(
@@ -32,6 +34,7 @@ export function vehicleMarkerOverlay(
     iconColor: onColorFor(pinColor),
     size: options.size ?? LIVE_VEHICLE_MARKER_SIZE,
     highlighted: false,
+    pulsing: options.pulsing ?? false,
     title: label,
     onPress: options.onPress,
   };

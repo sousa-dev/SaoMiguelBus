@@ -1,11 +1,18 @@
 import { BellOff, LocateFixed, X } from 'lucide-react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { IconButton } from '@/components/ui/IconButton';
 import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
 import { useBusTracking } from '@/features/transit/hooks/useBusTracking';
+import { useTrackLive } from '@/features/transit/hooks/useTrackLive';
+import {
+  applyLiveToJourney,
+  journeyLiveFootnote,
+  uniqueLiveTripIds,
+} from '@/features/transit/lib/live-track';
 import { trackSettingsOpened } from '@/lib/notifications/analytics';
 import { useNotificationUiStore } from '@/lib/notifications/ui-store';
 import { usePremium } from '@/lib/premium-store';
@@ -16,6 +23,7 @@ import { journeyPositionLabels, type JourneyTrackStatus } from '@/lib/bus-tracki
 export function ActiveTrackingSection() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const isPremium = usePremium();
   const { active, stopTracking } = useBusTracking();
   // Permission can be switched off outside the app at any time. The OS keeps the
@@ -23,6 +31,14 @@ export function ActiveTrackingSection() {
   // foreground check in `useNotificationPermissionResume` is the only thing that
   // can tell the rider their armed journeys have gone quiet (05 §3.4).
   const permissionRevoked = useNotificationUiStore((s) => s.permissionRevoked);
+
+  const now = new Date();
+  const tripIds = useMemo(
+    () => uniqueLiveTripIds(active, now),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `active` already re-derives on the 30s tick
+    [active],
+  );
+  const { trips } = useTrackLive(tripIds);
 
   // Webapp parity: the active-tracking widget is premium-only.
   if (!isPremium || active.length === 0) {
@@ -43,61 +59,86 @@ export function ActiveTrackingSection() {
       countBackground={theme.successSurface}
       countColor={theme.success}
     >
-      {active.map(({ track, journey }) => (
-        <View
-          key={track.id}
-          style={[styles.card, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
-        >
-          <View style={styles.header}>
-            <Text style={[typography.headline, { color: theme.primary }]}>{track.routeNumber}</Text>
-            <IconButton
-              icon={X}
-              variant="ghost"
-              size="sm"
-              color={theme.muted}
-              accessibilityLabel={t('transitStopTrack')}
-              onPress={() => stopTracking(track.id)}
-            />
-          </View>
-          <Text style={[typography.body, { color: theme.text }]}>
-            {track.origin} → {track.destination}
-          </Text>
-          {/* The alarms are NOT cancelled when permission goes away: re-granting
-              restores delivery for everything still pending, and discarding the
-              rider's setup over a toggle they may flip back in ten seconds would
-              be its own bug (05 §3.4). */}
-          {permissionRevoked && track.notify ? (
-            <Pressable
-              onPress={() => {
-                trackSettingsOpened('revoked_warning');
-                void Linking.openSettings();
-              }}
-              accessibilityRole="button"
-              style={styles.revokedRow}
-            >
-              <BellOff size={14} color={theme.warning} strokeWidth={2} />
-              <Text style={[typography.caption, { color: theme.warning, flex: 1 }]}>
-                {t('notificationsRevokedWarning')}
-              </Text>
-              <Text style={[typography.caption, { color: theme.primary }]}>
-                {t('notificationsRevokedAction')}
-              </Text>
-            </Pressable>
-          ) : null}
-          {/* A countdown the rider never started needs to say where it came from. */}
-          {track.auto ? (
-            <Text style={[typography.caption, { color: theme.info, marginTop: space.xs }]}>
-              {t('trackStartedFromPin')}
+      {active.map(({ track, journey }) => {
+        const merged = applyLiveToJourney(journey, track, trips, now);
+        // The relevant leg: whichever bus the rider is waiting for or riding
+        // right now, per `legIndex`. Older pins from before the dataset
+        // migration carry no `tripId` — the card stays non-interactive rather
+        // than opening the wrong trip.
+        const openTripId = track.legs[merged.legIndex]?.tripId;
+        return (
+          <Pressable
+            key={track.id}
+            onPress={
+              openTripId
+                ? () =>
+                    router.push({
+                      pathname: '/(tabs)/transit/[tripId]',
+                      params: { tripId: String(openTripId) },
+                    })
+                : undefined
+            }
+            accessibilityRole={openTripId ? 'button' : undefined}
+            style={[styles.card, { borderColor: theme.border, backgroundColor: theme.surfaceVariant }]}
+          >
+            <View style={styles.header}>
+              <Text style={[typography.headline, { color: theme.primary }]}>{track.routeNumber}</Text>
+              <IconButton
+                icon={X}
+                variant="ghost"
+                size="sm"
+                color={theme.muted}
+                accessibilityLabel={t('transitStopTrack')}
+                // Nested Pressables don't need this on native (only the
+                // innermost one becomes the touch responder), but on web a
+                // click bubbles to the card's own handler unless stopped here.
+                onPress={(e) => {
+                  e.stopPropagation();
+                  stopTracking(track.id);
+                }}
+              />
+            </View>
+            <Text style={[typography.body, { color: theme.text }]}>
+              {track.origin} → {track.destination}
             </Text>
-          ) : null}
-          <Text style={[typography.caption, { color: theme.muted, marginTop: space.xs }]}>
-            {t(journey.statusLabel.key, journey.statusLabel.params)} ·{' '}
-            {t(journey.countdown.key, journey.countdown.params)}
-          </Text>
-          <TrackPosition journey={journey} />
-          <LegStrip journey={journey} />
-        </View>
-      ))}
+            {/* The alarms are NOT cancelled when permission goes away: re-granting
+                restores delivery for everything still pending, and discarding the
+                rider's setup over a toggle they may flip back in ten seconds would
+                be its own bug (05 §3.4). */}
+            {permissionRevoked && track.notify ? (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  trackSettingsOpened('revoked_warning');
+                  void Linking.openSettings();
+                }}
+                accessibilityRole="button"
+                style={styles.revokedRow}
+              >
+                <BellOff size={14} color={theme.warning} strokeWidth={2} />
+                <Text style={[typography.caption, { color: theme.warning, flex: 1 }]}>
+                  {t('notificationsRevokedWarning')}
+                </Text>
+                <Text style={[typography.caption, { color: theme.primary }]}>
+                  {t('notificationsRevokedAction')}
+                </Text>
+              </Pressable>
+            ) : null}
+            {/* A countdown the rider never started needs to say where it came from. */}
+            {track.auto ? (
+              <Text style={[typography.caption, { color: theme.info, marginTop: space.xs }]}>
+                {t('trackStartedFromPin')}
+              </Text>
+            ) : null}
+            <Text style={[typography.caption, { color: theme.muted, marginTop: space.xs }]}>
+              {t(merged.statusLabel.key, merged.statusLabel.params)} ·{' '}
+              {t(merged.countdown.key, merged.countdown.params)}
+            </Text>
+            <TrackPosition journey={merged} />
+            <LegStrip journey={merged} />
+          </Pressable>
+        );
+      })}
     </TransitCollapsibleSection>
   );
 }
@@ -109,14 +150,18 @@ export function ActiveTrackingSection() {
  * `timeToNextStopMin`, and nothing rendered them: the widget said "En route ·
  * 24 min" and left the rider to work out which of a dozen stops that meant.
  *
- * The disclaimer is not boilerplate. This is a schedule estimate — there is no
- * live vehicle feed on this network — and a premium widget naming a stop and a
- * minute count reads exactly like one that has a GPS fix unless it says so.
+ * The footnote is not boilerplate. Whenever no live bus could be attributed to
+ * this leg, it stays the schedule disclaimer it has always been — a premium
+ * widget naming a stop and a minute count reads exactly like one that has a
+ * GPS fix unless it says so. Once `journey.live` is set, `journeyLiveFootnote`
+ * replaces it with the real delay, so the two never contradict each other.
  */
 function TrackPosition({ journey }: { journey: JourneyTrackStatus }) {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const { primary, secondary } = journeyPositionLabels(journey);
+  const footnote = journeyLiveFootnote(journey, new Date());
+  const isLive = footnote.key !== 'trackPositionEstimated';
 
   return (
     <View style={styles.position}>
@@ -128,8 +173,13 @@ function TrackPosition({ journey }: { journey: JourneyTrackStatus }) {
           {t(secondary.key, secondary.params)}
         </Text>
       ) : null}
-      <Text style={[typography.caption, { color: theme.muted, opacity: 0.8 }]}>
-        {t('trackPositionEstimated')}
+      <Text
+        style={[
+          typography.caption,
+          { color: isLive ? theme.success : theme.muted, opacity: isLive ? 1 : 0.8 },
+        ]}
+      >
+        {t(footnote.key, footnote.params)}
       </Text>
     </View>
   );

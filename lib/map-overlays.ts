@@ -19,6 +19,12 @@ export type MapMarkerOverlay = {
   /** 0–1 marker opacity on Android WebView. */
   opacity?: number;
   highlighted?: boolean;
+  /**
+   * A soft ring that expands and fades around the pin, looping (Android
+   * WebView; real CSS `@keyframes`, not a static ring like `highlighted`).
+   * Reserved for a single bus the rider is actually tracking.
+   */
+  pulsing?: boolean;
   title?: string;
   /** Paint `title` under the pin. Off by default — a title is a tap target's
    *  name, not a map label. */
