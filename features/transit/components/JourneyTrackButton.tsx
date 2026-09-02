@@ -159,6 +159,6 @@ export function JourneyTrackButton({ journey, searchDay, showPin = true }: Props
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: space.sm },
+  wrap: { marginTop: space.sm, flexShrink: 1 },
   row: { flexDirection: 'row', gap: space.sm },
 });

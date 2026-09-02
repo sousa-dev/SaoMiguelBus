@@ -418,6 +418,7 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 1,
     gap: space.xs,
   },
   expandBtn: {
