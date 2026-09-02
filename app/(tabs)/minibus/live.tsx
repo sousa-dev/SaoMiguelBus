@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState } from '@/components/ui/StateView';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { MinibusLiveFleetBar } from '@/features/minibus/components/MinibusLiveFleetBar';
 import { MinibusLiveLineFilter } from '@/features/minibus/components/MinibusLiveLineFilter';
 import {
@@ -495,6 +496,7 @@ export default function MinibusLiveScreen() {
   return (
     <Screen withStackHeader edges={['left', 'right']}>
       <View style={styles.container}>
+        <ScreenTopAdBanner />
         {!busFocused ? (
           <>
             <View style={styles.filterWrap}>

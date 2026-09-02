@@ -9,6 +9,7 @@ import { ArrowLeftRight, Bus, CloudOff } from 'lucide-react-native';
 import { Screen } from '@/components/Screen';
 import { OsmMapView } from '@/components/OsmMapView';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { fetchLineShape } from '@/lib/api';
 import { coordinateToRegion, fitRegionForCoordinates } from '@/lib/island-map';
@@ -136,6 +137,7 @@ export default function TransitLineScreen() {
 
   return (
     <Screen withStackHeader>
+      <ScreenTopAdBanner slot="transit-line-top" />
       <View style={styles.mapArea}>
         <OsmMapView
           ref={mapRef}
@@ -221,7 +223,7 @@ export default function TransitLineScreen() {
 }
 
 const styles = StyleSheet.create({
-  mapArea: { flex: 1, minHeight: 240 },
+  mapArea: { flex: 1, minHeight: 200 },
   map: { flex: 1 },
   bar: {
     flexDirection: 'row',
@@ -238,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   swap: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  list: { maxHeight: 260 },
+  list: { maxHeight: 260, flexShrink: 1 },
   listContent: { paddingHorizontal: space.md },
   row: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
 import { TariffTable } from '@/features/transit/components/TariffTable';
 import { TransitCollapsibleSection } from '@/features/transit/components/TransitCollapsibleSection';
@@ -46,6 +47,7 @@ export default function TransitPricesScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
+        <ScreenTopAdBanner embedded />
         <Text style={[typography.title, { color: theme.text }]}>{t('transitPricesTitle')}</Text>
 
         {isLoading ? <LoadingState /> : null}

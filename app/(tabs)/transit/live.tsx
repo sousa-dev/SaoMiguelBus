@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { LoadingState } from '@/components/ui/StateView';
 import { Search } from 'lucide-react-native';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { AzoresbusLiveFleetBar } from '@/features/azoresbus/components/AzoresbusLiveFleetBar';
 import { AzoresbusLineSelect } from '@/features/azoresbus/components/AzoresbusLineSelect';
 import { AzoresbusStopSearchSheet } from '@/features/azoresbus/components/AzoresbusStopSearchSheet';
@@ -207,6 +208,7 @@ export default function AzoresbusLiveScreen() {
   return (
     <Screen withStackHeader edges={['left', 'right']}>
       <View style={styles.container}>
+        <ScreenTopAdBanner />
         {selectedVehicleId == null ? (
           <>
             <View style={styles.controls}>

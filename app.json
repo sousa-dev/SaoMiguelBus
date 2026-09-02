@@ -8,7 +8,7 @@
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.2.5",
+    "version": "5.2.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",

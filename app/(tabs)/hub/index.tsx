@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { resolveEnabledModules } from '@/config/island';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { HomeBusCta } from '@/features/hub/components/home/HomeBusCta';
 import { HomeMinibusCta } from '@/features/hub/components/home/HomeMinibusCta';
 import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
@@ -51,6 +52,7 @@ export default function HubScreen() {
     >
       <HomeGreetingHeader />
       <View style={styles.body}>
+        <ScreenTopAdBanner embedded />
         {weather.enabled ? <HomeWeatherCard data={weather} /> : null}
         {seismic.enabled || traffic.enabled ? (
           <View style={styles.splitRow}>

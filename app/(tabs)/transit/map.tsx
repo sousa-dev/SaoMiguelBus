@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/ui/StateView';
 import { ChevronDown, ChevronRight, Map as MapIcon } from 'lucide-react-native';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { JourneyMap } from '@/features/transit/components/JourneyMap';
 import {
   buildJourneyMapData,
@@ -115,6 +116,7 @@ export default function TransitMapScreen() {
 
   return (
     <Screen withStackHeader>
+      <ScreenTopAdBanner />
       <View style={styles.mapArea}>
         <JourneyMap
           ref={mapRef}
@@ -247,8 +249,8 @@ export const journeyRouteLabel = (journey: TransitJourney) =>
     .join(' → ');
 
 const styles = StyleSheet.create({
-  mapArea: { flex: 1, minHeight: 260 },
-  steps: { maxHeight: 240 },
+  mapArea: { flex: 1, minHeight: 220 },
+  steps: { maxHeight: 240, flexShrink: 1 },
   stepsContent: { padding: space.md, gap: space.xs },
   step: {
     flexDirection: 'row',

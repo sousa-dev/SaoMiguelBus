@@ -29,6 +29,7 @@ import { Screen } from '@/components/Screen';
 import { OsmMapView } from '@/components/OsmMapView';
 import { IconButton } from '@/components/ui/IconButton';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useStops } from '@/features/transit/hooks/useTransitQueries';
 import {
   CLUSTER_ABOVE_DELTA,
@@ -287,6 +288,7 @@ export default function TransitNetworkScreen() {
 
   return (
     <Screen withStackHeader>
+      <ScreenTopAdBanner />
       <View style={styles.fill}>
         <OsmMapView
           ref={mapRef}

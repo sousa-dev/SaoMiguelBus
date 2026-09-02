@@ -19,6 +19,7 @@ import {
 import { OsmMapView } from '@/components/OsmMapView';
 import { EmptyState, LoadingState } from '@/components/ui/StateView';
 import { IconButton } from '@/components/ui/IconButton';
+import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { DepartureRow } from '@/features/transit/components/DepartureRow';
 import { useTransitDataset } from '@/features/transit/hooks/useScheduleConfig';
 import { useStops } from '@/features/transit/hooks/useTransitQueries';
@@ -223,6 +224,7 @@ export default function TransitStopScreen() {
   return (
     <Screen withStackHeader>
       <ScrollView contentContainerStyle={styles.content}>
+        <ScreenTopAdBanner embedded slot="transit-stop-top" />
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={[typography.headline, { color: theme.text }]}>{identity.name}</Text>
