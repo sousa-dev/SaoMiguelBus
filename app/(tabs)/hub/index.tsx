@@ -50,9 +50,11 @@ export default function HubScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
       }
     >
+      <View style={styles.adWrap}>
+        <ScreenTopAdBanner embedded />
+      </View>
       <HomeGreetingHeader />
       <View style={styles.body}>
-        <ScreenTopAdBanner embedded />
         {weather.enabled ? <HomeWeatherCard data={weather} /> : null}
         {seismic.enabled || traffic.enabled ? (
           <View style={styles.splitRow}>
@@ -83,6 +85,7 @@ export default function HubScreen() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { paddingTop: space.xs },
+  adWrap: { paddingHorizontal: space.lg },
   body: { paddingHorizontal: space.lg },
   splitRow: {
     flexDirection: 'row',

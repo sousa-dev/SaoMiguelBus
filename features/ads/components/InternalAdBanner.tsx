@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react-native';
-import { Crown, Hand } from 'lucide-react-native';
+import { ChevronRight, Crown } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import { usePaywall } from '@/features/premium/hooks/usePaywall';
 import { track } from '@/lib/analytics';
 import { getModule } from '@/lib/modules';
 import { radius, space, typography } from '@/lib/tokens';
-import { useAppTheme } from '@/lib/theme';
 
 type Props = {
   creative: InternalAdCreative;
@@ -19,14 +18,12 @@ type Props = {
 };
 
 export function InternalAdBanner({ creative, on, slot = 'top' }: Props) {
-  const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const { openPaywall } = usePaywall();
 
   const module = creative.moduleKey ? getModule(creative.moduleKey) : undefined;
   const TitleIcon: LucideIcon = creative.kind === 'paywall' ? Crown : (module?.Icon ?? Crown);
-  const HintIcon: LucideIcon = creative.kind === 'paywall' ? Hand : (module?.Icon ?? Crown);
 
   useEffect(() => {
     track('transit', 'internal_ad_impression', {
@@ -69,23 +66,24 @@ export function InternalAdBanner({ creative, on, slot = 'top' }: Props) {
         { backgroundColor: creative.backgroundColor, opacity: pressed ? 0.92 : 1 },
       ]}
     >
-      <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-        <Text style={[styles.badgeText, { color: theme.onPrimary }]}>{t('transitAdLabel')}</Text>
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>{t('transitAdLabel')}</Text>
       </View>
 
-      <View style={styles.titleRow}>
-        <TitleIcon size={20} color="#FFFFFF" strokeWidth={2.5} />
-        <Text style={styles.title}>{t(creative.titleKey)}</Text>
+      <View style={styles.iconWrap}>
+        <TitleIcon size={18} color="#FFFFFF" strokeWidth={2.5} />
       </View>
 
-      <Text style={styles.subtitle}>{t(creative.subtitleKey)}</Text>
+      <View style={styles.textWrap}>
+        <Text style={styles.title} numberOfLines={1}>
+          {t(creative.titleKey)}
+        </Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {t(creative.subtitleKey)}
+        </Text>
+      </View>
 
-      {creative.hintKey ? (
-        <View style={styles.hintRow}>
-          <HintIcon size={12} color="rgba(255,255,255,0.85)" strokeWidth={2} />
-          <Text style={styles.hint}>{t(creative.hintKey)}</Text>
-        </View>
-      ) : null}
+      <ChevronRight size={18} color="rgba(255,255,255,0.7)" strokeWidth={2.5} />
     </Pressable>
   );
 }
@@ -93,57 +91,43 @@ export function InternalAdBanner({ creative, on, slot = 'top' }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     width: '100%',
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: radius.md,
     paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    alignItems: 'center',
-    position: 'relative',
+    paddingVertical: space.sm,
+    gap: space.sm,
   },
   badge: {
     position: 'absolute',
     top: 0,
-    left: 0,
+    right: 0,
     paddingHorizontal: space.xs,
     paddingVertical: 2,
-    borderBottomRightRadius: radius.sm,
-    zIndex: 1,
+    borderTopRightRadius: radius.md,
+    borderBottomLeftRadius: radius.sm,
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
-  badgeText: { ...typography.overline, fontSize: 9, letterSpacing: 0.8 },
-  titleRow: {
-    flexDirection: 'row',
+  badgeText: { ...typography.overline, fontSize: 8, letterSpacing: 0.6, color: 'rgba(255,255,255,0.85)' },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.sm,
-    marginBottom: space.xs,
-    width: '100%',
   },
+  textWrap: { flex: 1, gap: 1 },
   title: {
     ...typography.label,
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    flexShrink: 1,
+    fontSize: 14,
   },
   subtitle: {
-    ...typography.body,
-    color: 'rgba(255,255,255,0.92)',
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  hintRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    marginTop: space.sm,
-    width: '100%',
-  },
-  hint: {
     ...typography.caption,
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 11,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
   },
 });
