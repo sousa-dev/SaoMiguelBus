@@ -1,0 +1,24 @@
+<!--
+  Not empty, unlike modules/exact-alarm. A <service> is a component, not a
+  permission: its android:name is a class in this directory, so it belongs
+  beside that class where a rename moves both together. Permissions stay in
+  app.json so the list the app asks for stays reviewable in one place (see
+  modules/exact-alarm/android/src/main/AndroidManifest.xml for the same rule
+  applied the other way).
+
+  Fully-qualified android:name (not a leading-dot shorthand): a leading dot
+  resolves against the APP's package (com.hsousa_apps.Autocarros), not this
+  module's, which would silently point at a class that does not exist there.
+
+  No `package=` attribute — the namespace comes from build.gradle, and AGP 8
+  rejects a manifest package attribute on a library module.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <service
+      android:name="expo.modules.livetrip.LiveTripService"
+      android:exported="false"
+      android:stopWithTask="false"
+      android:foregroundServiceType="dataSync" />
+  </application>
+</manifest>

@@ -1,0 +1,1 @@
+../../modules/live-trip/ios/LiveTripAttributes.swift

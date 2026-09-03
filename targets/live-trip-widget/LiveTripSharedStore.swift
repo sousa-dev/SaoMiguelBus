@@ -1,0 +1,1 @@
+../../modules/live-trip/ios/LiveTripSharedStore.swift

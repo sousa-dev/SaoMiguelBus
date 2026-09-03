@@ -35,6 +35,7 @@ import { useRevenueCatBootstrap } from '@/features/premium/hooks/useRevenueCatBo
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { useAutoTrackPinnedRoutes } from '@/features/transit/hooks/useAutoTrackPinnedRoutes';
 import { useEntitlementLapseCancellation } from '@/features/transit/hooks/useEntitlementLapseCancellation';
+import { useLiveTripBar } from '@/features/transit/hooks/useLiveTripBar';
 import { useNotificationPermissionResume } from '@/features/transit/hooks/useNotificationPermissionResume';
 import { useNotificationReconcile } from '@/features/transit/hooks/useNotificationReconcile';
 import { useNotificationTapRouting } from '@/features/transit/hooks/useNotificationTapRouting';
@@ -90,6 +91,13 @@ function AppShell({
   // notices when permission has been taken away while journeys are armed
   // (05 §3.3, §3.4). In the shell so it survives the card being scrolled away.
   useNotificationPermissionResume();
+  // The Uber-style persistent bar for a tracked AzoresBus journey. A
+  // foreground-service notification on Android, kept fresh outside the app;
+  // a no-op on every other platform until the iOS Live Activity half lands.
+  // `reconcileNotifications` above only sweeps *scheduled* notifications --
+  // this one is posted natively and never appears in that list, so it needs
+  // no exemption there. Verified on-device, not assumed (plan Task 4 Step 2).
+  useLiveTripBar();
   // Routes a tapped notification, warm or cold-start, once the router exists
   // (05 §6).
   useNotificationTapRouting();

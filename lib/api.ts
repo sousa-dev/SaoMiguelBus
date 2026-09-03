@@ -830,6 +830,52 @@ export async function fetchTransitTripsLive(
   }
 }
 
+export interface RegisterLiveActivityBody {
+  pushToken: string;
+  environment: 'development' | 'production';
+  activityKey: string;
+  legs: { tripId: number; startsAt: string; endsAt: string }[];
+  expiresAt: string;
+}
+
+/**
+ * Hands the server an ActivityKit push token so it can keep the iOS live
+ * trip bar fresh while the app is suspended.
+ *
+ * Collapses every HTTP failure to `false` rather than throwing: a failed
+ * registration must degrade to "no push updates for this Live Activity",
+ * never a visible error — the card still shows the last state it had, same
+ * as `fetchAzoresbusTrackingHealth` treating an outage as a valid answer.
+ */
+export async function registerLiveActivity(body: RegisterLiveActivityBody): Promise<boolean> {
+  try {
+    await apiFetch<{ registered: boolean }>('/api/v3/azoresbus/live-activities', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof ApiRequestError) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+export async function unregisterLiveActivity(pushToken: string): Promise<boolean> {
+  try {
+    await apiFetch<void>(`/api/v3/azoresbus/live-activities/${encodeURIComponent(pushToken)}`, {
+      method: 'DELETE',
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof ApiRequestError) {
+      return false;
+    }
+    throw error;
+  }
+}
+
 export async function fetchSeismicEvents(params?: {
   minMagnitude?: number;
   sinceHours?: number;

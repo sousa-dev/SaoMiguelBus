@@ -8,7 +8,7 @@
     "name": "São Miguel Hub",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.2.7",
+    "version": "5.2.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",
@@ -19,7 +19,10 @@
       "usesAppleSignIn": true,
       "appleTeamId": "28NZ2LLDF5",
       "entitlements": {
-        "com.apple.developer.usernotifications.time-sensitive": true
+        "com.apple.developer.usernotifications.time-sensitive": true,
+        "com.apple.security.application-groups": [
+          "group.com.sousadev.saomiguelhub"
+        ]
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -39,7 +42,9 @@
         ],
         "NSUserTrackingUsageDescription": "Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.",
         "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
-        "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
+        "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map.",
+        "NSSupportsLiveActivities": true,
+        "NSSupportsLiveActivitiesFrequentUpdates": true
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,
@@ -76,7 +81,10 @@
       "package": "com.hsousa_apps.Autocarros",
       "versionCode": 64,
       "permissions": [
-        "android.permission.SCHEDULE_EXACT_ALARM"
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+        "android.permission.POST_PROMOTED_NOTIFICATIONS"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -106,11 +114,13 @@
         {
           "ios": {
             "buildReactNativeFromSource": true,
-            "usePrecompiledModules": false
+            "usePrecompiledModules": false,
+            "deploymentTarget": "16.4"
           }
         }
       ],
       "./plugins/withIosBuildFixes",
+      "@bacons/apple-targets",
       [
         "expo-location",
         {

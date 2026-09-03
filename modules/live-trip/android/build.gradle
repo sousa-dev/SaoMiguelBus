@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.sousadev.saomiguelhub'
+version = '0.1.0'
+
+android {
+  namespace 'expo.modules.livetrip'
+  defaultConfig {
+    versionCode 1
+    versionName '0.1.0'
+  }
+  lint {
+    abortOnError false
+  }
+}
+
+dependencies {
+  // Only for the Android 16 ProgressStyle / requestPromotedOngoing APIs used
+  // in LiveTripNotification.kt. compileSdk is already 36 (see app's generated
+  // build config), so no Gradle-level SDK bump is needed alongside this.
+  implementation 'androidx.core:core-ktx:1.17.0'
+}

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["LiveTripModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.livetrip.LiveTripModule"]
+  }
+}
