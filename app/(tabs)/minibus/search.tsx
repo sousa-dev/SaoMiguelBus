@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -69,8 +69,29 @@ export default function MinibusSearchScreen() {
     Boolean(submitted),
   );
 
+  /**
+   * Roll the interstitial when a search STARTS, not when results land, so the
+   * ad's planning overlaps the search and the results render underneath it.
+   * Same pattern as the transit screen: the click marks the ref, the arrival
+   * of results consumes it instead of rolling again, and results that arrive
+   * with no mark (a later network load, a cache hit) roll on their own.
+   */
+  const interstitialRolledAtStartRef = useRef(false);
+
+  const rollSearchInterstitial = () => {
+    // A keyboard left up can sit above a native interstitial and cover its
+    // close control.
+    Keyboard.dismiss();
+    interstitialRolledAtStartRef.current = true;
+    setInterstitialTrigger((value) => value + 1);
+  };
+
   useEffect(() => {
     if (!submitted || isLoading) {
+      return;
+    }
+    if (interstitialRolledAtStartRef.current) {
+      interstitialRolledAtStartRef.current = false;
       return;
     }
     setInterstitialTrigger((value) => value + 1);
@@ -106,6 +127,7 @@ export default function MinibusSearchScreen() {
       return;
     }
     void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
+    rollSearchInterstitial();
     setSubmitted({ origin: trimmedOrigin, destination: trimmedDestination });
   };
 
@@ -164,10 +186,8 @@ export default function MinibusSearchScreen() {
           />
         </TransitWebShell>
       </ScrollView>
-      <InterstitialOrchestrator
-        trigger={interstitialTrigger}
-        ready={hasSearched && !isLoading}
-      />
+      {/* `ready` deliberately does not wait for the search — see rollSearchInterstitial. */}
+      <InterstitialOrchestrator trigger={interstitialTrigger} ready={hasSearched} />
     </Screen>
   );
 }

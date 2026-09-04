@@ -23,6 +23,11 @@ export function RouteResults({ results, searchDay, origin, destination, onFavori
     return null;
   }
 
+  // The inline rule (after every 2nd card, never after the last) first fires
+  // at index 1, so fewer than 3 results would render no ad at all. A results
+  // list always carries at least one native ad; short lists take it at the end.
+  const hasInlineAd = results.length >= 3;
+
   return (
     <View style={styles.wrap}>
       <RouteResultsToolbar
@@ -49,10 +54,13 @@ export function RouteResults({ results, searchDay, origin, destination, onFavori
         return (
           <Fragment key={journey.id}>
             <JourneyCard journey={journey} searchDay={searchDay} />
-            {showInlineAd ? <AdBanner on="home" slot={`inline-${index}`} /> : null}
+            {showInlineAd ? (
+              <AdBanner on="home" slot={`inline-${index}`} format="native" />
+            ) : null}
           </Fragment>
         );
       })}
+      {!hasInlineAd ? <AdBanner on="home" slot="inline-end" format="native" /> : null}
     </View>
   );
 }

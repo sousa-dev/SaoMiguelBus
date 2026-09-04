@@ -4,7 +4,7 @@ import { Linking, Platform } from 'react-native';
 
 import { useAdFreeWindow } from '@/features/ads/hooks/useAdFreeWindow';
 import { canShowInternalAdsOffline } from '@/features/ads/lib/ad-offline-gate';
-import { resolveAdSlotKind } from '@/features/ads/lib/ad-slot';
+import { needsInternalCreative, resolveAdSlotKind } from '@/features/ads/lib/ad-slot';
 import { shouldForceInternalAds } from '@/features/ads/lib/force-internal-ads';
 import { isAdMobNativeAvailable } from '@/features/ads/lib/admob-runtime';
 import { resolveAdHref } from '@/features/ads/lib/ad-link';
@@ -74,10 +74,13 @@ export function useAd(on: string, slot: string | number = 'top') {
     offlineInternalEligible,
   });
 
-  const internalCreative =
-    kind === 'internal'
-      ? selectInternalCreative({ slotKey, enabledModuleKeys })
-      : null;
+  const selectedCreative = needsInternalCreative(kind)
+    ? selectInternalCreative({ slotKey, enabledModuleKeys })
+    : null;
+
+  const internalCreative = kind === 'internal' ? selectedCreative : null;
+  /** Held in reserve for an AdMob slot that comes back with no fill. */
+  const fallbackCreative = kind === 'admob' ? selectedCreative : null;
 
   const openAd = useCallback(async () => {
     if (!ad) {
@@ -96,5 +99,5 @@ export function useAd(on: string, slot: string | number = 'top') {
     }
   }, [ad, on]);
 
-  return { kind, ad, internalCreative, openAd, enabled: showAds, on, slot };
+  return { kind, ad, internalCreative, fallbackCreative, openAd, enabled: showAds, on, slot };
 }

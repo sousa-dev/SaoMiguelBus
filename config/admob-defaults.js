@@ -13,4 +13,7 @@ module.exports = {
    * real unit IDs in sync with EXPO_PUBLIC_ADMOB_REWARDED_*. */
   rewardedAndroid: 'ca-app-pub-8246676797736648/2906622099',
   rewardedIos: 'ca-app-pub-8246676797736648/4275544083',
+  /** Native Advanced units back the inline ad cards between transit results. */
+  nativeAndroid: 'ca-app-pub-8246676797736648/5105287286',
+  nativeIos: 'ca-app-pub-8246676797736648/4045637858',
 };

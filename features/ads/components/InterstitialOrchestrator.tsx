@@ -25,9 +25,13 @@ import { usePremium } from '@/lib/premium-store';
 import type { AdPayload } from '@/lib/types';
 
 type Props = {
-  /** Increment after each completed transit search to evaluate interstitial policy. */
+  /**
+   * Increment each time the rider starts a search to evaluate interstitial
+   * policy. Firing at the START lets the ad's planning overlap the fetch and
+   * the results render underneath the ad — do not wait for results to land.
+   */
   trigger: number;
-  /** Only fire when a search has finished (including zero-result searches). */
+  /** Gate on a search being enabled; it need not have finished. */
   ready: boolean;
 };
 

@@ -6,6 +6,7 @@ const TEST = {
   interstitial: 'ca-app-pub-3940256099942544/1033173712',
   appOpen: 'ca-app-pub-3940256099942544/9257395921',
   rewarded: 'ca-app-pub-3940256099942544/5224354917',
+  native: 'ca-app-pub-3940256099942544/2247696110',
 } as const;
 
 /**
@@ -56,6 +57,13 @@ export function getAdMobRewardedUnitId(): string | null {
     clean(ADMOB_DEFAULTS.rewardedAndroid) ??
     null
   );
+}
+
+export function getAdMobNativeUnitId(): string | null {
+  if (__DEV__) {
+    return TEST.native;
+  }
+  return clean(process.env.EXPO_PUBLIC_ADMOB_NATIVE_ANDROID) ?? ADMOB_DEFAULTS.nativeAndroid;
 }
 
 export const ADMOB_APP_IDS = {

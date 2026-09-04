@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AdMobBanner } from '@/features/ads/components/AdMobBanner';
+import { AdMobNativeAd } from '@/features/ads/components/AdMobNativeAd';
 import { InternalAdBanner } from '@/features/ads/components/InternalAdBanner';
 import { useAd } from '@/features/ads/hooks/useAd';
 import { track } from '@/lib/analytics';
@@ -14,16 +15,22 @@ type Props = {
   on: string;
   /** Distinguishes multiple banners on the same surface (separate rotation). */
   slot?: string | number;
+  /**
+   * `native` renders an AdMob Native Advanced card instead of a banner, with
+   * the internal house ad as its no-fill fallback. Only the AdMob tier is
+   * affected — first-party and internal look the same either way.
+   */
+  format?: 'banner' | 'native';
 };
 
 /**
  * Hybrid SMB banner: first-party image → AdMob → internal fallback.
  * Renders nothing for premium users or when no tier has fill.
  */
-export function AdBanner({ on, slot }: Props) {
+export function AdBanner({ on, slot, format = 'banner' }: Props) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const { kind, ad, internalCreative, openAd } = useAd(on, slot);
+  const { kind, ad, internalCreative, fallbackCreative, openAd } = useAd(on, slot);
   const [aspectRatio, setAspectRatio] = useState(4);
 
   useEffect(() => {
@@ -53,6 +60,19 @@ export function AdBanner({ on, slot }: Props) {
   }, [ad?.id, kind, on]);
 
   if (kind === 'admob') {
+    if (format === 'native') {
+      return (
+        <AdMobNativeAd
+          on={on}
+          slot={slot}
+          fallback={
+            fallbackCreative ? (
+              <InternalAdBanner creative={fallbackCreative} on={on} slot={slot} />
+            ) : null
+          }
+        />
+      );
+    }
     return <AdMobBanner on={on} slot={slot} />;
   }
 

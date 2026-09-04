@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ import { Bus, Clock, Shuffle } from 'lucide-react-native';
 import { Banner } from '@/components/ui/Banner';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
+import { AdViewportProvider, useAdViewportSource } from '@/features/ads/lib/ad-viewport';
 import { ActiveTrackingSection } from '@/features/transit/components/ActiveTrackingSection';
 import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
 import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
@@ -239,14 +240,45 @@ export default function TransitScreen() {
     }
   }, [search.data, searchEnabled, origin, destination, day, time, addRecentSearch]);
 
+  /**
+   * Roll the interstitial the moment a search STARTS, not when results land.
+   * The ad's own planning (session policy, then a first-party fetch) and the
+   * search fetch then overlap instead of queueing, and the results render
+   * underneath the ad so they are already there when it closes. Policy and
+   * show rate are unchanged — only the timing moves. Called from every path
+   * that starts a search.
+   *
+   * Results can also arrive with no click at all — from the cache, or on a
+   * dataset switch — and those are results shown too, so they enter the same
+   * pool. The ref keeps one search from rolling twice (once at the click, once
+   * when its results land): the click sets it, the arrival consumes it, and an
+   * arrival that finds it clear is one the rider did not start.
+   */
+  const interstitialRolledAtStartRef = useRef(false);
+
+  const rollSearchInterstitial = () => {
+    // The ad may present within a frame of this call. A keyboard left up can
+    // sit above a native interstitial and cover its close control.
+    Keyboard.dismiss();
+    interstitialRolledAtStartRef.current = true;
+    setInterstitialTrigger((value) => value + 1);
+  };
+
   useEffect(() => {
-    if (!searchEnabled || search.isFetching) {
+    if (!searchEnabled || search.isFetching || search.data == null) {
+      return;
+    }
+    if (interstitialRolledAtStartRef.current) {
+      interstitialRolledAtStartRef.current = false;
       return;
     }
     setInterstitialTrigger((value) => value + 1);
-  }, [searchEnabled, search.isFetching, search.status]);
+  }, [searchEnabled, search.isFetching, search.data]);
 
   const scrollRef = useRef<ScrollView>(null);
+  // Lets the inline native ad slots below the fold hold off requesting an ad
+  // until the rider actually scrolls towards them.
+  const adViewport = useAdViewportSource();
   // Where the answer starts, measured rather than estimated — the block above it
   // changes height with the schedule banner, the ad and the map link.
   const resultsY = useRef<number | null>(null);
@@ -265,6 +297,7 @@ export default function TransitScreen() {
     }
     setSearchEnabled(true);
     scrollWhenReady.current = true;
+    rollSearchInterstitial();
     search.refetch();
     // Rotate the top banner on each new search (webapp re-calls loadAdBanner).
     void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
@@ -300,6 +333,7 @@ export default function TransitScreen() {
     setOrigin(nextOrigin);
     setDestination(nextDestination);
     setSearchEnabled(true);
+    rollSearchInterstitial();
     if (plannerY.current !== null) {
       scrollRef.current?.scrollTo({
         y: Math.max(0, SHELL_TOP_OFFSET + plannerY.current - RESULTS_SCROLL_PADDING),
@@ -335,6 +369,7 @@ export default function TransitScreen() {
       return;
     }
     setSearchEnabled(true);
+    rollSearchInterstitial();
     scrollWhenReady.current = true;
   }, [params.searchAt, origin, destination]);
 
@@ -379,6 +414,8 @@ export default function TransitScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        onScroll={adViewport.onScroll}
+        scrollEventThrottle={adViewport.scrollEventThrottle}
       >
         <TransitWebShell>
           {!isOnline && !canSearchOffline ? (
@@ -479,6 +516,11 @@ export default function TransitScreen() {
             )
           ) : null}
 
+          {/* A results view always carries one native ad. With no journeys to
+              interleave it with, it sits under the empty state. On screen from
+              the start, so it loads at once — no viewport provider needed. */}
+          {showEmptyResults ? <AdBanner on="home" slot="inline-end" format="native" /> : null}
+
           {showRouteWeather && routeWeather.data?.origin && routeWeather.data.destination ? (
             <RouteWeatherGrid
               origin={routeWeather.data.origin}
@@ -490,13 +532,15 @@ export default function TransitScreen() {
           {hasResults ? <SchedulePreviewStrip /> : null}
 
           {hasResults && search.data ? (
-            <RouteResults
-              results={search.data}
-              searchDay={day}
-              origin={origin}
-              destination={destination}
-              onFavoriteSelect={(o, d) => applySearch(o, d)}
-            />
+            <AdViewportProvider value={adViewport.value}>
+              <RouteResults
+                results={search.data}
+                searchDay={day}
+                origin={origin}
+                destination={destination}
+                onFavoriteSelect={(o, d) => applySearch(o, d)}
+              />
+            </AdViewportProvider>
           ) : null}
           </View>
 
@@ -508,10 +552,8 @@ export default function TransitScreen() {
           {showInstructions ? <TransitInstructionCard /> : null}
         </TransitWebShell>
       </ScrollView>
-      <InterstitialOrchestrator
-        trigger={interstitialTrigger}
-        ready={searchEnabled && !search.isFetching}
-      />
+      {/* `ready` deliberately does not wait for the fetch — see rollSearchInterstitial. */}
+      <InterstitialOrchestrator trigger={interstitialTrigger} ready={searchEnabled} />
     </Screen>
   );
 }

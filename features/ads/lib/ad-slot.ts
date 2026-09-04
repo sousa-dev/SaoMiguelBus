@@ -31,3 +31,15 @@ export function resolveAdSlotKind(input: {
   }
   return null;
 }
+
+/**
+ * Whether an internal house creative must be selected for this slot.
+ *
+ * `internal` renders one directly. `admob` needs one held in reserve: a Native
+ * Advanced request can come back with no fill, and an empty inline slot falls
+ * back to the house ad rather than to nothing. Selecting it up front keeps that
+ * fallback synchronous — no second render pass, no flash of an empty slot.
+ */
+export function needsInternalCreative(kind: AdSlotKind): boolean {
+  return kind === 'internal' || kind === 'admob';
+}
