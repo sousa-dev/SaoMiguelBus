@@ -38,6 +38,7 @@ import {
   filterVehiclesByLineCodes,
 } from '@/features/azoresbus/lib/vehicleLine';
 import { useLiveScreenActivity } from '@/features/live-tracking/hooks/useLiveScreenActivity';
+import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
 import { useStops } from '@/features/transit/hooks/useTransitQueries';
 import { decodePolyline } from '@/lib/polyline';
 import { useNetwork } from '@/lib/network-provider';
@@ -74,7 +75,9 @@ export default function AzoresbusLiveScreen() {
 
   const { data: stops = [] } = useStops();
   const healthQuery = useAzoresbusTrackingHealth({ enabled: navFocused && isOnline });
-  const trackingAvailable = isOnline && isAzoresbusTrackingAvailable(healthQuery.data);
+  const forceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.forceUnavailable);
+  const trackingAvailable =
+    isOnline && isAzoresbusTrackingAvailable(healthQuery.data) && !forceLiveTrackingUnavailable;
   const queriesEnabled = navFocused && trackingAvailable;
 
   const fleetQuery = useAzoresbusVehicles({
@@ -175,7 +178,10 @@ export default function AzoresbusLiveScreen() {
   if (!isOnline) {
     return (
       <Screen withStackHeader edges={['left', 'right']}>
-        <AzoresbusTrackingUnavailable variant="offline" />
+        <View style={styles.container}>
+          <ScreenTopAdBanner />
+          <AzoresbusTrackingUnavailable variant="offline" />
+        </View>
       </Screen>
     );
   }
@@ -191,16 +197,19 @@ export default function AzoresbusLiveScreen() {
   if (!trackingAvailable) {
     return (
       <Screen withStackHeader edges={['left', 'right']}>
-        <AzoresbusTrackingUnavailable
-          onTryAgain={onTryAgain}
-          tryAgainDisabled={cooldownSeconds > 0 || healthQuery.isFetching}
-          tryAgainLabel={
-            cooldownSeconds > 0
-              ? t('azoresbusLiveTryAgainWait', { seconds: cooldownSeconds })
-              : t('azoresbusLiveTryAgain')
-          }
-          loading={healthQuery.isFetching}
-        />
+        <View style={styles.container}>
+          <ScreenTopAdBanner />
+          <AzoresbusTrackingUnavailable
+            onTryAgain={onTryAgain}
+            tryAgainDisabled={cooldownSeconds > 0 || healthQuery.isFetching}
+            tryAgainLabel={
+              cooldownSeconds > 0
+                ? t('azoresbusLiveTryAgainWait', { seconds: cooldownSeconds })
+                : t('azoresbusLiveTryAgain')
+            }
+            loading={healthQuery.isFetching}
+          />
+        </View>
       </Screen>
     );
   }

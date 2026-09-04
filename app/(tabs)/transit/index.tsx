@@ -20,6 +20,7 @@ import { MinibusTransitLink } from '@/features/transit/components/MinibusTransit
 import { TransitPricesLink } from '@/features/transit/components/TransitPricesLink';
 import { PinnedRoutesSection } from '@/features/transit/components/PinnedRoutesSection';
 import { RouteResults } from '@/features/transit/components/RouteResults';
+import { SearchingState } from '@/features/transit/components/SearchingState';
 import { ScheduleChangeBanner } from '@/features/transit/components/ScheduleChangeBanner';
 import { ServiceAnnouncementPrompt } from '@/features/transit/components/ServiceAnnouncementPrompt';
 import { SchedulePreviewStrip } from '@/features/transit/components/SchedulePreviewNotice';
@@ -40,12 +41,11 @@ import {
 import type { TransitDataset } from '@/lib/types';
 import { TransitMapLinks } from '@/features/transit/components/TransitMapLinks';
 import { AzoresbusLiveHubCard } from '@/features/azoresbus/components/AzoresbusLiveHubCard';
-import { useAzoresbusTrackingHealth } from '@/features/azoresbus/hooks/useAzoresbusTrackingHealth';
 import { useOpenAzoresbusLiveTracking } from '@/features/azoresbus/hooks/useOpenAzoresbusLiveTracking';
-import {
-  isAzoresbusLiveEntryEnabled,
-  shouldShowAzoresbusLiveEntry,
-} from '@/features/azoresbus/lib/liveEntryVisibility';
+import { useLiveVehicleCounts } from '@/features/live-tracking/hooks/useLiveVehicleCounts';
+import { resolveLiveCount } from '@/features/live-tracking/lib/liveCounts';
+import { isLiveEntryEnabled } from '@/features/live-tracking/lib/liveEntryVisibility';
+import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
 import { useUserDataMigration } from '@/features/transit/hooks/useUserDataMigration';
 import { useNetwork } from '@/lib/network-provider';
 import { WifiOff } from 'lucide-react-native';
@@ -106,25 +106,28 @@ export default function TransitScreen() {
   // Maps exist only where geometry does, which today means AzoresBus.
   const resolvedDataset = useResolvedTransitDataset();
   const hasMaps = resolvedDataset === 'azoresbus';
-  // Live tracking is gated on three independent things: the server flag (does
-  // this feature exist here at all), the network, and whether the AVL is
-  // actually up. Only probe health once the first two already say yes, so a
-  // legacy-dataset or flag-off island never calls the endpoint.
+  // Live tracking is gated on two independent things: the server flag (does
+  // this feature exist here at all) and the dataset (maps only exist for
+  // AzoresBus). Whether the AVL is actually up is answered by the shared
+  // live-counts cache below, never by probing the vendor from this screen.
   const { showTracking } = useScheduleConfig();
   const liveTrackingPossible = showTracking && hasMaps;
-  const azoresbusHealth = useAzoresbusTrackingHealth({
-    enabled: liveTrackingPossible && isOnline,
-  });
-  const showLiveEntry = shouldShowAzoresbusLiveEntry(
-    liveTrackingPossible,
-    isOnline,
-    azoresbusHealth.data,
-  );
-  const liveEntryEnabled = isAzoresbusLiveEntryEnabled(
-    liveTrackingPossible,
-    isOnline,
-    azoresbusHealth.data,
-  );
+  // The hub's ONLY tracking-related request: a cached count, never a vendor
+  // call by itself (see `GET /api/v3/transit/live-counts`). The live map
+  // screen still probes health for real -- its polling is what keeps this
+  // cache warm for everyone else.
+  const liveCounts = useLiveVehicleCounts({ enabled: liveTrackingPossible && isOnline });
+  const azoresbusLive = resolveLiveCount(liveCounts.data?.azoresbus);
+  // Shown whenever the feature exists for this island, online or not, up or
+  // down -- a control that disappears on outage reads as removed. `enabled`
+  // only toggles the card's own grey/caption state; the destination screen
+  // explains offline vs. outage itself.
+  const showLiveEntry = liveTrackingPossible;
+  const forceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.forceUnavailable);
+  const liveEntryEnabled =
+    liveTrackingPossible &&
+    isLiveEntryEnabled(isOnline, azoresbusLive.available) &&
+    !forceLiveTrackingUnavailable;
   const { openLiveTracking } = useOpenAzoresbusLiveTracking();
   // Re-point saved favourites and recents whenever the active network changes
   // (03 §5d). Driven by the stop list, never by a date.
@@ -443,18 +446,30 @@ export default function TransitScreen() {
           {/* Below the schedule banner on purpose: the network map shows the NEW
               timetables, so the "these are not in force yet" warning has to be
               read first or the map quietly contradicts it. */}
-          {hasMaps ? <TransitMapLinks /> : null}
-
-          {/* Directly under the network map, because it answers the next
-              question that map raises: not "where do the buses go" but "where
-              are they now". No margin — TransitWebShell's column gap spaces it. */}
-          {showLiveEntry ? (
-            <AzoresbusLiveHubCard
-              enabled={liveEntryEnabled}
-              onPress={() => {
-                void openLiveTracking({ source: 'transit_hub' });
-              }}
-            />
+          {/* Map and "Ao vivo" share one row to keep the hub short: the live
+              entry answers the next question the map raises ("where are they
+              now"), so they read as a pair. Each half stretches to fill when the
+              other is absent. No margin — TransitWebShell's column gap spaces it. */}
+          {hasMaps || showLiveEntry ? (
+            <View style={styles.mapLiveRow}>
+              {hasMaps ? (
+                <View style={styles.mapLiveCell}>
+                  <TransitMapLinks stopsCount={stops.length} />
+                </View>
+              ) : null}
+              {showLiveEntry ? (
+                <View style={styles.mapLiveCell}>
+                  <AzoresbusLiveHubCard
+                    enabled={liveEntryEnabled}
+                    isOnline={isOnline}
+                    vehicleCount={azoresbusLive.count}
+                    onPress={() => {
+                      void openLiveTracking({ source: 'transit_hub' });
+                    }}
+                  />
+                </View>
+              ) : null}
+            </View>
           ) : null}
 
           <View onLayout={(event) => { plannerY.current = event.nativeEvent.layout.y; }}>
@@ -484,7 +499,7 @@ export default function TransitScreen() {
 
           <View onLayout={(event) => { resultsY.current = event.nativeEvent.layout.y; }}>
           {search.isFetching && !hasResults ? (
-            <ActivityIndicator color={theme.primary} style={{ marginTop: space.lg }} />
+            <SearchingState variant="journeys" date={date} />
           ) : null}
 
           {showEmptyResults ? (
@@ -564,4 +579,10 @@ const styles = StyleSheet.create({
     paddingBottom: space['4xl'],
     alignItems: 'center',
   },
+  mapLiveRow: {
+    flexDirection: 'row',
+    gap: space.sm,
+    alignSelf: 'stretch',
+  },
+  mapLiveCell: { flex: 1 },
 });

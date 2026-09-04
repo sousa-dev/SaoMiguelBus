@@ -1193,6 +1193,31 @@ export interface AzoresbusTrackingHealthResponse {
   vehicles: number;
 }
 
+/**
+ * `GET /api/v3/transit/live-counts` — a cached count per operator, fed as a
+ * side effect of real vendor fetches elsewhere (the live map's polling, or
+ * either operator's health probe). Hub screens read this instead of probing
+ * tracking health themselves, so a hub visit never reaches the AVL vendor.
+ *
+ * `unknown` means nothing is recorded (or it expired) -- not the same as
+ * `unavailable`, which is a recorded outage. `disabled` is AzoresBus-only
+ * (island feature flag off).
+ */
+export type LiveVehicleCountStatus = 'ok' | 'unavailable' | 'disabled' | 'unknown';
+
+export interface LiveVehicleCountEntry {
+  status: LiveVehicleCountStatus;
+  vehicles: number | null;
+  recordedAt: string | null;
+}
+
+export interface LiveVehicleCountsResponse {
+  azoresbus: LiveVehicleCountEntry;
+  /** `null` when the PDL MiniBus app is not installed on this deployment. */
+  minibus: LiveVehicleCountEntry | null;
+  ttlSeconds: number;
+}
+
 export type TransitTripLiveState = 'live' | 'not_found' | 'unsupported';
 
 export interface TransitTripLiveNextStop {

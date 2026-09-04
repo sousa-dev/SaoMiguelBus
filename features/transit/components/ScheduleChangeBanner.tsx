@@ -146,10 +146,23 @@ export function ScheduleChangeBanner() {
     </Sheet>
   );
 
-  if (!showBanner || !bannerText) {
-    // The server can offer a preview before a cutover instant is armed, and the
-    // banner is gated on that instant because its copy announces a dated
-    // changeover. The toggle carries no such claim, so it still needs a home.
+  /**
+   * Nothing to announce — either the server is not making an announcement, or
+   * the rider closed the one it made.
+   *
+   * Dismissed means GONE. This used to collapse to a slim chip that restated
+   * the very sentence the rider had just closed, which reads as the dismissal
+   * having failed rather than as a way back to anything.
+   *
+   * The preview switch outlives the announcement instead of being taken down
+   * with it, because it is the one control here that cannot be reached from
+   * anywhere else. That is also why it shows before a cutover instant is armed:
+   * the switch claims nothing about a dated changeover, so it is not gated on
+   * one. It matters more now that dismissal persists — dropping the switch
+   * along with the banner would permanently strand a rider who closed it
+   * during the preview phase.
+   */
+  if (!showBanner || !bannerText || (dismissible && isBannerDismissed)) {
     if (!showToggle) {
       return null;
     }
@@ -158,25 +171,6 @@ export function ScheduleChangeBanner() {
         {renderPreviewToggle(true)}
         {explainer}
       </View>
-    );
-  }
-
-  // Dismissed collapses to a slim chip rather than disappearing: while a preview
-  // is on offer the user needs the way back to it.
-  if (dismissible && isBannerDismissed) {
-    return (
-      <>
-        <Pressable
-          onPress={() => applyPreviewing(!isPreviewing)}
-          style={[styles.chip, { borderColor: accent, backgroundColor: theme.card }]}
-        >
-          <Info size={14} color={accent} />
-          <Text style={[typography.caption, { color: accent }]}>
-            {showToggle ? t('transitSchedulePreviewChip') : announcement}
-          </Text>
-        </Pressable>
-        {explainer}
-      </>
     );
   }
 
@@ -233,16 +227,5 @@ const styles = StyleSheet.create({
   dialogBody: {
     paddingHorizontal: space.lg,
     gap: space.lg,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: space.xs,
-    borderWidth: 1,
-    borderRadius: radius.sm,
-    paddingHorizontal: space.sm,
-    paddingVertical: space.xs,
-    marginBottom: space.md,
   },
 });

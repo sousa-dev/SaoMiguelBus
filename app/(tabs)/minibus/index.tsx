@@ -1,8 +1,6 @@
-import { Route } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -13,31 +11,34 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
 import { MinibusLiveHubCard } from '@/features/minibus/components/MinibusLiveHubCard';
+import { MinibusPlanRouteLink } from '@/features/minibus/components/MinibusPlanRouteLink';
 import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
 import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
 import { MinibusTariffTable } from '@/features/minibus/components/MinibusTariffTable';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
-import { useMinibusLines, useMinibusTariffs } from '@/features/minibus/hooks/useMinibusQueries';
-import { useOpenMinibusLiveTracking } from '@/features/minibus/hooks/useOpenMinibusLiveTracking';
-import { useMinibusTrackingHealth } from '@/features/minibus/hooks/useMinibusTrackingHealth';
 import {
-  isMinibusLiveEntryEnabled,
-  shouldShowMinibusLiveEntry,
-} from '@/features/minibus/lib/liveEntryVisibility';
+  useMinibusLines,
+  useMinibusNetwork,
+  useMinibusTariffs,
+} from '@/features/minibus/hooks/useMinibusQueries';
+import { useOpenMinibusLiveTracking } from '@/features/minibus/hooks/useOpenMinibusLiveTracking';
+import { useLiveVehicleCounts } from '@/features/live-tracking/hooks/useLiveVehicleCounts';
+import { resolveLiveCount } from '@/features/live-tracking/lib/liveCounts';
+import { isLiveEntryEnabled } from '@/features/live-tracking/lib/liveEntryVisibility';
+import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
 import { localDocumentImageUri } from '@/features/minibus/offline';
 import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
 import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
 import { track } from '@/lib/analytics';
 import { useNetwork } from '@/lib/network-provider';
-import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type MinibusSection = 'plan' | 'lines' | 'pricing';
@@ -65,11 +66,38 @@ export default function MinibusScreen() {
   const linesQuery = useMinibusLines(enabled);
   const tariffsQuery = useMinibusTariffs(enabled);
   const { isOnline } = useNetwork();
-  const healthQuery = useMinibusTrackingHealth({ enabled: enabled && hubFocused });
-  const showLiveEntry = shouldShowMinibusLiveEntry(isOnline, healthQuery.data);
-  const liveEntryEnabled = isMinibusLiveEntryEnabled(isOnline, healthQuery.data);
+  // The hub's ONLY tracking-related request: a cached count, never a vendor
+  // call by itself (see `GET /api/v3/transit/live-counts`). The live map
+  // screen still probes health for real -- its polling is what keeps this
+  // cache warm for everyone else.
+  const liveCounts = useLiveVehicleCounts({ enabled: enabled && hubFocused });
+  const minibusLive = resolveLiveCount(liveCounts.data?.minibus);
+  // Always shown once the module itself is enabled -- an outage explains
+  // itself on the live screen rather than making the entry disappear.
+  const forceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.forceUnavailable);
+  const liveEntryEnabled =
+    isLiveEntryEnabled(isOnline, minibusLive.available) && !forceLiveTrackingUnavailable;
   const { openLiveTracking } = useOpenMinibusLiveTracking();
   const { snapshot } = useMinibusOffline();
+
+  // Total stops for the plan-route row's subtitle, mirroring the transit tab's
+  // "Mapa da Rede" stop count. Offline bundle wins when present, same rule the
+  // search screen uses for its own stop picker.
+  const offlineNetwork = snapshot?.bundle?.network ?? null;
+  const networkQuery = useMinibusNetwork(enabled && !offlineNetwork);
+  const network = offlineNetwork ?? networkQuery.data ?? null;
+  const stopsCount = useMemo(() => {
+    if (!network) {
+      return undefined;
+    }
+    const seen = new Set<string>();
+    for (const line of network.lines) {
+      for (const stop of line.stops) {
+        seen.add(stop.name_pt);
+      }
+    }
+    return seen.size;
+  }, [network]);
 
   useFocusEffect(
     useCallback(() => {
@@ -156,35 +184,30 @@ export default function MinibusScreen() {
           {t('minibusSubtitle')}
         </Text>
 
-        <View onLayout={(event) => onSectionLayout('plan', event)}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              track('minibus', 'view', { screen: 'search' });
-              router.push('/minibus/search');
-            }}
-          >
-            <Card style={styles.searchCard}>
-              <View style={[styles.searchIcon, { backgroundColor: theme.primary }]}>
-                <Route size={iconSize.md} color={theme.onPrimary} strokeWidth={2} />
-              </View>
-              <View style={styles.searchBody}>
-                <Text style={[typography.headline, { color: theme.text }]}>{t('minibusPlanRoute')}</Text>
-                <Text style={[typography.caption, { color: theme.muted }]}>
-                  {t('minibusPlanRouteHint')}
-                </Text>
-              </View>
-            </Card>
-          </Pressable>
-
-          {showLiveEntry ? (
+        {/* Plan route and "Ao vivo" share one row, same pairing as the transit
+            tab's network-map / live-tracking row. Each half stretches to fill
+            when the other is absent -- there is none today, but the layout
+            costs nothing to keep consistent. */}
+        <View onLayout={(event) => onSectionLayout('plan', event)} style={styles.planLiveRow}>
+          <View style={styles.planLiveCell}>
+            <MinibusPlanRouteLink
+              stopsCount={stopsCount}
+              onPress={() => {
+                track('minibus', 'view', { screen: 'search' });
+                router.push('/minibus/search');
+              }}
+            />
+          </View>
+          <View style={styles.planLiveCell}>
             <MinibusLiveHubCard
               enabled={liveEntryEnabled}
+              isOnline={isOnline}
+              vehicleCount={minibusLive.count}
               onPress={() => {
                 void openLiveTracking({ source: 'hub' });
               }}
             />
-          ) : null}
+          </View>
         </View>
 
         <View onLayout={(event) => onSectionLayout('lines', event)} style={styles.section}>
@@ -253,20 +276,12 @@ export default function MinibusScreen() {
 const styles = StyleSheet.create({
   content: { padding: space.lg, paddingBottom: space.xl },
   skeletons: { gap: space.sm },
-  searchCard: {
+  planLiveRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    marginBottom: space.md,
+    gap: space.sm,
+    alignSelf: 'stretch',
   },
-  searchIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchBody: { flex: 1, gap: 2 },
+  planLiveCell: { flex: 1 },
   lineList: { gap: space.md },
   section: { marginTop: space.lg },
   adTop: { marginBottom: space.md },

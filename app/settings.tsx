@@ -3,6 +3,7 @@ import {
   CalendarClock,
   Download,
   Megaphone,
+  Radio,
   ShieldCheck,
   Sparkles,
   Star,
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AccountSection } from '@/features/account/components/AccountSection';
 import { useAdsDevStore } from '@/features/ads/lib/ads-dev-store';
+import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
 import { useAdFreeStore } from '@/features/ads/lib/ad-free-store';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import {
@@ -80,6 +82,8 @@ export default function SettingsScreen() {
   const setPremiumDevOverride = usePremiumStore((s) => s.setDevOverride);
   const forceInternalAds = useAdsDevStore((s) => s.forceInternalAdsFallback);
   const setForceInternalAds = useAdsDevStore((s) => s.setForceInternalAdsFallback);
+  const forceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.forceUnavailable);
+  const setForceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.setForceUnavailable);
   const resetAdFreeWindow = useAdFreeStore((s) => s.resetAdFreeWindow);
   const requestSplashPreview = useSplashDevStore((s) => s.requestPreview);
   const canSimulateSchedule = useCanSimulateSchedule();
@@ -407,6 +411,21 @@ export default function SettingsScreen() {
                     value={forceInternalAds}
                     onValueChange={(value) => {
                       setForceInternalAds(value);
+                      void Haptics.selectionAsync();
+                    }}
+                  />
+                }
+              />
+              <ListRow
+                icon={Radio}
+                title={t('settingsForceLiveTrackingUnavailableToggle')}
+                subtitle={t('settingsForceLiveTrackingUnavailableToggleHint')}
+                showChevron={false}
+                trailing={
+                  <Switch
+                    value={forceLiveTrackingUnavailable}
+                    onValueChange={(value) => {
+                      setForceLiveTrackingUnavailable(value);
                       void Haptics.selectionAsync();
                     }}
                   />

@@ -6,11 +6,12 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
 import { CachedBadge } from '@/components/ui/CachedBadge';
-import { EmptyState, LoadingState } from '@/components/ui/StateView';
+import { EmptyState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
 import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
 import { MinibusJourneyResults } from '@/features/minibus/components/MinibusJourneyResults';
 import { MinibusPlannerCard } from '@/features/minibus/components/MinibusPlannerCard';
+import { SearchingState } from '@/features/transit/components/SearchingState';
 import { minibusJourneyAnalyticsProps } from '@/features/minibus/lib/analytics-props';
 import { setPendingDirections } from '@/features/minibus/directionsStore';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
@@ -163,7 +164,7 @@ export default function MinibusSearchScreen() {
             <CachedBadge label={t('minibusOfflineResults')} />
           ) : null}
 
-          {isLoading ? <LoadingState /> : null}
+          {isLoading ? <SearchingState variant="journeys" /> : null}
 
           {showEmpty ? (
             <EmptyState title={t('minibusNoJourneys')} description={t('minibusNoJourneysHint')} />

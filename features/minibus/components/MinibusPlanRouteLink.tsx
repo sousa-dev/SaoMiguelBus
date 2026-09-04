@@ -1,46 +1,48 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Map as MapIcon, MapPin } from 'lucide-react-native';
+import { MapPin, Route } from 'lucide-react-native';
 
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
-type TransitMapLinksProps = {
-  /** Total stops in the previewed network. Omitted while stops are still loading. */
+type MinibusPlanRouteLinkProps = {
+  onPress: () => void;
+  /** Total stops in the PDL MiniBus network. Omitted while still loading. */
   stopsCount?: number;
 };
 
 /**
- * Way into the browsable network map.
+ * Way into the PDL MiniBus route planner, sharing a row with the "Ao vivo"
+ * entry (`MinibusLiveHubCard`) -- same 34pt-icon row shape as AzoresBus's
+ * `TransitMapLinks`/`AzoresbusLiveHubCard` pairing on the transit tab, so the
+ * two hubs read as one pattern.
  *
- * Rendered only where geometry exists (AzoresBus). On legacy the transit screen
- * is byte-for-byte what it was, because a map there would have nothing to draw.
+ * Carries NO margin: the row sits inside the plan/live pairing, which supplies
+ * its own gap.
  */
-export function TransitMapLinks({ stopsCount }: TransitMapLinksProps) {
+export function MinibusPlanRouteLink({ onPress, stopsCount }: MinibusPlanRouteLinkProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
-  const router = useRouter();
 
   return (
     <Pressable
-      onPress={() => router.push('/(tabs)/transit/network')}
+      onPress={onPress}
       accessibilityRole="button"
       style={[styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}
     >
       <View style={[styles.icon, { backgroundColor: theme.primary }]}>
-        <MapIcon size={18} color={theme.onPrimary} />
+        <Route size={18} color={theme.onPrimary} strokeWidth={2} />
       </View>
       <View style={styles.textCol}>
         <Text style={[typography.label, { color: theme.text }]} numberOfLines={1}>
-          {t('transitNetworkMap')}
+          {t('minibusPlanRoute')}
         </Text>
         {stopsCount ? (
           <View style={styles.subtitleRow}>
             <MapPin size={12} color={theme.muted} />
             <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
-              {t('transitStopsCount', { count: stopsCount })}
+              {t('minibusStopsCount', { count: stopsCount })}
             </Text>
           </View>
         ) : null}

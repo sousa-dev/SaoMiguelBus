@@ -27,6 +27,7 @@ import {
 import { useMinibusLines, useMinibusLine, useMinibusNetwork } from '@/features/minibus/hooks/useMinibusQueries';
 import { useMinibusFleetVehicleDetails } from '@/features/minibus/hooks/useMinibusFleetVehicleDetails';
 import { useMinibusLiveScreenActivity } from '@/features/minibus/hooks/useMinibusScreenActive';
+import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
 import {
   useMinibusVehicleDetail,
   useMinibusVehicles,
@@ -91,7 +92,9 @@ export default function MinibusLiveScreen() {
   const reviewConfig = useInAppReviewConfig();
 
   const healthQuery = useMinibusTrackingHealth({ enabled: navFocused && isOnline });
-  const trackingAvailable = isOnline && isMinibusTrackingAvailable(healthQuery.data);
+  const forceLiveTrackingUnavailable = useLiveTrackingDevStore((s) => s.forceUnavailable);
+  const trackingAvailable =
+    isOnline && isMinibusTrackingAvailable(healthQuery.data) && !forceLiveTrackingUnavailable;
   const trackingQueriesEnabled = navFocused && trackingAvailable;
   const trackingPollingActive = pollingActive && trackingAvailable;
 
@@ -467,7 +470,10 @@ export default function MinibusLiveScreen() {
   if (!isOnline) {
     return (
       <Screen withStackHeader>
-        <MinibusTrackingUnavailable variant="offline" />
+        <View style={styles.container}>
+          <ScreenTopAdBanner />
+          <MinibusTrackingUnavailable variant="offline" />
+        </View>
       </Screen>
     );
   }
@@ -483,12 +489,15 @@ export default function MinibusLiveScreen() {
   if (!trackingAvailable) {
     return (
       <Screen withStackHeader>
-        <MinibusTrackingUnavailable
-          onTryAgain={onTryAgain}
-          tryAgainDisabled={cooldownSeconds > 0 || healthQuery.isFetching}
-          tryAgainLabel={tryAgainLabel}
-          loading={healthQuery.isFetching}
-        />
+        <View style={styles.container}>
+          <ScreenTopAdBanner />
+          <MinibusTrackingUnavailable
+            onTryAgain={onTryAgain}
+            tryAgainDisabled={cooldownSeconds > 0 || healthQuery.isFetching}
+            tryAgainLabel={tryAgainLabel}
+            loading={healthQuery.isFetching}
+          />
+        </View>
       </Screen>
     );
   }

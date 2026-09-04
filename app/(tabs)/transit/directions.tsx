@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateView';
+import { EmptyState, ErrorState } from '@/components/ui/StateView';
 import { DirectionsPlannerForm } from '@/features/transit/components/DirectionsPlannerForm';
 import { DirectionsResults } from '@/features/transit/components/DirectionsResults';
+import { SearchingState } from '@/features/transit/components/SearchingState';
 import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
 import { ScreenTopAdBanner } from '@/features/ads/components/ScreenTopAdBanner';
 import { useBootstrap, useDirections, useStops } from '@/features/transit/hooks/useTransitQueries';
@@ -117,7 +118,7 @@ export default function DirectionsScreen() {
             </View>
           ) : null}
 
-          {directions.isLoading && submitted ? <LoadingState title={t('searchButton')} /> : null}
+          {directions.isLoading && submitted ? <SearchingState variant="directions" /> : null}
 
           {directions.isError ? (
             <ErrorState

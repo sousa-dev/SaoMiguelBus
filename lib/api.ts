@@ -82,6 +82,7 @@ import type {
   AzoresbusRoutesResponse,
   AzoresbusStopArrivalsResponse,
   AzoresbusTrackingHealthResponse,
+  LiveVehicleCountsResponse,
   TransitDataset,
   TransitTripsLiveResponse,
 } from '@/lib/types';
@@ -802,6 +803,17 @@ export async function fetchAzoresbusTrackingHealth(options?: {
     }
     throw error;
   }
+}
+
+/**
+ * Cached vehicle counts for both live-tracking operators. Unlike the health
+ * endpoint above, this one never encodes a vendor verdict as an HTTP error --
+ * it is read-only against a shared cache and always resolves with a
+ * `status` per operator. A rejection here is transport/throttle, not a
+ * tracking outage, so callers can safely treat "no data" as `unknown`.
+ */
+export async function fetchLiveVehicleCounts(): Promise<LiveVehicleCountsResponse> {
+  return apiFetch<LiveVehicleCountsResponse>('/api/v3/transit/live-counts');
 }
 
 /**

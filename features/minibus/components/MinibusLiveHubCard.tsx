@@ -1,71 +1,115 @@
-import { Radio, WifiOff } from 'lucide-react-native';
+import { Bus, Radio, WifiOff } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { RequiresInternet } from '@/components/RequiresInternet';
-import { Card } from '@/components/ui/Card';
-import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type MinibusLiveHubCardProps = {
+  /** Whether the live feed is actually reachable right now (online + AVL up). */
   enabled: boolean;
+  isOnline: boolean;
   onPress: () => void;
+  /**
+   * From the shared `live-counts` cache (`useLiveVehicleCounts` +
+   * `resolveLiveCount`) -- this card makes no network call of its own.
+   * `null`/`undefined` means no count is known yet.
+   */
+  vehicleCount?: number | null;
 };
 
-export function MinibusLiveHubCard({ enabled, onPress }: MinibusLiveHubCardProps) {
+/**
+ * The "Ao vivo" entry on the PDL MiniBus hub, sharing a row with the plan-route
+ * link, whose chrome and 34pt icon it mirrors -- same shape as AzoresBus's
+ * `AzoresbusLiveHubCard` on the transit tab, so the two hubs read as one
+ * pattern.
+ *
+ * Always rendered and always tappable, even when the feed is down: a control
+ * that vanishes or refuses to respond reads as a feature that was taken away.
+ * Tapping through lands on the live screen, which explains the outage/offline
+ * state itself (and keeps showing its own ad banner there). Only the caption
+ * and greyed icon change here.
+ *
+ * Carries NO margin: the row sits inside the plan/live pairing, which supplies
+ * its own gap.
+ */
+export function MinibusLiveHubCard({
+  enabled,
+  isOnline,
+  onPress,
+  vehicleCount,
+}: MinibusLiveHubCardProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
+  const subtitle =
+    enabled && vehicleCount != null
+      ? t('minibusLiveVehiclesCount', { count: vehicleCount })
+      : !isOnline
+        ? t('minibusLiveOfflineShort')
+        : !enabled
+          ? t('minibusLiveUnavailableShort')
+          : null;
+
   return (
-    <RequiresInternet hideMessage>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: !enabled }}
-        accessibilityLabel={
-          enabled
-            ? t('minibusLiveCta')
-            : `${t('minibusLiveCta')}. ${t('minibusLiveOfflineHint')}`
-        }
-        onPress={() => {
-          if (!enabled) {
-            return;
-          }
-          onPress();
-        }}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={
+        enabled
+          ? t('minibusLiveCta')
+          : `${t('minibusLiveCta')}. ${isOnline ? t('minibusLiveUnavailableHint') : t('minibusLiveOfflineHint')}`
+      }
+      onPress={onPress}
+    >
+      <View
+        style={[
+          styles.row,
+          { backgroundColor: theme.card, borderColor: theme.border },
+          !enabled && styles.rowDisabled,
+        ]}
       >
-        <Card style={styles.card}>
-          <View style={[styles.icon, { backgroundColor: theme.accent }]}>
-            {enabled ? (
-              <Radio size={iconSize.md} color={theme.onAccent} strokeWidth={2} />
-            ) : (
-              <WifiOff size={iconSize.md} color={theme.onAccent} strokeWidth={2} />
-            )}
-          </View>
-          <View style={styles.body}>
-            <Text style={[typography.headline, { color: theme.text }]}>{t('minibusLiveCta')}</Text>
-            <Text style={[typography.caption, { color: theme.muted }]}>
-              {enabled ? t('minibusLiveCtaHint') : t('minibusLiveOfflineHint')}
-            </Text>
-          </View>
-        </Card>
-      </Pressable>
-    </RequiresInternet>
+        <View style={[styles.icon, { backgroundColor: theme.accent }]}>
+          {isOnline ? (
+            <Radio size={18} color={theme.onAccent} strokeWidth={2} />
+          ) : (
+            <WifiOff size={18} color={theme.onAccent} strokeWidth={2} />
+          )}
+        </View>
+        <View style={styles.textCol}>
+          <Text style={[typography.label, { color: theme.text }]} numberOfLines={1}>
+            {t('minibusLiveCta')}
+          </Text>
+          {subtitle ? (
+            <View style={styles.subtitleRow}>
+              {enabled ? <Bus size={12} color={theme.muted} /> : null}
+              <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    marginBottom: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
   },
+  rowDisabled: { opacity: 0.55 },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: { flex: 1, gap: 2 },
+  textCol: { flex: 1, gap: space.xs / 2 },
+  subtitleRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

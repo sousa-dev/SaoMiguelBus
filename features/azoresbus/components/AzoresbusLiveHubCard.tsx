@@ -1,79 +1,114 @@
-import { Radio, WifiOff } from 'lucide-react-native';
+import { Bus, Radio, WifiOff } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { RequiresInternet } from '@/components/RequiresInternet';
-import { Card } from '@/components/ui/Card';
-import { iconSize, radius, space, typography } from '@/lib/tokens';
+import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
 type AzoresbusLiveHubCardProps = {
+  /** Whether the live feed is actually reachable right now (online + AVL up). */
   enabled: boolean;
+  isOnline: boolean;
   onPress: () => void;
+  /**
+   * From the shared `live-counts` cache (`useLiveVehicleCounts` +
+   * `resolveLiveCount`) -- this card makes no network call of its own.
+   * `null`/`undefined` means no count is known yet.
+   */
+  vehicleCount?: number | null;
 };
 
 /**
- * The "Ao vivo" entry on the transit tab, directly under the network-map link.
+ * The "Ao vivo" entry on the transit tab, sharing a row with the network-map
+ * link (`TransitMapLinks`), whose chrome and 34pt icon it mirrors so the two
+ * halves sit at the same height.
  *
- * Mirrors `MinibusLiveHubCard` but carries NO bottom margin: this sits inside
- * `TransitWebShell`, whose column already supplies `gap: space.md`, so the
- * minibus margin would double the spacing against its neighbours.
+ * Always rendered and always tappable, even when the feed is down: a control
+ * that vanishes or refuses to respond reads as a feature that was taken away.
+ * Tapping through lands on the live screen, which explains the outage/offline
+ * state itself (and keeps showing its own ad banner there). Only the caption
+ * and greyed icon change here.
+ *
+ * Carries NO margin: the row sits inside `TransitWebShell`, whose column
+ * already supplies `gap: space.md`.
  */
-export function AzoresbusLiveHubCard({ enabled, onPress }: AzoresbusLiveHubCardProps) {
+export function AzoresbusLiveHubCard({
+  enabled,
+  isOnline,
+  onPress,
+  vehicleCount,
+}: AzoresbusLiveHubCardProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
 
+  const subtitle =
+    enabled && vehicleCount != null
+      ? t('azoresbusLiveVehiclesCount', { count: vehicleCount })
+      : !isOnline
+        ? t('azoresbusLiveOfflineShort')
+        : !enabled
+          ? t('azoresbusLiveUnavailableShort')
+          : null;
+
   return (
-    <RequiresInternet hideMessage>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: !enabled }}
-        accessibilityLabel={
-          enabled
-            ? t('azoresbusLiveCta')
-            : `${t('azoresbusLiveCta')}. ${t('azoresbusLiveOfflineHint')}`
-        }
-        onPress={() => {
-          if (!enabled) {
-            return;
-          }
-          onPress();
-        }}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={
+        enabled
+          ? `${t('azoresbusLiveCta')}. ${t('azoresbusLiveCtaHint')}`
+          : `${t('azoresbusLiveCta')}. ${isOnline ? t('azoresbusLiveUnavailableHint') : t('azoresbusLiveOfflineHint')}`
+      }
+      onPress={onPress}
+    >
+      <View
+        style={[
+          styles.row,
+          { backgroundColor: theme.card, borderColor: theme.border },
+          !enabled && styles.rowDisabled,
+        ]}
       >
-        <Card style={styles.card}>
-          <View style={[styles.icon, { backgroundColor: theme.accent }]}>
-            {enabled ? (
-              <Radio size={iconSize.md} color={theme.onAccent} strokeWidth={2} />
-            ) : (
-              <WifiOff size={iconSize.md} color={theme.onAccent} strokeWidth={2} />
-            )}
-          </View>
-          <View style={styles.body}>
-            <Text style={[typography.headline, { color: theme.text }]}>
-              {t('azoresbusLiveCta')}
-            </Text>
-            <Text style={[typography.caption, { color: theme.muted }]}>
-              {enabled ? t('azoresbusLiveCtaHint') : t('azoresbusLiveOfflineHint')}
-            </Text>
-          </View>
-        </Card>
-      </Pressable>
-    </RequiresInternet>
+        <View style={[styles.icon, { backgroundColor: theme.accent }]}>
+          {isOnline ? (
+            <Radio size={18} color={theme.onAccent} strokeWidth={2} />
+          ) : (
+            <WifiOff size={18} color={theme.onAccent} strokeWidth={2} />
+          )}
+        </View>
+        <View style={styles.textCol}>
+          <Text style={[typography.label, { color: theme.text }]} numberOfLines={1}>
+            {t('azoresbusLiveCta')}
+          </Text>
+          {subtitle ? (
+            <View style={styles.subtitleRow}>
+              {enabled ? <Bus size={12} color={theme.muted} /> : null}
+              <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
   },
+  rowDisabled: { opacity: 0.55 },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: { flex: 1, gap: 2 },
+  textCol: { flex: 1, gap: space.xs / 2 },
+  subtitleRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });
