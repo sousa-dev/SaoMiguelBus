@@ -14,6 +14,8 @@ const ADMOB_ENV_KEYS = [
   'EXPO_PUBLIC_ADMOB_REWARDED_IOS',
   'EXPO_PUBLIC_ADMOB_NATIVE_ANDROID',
   'EXPO_PUBLIC_ADMOB_NATIVE_IOS',
+  'EXPO_PUBLIC_ADMOB_NATIVE_SMALL_ANDROID',
+  'EXPO_PUBLIC_ADMOB_NATIVE_SMALL_IOS',
 ];
 
 /** Google's sample account. Serving these in a release build earns nothing. */
@@ -86,6 +88,34 @@ describe('AdMob unit IDs in a production build without .env', () => {
       unitId,
       null,
       'inline transit slots silently fall back to the house ad without a native unit ID',
+    );
+    assert.ok(
+      !unitId?.startsWith(GOOGLE_TEST_PUBLISHER),
+      'release builds must not serve Google sample native ads — that earns nothing, and means the __DEV__ branch leaked',
+    );
+  });
+
+  it('resolves a real small native unit on Android', async () => {
+    const { getAdMobNativeSmallUnitId } = await import('@/config/admob.android');
+    const unitId = getAdMobNativeSmallUnitId();
+    assert.notEqual(
+      unitId,
+      null,
+      'banner-replacement slots silently fall back to a raw banner without a small native unit ID',
+    );
+    assert.ok(
+      !unitId?.startsWith(GOOGLE_TEST_PUBLISHER),
+      'release builds must not serve Google sample native ads — that earns nothing, and means the __DEV__ branch leaked',
+    );
+  });
+
+  it('resolves a real small native unit on iOS', async () => {
+    const { getAdMobNativeSmallUnitId } = await import('@/config/admob.ios');
+    const unitId = getAdMobNativeSmallUnitId();
+    assert.notEqual(
+      unitId,
+      null,
+      'banner-replacement slots silently fall back to a raw banner without a small native unit ID',
     );
     assert.ok(
       !unitId?.startsWith(GOOGLE_TEST_PUBLISHER),

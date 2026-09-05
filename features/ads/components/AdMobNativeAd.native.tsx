@@ -11,6 +11,7 @@ import { track } from '@/lib/analytics';
 import { logger } from '@/lib/logger';
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 type Props = {
   on: string;
@@ -170,15 +171,40 @@ export function AdMobNativeAd({ on, slot, fallback }: Props) {
     };
   }, [mod, on, slotLabel, state]);
 
-  // A slot still waiting on the viewport has to be measurable, so it renders an
-  // empty host rather than nothing. `collapsable={false}` keeps Android from
-  // optimising that host out of the native tree, which would break the measure.
   if (state.status === 'failed') {
     return <>{fallback ?? null}</>;
   }
 
+  // A slot still waiting on the viewport or the ad request has to stay
+  // measurable, so it renders a card-shaped skeleton rather than nothing —
+  // `collapsable={false}` keeps Android from optimising the host out of the
+  // native tree, which would break `checkViewport`'s measure. Sized to the
+  // loaded card's common shape (icon + two headline lines, two body lines,
+  // CTA pill) so the swap to the real ad reads as a content change, not a
+  // layout jump.
   if (state.status !== 'loaded' || !mod) {
-    return <View ref={hostRef} onLayout={checkViewport} collapsable={false} />;
+    return (
+      <View
+        ref={hostRef}
+        onLayout={checkViewport}
+        collapsable={false}
+        style={[styles.card, { backgroundColor: theme.card, borderColor: theme.outline }]}
+      >
+        <View style={styles.adContent}>
+          <Skeleton height={12} width={28} rounded="sm" />
+          <View style={styles.header}>
+            <Skeleton width={40} height={40} rounded="sm" />
+            <View style={styles.headerText}>
+              <Skeleton height={14} width="90%" />
+              <Skeleton height={14} width="55%" />
+            </View>
+          </View>
+          <Skeleton height={13} width="100%" />
+          <Skeleton height={13} width="80%" />
+          <Skeleton height={space.md * 2 + 16} width="100%" rounded="md" />
+        </View>
+      </View>
+    );
   }
 
   const { ad } = state;

@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { AdMobBanner } from '@/features/ads/components/AdMobBanner';
 import { AdMobNativeAd } from '@/features/ads/components/AdMobNativeAd';
 import { InternalAdBanner } from '@/features/ads/components/InternalAdBanner';
+import { SmallNativeAdView } from '@/features/ads/components/SmallNativeAdView';
 import { useAd } from '@/features/ads/hooks/useAd';
 import { track } from '@/lib/analytics';
 import { radius, space, typography } from '@/lib/tokens';
@@ -16,9 +16,11 @@ type Props = {
   /** Distinguishes multiple banners on the same surface (separate rotation). */
   slot?: string | number;
   /**
-   * `native` renders an AdMob Native Advanced card instead of a banner, with
-   * the internal house ad as its no-fill fallback. Only the AdMob tier is
-   * affected — first-party and internal look the same either way.
+   * `banner` (default) renders a compact Native Advanced card sized like a
+   * banner, falling back to a real AdMob banner on no-fill. `native` renders
+   * the full-size Native Advanced card instead, with the internal house ad as
+   * its no-fill fallback. Only the AdMob tier is affected — first-party and
+   * internal look the same either way.
    */
   format?: 'banner' | 'native';
 };
@@ -73,7 +75,7 @@ export function AdBanner({ on, slot, format = 'banner' }: Props) {
         />
       );
     }
-    return <AdMobBanner on={on} slot={slot} />;
+    return <SmallNativeAdView on={on} slot={slot} />;
   }
 
   if (kind === 'internal' && internalCreative) {

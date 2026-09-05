@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 type MinibusLiveHubCardProps = {
   /** Whether the live feed is actually reachable right now (online + AVL up). */
@@ -16,6 +17,12 @@ type MinibusLiveHubCardProps = {
    * `null`/`undefined` means no count is known yet.
    */
   vehicleCount?: number | null;
+  /**
+   * True while `useLiveVehicleCounts` hasn't resolved yet. Reserves the
+   * subtitle row with a skeleton bar instead of leaving it empty, so the
+   * card doesn't grow by a line once the count arrives.
+   */
+  isLoading?: boolean;
 };
 
 /**
@@ -38,6 +45,7 @@ export function MinibusLiveHubCard({
   isOnline,
   onPress,
   vehicleCount,
+  isLoading,
 }: MinibusLiveHubCardProps) {
   const theme = useAppTheme();
   const { t } = useTranslation();
@@ -79,7 +87,11 @@ export function MinibusLiveHubCard({
           <Text style={[typography.label, { color: theme.text }]} numberOfLines={1}>
             {t('minibusLiveCta')}
           </Text>
-          {subtitle ? (
+          {isLoading && enabled ? (
+            <View style={styles.subtitleRow}>
+              <Skeleton height={12} width={70} />
+            </View>
+          ) : subtitle ? (
             <View style={styles.subtitleRow}>
               {enabled ? <Bus size={12} color={theme.muted} /> : null}
               <Text style={[typography.caption, { color: theme.muted }]} numberOfLines={1}>

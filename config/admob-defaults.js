@@ -16,4 +16,8 @@ module.exports = {
   /** Native Advanced units back the inline ad cards between transit results. */
   nativeAndroid: 'ca-app-pub-8246676797736648/5105287286',
   nativeIos: 'ca-app-pub-8246676797736648/4045637858',
+  /** Compact Native Advanced units back the banner-sized slots (icon +
+   * headline + CTA, no media), so their fill is tracked apart from the card. */
+  nativeSmallAndroid: 'ca-app-pub-8246676797736648/9075934849',
+  nativeSmallIos: 'ca-app-pub-8246676797736648/7702414472',
 };

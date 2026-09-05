@@ -463,6 +463,7 @@ export default function TransitScreen() {
                     enabled={liveEntryEnabled}
                     isOnline={isOnline}
                     vehicleCount={azoresbusLive.count}
+                    isLoading={liveCounts.isLoading}
                     onPress={() => {
                       void openLiveTracking({ source: 'transit_hub' });
                     }}

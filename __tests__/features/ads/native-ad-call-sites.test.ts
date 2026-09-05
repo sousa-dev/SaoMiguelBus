@@ -4,9 +4,12 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 /**
- * Pins where Native Advanced ads are used and where they deliberately are not.
- * `format` defaults to `'banner'`, so these placements are the whole rollout —
- * a dropped prop would silently revert the feature with nothing else failing.
+ * Pins where the large, full-size Native Advanced card (`format="native"`) is
+ * used and where it deliberately is not. `format` defaults to `'banner'`,
+ * which no longer means a raw adaptive banner — it now renders the compact
+ * `SmallNativeAdView`, itself native-first with a banner fallback — so every
+ * slot in this file gets *some* native ad; only the large card's rollout is
+ * opt-in via `format="native"`.
  */
 
 function read(relPath: string): string {
@@ -42,13 +45,27 @@ describe('native ad call sites', () => {
     );
   });
 
-  it('leaves the transit top banner as an adaptive banner', () => {
+  it('leaves the transit top slot on the default format', () => {
+    // The default format is no longer a raw banner — it renders SmallNativeAdView,
+    // which is itself native-first with a banner fallback. The large full-size
+    // card (format="native") stays reserved for the inline result slots.
     const source = read('app/(tabs)/transit/index.tsx');
     const topBanner = /<AdBanner[^>]*slot="top"[^>]*\/>/.exec(source);
     assert.ok(topBanner, 'expected a top-slot AdBanner on the transit screen');
     assert.ok(
       !topBanner[0].includes('format="native"'),
-      'the top banner stays a banner — a native card there was explicitly out of scope',
+      'the top slot must keep using the default format (compact card + banner ' +
+        'fallback), not the large inline card',
+    );
+  });
+
+  it('routes the default format through the compact card, not straight to a banner', () => {
+    const source = read('features/ads/components/AdBanner.tsx');
+    assert.match(
+      source,
+      /return <SmallNativeAdView on=\{on\} slot=\{slot\} \/>;/,
+      'format="banner" (the default) must go through SmallNativeAdView\'s ' +
+        'native-first, banner-fallback waterfall, not straight to AdMobBanner',
     );
   });
 

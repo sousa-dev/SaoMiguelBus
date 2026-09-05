@@ -278,6 +278,7 @@ export default function MinibusScreen() {
                 enabled={liveEntryEnabled}
                 isOnline={isOnline}
                 vehicleCount={minibusLive.count}
+                isLoading={liveCounts.isLoading}
                 onPress={() => {
                   void openLiveTracking({ source: 'hub' });
                 }}

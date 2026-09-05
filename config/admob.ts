@@ -22,6 +22,10 @@ export function getAdMobNativeUnitId(): string | null {
   return null;
 }
 
+export function getAdMobNativeSmallUnitId(): string | null {
+  return null;
+}
+
 export const ADMOB_APP_IDS = {
   android: '',
   ios: '',

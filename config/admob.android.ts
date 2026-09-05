@@ -7,6 +7,9 @@ const TEST = {
   appOpen: 'ca-app-pub-3940256099942544/9257395921',
   rewarded: 'ca-app-pub-3940256099942544/5224354917',
   native: 'ca-app-pub-3940256099942544/2247696110',
+  // Google publishes no separate "small" native sample — the plain one serves
+  // the same creatives the compact card renders without media.
+  nativeSmall: 'ca-app-pub-3940256099942544/2247696110',
 } as const;
 
 /**
@@ -64,6 +67,15 @@ export function getAdMobNativeUnitId(): string | null {
     return TEST.native;
   }
   return clean(process.env.EXPO_PUBLIC_ADMOB_NATIVE_ANDROID) ?? ADMOB_DEFAULTS.nativeAndroid;
+}
+
+export function getAdMobNativeSmallUnitId(): string | null {
+  if (__DEV__) {
+    return TEST.nativeSmall;
+  }
+  return (
+    clean(process.env.EXPO_PUBLIC_ADMOB_NATIVE_SMALL_ANDROID) ?? ADMOB_DEFAULTS.nativeSmallAndroid
+  );
 }
 
 export const ADMOB_APP_IDS = {
