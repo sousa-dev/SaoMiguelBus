@@ -18,7 +18,7 @@ import { SaoMiguelSplashOutline } from '@/features/splash/components/SaoMiguelSp
 import { resolveSplashTheme, type SplashColorScheme } from '@/features/splash/branded-splash-theme';
 import { space, typography } from '@/lib/tokens';
 
-const APP_NAME = 'São Miguel Hub';
+const APP_NAME = 'São Miguel Bus';
 const FADE_MS = 250;
 const LOGO_SIZE = 120;
 

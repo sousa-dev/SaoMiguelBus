@@ -5,10 +5,10 @@
     "delay_app_measurement_init": true
   },
   "expo": {
-    "name": "São Miguel Hub",
+    "name": "São Miguel Bus",
     "slug": "sao-miguel-hub",
     "owner": "sousa-dev",
-    "version": "5.2.15",
+    "version": "5.2.16",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saomiguelhub",
@@ -38,8 +38,8 @@
           "zh-Hans"
         ],
         "NSUserTrackingUsageDescription": "Used to deliver personalized ads. You can use the app with non-personalized ads if you opt out.",
-        "NSLocationWhenInUseUsageDescription": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
-        "NSMotionUsageDescription": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
+        "NSLocationWhenInUseUsageDescription": "São Miguel Bus uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
+        "NSMotionUsageDescription": "São Miguel Bus uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map."
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,
@@ -114,10 +114,10 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "São Miguel Hub uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
+          "locationWhenInUsePermission": "São Miguel Bus uses your location to show traffic incidents near you on the map and to detect your parish for local weather and nearby bus stops. For example, it alerts you when a road incident is reported close by while the traffic screen is open.",
           "locationAlwaysPermission": false,
           "locationAlwaysAndWhenInUsePermission": false,
-          "motionUsagePermission": "São Miguel Hub uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map.",
+          "motionUsagePermission": "São Miguel Bus uses motion data through its location services to improve positioning accuracy for traffic alerts and local weather. For example, activity recognition helps determine whether you are moving or stationary while viewing nearby road incidents on the map.",
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidMotionActivityEnabled": false
@@ -126,7 +126,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "São Miguel Hub accesses your photo library so you can attach a screenshot to a feedback or bug report.",
+          "photosPermission": "São Miguel Bus accesses your photo library so you can attach a screenshot to a feedback or bug report.",
           "cameraPermission": false,
           "microphonePermission": false
         }
