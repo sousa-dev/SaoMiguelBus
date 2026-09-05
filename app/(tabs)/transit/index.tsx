@@ -565,6 +565,7 @@ export default function TransitScreen() {
             <HopOnHopOffCtaRow source="transit" />
           ) : null}
           {showInstructions ? <TransitInstructionCard /> : null}
+          {showInstructions ? <AdBanner on="home" slot="instructions" format="native" /> : null}
         </TransitWebShell>
       </ScrollView>
       {/* `ready` deliberately does not wait for the fetch — see rollSearchInterstitial. */}

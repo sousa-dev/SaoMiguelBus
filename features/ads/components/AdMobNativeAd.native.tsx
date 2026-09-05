@@ -202,7 +202,7 @@ export function AdMobNativeAd({ on, slot, fallback }: Props) {
     // offsets every child by that padding, so each asset spills past the edge
     // and the validator reports "assets outside native ad view". Zero padding
     // and zero border keep content box == bounds.
-    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+    <View style={[styles.card, { backgroundColor: theme.surfaceVariant, borderColor: theme.outline }]}>
       <NativeAdView
         // `NativeAsset` registers its node once, when the view mounts. Keying on
         // the response id guarantees a fresh subtree per ad, so assets can never
@@ -213,7 +213,13 @@ export function AdMobNativeAd({ on, slot, fallback }: Props) {
       >
       {/* Measured as one block so the ad view can snap to it — see onAdContentLayout. */}
       <View style={styles.adContent} onLayout={onAdContentLayout}>
-      {showMedia ? <NativeMediaView resizeMode="cover" style={styles.media} /> : null}
+      <View style={styles.attributionRow}>
+        <View style={[styles.badge, { backgroundColor: theme.primary }]}>
+          <Text style={[styles.badgeText, { color: theme.onPrimary }]}>
+            {t('transitAdLabel')}
+          </Text>
+        </View>
+      </View>
 
       <View style={styles.header}>
         {ad.icon?.url ? (
@@ -231,17 +237,12 @@ export function AdMobNativeAd({ on, slot, fallback }: Props) {
               {ad.headline}
             </Text>
           </NativeAsset>
-          <View style={styles.metaRow}>
-            <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-              <Text style={[styles.badgeText, { color: theme.onPrimary }]}>
-                {t('transitAdLabel')}
-              </Text>
-            </View>
-            {/* No ADVERTISER asset: optional under Google's native policy, and
-                the "Ad" badge already fills this row. */}
-          </View>
+          {/* No ADVERTISER asset: optional under Google's native policy, and
+              the "Ad" badge already fills the attribution row. */}
         </View>
       </View>
+
+      {showMedia ? <NativeMediaView resizeMode="cover" style={styles.media} /> : null}
 
       {ad.body ? (
         <NativeAsset assetType={NativeAssetType.BODY}>
@@ -270,30 +271,30 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     padding: space.md,
   },
   // No padding, no border — see the comment on the outer card View. Its
   // whole-point size is applied at runtime, see onAdContentLayout.
   adView: { width: '100%' },
   adContent: { gap: space.sm },
-  media: { width: '100%' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  icon: { width: 40, height: 40, borderRadius: radius.sm },
-  headerText: { flex: 1, gap: space.xs },
-  headline: { ...typography.label, fontWeight: '700' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  attributionRow: { flexDirection: 'row', alignItems: 'center' },
   badge: {
     paddingHorizontal: space.xs,
     paddingVertical: 1,
     borderRadius: radius.sm,
   },
   badgeText: { ...typography.overline, fontSize: 9, letterSpacing: 0.8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  icon: { width: 40, height: 40, borderRadius: radius.sm },
+  headerText: { flex: 1, gap: space.xs },
+  headline: { ...typography.label, fontWeight: '700' },
+  media: { width: '100%' },
   body: { ...typography.caption },
   cta: {
     ...typography.label,
     textAlign: 'center',
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     paddingHorizontal: space.md,
     borderRadius: radius.md,
   },
