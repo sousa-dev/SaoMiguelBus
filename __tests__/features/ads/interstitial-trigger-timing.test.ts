@@ -54,8 +54,8 @@ describe('search interstitial timing', () => {
     );
   });
 
-  it('applies the same start-time roll on the MiniBus search screen', () => {
-    const minibus = readFileSync(join(process.cwd(), 'app/(tabs)/minibus/search.tsx'), 'utf8');
+  it('applies the same start-time roll on the MiniBus planner (embedded on the hub screen)', () => {
+    const minibus = readFileSync(join(process.cwd(), 'app/(tabs)/minibus/index.tsx'), 'utf8');
     assert.match(
       minibus,
       /rollSearchInterstitial\(\);\s*setSubmitted\(/,

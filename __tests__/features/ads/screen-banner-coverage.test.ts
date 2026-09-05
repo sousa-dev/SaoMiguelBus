@@ -19,6 +19,9 @@ const APP_DIR = join(process.cwd(), 'app');
 const AD_EXEMPT_ROUTES = new Set<string>([
   // Bare `<Redirect>`, no UI to attach a banner to.
   'app/index.tsx',
+  // Bare `<Redirect>` back to the hub — the planner now lives on
+  // `app/(tabs)/minibus/index.tsx`; kept only so old deep links land somewhere.
+  'app/(tabs)/minibus/search.tsx',
   // Error screen — AdMob prohibits ads on screens without publisher content.
   'app/+not-found.tsx',
   // The CMP flow itself: `canInitAdMob` requires `decided`, but the

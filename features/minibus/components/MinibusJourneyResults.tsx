@@ -17,6 +17,12 @@ export function MinibusJourneyResults({ journeys, linesByCode, onJourneyPress }:
     return null;
   }
 
+  // Same native-ad rule as the transit results (`RouteResults`): one after
+  // every 2nd card, never after the last. The rule first fires at index 1, so
+  // fewer than 3 journeys would render no ad at all — a results list always
+  // carries at least one native ad; short lists take it at the end.
+  const hasInlineAd = journeys.length >= 3;
+
   return (
     <View style={styles.wrap}>
       {journeys.map((journey, index) => {
@@ -28,10 +34,13 @@ export function MinibusJourneyResults({ journeys, linesByCode, onJourneyPress }:
               linesByCode={linesByCode}
               onPress={onJourneyPress ? () => onJourneyPress(journey, index) : undefined}
             />
-            {showInlineAd ? <AdBanner on="home" slot={`minibus-search-inline-${index}`} /> : null}
+            {showInlineAd ? (
+              <AdBanner on="home" slot={`inline-${index}`} format="native" />
+            ) : null}
           </Fragment>
         );
       })}
+      {!hasInlineAd ? <AdBanner on="home" slot="inline-end" format="native" /> : null}
     </View>
   );
 }

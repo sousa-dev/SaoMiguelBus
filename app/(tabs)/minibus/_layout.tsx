@@ -11,8 +11,11 @@ export default function MinibusLayout() {
   return (
     <Stack screenOptions={screenOptions}>
       <Stack.Screen name="index" options={moduleRootHeader} />
-      <Stack.Screen name="search" options={stackBackScreenOptions('/(tabs)/minibus')} />
+      {/* `search` is intentionally unregistered: the file is a redirect stub
+          for old deep links, and never renders long enough to need options. */}
       <Stack.Screen name="directions" options={stackBackScreenOptions('/(tabs)/minibus')} />
+      <Stack.Screen name="prices" options={stackBackScreenOptions('/(tabs)/minibus')} />
+      <Stack.Screen name="network" options={stackBackScreenOptions('/(tabs)/minibus')} />
       <Stack.Screen name="live" options={stackBackScreenOptions('/(tabs)/minibus')} />
       <Stack.Screen name="[slug]" options={stackBackScreenOptions('/(tabs)/minibus')} />
       <Stack.Screen name="pdf" options={stackBackScreenOptions('/(tabs)/minibus')} />

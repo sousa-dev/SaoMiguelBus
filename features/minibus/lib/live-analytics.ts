@@ -35,14 +35,23 @@ export {
 const MODULE = 'minibus';
 
 export function trackMinibusView(
-  screen: 'list' | 'search' | 'line' | 'line_map' | 'line_map_stop' | 'live' | 'directions',
+  screen:
+    | 'list'
+    | 'search'
+    | 'line'
+    | 'line_map'
+    | 'line_map_stop'
+    | 'live'
+    | 'directions'
+    | 'network'
+    | 'prices',
   props: Record<string, string | number | boolean> = {},
 ): void {
   track(MODULE, 'view', { screen, ...props });
 }
 
 export function trackLiveEntryOpen(
-  source: 'hub' | 'line_detail',
+  source: 'hub' | 'line_detail' | 'network',
   props: { line?: string } = {},
 ): void {
   track(MODULE, 'live_entry_open', { source, ...props });

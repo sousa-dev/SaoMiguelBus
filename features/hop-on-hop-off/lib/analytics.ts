@@ -1,6 +1,6 @@
 import { track } from '@/lib/analytics';
 
-export type HopOnOffSource = 'sidebar' | 'transit' | 'hub';
+export type HopOnOffSource = 'sidebar' | 'transit' | 'minibus' | 'hub';
 
 export function trackHopOnOffSheetOpen(source: HopOnOffSource): void {
   track('hop_on_off', 'sheet_open', { source });

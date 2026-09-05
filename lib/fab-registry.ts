@@ -71,10 +71,11 @@ const HIDDEN_SEGMENTS = new Set(['feedback', 'settings', 'onboarding', 'profile'
 const HIDDEN_PATHS = new Set([
   'marketplace/new',
   'traffic/new',
-  // The network map is a full-bleed map with its own controls at every corner
-  // — search top-left, zoom top-right, the focused-stop stepper along the
-  // bottom. The FAB lands on top of the stepper.
+  // The network maps are full-bleed maps with their own controls at every
+  // corner — search top-left, zoom top-right, the focused-stop stepper along
+  // the bottom. The FAB lands on top of the stepper.
   'transit/network',
+  'minibus/network',
   // Result lists that interleave inline ad slots. The FAB is anchored bottom-right
   // over the scroll area, so a banner scrolling past it ends up partly covered —
   // and covering a Google ad with app chrome is an AdMob policy violation, the same

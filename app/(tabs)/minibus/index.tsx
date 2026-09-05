@@ -1,70 +1,76 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  LayoutChangeEvent,
+  Keyboard,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
-import { Chip } from '@/components/ui/Chip';
-import { CardSkeleton } from '@/components/ui/Skeleton';
-import { ErrorState } from '@/components/ui/StateView';
+import { CachedBadge } from '@/components/ui/CachedBadge';
+import { EmptyState } from '@/components/ui/StateView';
 import { AdBanner } from '@/features/ads/components/AdBanner';
+import { InterstitialOrchestrator } from '@/features/ads/components/InterstitialOrchestrator';
+import { AdViewportProvider, useAdViewportSource } from '@/features/ads/lib/ad-viewport';
+import { HopOnHopOffCtaRow } from '@/features/hop-on-hop-off/components/HopOnHopOffCtaRow';
+import { useHopOnHopOffPromo } from '@/features/hop-on-hop-off/hooks/useHopOnHopOffPromo';
 import { MinibusAttributionFooter } from '@/features/minibus/components/MinibusAttributionFooter';
+import { MinibusJourneyResults } from '@/features/minibus/components/MinibusJourneyResults';
 import { MinibusLiveHubCard } from '@/features/minibus/components/MinibusLiveHubCard';
-import { MinibusPlanRouteLink } from '@/features/minibus/components/MinibusPlanRouteLink';
-import { MinibusLineCard } from '@/features/minibus/components/MinibusLineCard';
-import { MinibusLineImage } from '@/features/minibus/components/MinibusLineImage';
-import { MinibusTariffTable } from '@/features/minibus/components/MinibusTariffTable';
+import { MinibusNetworkMapLink } from '@/features/minibus/components/MinibusNetworkMapLink';
+import { MinibusPlannerCard } from '@/features/minibus/components/MinibusPlannerCard';
+import { MinibusPricesLink } from '@/features/minibus/components/MinibusPricesLink';
+import { TransitMinibusLink } from '@/features/minibus/components/TransitMinibusLink';
+import { minibusJourneyAnalyticsProps } from '@/features/minibus/lib/analytics-props';
+import { trackMinibusView } from '@/features/minibus/lib/live-analytics';
+import { MINIBUS_ACCENT } from '@/features/minibus/lib/moduleAccent';
+import { setPendingDirections } from '@/features/minibus/directionsStore';
+import { TransitWebShell } from '@/features/transit/components/TransitWebShell';
+import { SearchingState } from '@/features/transit/components/SearchingState';
 import { useMinibusOffline } from '@/features/minibus/hooks/useMinibusOffline';
 import {
   useMinibusLines,
   useMinibusNetwork,
   useMinibusTariffs,
 } from '@/features/minibus/hooks/useMinibusQueries';
+import { useMinibusRouteSearch } from '@/features/minibus/hooks/useMinibusRouteSearch';
 import { useOpenMinibusLiveTracking } from '@/features/minibus/hooks/useOpenMinibusLiveTracking';
 import { useLiveVehicleCounts } from '@/features/live-tracking/hooks/useLiveVehicleCounts';
 import { resolveLiveCount } from '@/features/live-tracking/lib/liveCounts';
 import { isLiveEntryEnabled } from '@/features/live-tracking/lib/liveEntryVisibility';
 import { useLiveTrackingDevStore } from '@/features/live-tracking/lib/live-tracking-dev-store';
-import { localDocumentImageUri } from '@/features/minibus/offline';
-import { buildMinibusDocumentFileUrl } from '@/features/minibus/pdfUrl';
-import { resolveEnabledModules } from '@/config/island';
 import { useBootstrap } from '@/features/transit/hooks/useTransitQueries';
+import { resolveEnabledModules } from '@/config/island';
 import { track } from '@/lib/analytics';
 import { useNetwork } from '@/lib/network-provider';
-import { space, typography } from '@/lib/tokens';
+import { space } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
-type MinibusSection = 'plan' | 'lines' | 'pricing';
-
-const SECTIONS: Array<{ key: MinibusSection; labelKey: string }> = [
-  { key: 'plan', labelKey: 'minibusSectionPlanRoute' },
-  { key: 'lines', labelKey: 'minibusSectionLines' },
-  { key: 'pricing', labelKey: 'minibusSectionPricing' },
-];
-
+/**
+ * The PDL MiniBus hub, mirroring the transit tab's structure: the route
+ * planner lives directly on this page with results rendering inline under it,
+ * the network map and live tracking share one row, and fares link out to
+ * their own screen. The layout is shared with transit; the orange accents are
+ * the one deliberate difference.
+ */
 export default function MinibusScreen() {
   const theme = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const scrollRef = useRef<ScrollView>(null);
-  const sectionOffsets = useRef<Partial<Record<MinibusSection, number>>>({});
-  const [activeSection, setActiveSection] = useState<MinibusSection>('plan');
+  const queryClient = useQueryClient();
 
   const { data: bootstrap } = useBootstrap();
   const modules = resolveEnabledModules(bootstrap?.island?.enabledModules);
   const enabled = modules.includes('minibus');
+  const showTransit = modules.includes('transit');
+  const { visible: showHopOnOff } = useHopOnHopOffPromo();
 
   const [hubFocused, setHubFocused] = useState(false);
 
-  const linesQuery = useMinibusLines(enabled);
-  const tariffsQuery = useMinibusTariffs(enabled);
   const { isOnline } = useNetwork();
   // The hub's ONLY tracking-related request: a cached count, never a vendor
   // call by itself (see `GET /api/v3/transit/live-counts`). The live map
@@ -78,14 +84,23 @@ export default function MinibusScreen() {
   const liveEntryEnabled =
     isLiveEntryEnabled(isOnline, minibusLive.available) && !forceLiveTrackingUnavailable;
   const { openLiveTracking } = useOpenMinibusLiveTracking();
-  const { snapshot } = useMinibusOffline();
 
-  // Total stops for the plan-route row's subtitle, mirroring the transit tab's
-  // "Mapa da Rede" stop count. Offline bundle wins when present, same rule the
-  // search screen uses for its own stop picker.
+  const { snapshot } = useMinibusOffline();
   const offlineNetwork = snapshot?.bundle?.network ?? null;
+  const linesQuery = useMinibusLines(enabled);
   const networkQuery = useMinibusNetwork(enabled && !offlineNetwork);
+  const tariffsQuery = useMinibusTariffs(enabled);
   const network = offlineNetwork ?? networkQuery.data ?? null;
+  const lines = linesQuery.data?.lines ?? snapshot?.bundle?.lines ?? [];
+
+  const linesByCode = useMemo(
+    () => new Map(lines.map((line) => [line.code, line])),
+    [lines],
+  );
+
+  // Total stops for the network-map row's subtitle, mirroring the transit
+  // tab's "Mapa da Rede" stop count. Offline bundle wins when present, same
+  // rule the planner's stop picker uses.
   const stopsCount = useMemo(() => {
     if (!network) {
       return undefined;
@@ -99,13 +114,89 @@ export default function MinibusScreen() {
     return seen.size;
   }, [network]);
 
+  const stops = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+    const seen = new Set<string>();
+    const names: string[] = [];
+    for (const line of network.lines) {
+      for (const stop of line.stops) {
+        if (!seen.has(stop.name_pt)) {
+          seen.add(stop.name_pt);
+          names.push(stop.name_pt);
+        }
+      }
+    }
+    return names.sort((a, b) => a.localeCompare(b));
+  }, [network]);
+
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [submitted, setSubmitted] = useState<{ origin: string; destination: string } | null>(null);
+  const [interstitialTrigger, setInterstitialTrigger] = useState(0);
+  const lastSearchTrackedRef = useRef<string | null>(null);
+
+  const { result, isLoading, source } = useMinibusRouteSearch(
+    network,
+    submitted?.origin ?? '',
+    submitted?.destination ?? '',
+    Boolean(submitted),
+  );
+
+  /**
+   * Roll the interstitial when a search STARTS, not when results land, so the
+   * ad's planning overlaps the search and the results render underneath it.
+   * Same pattern as the transit screen: the click marks the ref, the arrival
+   * of results consumes it instead of rolling again, and results that arrive
+   * with no mark (a later network load, a cache hit) roll on their own.
+   */
+  const interstitialRolledAtStartRef = useRef(false);
+
+  const rollSearchInterstitial = () => {
+    // A keyboard left up can sit above a native interstitial and cover its
+    // close control.
+    Keyboard.dismiss();
+    interstitialRolledAtStartRef.current = true;
+    setInterstitialTrigger((value) => value + 1);
+  };
+
+  useEffect(() => {
+    if (!submitted || isLoading) {
+      return;
+    }
+    if (interstitialRolledAtStartRef.current) {
+      interstitialRolledAtStartRef.current = false;
+      return;
+    }
+    setInterstitialTrigger((value) => value + 1);
+  }, [submitted, isLoading]);
+
+  useEffect(() => {
+    if (!submitted || isLoading) {
+      return;
+    }
+    const searchKey = `${submitted.origin}|${submitted.destination}`;
+    if (lastSearchTrackedRef.current === searchKey) {
+      return;
+    }
+    lastSearchTrackedRef.current = searchKey;
+    track('minibus', 'search', {
+      origin: submitted.origin,
+      destination: submitted.destination,
+      results_count: result?.journeys.length ?? 0,
+      offline: source === 'offline',
+      source: source ?? 'api',
+    });
+  }, [submitted, isLoading, result, source]);
+
   useFocusEffect(
     useCallback(() => {
       if (!enabled) {
         return;
       }
       setHubFocused(true);
-      track('minibus', 'view', { screen: 'list' });
+      trackMinibusView('list');
       void linesQuery.refetch();
       return () => {
         setHubFocused(false);
@@ -124,171 +215,155 @@ export default function MinibusScreen() {
     void tariffsQuery.refetch();
   }, [linesQuery.refetch, tariffsQuery.refetch]);
 
-  const lines = linesQuery.data?.lines ?? snapshot?.bundle?.lines ?? null;
-  const tariffs = tariffsQuery.data?.tariffs ?? snapshot?.bundle?.tariffs ?? null;
-  const sourceUrl = linesQuery.data?.source_url ?? snapshot?.bundle?.source_url ?? null;
-  const importedAt = linesQuery.data?.imported_at ?? snapshot?.bundle?.imported_at ?? null;
-  const effectiveDate =
-    tariffsQuery.data?.tariffs_effective_date ?? snapshot?.bundle?.tariffs_effective_date ?? null;
-
-  const networkMapLocalUri = localDocumentImageUri(snapshot, 'network-map');
-  const networkMapRemoteUrl =
-    snapshot?.bundle?.network_map?.url ?? buildMinibusDocumentFileUrl('network-map');
-
-  const loading = linesQuery.isLoading && !lines;
-  const error = linesQuery.isError && !lines;
-
-  const onSectionLayout = (section: MinibusSection, event: LayoutChangeEvent) => {
-    sectionOffsets.current[section] = event.nativeEvent.layout.y;
+  const onSwap = () => {
+    setOrigin(destination);
+    setDestination(origin);
   };
 
-  const scrollToSection = (section: MinibusSection) => {
-    setActiveSection(section);
-    const y = sectionOffsets.current[section];
-    if (y == null) {
+  const onSearch = () => {
+    const trimmedOrigin = origin.trim();
+    const trimmedDestination = destination.trim();
+    if (!trimmedOrigin || !trimmedDestination) {
       return;
     }
-    scrollRef.current?.scrollTo({ y: Math.max(0, y - space.sm), animated: true });
+    // Rotate the top banner on each new search (the transit tab does the same).
+    void queryClient.invalidateQueries({ queryKey: ['ad', 'home'] });
+    rollSearchInterstitial();
+    setSubmitted({ origin: trimmedOrigin, destination: trimmedDestination });
   };
+
+  const journeys = result?.journeys ?? [];
+  const hasSearched = Boolean(submitted);
+  const hasResults = journeys.length > 0;
+  const showEmpty = hasSearched && !isLoading && journeys.length === 0;
+  const showInstructions = !hasSearched;
+
+  // Lets the inline native ad slots below the fold hold off requesting an ad
+  // until the rider actually scrolls towards them.
+  const adViewport = useAdViewportSource();
+
+  const sourceUrl = linesQuery.data?.source_url ?? snapshot?.bundle?.source_url ?? null;
+  const importedAt = linesQuery.data?.imported_at ?? snapshot?.bundle?.imported_at ?? null;
 
   return (
     <Screen withStackHeader>
       <ScrollView
-        ref={scrollRef}
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        onScroll={adViewport.onScroll}
+        scrollEventThrottle={adViewport.scrollEventThrottle}
         refreshControl={
           <RefreshControl
             refreshing={linesQuery.isFetching || tariffsQuery.isFetching}
             onRefresh={onRefresh}
-            tintColor={theme.primary}
+            tintColor={MINIBUS_ACCENT}
           />
         }
       >
-        <View style={styles.adTop}>
-          <AdBanner on="home" slot="minibus-list-top" />
-        </View>
+        <TransitWebShell>
+          <AdBanner on="home" slot="top" />
 
-        <View style={styles.pillsRow}>
-          {SECTIONS.map((section) => (
-            <Chip
-              key={section.key}
-              label={t(section.labelKey)}
-              selected={activeSection === section.key}
-              onPress={() => scrollToSection(section.key)}
-            />
-          ))}
-        </View>
-
-        <Text style={[typography.body, { color: theme.muted, marginBottom: space.md }]}>
-          {t('minibusSubtitle')}
-        </Text>
-
-        {/* Plan route and "Ao vivo" share one row, same pairing as the transit
-            tab's network-map / live-tracking row. Each half stretches to fill
-            when the other is absent -- there is none today, but the layout
-            costs nothing to keep consistent. */}
-        <View onLayout={(event) => onSectionLayout('plan', event)} style={styles.planLiveRow}>
-          <View style={styles.planLiveCell}>
-            <MinibusPlanRouteLink
-              stopsCount={stopsCount}
-              onPress={() => {
-                track('minibus', 'view', { screen: 'search' });
-                router.push('/minibus/search');
-              }}
-            />
+          {/* Network map and "Ao vivo" share one row to keep the hub short:
+              the map answers "where does this network go", live answers "where
+              are the buses now". Each half stretches to fill when the other is
+              absent. No margin — TransitWebShell's column gap spaces it. */}
+          <View style={styles.mapLiveRow}>
+            <View style={styles.mapLiveCell}>
+              <MinibusNetworkMapLink stopsCount={stopsCount} />
+            </View>
+            <View style={styles.mapLiveCell}>
+              <MinibusLiveHubCard
+                enabled={liveEntryEnabled}
+                isOnline={isOnline}
+                vehicleCount={minibusLive.count}
+                onPress={() => {
+                  void openLiveTracking({ source: 'hub' });
+                }}
+              />
+            </View>
           </View>
-          <View style={styles.planLiveCell}>
-            <MinibusLiveHubCard
-              enabled={liveEntryEnabled}
-              isOnline={isOnline}
-              vehicleCount={minibusLive.count}
-              onPress={() => {
-                void openLiveTracking({ source: 'hub' });
-              }}
-            />
-          </View>
-        </View>
 
-        <View onLayout={(event) => onSectionLayout('lines', event)} style={styles.section}>
-          <Text style={[typography.headline, { color: theme.text, marginBottom: space.sm }]}>
-            {t('minibusSectionLines')}
-          </Text>
-
-          <MinibusLineImage
-            compact
-            documentSlug="network-map"
-            localUri={networkMapLocalUri}
-            remoteUrl={networkMapRemoteUrl}
-            sectionTitle={t('minibusNetworkMap')}
-            accessibilityLabel={t('minibusNetworkMapImageAlt')}
-            tapHintKey="minibusNetworkMapTapToZoom"
-            fullscreenA11yKey="minibusNetworkMapOpenFullscreen"
+          <MinibusPlannerCard
+            origin={origin}
+            destination={destination}
+            stops={stops}
+            searching={hasSearched && isLoading}
+            onOriginChange={setOrigin}
+            onDestinationChange={setDestination}
+            onSwap={onSwap}
+            onSearch={onSearch}
           />
 
-          {loading ? (
-            <View style={styles.skeletons}>
-              <CardSkeleton />
-              <CardSkeleton />
-              <CardSkeleton />
-            </View>
+          {source === 'offline' && journeys.length > 0 ? (
+            <CachedBadge label={t('minibusOfflineResults')} />
           ) : null}
 
-          {error ? (
-            <ErrorState
-              title={t('minibusLoadError')}
-              actionLabel={t('commonRetry')}
-              onAction={() => void linesQuery.refetch()}
-            />
+          {isLoading ? <SearchingState variant="journeys" /> : null}
+
+          {showEmpty ? (
+            <EmptyState title={t('minibusNoJourneys')} description={t('minibusNoJourneysHint')} />
           ) : null}
 
-          {!loading && !error && lines ? (
-            <>
-              <View style={styles.lineList}>
-                {lines.map((line) => (
-                  <MinibusLineCard
-                    key={line.slug}
-                    line={line}
-                    onPress={() => router.push(`/minibus/${line.slug}`)}
-                  />
-                ))}
-              </View>
+          {/* A results view always carries one native ad. With no journeys to
+              interleave it with, it sits under the empty state. */}
+          {showEmpty ? <AdBanner on="home" slot="inline-end" format="native" /> : null}
 
-              <View style={styles.adInline}>
-                <AdBanner on="home" slot="minibus-list-inline-0" />
-              </View>
-            </>
+          {hasResults ? (
+            <AdViewportProvider value={adViewport.value}>
+              <MinibusJourneyResults
+                journeys={journeys}
+                linesByCode={linesByCode}
+                onJourneyPress={(journey, journeyIndex) => {
+                  track('minibus', 'engage', {
+                    action: 'select_journey',
+                    ...minibusJourneyAnalyticsProps(journey, {
+                      journey_index: journeyIndex,
+                      offline: source === 'offline',
+                    }),
+                  });
+                  setPendingDirections(journey, linesByCode);
+                  router.push('/minibus/directions');
+                }}
+              />
+            </AdViewportProvider>
           ) : null}
-        </View>
 
-        {!loading && !error && tariffs ? (
-          <View onLayout={(event) => onSectionLayout('pricing', event)} style={styles.section}>
-            <MinibusTariffTable tariffs={tariffs} effectiveDate={effectiveDate} />
-          </View>
-        ) : null}
+          {/* The "no search yet" area, in the transit tab's order: fares link,
+              the AzoresBus cross-link, the hop-on-hop-off promo (tourists
+              only), and a native ad. */}
+          {showInstructions ? <MinibusPricesLink /> : null}
 
-        <MinibusAttributionFooter sourceUrl={sourceUrl} importedAt={importedAt} />
+          {showInstructions && showTransit ? <TransitMinibusLink /> : null}
+
+          {showInstructions && showHopOnOff ? (
+            <HopOnHopOffCtaRow source="minibus" />
+          ) : null}
+
+          {showInstructions ? (
+            <AdBanner on="home" slot="instructions" format="native" />
+          ) : null}
+
+          <MinibusAttributionFooter sourceUrl={sourceUrl} importedAt={importedAt} />
+        </TransitWebShell>
       </ScrollView>
+      {/* `ready` deliberately does not wait for the search — see rollSearchInterstitial. */}
+      <InterstitialOrchestrator trigger={interstitialTrigger} ready={hasSearched} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.lg, paddingBottom: space.xl },
-  skeletons: { gap: space.sm },
-  planLiveRow: {
+  content: {
+    padding: space.md,
+    paddingBottom: space['4xl'],
+    alignItems: 'center',
+  },
+  mapLiveRow: {
     flexDirection: 'row',
     gap: space.sm,
     alignSelf: 'stretch',
   },
-  planLiveCell: { flex: 1 },
-  lineList: { gap: space.md },
-  section: { marginTop: space.lg },
-  adTop: { marginBottom: space.md },
-  adInline: { marginTop: space.md },
-  pillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: space.md,
-  },
+  mapLiveCell: { flex: 1 },
 });

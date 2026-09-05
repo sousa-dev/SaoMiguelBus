@@ -3,6 +3,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 
 import { MinibusStopPicker } from '@/features/minibus/components/MinibusStopPicker';
+import { MINIBUS_ACCENT } from '@/features/minibus/lib/moduleAccent';
+import { withAlpha } from '@/lib/color-utils';
 import { elevation, radius, space, typography } from '@/lib/tokens';
 import { useAppTheme } from '@/lib/theme';
 
@@ -50,11 +52,11 @@ export function MinibusPlannerCard({
         <View style={styles.swapRow}>
           <Pressable
             onPress={onSwap}
-            style={[styles.swapBtn, { backgroundColor: theme.primary }]}
+            style={[styles.swapBtn, { backgroundColor: withAlpha(MINIBUS_ACCENT, 0.14) }]}
             accessibilityRole="button"
             accessibilityLabel={t('minibusSwap')}
           >
-            <ArrowUpDown size={16} color={theme.onPrimary} />
+            <ArrowUpDown size={16} color={MINIBUS_ACCENT} />
           </Pressable>
         </View>
 
@@ -71,19 +73,20 @@ export function MinibusPlannerCard({
           style={({ pressed }) => [
             styles.searchBtn,
             {
-              backgroundColor: theme.primary,
-              opacity: !canSearch || searching ? 0.5 : pressed ? 0.9 : 1,
+              borderColor: MINIBUS_ACCENT,
+              backgroundColor: pressed ? withAlpha(MINIBUS_ACCENT, 0.12) : 'transparent',
+              opacity: !canSearch || searching ? 0.5 : 1,
             },
           ]}
           accessibilityRole="button"
           accessibilityLabel={t('minibusSearchCta')}
         >
           {searching ? (
-            <ActivityIndicator color={theme.onPrimary} />
+            <ActivityIndicator color={MINIBUS_ACCENT} />
           ) : (
             <>
-              <Search size={18} color={theme.onPrimary} />
-              <Text style={[typography.label, { color: theme.onPrimary, marginLeft: space.sm }]}>
+              <Search size={18} color={MINIBUS_ACCENT} />
+              <Text style={[typography.label, { color: MINIBUS_ACCENT, marginLeft: space.sm }]}>
                 {t('minibusSearchCta')}
               </Text>
             </>
@@ -118,5 +121,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     height: 44,
     marginTop: space.md,
+    // Outline accent rather than a filled primary: the planner reads as the
+    // same control as the transit tab's while staying recognisably MiniBus.
+    borderWidth: 1.5,
   },
 });

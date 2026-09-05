@@ -12,6 +12,8 @@ type SegmentedControlProps<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   accessibilityLabel?: string;
+  /** Selected-segment label colour; defaults to the app-wide primary. */
+  activeColor?: string;
 };
 
 export function SegmentedControl<T extends string>({
@@ -19,6 +21,7 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   accessibilityLabel,
+  activeColor,
 }: SegmentedControlProps<T>) {
   const theme = useAppTheme();
 
@@ -49,7 +52,7 @@ export function SegmentedControl<T extends string>({
             <Text
               style={[
                 typography.label,
-                { color: selected ? theme.primary : theme.muted, fontSize: 13 },
+                { color: selected ? (activeColor ?? theme.primary) : theme.muted, fontSize: 13 },
               ]}
             >
               {opt.label}

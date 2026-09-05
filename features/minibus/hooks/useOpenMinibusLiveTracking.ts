@@ -6,7 +6,7 @@ import { trackLiveEntryOpen } from '@/features/minibus/lib/live-analytics';
 import { openMinibusLiveMap } from '@/features/minibus/lib/openLiveTracking';
 
 type OpenMinibusLiveTrackingOptions = {
-  source: 'hub' | 'line_detail';
+  source: 'hub' | 'line_detail' | 'network';
   lineSlug?: string | null;
   lineCode?: string;
 };
